@@ -7,7 +7,7 @@ from datetime import datetime
 import uuid
 
 # Backend URL from frontend environment 
-BACKEND_URL = "https://kindness-network.preview.emergentagent.com/api"
+BACKEND_URL = "https://kindness-hub-13.preview.emergentagent.com/api"
 
 class FavorExchangeTester:
     def __init__(self):
