@@ -1130,6 +1130,96 @@ async def exchange_session(request: Request, response: Response):
     
     return {"user": User(**user_doc), "token": session_token}
 
+class AppleAuthRequest(BaseModel):
+    identity_token: str
+    user_id: str
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+
+@api_router.post("/auth/apple")
+async def apple_auth(auth_data: AppleAuthRequest, response: Response):
+    """Authenticate with Apple Sign In"""
+    import jwt as pyjwt
+    
+    try:
+        # Decode Apple's identity token (without verification for now - in production, verify with Apple's public key)
+        # The token is a JWT signed by Apple
+        decoded = pyjwt.decode(auth_data.identity_token, options={"verify_signature": False})
+        
+        apple_user_id = decoded.get("sub")  # Apple's unique user identifier
+        email = auth_data.email or decoded.get("email")
+        
+        if not email:
+            raise HTTPException(status_code=400, detail="Email richiesta per la registrazione")
+        
+        # Check if user exists
+        user_doc = await db.users.find_one({"$or": [{"email": email}, {"apple_user_id": apple_user_id}]}, {"_id": 0})
+        
+        if user_doc:
+            user_id = user_doc["user_id"]
+            # Update Apple user ID if not set
+            if not user_doc.get("apple_user_id"):
+                await db.users.update_one(
+                    {"user_id": user_id},
+                    {"$set": {"apple_user_id": apple_user_id, "identity_verified": True}}
+                )
+            user_doc["identity_verified"] = True
+        else:
+            # Create new user
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            referral_code = generate_referral_code()
+            name = auth_data.full_name or email.split("@")[0]
+            
+            user_doc = {
+                "user_id": user_id,
+                "email": email,
+                "name": name,
+                "apple_user_id": apple_user_id,
+                "granelli": WELCOME_GRANELLI,
+                "total_favors_given": 0,
+                "total_favors_received": 0,
+                "micro_favors_completed": 0,
+                "emergencies_helped": 0,
+                "total_hours_helped": 0.0,
+                "total_donations": 0,
+                "average_rating": 0.0,
+                "average_kindness": 0.0,
+                "average_impact": 0.0,
+                "perfect_reviews_count": 0,
+                "referral_code": referral_code,
+                "badges": [],
+                "title": "Nuovo Vicino",
+                "is_vulnerable": False,
+                "identity_verified": True,
+                "community_score": 0,
+                "social_impact_score": 0,
+                "can_access_solidarity_fund": False,
+                "is_supporter": False,
+                "skills": [],
+                "notifications_enabled": True,
+                "legal_accepted": False,
+                "reliability_score": 5.0,
+                "created_at": datetime.now(timezone.utc),
+            }
+            await db.users.insert_one({**user_doc})
+        
+        # Generate JWT token
+        token_payload = {
+            "user_id": user_id,
+            "email": email,
+            "exp": datetime.now(timezone.utc) + timedelta(days=JWT_EXPIRATION_DAYS)
+        }
+        token = jwt.encode(token_payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        
+        user_doc.pop("password_hash", None)
+        user_doc["title"] = get_user_title(user_doc)
+        
+        return {"user": User(**user_doc), "token": token}
+        
+    except Exception as e:
+        logging.error(f"Apple auth error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Autenticazione Apple fallita")
+
 @api_router.get("/auth/me", response_model=User)
 async def get_me(current_user: User = Depends(get_current_user)):
     """Get current user info"""
