@@ -323,6 +323,12 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Ethical Tags for Reviews
+  getEthicalTags: async (): Promise<EthicalTag[]> => {
+    const response = await fetch(`${API_URL}/api/ethical-tags`);
+    return handleResponse(response);
+  },
+
   // Il Nostro Patto
   getPatto: async (): Promise<PattoContent> => {
     const response = await fetch(`${API_URL}/api/patto`);
