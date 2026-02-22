@@ -3,124 +3,157 @@
 ## Overview
 "Scambio di Favori" è una piattaforma community iperlocale per lo scambio di favori tra vicini, con un sistema di valuta interna chiamato "Granelli" (💎).
 
-## Funzionalità Chat Avanzata (Febbraio 2026)
+## Funzionalità Implementate
 
-### 1. Logica di Attivazione
-- ✅ Chat creata automaticamente dopo accettazione favore
-- ✅ Chat "Sola Lettura" dopo 24h dal completamento/annullamento
-- API: `GET /api/chat/status/{favorId}` - ritorna `read_only: true/false`
+### 1. Sistema Core
+- **Autenticazione**: JWT-based + Google OAuth
+- **Valuta Granelli**: 3 di benvenuto, 1 per ora di favore
+- **Favori**: Creazione, accettazione, completamento con QR code
+- **Social Debt**: Limite -3 Granelli, blocco richieste se in debito
 
-### 2. Moderazione Anti-Abuso
+### 2. Chat Avanzata
+- Chat creata automaticamente dopo accettazione favore
+- Chat "Sola Lettura" dopo 24h dal completamento/annullamento
+- **Moderazione Anti-Abuso**:
+  - Filtro parole chiave denaro (euro, pagamento, bonifico, ecc.)
+  - Filtro linguaggio offensivo
+  - Alert privacy per condivisione dati personali
+- Funzionalità "Meeting Point" per condivisione luoghi pubblici
+- Sistema segnalazioni con shadow ban
 
-#### Filtro Parole Chiave
-- **Denaro** (bloccato): euro, pagamento, bonifico, prezzo, contanti, paypal, iban, carta
-- **Linguaggio Offensivo** (bloccato): lista di parolacce italiane
-- **Link Sospetti** (bloccato): tutti tranne Google Maps/OpenStreetMap
+### 3. Legal & GDPR (Febbraio 2026)
+- Pagina Note Legali (`/legal`)
+- Modal consenso obbligatorio al primo login
+- Diritto all'Oblio (DELETE /api/account)
+- Disclaimer: "L'app è un facilitatore e non risponde della condotta degli utenti"
 
-#### Alert Privacy
-- Quando si condividono telefono/email, appare warning:
-  - "Stai condividendo dati personali. Assicurati di fidarti del tuo vicino."
+### 4. Sicurezza Anti-Frode (Febbraio 2026)
+- Limite 10 ore scambi/giorno per utente
+- Logging transazioni QR per dispute resolution
+- Geofencing 100m per conferma scambio
 
-### 3. Funzionalità Meeting Point
-- Tasto "Invia Punto di Incontro" per condividere luoghi pubblici
-- Evita condivisione indirizzo privato
+### 5. Mappa Favori (Febbraio 2026)
+- Tab Mappa nella navigazione
+- Visualizzazione favori come cerchi di prossimità (privacy)
+- Filtri per tipo (Tutti/Offerte/Richieste)
+- Legenda colori
+- API: GET /api/favors con parametri latitude, longitude, max_distance_km
 
-### 4. Sistema Segnalazioni (Safety First)
-- **Tasto Report**: Sempre visibile nell'header chat
-- **Motivi segnalazione**:
-  - Linguaggio offensivo
-  - Richiesta di denaro
-  - Spam
-  - Comportamento inappropriato
-  - Altro
-- **Shadow Ban**: Automatico dopo 5+ segnalazioni confermate
-- API: `POST /api/chat/report`
-
-### 5. UI/UX Chat
-- **Colori**: Verde Bosco (#2D5A3D) + Arancio (#E07B39)
-- **Header**: Titolo favore + Valore Granelli
-- **Banner Etico**: "Lo scambio è basato sul tempo, non sul denaro"
-- **Avatar**: Iniziale nome utente
-- **Messaggi bloccati**: Badge rosso "Bloccato"
-
-## Test API Chat
-
-```bash
-# Filtro denaro ✅
-"Pagami 50 euro" → BLOCCATO
-
-# Filtro offensivo ✅  
-"Sei uno stronzo" → BLOCCATO
-
-# Warning dati personali ✅
-"Chiamami: 333-1234567" → OK + Warning
-
-# Link sospetti ✅
-"Vai su http://scam.com" → BLOCCATO
-
-# Messaggio normale ✅
-"Ci vediamo domani!" → OK
-```
-
-## Struttura File
-
-```
-Backend:
-- server.py lines 76-140: Filtri (MONEY_FILTER_PATTERNS, OFFENSIVE_PATTERNS, PERSONAL_DATA_PATTERNS)
-- server.py lines 1895-2040: Endpoint messaggi con filtri
-- server.py lines 2042-2120: Endpoint report e chat status
-
-Frontend:
-- app/chat/[favorId].tsx: UI completa con report, meeting point, alerts
-```
+### 6. Gestione Competenze Utente (Febbraio 2026) - NUOVO
+- Sezione "Le Tue Competenze" nel profilo
+- UI per visualizzare competenze selezionate come tag
+- Modal per selezionare/deselezionare competenze
+- Sincronizzazione con backend via API
+- **API Endpoints**:
+  - GET /api/user/skills - recupera competenze
+  - PUT /api/user/skills - aggiorna competenze
+- **Frontend Files**:
+  - `profile.tsx`: Lines 31-75 (state), 350-420 (UI), 690-780 (modal)
+- **Test**: 12/12 test passati (backend)
 
 ## Schema Database
 
-### messages
+### users
 ```json
 {
-  "message_id": "string",
-  "favor_id": "string",
-  "sender_id": "string",
-  "content": "string",
-  "message_type": "text | meeting_point | image",
-  "blocked": "bool",
-  "block_reason": "money | offensive | link",
-  "has_personal_data": "bool"
+  "user_id": "string",
+  "email": "string",
+  "name": "string",
+  "granelli": "int",
+  "skills": ["string"],  // Lista competenze
+  "legal_accepted": "bool",
+  "legal_accepted_at": "datetime",
+  "reliability_score": "float",
+  "social_impact_score": "int"
 }
 ```
 
-### reports
+### favors
 ```json
 {
-  "report_id": "string",
   "favor_id": "string",
-  "reporter_id": "string",
-  "reported_user_id": "string",
-  "reason": "offensive | money_request | spam | inappropriate | other",
-  "status": "pending | confirmed | dismissed"
+  "creator_id": "string",
+  "type": "offer|request",
+  "title": "string",
+  "category": "string",
+  "granelli_cost": "int",
+  "validity_days": "int",
+  "expires_at": "datetime",
+  "status": "active|accepted|completed|cancelled"
 }
 ```
 
-## Altre Funzionalità Implementate
+### notifications
+```json
+{
+  "notification_id": "string",
+  "user_id": "string",
+  "favor_id": "string",
+  "message": "string",
+  "is_read": "bool"
+}
+```
 
-### Sezione Legale & GDPR
-- Pagina Note Legali (`/legal`)
-- Modal consenso obbligatorio
-- Diritto all'Oblio (DELETE /api/account)
+### security_logs
+```json
+{
+  "log_id": "string",
+  "transaction_hash": "string",
+  "favor_id": "string",
+  "timestamp": "datetime",
+  "gps_latitude": "float",
+  "gps_longitude": "float"
+}
+```
 
-### UI/UX
-- Palette Verde Bosco + Arancio Caldo
-- Card favori moderne
-- Tab Mappa
+## Architettura
 
-### Sistema Notifiche Competenze
-- Matching favori ↔ skills utente
+```
+/app
+├── backend/
+│   ├── server.py          # FastAPI, tutti gli endpoint
+│   └── tests/
+│       └── test_skills_api.py  # Test competenze
+├── frontend/
+│   ├── app/
+│   │   ├── (tabs)/
+│   │   │   ├── home.tsx       # Feed favori
+│   │   │   ├── map.tsx        # Mappa favori
+│   │   │   ├── create.tsx     # Creazione favori
+│   │   │   └── profile.tsx    # Profilo con competenze
+│   │   ├── chat/[favorId].tsx # Chat per favore
+│   │   └── legal.tsx          # Pagina legale
+│   └── src/
+│       ├── services/api.ts    # Client API
+│       ├── context/AuthContext.tsx
+│       └── theme/colors.ts    # Verde Bosco + Arancio
+└── memory/
+    └── PRD.md
+```
 
-### Sistema Social Debt
-- Limite -3 Granelli
-- Evidenziazione utenti in debito
+## Colori UI
+- **Primary (Verde Bosco)**: #2D5A3D
+- **Accent (Arancio Caldo)**: #E07B39
+- **Background**: #0F1A14
+- **Text Primary**: #FFFFFF
+
+## Test Credentials
+- Email: skills_test@test.com
+- Password: test123
+
+## Prossimi Task (Backlog)
+
+### P2: UI Notifiche
+- Icona campanella nell'header con badge contatore
+- Schermata lista notifiche
+- Polling endpoint /api/notifications
+
+### P3: Miglioramenti UX
+- Ottimizzazione performance mappa
+- Animazioni transizione pagine
 
 ## Note Tecniche
-- Preview: https://granelli-app.preview.emergentagent.com
-- Test user: test_chat@test.com / test123
+- Preview URL: https://granelli-app.preview.emergentagent.com
+- Backend: FastAPI su porta 8001
+- Frontend: Expo React Native con web support
+- Database: MongoDB
