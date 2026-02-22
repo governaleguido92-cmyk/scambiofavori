@@ -688,6 +688,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  skeletonContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
