@@ -103,6 +103,8 @@ export interface Favor {
   is_micro: boolean;
   is_emergency: boolean;
   creator_in_debt: boolean;  // For priority highlighting
+  validity_days: number;  // Durata annuncio (1-10 giorni)
+  expires_at?: string;  // Data scadenza
   qr_code?: string;
   checkin_completed: boolean;
   created_at: string;
