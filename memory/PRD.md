@@ -4,74 +4,107 @@
 "Scambio di Favori" è una piattaforma community iperlocale per lo scambio di favori tra vicini, con un sistema di valuta interna chiamato "Granelli" (💎).
 
 ## Store Compliance Status: READY ✅
+## Monetization: SUPPORTER SYSTEM ACTIVE ✅
 
-### App Store / Google Play Requirements Implemented
+---
 
-#### 1. UGC Safety (User Generated Content)
-- **Sistema Segnalazioni**: POST /api/report per favori e utenti
-- **Blocco Utenti Bidirezionale**: Utenti bloccati non si vedono reciprocamente
-- **Moderazione Automatica**: Filtri anti-link sospetti e linguaggio offensivo nella creazione favori
-- **Auto-moderazione**: 5+ segnalazioni = nascondi contenuto/shadow ban utente
+## NUOVO: Sistema Sostenitori "Pilastro della Community"
 
-#### 2. Account Management & GDPR
-- **Diritto all'Oblio**: DELETE /api/account (hard delete completo)
-- **Privacy Strings**: Messaggi chiari per richiesta permessi (posizione, fotocamera)
-- **Consenso Legale**: Modal obbligatorio al primo login
+### Panoramica
+Sistema di micro-sostegno ricorrente per coprire i costi dell'app e premiare i sostenitori.
 
-#### 3. Reviewer Mode (Apple/Google Testing)
-- **Account Reviewer**: reviewer@test.com con funzionalità debug
-- **Mock QR Scan**: Simula completamento favore senza QR fisico
-- **Mock GPS**: Per testare geofencing da remoto
+### Pricing
+- **Piano Unico**: 1€/mese (cancellabile in qualsiasi momento)
 
-#### 4. UX & Performance
-- **Skeleton Screens**: Loading placeholder per feed e mappa
-- **Offline Mode**: Banner "Sei offline" con retry
-- **Feedback Errori**: Messaggi specifici per QR scaduto/non valido
+### Benefici Sostenitori
+- **Badge Cuore Dorato**: Icona ❤️ dorata accanto al nome ovunque nell'app
+- **Bordo Profilo Dorato**: Foto profilo con cornice dorata distintiva
+- **Visibilità Mappa**: Profilo evidenziato sulla mappa
+- **Badge "Sostenitore"**: Badge permanente nel profilo
 
-## Funzionalità Core
+### Implementazione Tecnica
 
-### Sistema Economico
-- **Granelli**: 3 di benvenuto, 1 per ora
-- **Social Debt**: Limite -3, blocco richieste se in debito
-- **Limite Anti-Frode**: Max 10 scambi/giorno
+#### Backend Endpoints
+```
+POST /api/subscription/create-checkout   → Crea sessione Stripe Checkout
+GET  /api/subscription/my-status         → Stato abbonamento utente
+GET  /api/subscription/status/{session}  → Verifica pagamento
+GET  /api/subscription/manage-url        → URL Customer Portal Stripe
+POST /api/webhook/stripe                 → Webhook eventi Stripe
+```
 
-### Favori
-- Creazione offerte/richieste con durata configurabile (max 10 giorni)
-- Conferma via QR code con geofencing 100m
-- Security logging per dispute resolution
+#### Database Schema (nuovi campi users)
+```json
+{
+  "is_supporter": "bool",
+  "subscription_status": "active|cancelled|null",
+  "subscription_id": "string",
+  "supporter_since": "datetime"
+}
+```
 
-### Chat Avanzata
-- Attivazione automatica dopo accettazione
-- Sola lettura dopo 24h dal completamento
-- Filtri: denaro, linguaggio offensivo, dati personali
-- "Meeting Point" per condivisione luoghi pubblici
-- Sistema segnalazioni con shadow ban
+#### Frontend
+- **Pagina /supporter**: UI completa con messaggio emozionale, benefici, checkout
+- **SupporterBadge.tsx**: Componenti badge e bordo dorato riutilizzabili
+- **ProfileCompletionBar**: Link "Sostieni il Progetto" nel profilo
 
-### Profilo & Gamification
-- **Barra Completamento Profilo**: 4 item (nome, foto, competenze, primo favore) = badge
-- **Competenze**: Selezione categorie per notifiche mirate
-- **Badge Comunitari**: Sbloccabili con attività
-- **Social Impact Bar**: Visualizzazione impatto nella community
+### Integrazione Stripe
+- **Libreria**: emergentintegrations.payments.stripe.checkout
+- **Test Key**: sk_test_emergent (ambiente)
+- **Webhook**: Gestisce checkout.session.completed, subscription.deleted, invoice.payment_failed
 
-### Mappa
-- Visualizzazione favori nelle vicinanze
-- Cerchi di prossimità per privacy
-- Filtri per tipo (offerte/richieste)
+### Privacy
+- Solo lo stato "Sostenitore" è visibile, mai l'importo donato
 
-## API Endpoints
+---
+
+## Funzionalità Complete
+
+### 1. Sistema Core
+- **Autenticazione**: JWT + Google OAuth + Placeholder Apple
+- **Valuta Granelli**: 3 di benvenuto, 1 per ora
+- **Favori**: CRUD con expiration (max 10 giorni)
+- **Social Debt**: Limite -3, blocco richieste
+
+### 2. Store Compliance
+- **UGC Safety**: Report contenuti, blocco utenti bidirezionale
+- **Moderazione**: Filtri anti-link/linguaggio offensivo
+- **GDPR**: Diritto all'oblio, consenso legale
+- **Reviewer Mode**: Mock QR/GPS per tester Apple/Google
+
+### 3. Chat Avanzata
+- Auto-attivazione dopo accettazione
+- Sola lettura post 24h
+- Filtri: denaro, offensivo, PII
+- Meeting Point, Report, Shadow Ban
+
+### 4. Gamification
+- Barra Completamento Profilo (4 item = badge)
+- Competenze utente con notifiche
+- Social Impact Bar
+- Leaderboard community
+
+### 5. Mappa
+- Favori nelle vicinanze
+- Cerchi prossimità (privacy)
+- Filtri tipo
+
+---
+
+## API Reference
 
 ### Autenticazione
 - POST /api/auth/register
 - POST /api/auth/login
-- GET /api/auth/google (OAuth)
+- GET /api/auth/google
 
 ### Favori
-- GET /api/favors (con filtri posizione)
-- POST /api/favors (con moderazione contenuti)
-- POST /api/favors/{id}/complete (QR + geofencing)
+- GET /api/favors
+- POST /api/favors (con moderazione)
+- POST /api/favors/{id}/complete
 
-### Reporting & Blocking (NEW)
-- POST /api/report (segnala favori/utenti)
+### Reporting & Blocking
+- POST /api/report
 - POST /api/users/block
 - DELETE /api/users/block/{user_id}
 - GET /api/users/blocked
@@ -79,104 +112,89 @@
 ### Profilo
 - GET /api/users/me/profile-completion
 - GET/PUT /api/user/skills
-- DELETE /api/account (GDPR)
+- DELETE /api/account
 
-### Debug/Reviewer (NEW)
+### Subscription (NEW)
+- POST /api/subscription/create-checkout
+- GET /api/subscription/my-status
+- GET /api/subscription/status/{session_id}
+- GET /api/subscription/manage-url
+- POST /api/webhook/stripe
+
+### Debug/Reviewer
 - GET /api/debug/is-reviewer
 - POST /api/debug/mock-qr-scan
 
-## Schema Database
-
-```
-users:
-  - user_id, email, name, password_hash
-  - granelli, is_in_debt
-  - skills[], badges[]
-  - legal_accepted, legal_accepted_at
-  - banned_from_chat, shadow_banned
-  
-favors:
-  - favor_id, creator_id, type
-  - title, description, category
-  - granelli_cost, validity_days, expires_at
-  - status, accepted_by, completed_at
-  
-general_reports (NEW):
-  - report_id, reporter_id
-  - report_type (favor/user)
-  - target_id, reason, description
-  - status, created_at
-  
-blocked_users (NEW):
-  - block_id, blocker_id, blocked_id
-  - reason, created_at
-  
-security_logs:
-  - log_id, transaction_hash
-  - favor_id, timestamp
-  - gps_latitude, gps_longitude
-```
+---
 
 ## File Structure
 
 ```
 /app
 ├── backend/
-│   ├── server.py           # FastAPI + tutti gli endpoint
+│   ├── server.py           # FastAPI + Stripe + tutti gli endpoint
+│   ├── .env                 # MONGO_URL, DB_NAME, STRIPE_API_KEY
 │   └── tests/
 │       ├── test_skills_api.py
-│       └── test_store_compliance.py
+│       ├── test_store_compliance.py
+│       └── test_subscription_api.py
 ├── frontend/
 │   ├── app/
-│   │   ├── (auth)/
-│   │   │   └── login.tsx    # + Apple placeholder
+│   │   ├── (auth)/login.tsx     # + Apple placeholder
 │   │   ├── (tabs)/
-│   │   │   ├── index.tsx    # + ReportModal
-│   │   │   ├── profile.tsx  # + ProfileCompletionBar
+│   │   │   ├── index.tsx        # + ReportModal
+│   │   │   ├── profile.tsx      # + ProfileCompletion + SupporterLink
 │   │   │   └── map.tsx
+│   │   └── supporter.tsx        # NEW - Pagina sostieni
 │   └── src/
 │       ├── components/
-│       │   ├── ReportModal.tsx     # NEW
-│       │   ├── ProfileCompletionBar.tsx # NEW
-│       │   ├── Skeleton.tsx        # NEW
-│       │   ├── OfflineNotice.tsx   # NEW
-│       │   └── LegalConsentModal.tsx
-│       ├── services/api.ts
-│       └── theme/colors.ts
+│       │   ├── ReportModal.tsx
+│       │   ├── ProfileCompletionBar.tsx
+│       │   ├── SupporterBadge.tsx     # NEW
+│       │   ├── Skeleton.tsx
+│       │   └── OfflineNotice.tsx
+│       └── services/api.ts
 └── memory/PRD.md
 ```
+
+---
+
+## Test Results
+
+| Component | Status | Tests |
+|-----------|--------|-------|
+| Skills API | ✅ | 12/12 |
+| Store Compliance | ✅ | 22/22 |
+| Subscription API | ✅ | 12/12 |
+| **Total Backend** | **✅ 100%** | **46/46** |
+
+---
 
 ## Test Credentials
 
 | Account | Email | Password | Scopo |
 |---------|-------|----------|-------|
 | Test User | skills_test@test.com | test123 | Testing generale |
-| Reviewer | reviewer@test.com | review123 | Debug mode per store review |
+| Reviewer | reviewer@test.com | review123 | Debug mode store |
 
-## Testing Status
-
-### Backend: 100% ✅
-- 22/22 test Store Compliance passati
-- 12/12 test Skills API passati
-
-### Frontend: Verificato via Code Review ✅
-- Tunnel ngrok instabile impedisce E2E completo
-- Tutti i componenti implementati e importati correttamente
+---
 
 ## Prossimi Passi
 
 ### P1: UI Notifiche
-- Icona campanella con badge contatore
+- Icona campanella con badge
 - Schermata lista notifiche
 - Polling /api/notifications
 
 ### P2: Ottimizzazioni
 - Performance mappa
-- Caching API responses
-- Compressione immagini
+- Caching API
 
-## Note per Deployment
+---
 
-1. **REVIEWER_MODE_ENABLED**: Settare `False` in produzione
-2. **REVIEWER_EMAIL**: Cambiare email per account reviewer reale
-3. **Rate Limiting**: Considerare implementazione per API pubbliche
+## Note Deployment
+
+1. **REVIEWER_MODE_ENABLED**: `False` in produzione
+2. **STRIPE_API_KEY**: Sostituire con chiave live
+3. **Webhook URL**: Configurare in Stripe Dashboard
+4. **DB_NAME**: Cambiare da "test_database"
