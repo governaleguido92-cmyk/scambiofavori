@@ -721,6 +721,12 @@ async def register(user_data: UserCreate):
         "community_score": 0,
         "social_impact_score": 0,
         "can_access_solidarity_fund": False,
+        # Social Debt Limit fields
+        "reliability_score": 5.0,
+        "debt_start_date": None,
+        "last_activity_date": datetime.now(timezone.utc),
+        "in_debt_recovery": False,
+        # Privacy
         "approximate_latitude": None,
         "approximate_longitude": None,
         "neighborhood": None,
