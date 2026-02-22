@@ -44,6 +44,7 @@ export default function CreateFavorScreen() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [durationHours, setDurationHours] = useState('1');
+  const [validityDays, setValidityDays] = useState(3); // Durata annuncio (1-10 giorni)
   const [address, setAddress] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -54,6 +55,9 @@ export default function CreateFavorScreen() {
 
   // Check if user is in social debt
   const isInDebt = (user?.granelli || 0) <= DEBT_LIMIT;
+
+  // Opzioni durata annuncio
+  const validityOptions = [1, 2, 3, 5, 7, 10];
 
   useEffect(() => {
     loadCategories();
