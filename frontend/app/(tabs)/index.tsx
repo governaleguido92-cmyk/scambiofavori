@@ -136,12 +136,12 @@ export default function HomeScreen() {
   const renderThanksCard = ({ item }: { item: ThanksEntry }) => (
     <View style={styles.thanksCard}>
       <View style={styles.thanksHeader}>
-        <Ionicons name="heart" size={16} color="#ff6b6b" />
+        <Ionicons name="heart" size={12} color="#ff6b6b" />
         <Text style={styles.thanksGiver}>{item.giver_name}</Text>
-        <Text style={styles.thanksArrow}>ringrazia</Text>
+        <Ionicons name="arrow-forward" size={10} color="#888" />
         <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
       </View>
-      <Text style={styles.thanksMessage}>"{item.message}"</Text>
+      <Text style={styles.thanksMessage} numberOfLines={1}>"{item.message}"</Text>
     </View>
   );
 
