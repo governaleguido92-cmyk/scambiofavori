@@ -256,6 +256,9 @@ class User(BaseModel):
     # Competenze utente per matching notifiche
     skills: List[str] = []  # Lista di categorie in cui l'utente è competente
     notifications_enabled: bool = True
+    # GDPR & Legal Compliance
+    legal_accepted: bool = False  # Accettazione Termini e Privacy
+    legal_accepted_at: Optional[datetime] = None
     # Social Debt Limit System
     reliability_score: float = 5.0  # 1-5 scale, starts at 5
     debt_start_date: Optional[datetime] = None  # When user went into debt
