@@ -337,6 +337,18 @@ class WallPost(BaseModel):
     distance_km: Optional[float] = None
     created_at: datetime
 
+# Ethical tags for reviews
+ETHICAL_TAGS = [
+    {"id": "educato", "label": "È stato molto educato", "icon": "heart"},
+    {"id": "pulito", "label": "Ha lasciato tutto pulito", "icon": "sparkles"},
+    {"id": "puntuale", "label": "Puntuale e affidabile", "icon": "time"},
+    {"id": "comunicativo", "label": "Comunicazione chiara", "icon": "chatbubble"},
+    {"id": "generoso", "label": "Generoso e disponibile", "icon": "gift"},
+    {"id": "professionale", "label": "Molto professionale", "icon": "briefcase"},
+    {"id": "simpatico", "label": "Simpatico e cordiale", "icon": "happy"},
+    {"id": "rispettoso", "label": "Rispettoso degli spazi", "icon": "home"},
+]
+
 class FavorAccept(BaseModel):
     favor_id: str
 
@@ -352,6 +364,7 @@ class ReviewCreate(BaseModel):
     rating: int
     kindness_rating: int = 5
     impact_rating: int = 5
+    ethical_tags: List[str] = []  # List of ethical tag IDs
     comment: Optional[str] = None
     public_thanks: Optional[str] = None  # For Bacheca dei Grazie
 
@@ -364,6 +377,7 @@ class Review(BaseModel):
     rating: int
     kindness_rating: int
     impact_rating: int
+    ethical_tags: List[str] = []  # List of ethical tag IDs
     comment: Optional[str] = None
     public_thanks: Optional[str] = None
     created_at: datetime
