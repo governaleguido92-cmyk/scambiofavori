@@ -108,6 +108,7 @@ export default function HomeScreen() {
 
   const loadFavors = useCallback(async () => {
     try {
+      setNetworkError(false);
       const params: any = { status: 'active' };
       if (selectedCategory) params.category = selectedCategory;
       if (selectedType !== 'all') params.type = selectedType;
@@ -120,6 +121,7 @@ export default function HomeScreen() {
       setFavors(data);
     } catch (error) {
       console.log('Error loading favors:', error);
+      setNetworkError(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
