@@ -230,7 +230,25 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   content: {
-    maxHeight: 300,
+    maxHeight: 320,
+  },
+  disclaimerBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(255, 152, 0, 0.15)',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 152, 0, 0.3)',
+  },
+  disclaimerText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.warning,
+    lineHeight: 18,
+    fontWeight: '500',
   },
   summaryBox: {
     backgroundColor: colors.background,
