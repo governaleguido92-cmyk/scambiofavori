@@ -341,6 +341,22 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Social Debt Limit System
+  getDebtStatus: async (token: string): Promise<DebtStatus> => {
+    const response = await fetch(`${API_URL}/api/debt-status`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  requestDebtRecovery: async (token: string): Promise<{ success: boolean; amount_received: number; new_balance: number; returned_positive: boolean; message: string }> => {
+    const response = await fetch(`${API_URL}/api/debt-recovery/request`, {
+      method: 'POST',
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
   // Il Nostro Patto
   getPatto: async (): Promise<PattoContent> => {
     const response = await fetch(`${API_URL}/api/patto`);
