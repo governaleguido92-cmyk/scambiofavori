@@ -569,6 +569,25 @@ export default function FavorDetailScreen() {
             </TouchableOpacity>
           )}
 
+          {/* Mock QR Scan Button - Only visible for reviewer accounts */}
+          {isReviewer && favor.status === 'accepted' && (
+            <TouchableOpacity
+              style={styles.debugButton}
+              onPress={handleMockQRScan}
+              disabled={actionLoading}
+              data-testid="mock-qr-button"
+            >
+              {actionLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="bug" size={20} color="#fff" />
+                  <Text style={styles.debugButtonText}>🔧 Mock QR Scan (Debug)</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+
           {canReview() && !showReviewForm && (
             <TouchableOpacity
               style={styles.reviewButton}
