@@ -142,6 +142,21 @@ Cannot proceed with any frontend testing until backend connectivity is resolved.
 
 Backend NEW FEATURES are ready for production use.
 
+**2026-02-22 - Testing Agent (OPTIMIZED FEATURES):**  
+✅ Successfully tested all OPTIMIZED FEATURES for "Scambio di Favori" backend. Found and FIXED 2 implementation bugs in review and user creation code. All optimized features working correctly:
+
+1. **Currency Renamed to "Granelli"** - ✅ Working (API returns "Granelli" with 💎 symbol, new users get 3 Granelli)
+2. **Geofencing 100 meters** - ✅ Working (MAX_EXCHANGE_DISTANCE_METERS = 100, error message shows "100m")
+3. **Social Impact Score** - ✅ Working (field exists in user profile, calculated in update_community_score)
+4. **Ethical Tags for Reviews** - ✅ Working (8 tags available via /api/ethical-tags, review API accepts ethical_tags parameter)
+
+**BUGS FIXED:**
+- Fixed missing `ethical_tags` field in review creation (POST /api/reviews)
+- Fixed missing `social_impact_score` and `can_access_solidarity_fund` fields in user registration
+- These fixes ensure proper data persistence for new features
+
+All OPTIMIZED FEATURES are ready for production use.
+
 **2026-02-22 - Testing Agent:**  
 Application completely inaccessible due to server infrastructure failure. Backend appears to be down or unreachable. All frontend testing blocked until resolved.
 
