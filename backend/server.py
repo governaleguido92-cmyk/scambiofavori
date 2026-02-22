@@ -1271,8 +1271,22 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     if is_micro:
         granelli_cost = 1
     
-    if favor_data.type == "request" and current_user.granelli < granelli_cost:
-        raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
+    # ========================
+    # SOCIAL DEBT LIMIT CHECK
+    # ========================
+    if favor_data.type == "request":
+        debt_status = await check_debt_status(current_user.user_id)
+        if not debt_status["can_request"]:
+            raise HTTPException(
+                status_code=403, 
+                detail="Il tuo serbatoio di tempo è vuoto. Offri un piccolo aiuto per ricaricarlo!",
+                headers={"X-Debt-Block": "true", "X-Debt-Limit": str(DEBT_LIMIT)}
+            )
+        if current_user.granelli < granelli_cost:
+            raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
+    
+    # Update last activity
+    await update_last_activity(current_user.user_id)
     
     favor_id = f"favor_{uuid.uuid4().hex[:12]}"
     qr_code = generate_qr_code()
@@ -1281,6 +1295,9 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     approx_lat, approx_lon = None, None
     if favor_data.latitude and favor_data.longitude:
         approx_lat, approx_lon = approximate_location(favor_data.latitude, favor_data.longitude)
+    
+    # Check if user is in debt (for priority highlighting)
+    creator_in_debt = current_user.granelli < 0
     
     favor_doc = {
         "favor_id": favor_id,
@@ -1303,6 +1320,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         "address": favor_data.address,
         "is_micro": is_micro,
         "is_emergency": favor_data.is_emergency,
+        "creator_in_debt": creator_in_debt,  # For priority highlighting
         "qr_code": qr_code,
         "checkin_completed": False,
         "created_at": datetime.now(timezone.utc),
