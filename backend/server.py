@@ -1363,6 +1363,11 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     # Check if user is in debt (for priority highlighting)
     creator_in_debt = current_user.granelli < 0
     
+    # Validazione durata annuncio (1-10 giorni)
+    validity_days = max(1, min(10, favor_data.validity_days))
+    created_at = datetime.now(timezone.utc)
+    expires_at = created_at + timedelta(days=validity_days)
+    
     favor_doc = {
         "favor_id": favor_id,
         "creator_id": current_user.user_id,
@@ -1374,6 +1379,8 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         "category": favor_data.category,
         "duration_hours": favor_data.duration_hours,
         "granelli_cost": granelli_cost,
+        "validity_days": validity_days,
+        "expires_at": expires_at,
         "status": "active",
         "accepted_by": None,
         "accepted_by_name": None,
@@ -1387,7 +1394,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         "creator_in_debt": creator_in_debt,  # For priority highlighting
         "qr_code": qr_code,
         "checkin_completed": False,
-        "created_at": datetime.now(timezone.utc),
+        "created_at": created_at,
         "completed_at": None
     }
     
