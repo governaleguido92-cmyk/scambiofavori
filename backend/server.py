@@ -1892,7 +1892,7 @@ async def get_messages(favor_id: str, current_user: User = Depends(get_current_u
     messages = await messages_cursor.to_list(500)
     return [Message(**m) for m in messages]
 
-@api_router.post("/messages", response_model=Message)
+@api_router.post("/messages")
 async def send_message(msg: MessageCreate, current_user: User = Depends(get_current_user)):
     """Send a message in favor chat - with content filters and moderation"""
     # Check if favor exists and user is participant
