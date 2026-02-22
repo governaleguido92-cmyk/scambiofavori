@@ -182,7 +182,7 @@ class User(BaseModel):
     email: str
     name: str
     picture: Optional[str] = None
-    soli: int = WELCOME_SOLI  # Renamed from credits
+    soli: int = WELCOME_GRANELLI  # Renamed from credits
     total_favors_given: int = 0
     total_favors_received: int = 0
     micro_favors_completed: int = 0
@@ -260,7 +260,7 @@ class Favor(BaseModel):
     description: str
     category: str
     duration_hours: float
-    soli_cost: int  # Renamed from credits_cost
+    granelli_cost: int  # Renamed from credits_cost
     status: str = "active"
     accepted_by: Optional[str] = None
     accepted_by_name: Optional[str] = None
@@ -501,7 +501,7 @@ async def get_current_user(request: Request) -> User:
             user_doc["title"] = get_user_title(user_doc)
             # Rename credits to soli for backwards compatibility
             if "credits" in user_doc:
-                user_doc["soli"] = user_doc.pop("credits")
+                user_doc["granelli"] = user_doc.pop("credits")
             return User(**user_doc)
     
     session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
@@ -522,7 +522,7 @@ async def get_current_user(request: Request) -> User:
     
     user_doc["title"] = get_user_title(user_doc)
     if "credits" in user_doc:
-        user_doc["soli"] = user_doc.pop("credits")
+        user_doc["granelli"] = user_doc.pop("credits")
     return User(**user_doc)
 
 # ========================
@@ -664,7 +664,7 @@ async def register(user_data: UserCreate):
         "name": user_data.name,
         "picture": None,
         "password_hash": hashed_password,
-        "soli": WELCOME_SOLI,
+        "granelli": WELCOME_GRANELLI,
         "total_favors_given": 0,
         "total_favors_received": 0,
         "micro_favors_completed": 0,
@@ -713,7 +713,7 @@ async def login(credentials: UserLogin, response: Response):
     user_doc.pop("password_hash", None)
     user_doc["title"] = get_user_title(user_doc)
     if "credits" in user_doc:
-        user_doc["soli"] = user_doc.pop("credits")
+        user_doc["granelli"] = user_doc.pop("credits")
     
     response.set_cookie(
         key="session_token",
@@ -770,7 +770,7 @@ async def exchange_session(request: Request, response: Response):
             "email": email,
             "name": name,
             "picture": picture,
-            "soli": WELCOME_SOLI,
+            "granelli": WELCOME_GRANELLI,
             "total_favors_given": 0,
             "total_favors_received": 0,
             "micro_favors_completed": 0,
@@ -817,7 +817,7 @@ async def exchange_session(request: Request, response: Response):
     user_doc.pop("password_hash", None)
     user_doc["title"] = get_user_title(user_doc)
     if "credits" in user_doc:
-        user_doc["soli"] = user_doc.pop("credits")
+        user_doc["granelli"] = user_doc.pop("credits")
     
     return {"user": User(**user_doc), "token": session_token}
 
@@ -880,8 +880,8 @@ async def get_currency_info():
     return {
         "name": CURRENCY_NAME,
         "symbol": CURRENCY_SYMBOL,
-        "welcome_bonus": WELCOME_SOLI,
-        "per_hour": SOLI_PER_HOUR,
+        "welcome_bonus": WELCOME_GRANELLI,
+        "per_hour": GRANELLI_PER_HOUR,
         "referral_bonus": REFERRAL_BONUS,
         "explanation": PATTO_CONTENT["currency_explanation"]
     }
@@ -1067,13 +1067,13 @@ async def borrow_object(data: BorrowRequest, current_user: User = Depends(get_cu
     if obj["owner_id"] == current_user.user_id:
         raise HTTPException(status_code=400, detail="Non puoi prendere in prestito il tuo oggetto")
     
-    if current_user.soli < obj["deposit_soli"]:
+    if current_user.granelli < obj["deposit_soli"]:
         raise HTTPException(status_code=400, detail=f"Soli insufficienti. Servono {obj['deposit_soli']} {CURRENCY_NAME} come deposito")
     
     # Hold deposit
     await db.users.update_one(
         {"user_id": current_user.user_id},
-        {"$inc": {"soli": -obj["deposit_soli"]}}
+        {"$inc": {"granelli": -obj["deposit_soli"]}}
     )
     
     await db.objects.update_one(
@@ -1103,14 +1103,14 @@ async def return_object(data: ReturnObject, current_user: User = Depends(get_cur
         # Full deposit back to borrower
         await db.users.update_one(
             {"user_id": current_user.user_id},
-            {"$inc": {"soli": obj["deposit_soli"]}}
+            {"$inc": {"granelli": obj["deposit_soli"]}}
         )
         message = f"Oggetto restituito. {obj['deposit_soli']} {CURRENCY_NAME} restituiti."
     else:
         # Deposit goes to owner as compensation
         await db.users.update_one(
             {"user_id": obj["owner_id"]},
-            {"$inc": {"soli": obj["deposit_soli"]}}
+            {"$inc": {"granelli": obj["deposit_soli"]}}
         )
         message = f"Oggetto restituito danneggiato. {obj['deposit_soli']} {CURRENCY_NAME} trasferiti al proprietario."
     
@@ -1136,15 +1136,15 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     if favor_data.type not in ["offer", "request"]:
         raise HTTPException(status_code=400, detail="Tipo deve essere 'offer' o 'request'")
     
-    soli_cost = max(1, int(favor_data.duration_hours * SOLI_PER_HOUR))
+    granelli_cost = max(1, int(favor_data.duration_hours * GRANELLI_PER_HOUR))
     
     category_info = next((c for c in FAVOR_CATEGORIES if c["name"] == favor_data.category), None)
     is_micro = favor_data.is_micro or (category_info and category_info.get("is_micro", False))
     
     if is_micro:
-        soli_cost = 1
+        granelli_cost = 1
     
-    if favor_data.type == "request" and current_user.soli < soli_cost:
+    if favor_data.type == "request" and current_user.granelli < granelli_cost:
         raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
     
     favor_id = f"favor_{uuid.uuid4().hex[:12]}"
@@ -1165,7 +1165,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         "description": favor_data.description,
         "category": favor_data.category,
         "duration_hours": favor_data.duration_hours,
-        "soli_cost": soli_cost,
+        "granelli_cost": granelli_cost,
         "status": "active",
         "accepted_by": None,
         "accepted_by_name": None,
@@ -1313,7 +1313,7 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     if favor.creator_id == current_user.user_id:
         raise HTTPException(status_code=400, detail="Non puoi accettare il tuo stesso favore")
     
-    if favor.type == "offer" and current_user.soli < favor.soli_cost:
+    if favor.type == "offer" and current_user.granelli < favor.granelli_cost:
         raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti per accettare questo favore")
     
     await db.favors.update_one(
@@ -1368,24 +1368,24 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
         await db.users.update_one(
             {"user_id": favor.creator_id},
             {"$inc": {
-                "soli": favor.soli_cost,
+                "granelli": favor.granelli_cost,
                 "total_favors_given": 1,
                 "total_hours_helped": favor.duration_hours
             }}
         )
         await db.users.update_one(
             {"user_id": favor.accepted_by},
-            {"$inc": {"soli": -favor.soli_cost, "total_favors_received": 1}}
+            {"$inc": {"granelli": -favor.granelli_cost, "total_favors_received": 1}}
         )
     else:
         await db.users.update_one(
             {"user_id": favor.creator_id},
-            {"$inc": {"soli": -favor.soli_cost, "total_favors_received": 1}}
+            {"$inc": {"granelli": -favor.granelli_cost, "total_favors_received": 1}}
         )
         await db.users.update_one(
             {"user_id": favor.accepted_by},
             {"$inc": {
-                "soli": favor.soli_cost,
+                "granelli": favor.granelli_cost,
                 "total_favors_given": 1,
                 "total_hours_helped": favor.duration_hours
             }}
@@ -1422,7 +1422,7 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
             if total_favors == 1:
                 await db.users.update_one(
                     {"user_id": user["referred_by"]},
-                    {"$inc": {"soli": REFERRAL_BONUS, "successful_referrals": 1}}
+                    {"$inc": {"granelli": REFERRAL_BONUS, "successful_referrals": 1}}
                 )
                 await check_and_award_badges(user["referred_by"])
                 await update_community_score(user["referred_by"])
@@ -1575,7 +1575,7 @@ async def create_donation(donation_data: DonationCreate, current_user: User = De
     if donation_data.amount < 1:
         raise HTTPException(status_code=400, detail=f"L'importo deve essere almeno 1 {CURRENCY_NAME[:-1]}e")
     
-    if current_user.soli < donation_data.amount:
+    if current_user.granelli < donation_data.amount:
         raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
     
     # ========================
@@ -1604,12 +1604,12 @@ async def create_donation(donation_data: DonationCreate, current_user: User = De
         
         await db.users.update_one(
             {"user_id": donation_data.recipient_id},
-            {"$inc": {"soli": donation_data.amount}}
+            {"$inc": {"granelli": donation_data.amount}}
         )
     
     await db.users.update_one(
         {"user_id": current_user.user_id},
-        {"$inc": {"soli": -donation_data.amount, "total_donations": donation_data.amount}}
+        {"$inc": {"granelli": -donation_data.amount, "total_donations": donation_data.amount}}
     )
     
     donation_id = f"donation_{uuid.uuid4().hex[:12]}"
@@ -1663,7 +1663,7 @@ async def get_user_profile(user_id: str):
     
     user_doc["title"] = get_user_title(user_doc)
     if "credits" in user_doc:
-        user_doc["soli"] = user_doc.pop("credits")
+        user_doc["granelli"] = user_doc.pop("credits")
     
     return User(**user_doc)
 
