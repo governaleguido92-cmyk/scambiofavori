@@ -1,5 +1,9 @@
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
+// Currency renamed to "Soli" ☀️
+export const CURRENCY_NAME = "Soli";
+export const CURRENCY_SYMBOL = "☀️";
+
 export interface Badge {
   id: string;
   name: string;
@@ -14,10 +18,11 @@ export interface User {
   email: string;
   name: string;
   picture?: string;
-  credits: number;
+  soli: number;  // Renamed from credits
   total_favors_given: number;
   total_favors_received: number;
   micro_favors_completed: number;
+  emergencies_helped: number;
   total_hours_helped: number;
   total_donations: number;
   average_rating: number;
@@ -28,9 +33,13 @@ export interface User {
   referred_by?: string;
   successful_referrals: number;
   badges: string[];
+  title: string;
   is_vulnerable: boolean;
   identity_verified: boolean;
   community_score: number;
+  approximate_latitude?: number;
+  approximate_longitude?: number;
+  neighborhood?: string;
   created_at: string;
 }
 
@@ -40,28 +49,84 @@ export interface Category {
   is_micro: boolean;
 }
 
+export interface ObjectCategory {
+  name: string;
+  icon: string;
+}
+
 export interface Favor {
   favor_id: string;
   creator_id: string;
   creator_name: string;
+  creator_title: string;
   type: 'offer' | 'request';
   title: string;
   description: string;
   category: string;
   duration_hours: number;
-  credits_cost: number;
+  soli_cost: number;  // Renamed from credits_cost
   status: 'active' | 'accepted' | 'completed' | 'cancelled';
   accepted_by?: string;
   accepted_by_name?: string;
-  latitude?: number;
-  longitude?: number;
+  approximate_latitude?: number;
+  approximate_longitude?: number;
+  exact_latitude?: number;
+  exact_longitude?: number;
   address?: string;
   distance_km?: number;
   is_micro: boolean;
+  is_emergency: boolean;
   qr_code?: string;
   checkin_completed: boolean;
   created_at: string;
   completed_at?: string;
+}
+
+export interface LendableObject {
+  object_id: string;
+  owner_id: string;
+  owner_name: string;
+  owner_title: string;
+  name: string;
+  description: string;
+  category: string;
+  deposit_soli: number;
+  status: 'available' | 'borrowed' | 'unavailable';
+  borrowed_by?: string;
+  borrowed_by_name?: string;
+  approximate_latitude?: number;
+  approximate_longitude?: number;
+  distance_km?: number;
+  borrow_date?: string;
+  return_date?: string;
+  created_at: string;
+}
+
+export interface WallPost {
+  post_id: string;
+  author_id: string;
+  author_name: string;
+  author_title: string;
+  content: string;
+  post_type: 'general' | 'thanks' | 'announcement';
+  likes: number;
+  liked_by: string[];
+  approximate_latitude?: number;
+  approximate_longitude?: number;
+  distance_km?: number;
+  created_at: string;
+}
+
+export interface ThanksEntry {
+  thanks_id: string;
+  favor_id: string;
+  favor_title: string;
+  giver_id: string;
+  giver_name: string;
+  receiver_id: string;
+  receiver_name: string;
+  message: string;
+  created_at: string;
 }
 
 export interface Review {
@@ -74,6 +139,7 @@ export interface Review {
   kindness_rating: number;
   impact_rating: number;
   comment?: string;
+  public_thanks?: string;
   created_at: string;
 }
 
@@ -104,14 +170,59 @@ export interface FavorCreateData {
   longitude?: number;
   address?: string;
   is_micro?: boolean;
+  is_emergency?: boolean;
+}
+
+export interface ObjectCreateData {
+  name: string;
+  description: string;
+  category: string;
+  deposit_soli: number;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface WallPostCreateData {
+  content: string;
+  post_type: 'general' | 'thanks' | 'announcement';
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface LeaderboardUser {
   user_id: string;
   name: string;
+  title: string;
   community_score: number;
   badges: string[];
   total_favors_given: number;
+}
+
+export interface PattoContent {
+  title: string;
+  subtitle: string;
+  encouraged: Array<{ title: string; icon: string; description: string }>;
+  forbidden: Array<{ title: string; icon: string; description: string }>;
+  currency_explanation: {
+    name: string;
+    symbol: string;
+    meaning: string;
+    exchange_rate: string;
+  };
+}
+
+export interface CurrencyInfo {
+  name: string;
+  symbol: string;
+  welcome_bonus: number;
+  per_hour: number;
+  referral_bonus: number;
+  explanation: {
+    name: string;
+    symbol: string;
+    meaning: string;
+    exchange_rate: string;
+  };
 }
 
 const handleResponse = async (response: Response) => {
@@ -185,6 +296,11 @@ export const api = {
     return handleResponse(response);
   },
 
+  getObjectCategories: async (): Promise<ObjectCategory[]> => {
+    const response = await fetch(`${API_URL}/api/object-categories`);
+    return handleResponse(response);
+  },
+
   // Badges
   getAllBadges: async (): Promise<Badge[]> => {
     const response = await fetch(`${API_URL}/api/badges`);
@@ -198,12 +314,108 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Il Nostro Patto
+  getPatto: async (): Promise<PattoContent> => {
+    const response = await fetch(`${API_URL}/api/patto`);
+    return handleResponse(response);
+  },
+
+  // Currency Info
+  getCurrencyInfo: async (): Promise<CurrencyInfo> => {
+    const response = await fetch(`${API_URL}/api/currency`);
+    return handleResponse(response);
+  },
+
+  // Muro del Quartiere (Neighborhood Wall)
+  getWallPosts: async (latitude?: number, longitude?: number, radiusKm: number = 0.5, postType?: string): Promise<WallPost[]> => {
+    const params = new URLSearchParams();
+    if (latitude) params.append('latitude', String(latitude));
+    if (longitude) params.append('longitude', String(longitude));
+    params.append('radius_km', String(radiusKm));
+    if (postType) params.append('post_type', postType);
+    const response = await fetch(`${API_URL}/api/wall?${params}`);
+    return handleResponse(response);
+  },
+
+  createWallPost: async (data: WallPostCreateData, token: string): Promise<WallPost> => {
+    const response = await fetch(`${API_URL}/api/wall`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  likeWallPost: async (postId: string, token: string): Promise<{ liked: boolean }> => {
+    const response = await fetch(`${API_URL}/api/wall/${postId}/like`, {
+      method: 'POST',
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  // Oggettoteca (Object Lending)
+  getObjects: async (params?: {
+    category?: string;
+    status?: string;
+    latitude?: number;
+    longitude?: number;
+    max_distance_km?: number;
+  }): Promise<LendableObject[]> => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const url = `${API_URL}/api/objects${searchParams.toString() ? `?${searchParams}` : ''}`;
+    const response = await fetch(url);
+    return handleResponse(response);
+  },
+
+  getMyObjects: async (token: string): Promise<LendableObject[]> => {
+    const response = await fetch(`${API_URL}/api/objects/my`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  createObject: async (data: ObjectCreateData, token: string): Promise<LendableObject> => {
+    const response = await fetch(`${API_URL}/api/objects`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  borrowObject: async (objectId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/objects/borrow`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ object_id: objectId }),
+    });
+    return handleResponse(response);
+  },
+
+  returnObject: async (objectId: string, condition: 'good' | 'damaged', token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/objects/return`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ object_id: objectId, condition }),
+    });
+    return handleResponse(response);
+  },
+
   // Favors
   getFavors: async (params?: {
     type?: string;
     category?: string;
     status?: string;
     is_micro?: boolean;
+    is_emergency?: boolean;
     latitude?: number;
     longitude?: number;
     max_distance_km?: number;
@@ -221,35 +433,20 @@ export const api = {
     return handleResponse(response);
   },
 
-  getNearbyFavors: async (latitude: number, longitude: number, radiusKm: number = 5, type?: string): Promise<Favor[]> => {
+  getEmergencies: async (latitude: number, longitude: number, token: string): Promise<Favor[]> => {
     const params = new URLSearchParams({
       latitude: String(latitude),
       longitude: String(longitude),
-      radius_km: String(radiusKm),
     });
-    if (type) params.append('type', type);
-    const response = await fetch(`${API_URL}/api/favors/nearby?${params}`);
-    return handleResponse(response);
-  },
-
-  getFavorSuggestions: async (latitude?: number, longitude?: number, token?: string): Promise<Favor[]> => {
-    const params = new URLSearchParams();
-    if (latitude) params.append('latitude', String(latitude));
-    if (longitude) params.append('longitude', String(longitude));
-    const response = await fetch(`${API_URL}/api/favors/suggestions?${params}`, {
+    const response = await fetch(`${API_URL}/api/favors/emergencies?${params}`, {
       headers: getHeaders(token),
     });
     return handleResponse(response);
   },
 
-  getFavor: async (favorId: string): Promise<Favor> => {
-    const response = await fetch(`${API_URL}/api/favors/${favorId}`);
-    return handleResponse(response);
-  },
-
-  getFavorQR: async (favorId: string, token: string): Promise<{ qr_code: string }> => {
-    const response = await fetch(`${API_URL}/api/favors/${favorId}/qr`, {
-      headers: getHeaders(token),
+  getFavor: async (favorId: string, token?: string): Promise<Favor> => {
+    const response = await fetch(`${API_URL}/api/favors/${favorId}`, {
+      headers: token ? getHeaders(token) : {},
     });
     return handleResponse(response);
   },
@@ -279,15 +476,6 @@ export const api = {
     return handleResponse(response);
   },
 
-  checkinFavor: async (favorId: string, qrCode: string, token: string): Promise<{ message: string; checkin_completed: boolean }> => {
-    const response = await fetch(`${API_URL}/api/favors/checkin`, {
-      method: 'POST',
-      headers: getHeaders(token),
-      body: JSON.stringify({ favor_id: favorId, qr_code: qrCode }),
-    });
-    return handleResponse(response);
-  },
-
   completeFavor: async (favorId: string, token: string): Promise<Favor> => {
     const response = await fetch(`${API_URL}/api/favors/complete`, {
       method: 'POST',
@@ -305,13 +493,14 @@ export const api = {
     return handleResponse(response);
   },
 
-  // Reviews
+  // Reviews & Bacheca dei Grazie
   createReview: async (
     favorId: string,
     rating: number,
     kindnessRating: number,
     impactRating: number,
     comment: string | undefined,
+    publicThanks: string | undefined,
     token: string
   ): Promise<Review> => {
     const response = await fetch(`${API_URL}/api/reviews`, {
@@ -323,8 +512,14 @@ export const api = {
         kindness_rating: kindnessRating,
         impact_rating: impactRating,
         comment,
+        public_thanks: publicThanks,
       }),
     });
+    return handleResponse(response);
+  },
+
+  getThanksBoard: async (limit: number = 20): Promise<ThanksEntry[]> => {
+    const response = await fetch(`${API_URL}/api/thanks?limit=${limit}`);
     return handleResponse(response);
   },
 
@@ -348,7 +543,7 @@ export const api = {
     return handleResponse(response);
   },
 
-  getSolidarityFund: async (): Promise<{ solidarity_fund_total: number }> => {
+  getSolidarityFund: async (): Promise<{ solidarity_fund_total: number; currency: string }> => {
     const response = await fetch(`${API_URL}/api/donations/fund`);
     return handleResponse(response);
   },
@@ -360,32 +555,9 @@ export const api = {
     return handleResponse(response);
   },
 
-  claimSolidarityCredits: async (token: string): Promise<{ message: string; amount: number }> => {
-    const response = await fetch(`${API_URL}/api/donations/claim`, {
-      method: 'POST',
-      headers: getHeaders(token),
-    });
-    return handleResponse(response);
-  },
-
   // Users
   getUserProfile: async (userId: string): Promise<User> => {
     const response = await fetch(`${API_URL}/api/users/${userId}`);
-    return handleResponse(response);
-  },
-
-  updateMyProfile: async (isVulnerable?: boolean, token?: string): Promise<User> => {
-    const params = new URLSearchParams();
-    if (isVulnerable !== undefined) params.append('is_vulnerable', String(isVulnerable));
-    const response = await fetch(`${API_URL}/api/users/me?${params}`, {
-      method: 'PATCH',
-      headers: getHeaders(token),
-    });
-    return handleResponse(response);
-  },
-
-  getVulnerableUsers: async (): Promise<{ user_id: string; name: string; credits: number; community_score: number }[]> => {
-    const response = await fetch(`${API_URL}/api/users/vulnerable/list`);
     return handleResponse(response);
   },
 
@@ -395,7 +567,7 @@ export const api = {
   },
 
   // Referral
-  getReferralCode: async (token: string): Promise<{ referral_code: string; successful_referrals: number; bonus_per_referral: number }> => {
+  getReferralCode: async (token: string): Promise<{ referral_code: string; successful_referrals: number; bonus_per_referral: number; currency: string }> => {
     const response = await fetch(`${API_URL}/api/referral/code`, {
       headers: getHeaders(token),
     });
