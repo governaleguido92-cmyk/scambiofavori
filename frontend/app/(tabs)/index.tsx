@@ -37,7 +37,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
   const [favors, setFavors] = useState<Favor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -49,6 +49,15 @@ export default function HomeScreen() {
   const [thanksBoard, setThanksBoard] = useState<ThanksEntry[]>([]);
   const [wallPosts, setWallPosts] = useState<WallPost[]>([]);
   const [activeTab, setActiveTab] = useState<'favors' | 'wall'>('favors');
+  const [networkError, setNetworkError] = useState(false);
+  // Report modal state
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ id: string; name: string } | null>(null);
+
+  const handleReportFavor = (favorId: string, favorTitle: string) => {
+    setReportTarget({ id: favorId, name: favorTitle });
+    setReportModalVisible(true);
+  };
 
   const getLocation = async () => {
     try {
