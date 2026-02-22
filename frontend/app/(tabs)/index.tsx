@@ -189,11 +189,17 @@ export default function HomeScreen() {
         </View>
         <View style={styles.headerContent}>
           <View style={styles.authorRow}>
-            <View style={styles.authorAvatar}>
-              <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
-            </View>
+            <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={32}>
+              <View style={styles.authorAvatar}>
+                <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+              </View>
+            </SupporterProfileBorder>
             <View style={styles.authorInfo}>
-              <Text style={styles.creatorName}>{item.creator_name}</Text>
+              <UserNameWithBadge 
+                name={item.creator_name} 
+                isSupporter={item.creator_is_supporter}
+                nameStyle={styles.creatorName}
+              />
               <Text style={styles.creatorTitle}>{item.creator_title || 'Nuovo Vicino'}</Text>
             </View>
           </View>
