@@ -434,8 +434,8 @@ export default function HomeScreen() {
           </ScrollView>
 
           {loading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#4ecca3" />
+            <View style={styles.skeletonContainer}>
+              <FavorsListSkeleton count={4} />
             </View>
           ) : favors.length === 0 ? (
             <View style={styles.emptyContainer}>
