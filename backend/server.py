@@ -1633,6 +1633,69 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
     return Favor(**favor_doc)
 
+# ========================
+# SECURITY & ANTI-FRAUD SYSTEM
+# ========================
+
+MAX_DAILY_HOURS = 10  # Maximum hours that can be exchanged per day per user
+
+async def check_daily_hours_limit(user_id: str) -> dict:
+    """Check if user has exceeded daily hours limit (anti-fraud measure)"""
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get all completed favors today where user was involved
+    today_favors = await db.favors.find({
+        "status": "completed",
+        "completed_at": {"$gte": today_start},
+        "$or": [
+            {"creator_id": user_id},
+            {"accepted_by": user_id}
+        ]
+    }, {"_id": 0, "duration_hours": 1}).to_list(100)
+    
+    total_hours_today = sum(f.get("duration_hours", 0) for f in today_favors)
+    
+    return {
+        "total_hours_today": total_hours_today,
+        "remaining_hours": max(0, MAX_DAILY_HOURS - total_hours_today),
+        "limit_exceeded": total_hours_today >= MAX_DAILY_HOURS
+    }
+
+async def log_security_transaction(
+    favor_id: str,
+    creator_id: str,
+    accepted_by: str,
+    duration_hours: float,
+    granelli_cost: int,
+    latitude: float = None,
+    longitude: float = None,
+    qr_code: str = None
+):
+    """Log QR transaction for security/legal purposes (internal only)"""
+    import hashlib
+    
+    transaction_data = f"{favor_id}:{creator_id}:{accepted_by}:{datetime.now(timezone.utc).isoformat()}"
+    transaction_hash = hashlib.sha256(transaction_data.encode()).hexdigest()[:32]
+    
+    security_log = {
+        "log_id": f"seclog_{uuid.uuid4().hex[:12]}",
+        "transaction_hash": transaction_hash,
+        "favor_id": favor_id,
+        "creator_id": creator_id,
+        "accepted_by": accepted_by,
+        "duration_hours": duration_hours,
+        "granelli_cost": granelli_cost,
+        "gps_latitude": latitude,
+        "gps_longitude": longitude,
+        "qr_code_used": qr_code,
+        "timestamp": datetime.now(timezone.utc),
+        "ip_address": None,  # Can be added if needed
+        "device_info": None  # Can be added if needed
+    }
+    
+    await db.security_logs.insert_one(security_log)
+    return transaction_hash
+
 @api_router.post("/favors/complete", response_model=Favor)
 async def complete_favor(data: FavorComplete, current_user: User = Depends(get_current_user)):
     """Complete a favor and transfer Soli"""
