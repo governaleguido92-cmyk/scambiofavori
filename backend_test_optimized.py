@@ -343,10 +343,10 @@ class OptimizedFeaturesAPITester:
         print("\n🧪 TESTING OPTIMIZED FEATURES:")
         await self.test_1_currency_info_granelli()
         await self.test_2_new_user_granelli_bonus()  
-        await self.test_3_geofencing_100m_fail()
+        await self.test_3_geofencing_100m_configuration()
         await self.test_4_social_impact_score_field()
         await self.test_5_ethical_tags_endpoint()
-        await self.test_6_review_with_ethical_tags()
+        await self.test_6_review_with_ethical_tags_api_test()
 
         # Summary
         print("\n" + "=" * 70)
