@@ -182,7 +182,7 @@ class User(BaseModel):
     email: str
     name: str
     picture: Optional[str] = None
-    soli: int = WELCOME_GRANELLI  # Renamed from credits
+    granelli: int = WELCOME_GRANELLI  # Currency renamed to Granelli
     total_favors_given: int = 0
     total_favors_received: int = 0
     micro_favors_completed: int = 0
@@ -201,6 +201,8 @@ class User(BaseModel):
     is_vulnerable: bool = False
     identity_verified: bool = False
     community_score: int = 0
+    social_impact_score: int = 0  # New: Social Impact Bar
+    can_access_solidarity_fund: bool = False
     # Privacy: approximate location for public display
     approximate_latitude: Optional[float] = None
     approximate_longitude: Optional[float] = None
