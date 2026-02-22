@@ -17,6 +17,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { api } from '../../src/services/api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
