@@ -199,6 +199,26 @@ export default function ProfileScreen() {
             </View>
             <Text style={styles.progressHint}>{100 - progressToNext} punti al prossimo livello</Text>
           </View>
+
+          {/* Social Impact Bar - NEW */}
+          <View style={styles.socialImpactSection}>
+            <View style={styles.socialImpactHeader}>
+              <View style={styles.socialImpactTitle}>
+                <Ionicons name="heart-circle" size={20} color="#ff6b6b" />
+                <Text style={styles.socialImpactLabel}>Impatto Sociale</Text>
+              </View>
+              <Text style={styles.socialImpactLevel}>Lv. {socialImpactLevel}</Text>
+            </View>
+            <View style={styles.socialImpactBar}>
+              <View style={[styles.socialImpactFill, { width: `${socialImpactProgress}%` }]} />
+            </View>
+            <View style={styles.socialImpactStats}>
+              <Text style={styles.socialImpactScore}>{socialImpactScore} punti impatto</Text>
+              <Text style={styles.socialImpactHint}>
+                +20 per favore • +50 per emergenza
+              </Text>
+            </View>
+          </View>
           
           {/* Ratings */}
           <View style={styles.ratingsContainer}>
