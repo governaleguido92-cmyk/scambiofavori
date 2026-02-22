@@ -759,6 +759,16 @@ const styles = StyleSheet.create({
   authorInfo: {
     flex: 1,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  reportButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#16213e',
+  },
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
