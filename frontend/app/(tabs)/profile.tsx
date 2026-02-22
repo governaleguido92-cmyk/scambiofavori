@@ -341,6 +341,65 @@ export default function ProfileScreen() {
           </ScrollView>
         </View>
 
+        {/* Skills/Competenze Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Le Tue Competenze</Text>
+            <TouchableOpacity 
+              style={styles.editSkillsButton}
+              onPress={() => {
+                setSelectedSkills(userSkills);
+                setShowSkillsModal(true);
+              }}
+              data-testid="edit-skills-button"
+            >
+              <Ionicons name="pencil" size={16} color="#4ecca3" />
+              <Text style={styles.editSkillsText}>Modifica</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {userSkills.length > 0 ? (
+            <View style={styles.skillsContainer}>
+              {userSkills.map((skill) => {
+                const category = categories.find(c => c.name === skill);
+                return (
+                  <View key={skill} style={styles.skillTag} data-testid={`skill-tag-${skill}`}>
+                    <Ionicons 
+                      name={getCategoryIcon(category?.icon || 'help-circle') as any} 
+                      size={14} 
+                      color="#4ecca3" 
+                    />
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <View style={styles.noSkillsCard}>
+              <Ionicons name="school-outline" size={40} color="#666" />
+              <Text style={styles.noSkillsTitle}>Nessuna competenza selezionata</Text>
+              <Text style={styles.noSkillsDescription}>
+                Seleziona le tue competenze per ricevere notifiche quando qualcuno cerca aiuto nelle tue aree di esperienza!
+              </Text>
+              <TouchableOpacity 
+                style={styles.addSkillsButton}
+                onPress={() => {
+                  setSelectedSkills([]);
+                  setShowSkillsModal(true);
+                }}
+                data-testid="add-skills-button"
+              >
+                <Ionicons name="add" size={20} color="#fff" />
+                <Text style={styles.addSkillsButtonText}>Aggiungi Competenze</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          
+          <Text style={styles.skillsHint}>
+            Riceverai notifiche quando viene pubblicato un favore nelle tue aree di competenza
+          </Text>
+        </View>
+
         {/* Solidarity Fund */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Fondo Solidarietà</Text>
