@@ -216,17 +216,18 @@ class SocialDebtAPITester:
     async def test_2_debt_block_on_favor_request(self):
         """Test 2: Verify 403 block when user tries to request favor at debt limit"""
         
-        # First simulate debt by spending granelli
-        await self.simulate_debt_by_spending_granelli()
+        # First simulate debt by completing favors
+        await self.simulate_debt_by_completing_favors()
         
         # Now check debt status
         success, debt_response = await self.make_request("GET", "/debt-status")
         if success:
             granelli = debt_response.get("granelli", 0)
             can_request = debt_response.get("can_request", True)
-            print(f"    Current balance: {granelli} granelli, can_request: {can_request}")
+            in_debt = debt_response.get("in_debt", False)
+            print(f"    Current balance: {granelli} granelli, can_request: {can_request}, in_debt: {in_debt}")
         
-        # Try to create another favor request (should be blocked)
+        # Try to create another favor request (should be blocked if granelli <= -3)
         blocked_favor = {
             "type": "request",
             "title": "Richiesta bloccata per debito",
@@ -253,9 +254,27 @@ class SocialDebtAPITester:
                 await self.log_result("2. Debt Block on Favor Request", False, 
                     f"Wrong block message: '{error_msg}' (expected: '{expected_message}')")
                 return False
+        elif success:
+            # Check if user actually has debt but block didn't trigger
+            success2, debt_response2 = await self.make_request("GET", "/debt-status")
+            if success2:
+                granelli = debt_response2.get("granelli", 0)
+                can_request = debt_response2.get("can_request", True)
+                if granelli <= -3:
+                    await self.log_result("2. Debt Block on Favor Request", False, 
+                        f"Debt block should have triggered (granelli: {granelli}, can_request: {can_request}) but favor was created")
+                    return False
+                else:
+                    await self.log_result("2. Debt Block Simulation", False, 
+                        f"Could not simulate debt condition - user still has {granelli} granelli")
+                    return False
+            else:
+                await self.log_result("2. Debt Block on Favor Request", False, 
+                    f"Cannot determine debt status: {debt_response2}")
+                return False
         else:
             await self.log_result("2. Debt Block on Favor Request", False, 
-                f"Expected 403 block, got: {response}")
+                f"Unexpected response: {response}")
             return False
 
     async def test_3_debt_recovery_endpoint(self):
