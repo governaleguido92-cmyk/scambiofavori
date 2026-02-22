@@ -475,6 +475,21 @@ export default function HomeScreen() {
       >
         <Ionicons name="alert-circle" size={24} color="#fff" />
       </TouchableOpacity>
+
+      {/* Report Modal */}
+      {reportTarget && token && (
+        <ReportModal
+          visible={reportModalVisible}
+          onClose={() => {
+            setReportModalVisible(false);
+            setReportTarget(null);
+          }}
+          reportType="favor"
+          targetId={reportTarget.id}
+          targetName={reportTarget.name}
+          token={token}
+        />
+      )}
     </SafeAreaView>
   );
 }
