@@ -269,6 +269,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000',
+    borderRadius: 12,
+    height: 56,
+    gap: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  appleButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
