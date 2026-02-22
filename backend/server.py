@@ -581,6 +581,12 @@ async def check_and_award_badges(user_id: str):
             total = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
             if total >= req["value"]:
                 earned = True
+                # GAMIFICATION: Eroe di Quartiere unlocks Solidarity Fund access
+                if badge_id == "eroe_quartiere":
+                    await db.users.update_one(
+                        {"user_id": user_id},
+                        {"$set": {"can_access_solidarity_fund": True}}
+                    )
         elif req["type"] == "perfect_reviews" and user_doc.get("perfect_reviews_count", 0) >= req["value"]:
             earned = True
         elif req["type"] == "referrals" and user_doc.get("successful_referrals", 0) >= req["value"]:
