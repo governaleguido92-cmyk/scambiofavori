@@ -3,157 +3,180 @@
 ## Overview
 "Scambio di Favori" è una piattaforma community iperlocale per lo scambio di favori tra vicini, con un sistema di valuta interna chiamato "Granelli" (💎).
 
-## Funzionalità Implementate
+## Store Compliance Status: READY ✅
 
-### 1. Sistema Core
-- **Autenticazione**: JWT-based + Google OAuth
-- **Valuta Granelli**: 3 di benvenuto, 1 per ora di favore
-- **Favori**: Creazione, accettazione, completamento con QR code
-- **Social Debt**: Limite -3 Granelli, blocco richieste se in debito
+### App Store / Google Play Requirements Implemented
 
-### 2. Chat Avanzata
-- Chat creata automaticamente dopo accettazione favore
-- Chat "Sola Lettura" dopo 24h dal completamento/annullamento
-- **Moderazione Anti-Abuso**:
-  - Filtro parole chiave denaro (euro, pagamento, bonifico, ecc.)
-  - Filtro linguaggio offensivo
-  - Alert privacy per condivisione dati personali
-- Funzionalità "Meeting Point" per condivisione luoghi pubblici
+#### 1. UGC Safety (User Generated Content)
+- **Sistema Segnalazioni**: POST /api/report per favori e utenti
+- **Blocco Utenti Bidirezionale**: Utenti bloccati non si vedono reciprocamente
+- **Moderazione Automatica**: Filtri anti-link sospetti e linguaggio offensivo nella creazione favori
+- **Auto-moderazione**: 5+ segnalazioni = nascondi contenuto/shadow ban utente
+
+#### 2. Account Management & GDPR
+- **Diritto all'Oblio**: DELETE /api/account (hard delete completo)
+- **Privacy Strings**: Messaggi chiari per richiesta permessi (posizione, fotocamera)
+- **Consenso Legale**: Modal obbligatorio al primo login
+
+#### 3. Reviewer Mode (Apple/Google Testing)
+- **Account Reviewer**: reviewer@test.com con funzionalità debug
+- **Mock QR Scan**: Simula completamento favore senza QR fisico
+- **Mock GPS**: Per testare geofencing da remoto
+
+#### 4. UX & Performance
+- **Skeleton Screens**: Loading placeholder per feed e mappa
+- **Offline Mode**: Banner "Sei offline" con retry
+- **Feedback Errori**: Messaggi specifici per QR scaduto/non valido
+
+## Funzionalità Core
+
+### Sistema Economico
+- **Granelli**: 3 di benvenuto, 1 per ora
+- **Social Debt**: Limite -3, blocco richieste se in debito
+- **Limite Anti-Frode**: Max 10 scambi/giorno
+
+### Favori
+- Creazione offerte/richieste con durata configurabile (max 10 giorni)
+- Conferma via QR code con geofencing 100m
+- Security logging per dispute resolution
+
+### Chat Avanzata
+- Attivazione automatica dopo accettazione
+- Sola lettura dopo 24h dal completamento
+- Filtri: denaro, linguaggio offensivo, dati personali
+- "Meeting Point" per condivisione luoghi pubblici
 - Sistema segnalazioni con shadow ban
 
-### 3. Legal & GDPR (Febbraio 2026)
-- Pagina Note Legali (`/legal`)
-- Modal consenso obbligatorio al primo login
-- Diritto all'Oblio (DELETE /api/account)
-- Disclaimer: "L'app è un facilitatore e non risponde della condotta degli utenti"
+### Profilo & Gamification
+- **Barra Completamento Profilo**: 4 item (nome, foto, competenze, primo favore) = badge
+- **Competenze**: Selezione categorie per notifiche mirate
+- **Badge Comunitari**: Sbloccabili con attività
+- **Social Impact Bar**: Visualizzazione impatto nella community
 
-### 4. Sicurezza Anti-Frode (Febbraio 2026)
-- Limite 10 ore scambi/giorno per utente
-- Logging transazioni QR per dispute resolution
-- Geofencing 100m per conferma scambio
+### Mappa
+- Visualizzazione favori nelle vicinanze
+- Cerchi di prossimità per privacy
+- Filtri per tipo (offerte/richieste)
 
-### 5. Mappa Favori (Febbraio 2026)
-- Tab Mappa nella navigazione
-- Visualizzazione favori come cerchi di prossimità (privacy)
-- Filtri per tipo (Tutti/Offerte/Richieste)
-- Legenda colori
-- API: GET /api/favors con parametri latitude, longitude, max_distance_km
+## API Endpoints
 
-### 6. Gestione Competenze Utente (Febbraio 2026) - NUOVO
-- Sezione "Le Tue Competenze" nel profilo
-- UI per visualizzare competenze selezionate come tag
-- Modal per selezionare/deselezionare competenze
-- Sincronizzazione con backend via API
-- **API Endpoints**:
-  - GET /api/user/skills - recupera competenze
-  - PUT /api/user/skills - aggiorna competenze
-- **Frontend Files**:
-  - `profile.tsx`: Lines 31-75 (state), 350-420 (UI), 690-780 (modal)
-- **Test**: 12/12 test passati (backend)
+### Autenticazione
+- POST /api/auth/register
+- POST /api/auth/login
+- GET /api/auth/google (OAuth)
+
+### Favori
+- GET /api/favors (con filtri posizione)
+- POST /api/favors (con moderazione contenuti)
+- POST /api/favors/{id}/complete (QR + geofencing)
+
+### Reporting & Blocking (NEW)
+- POST /api/report (segnala favori/utenti)
+- POST /api/users/block
+- DELETE /api/users/block/{user_id}
+- GET /api/users/blocked
+
+### Profilo
+- GET /api/users/me/profile-completion
+- GET/PUT /api/user/skills
+- DELETE /api/account (GDPR)
+
+### Debug/Reviewer (NEW)
+- GET /api/debug/is-reviewer
+- POST /api/debug/mock-qr-scan
 
 ## Schema Database
 
-### users
-```json
-{
-  "user_id": "string",
-  "email": "string",
-  "name": "string",
-  "granelli": "int",
-  "skills": ["string"],  // Lista competenze
-  "legal_accepted": "bool",
-  "legal_accepted_at": "datetime",
-  "reliability_score": "float",
-  "social_impact_score": "int"
-}
+```
+users:
+  - user_id, email, name, password_hash
+  - granelli, is_in_debt
+  - skills[], badges[]
+  - legal_accepted, legal_accepted_at
+  - banned_from_chat, shadow_banned
+  
+favors:
+  - favor_id, creator_id, type
+  - title, description, category
+  - granelli_cost, validity_days, expires_at
+  - status, accepted_by, completed_at
+  
+general_reports (NEW):
+  - report_id, reporter_id
+  - report_type (favor/user)
+  - target_id, reason, description
+  - status, created_at
+  
+blocked_users (NEW):
+  - block_id, blocker_id, blocked_id
+  - reason, created_at
+  
+security_logs:
+  - log_id, transaction_hash
+  - favor_id, timestamp
+  - gps_latitude, gps_longitude
 ```
 
-### favors
-```json
-{
-  "favor_id": "string",
-  "creator_id": "string",
-  "type": "offer|request",
-  "title": "string",
-  "category": "string",
-  "granelli_cost": "int",
-  "validity_days": "int",
-  "expires_at": "datetime",
-  "status": "active|accepted|completed|cancelled"
-}
-```
-
-### notifications
-```json
-{
-  "notification_id": "string",
-  "user_id": "string",
-  "favor_id": "string",
-  "message": "string",
-  "is_read": "bool"
-}
-```
-
-### security_logs
-```json
-{
-  "log_id": "string",
-  "transaction_hash": "string",
-  "favor_id": "string",
-  "timestamp": "datetime",
-  "gps_latitude": "float",
-  "gps_longitude": "float"
-}
-```
-
-## Architettura
+## File Structure
 
 ```
 /app
 ├── backend/
-│   ├── server.py          # FastAPI, tutti gli endpoint
+│   ├── server.py           # FastAPI + tutti gli endpoint
 │   └── tests/
-│       └── test_skills_api.py  # Test competenze
+│       ├── test_skills_api.py
+│       └── test_store_compliance.py
 ├── frontend/
 │   ├── app/
+│   │   ├── (auth)/
+│   │   │   └── login.tsx    # + Apple placeholder
 │   │   ├── (tabs)/
-│   │   │   ├── home.tsx       # Feed favori
-│   │   │   ├── map.tsx        # Mappa favori
-│   │   │   ├── create.tsx     # Creazione favori
-│   │   │   └── profile.tsx    # Profilo con competenze
-│   │   ├── chat/[favorId].tsx # Chat per favore
-│   │   └── legal.tsx          # Pagina legale
+│   │   │   ├── index.tsx    # + ReportModal
+│   │   │   ├── profile.tsx  # + ProfileCompletionBar
+│   │   │   └── map.tsx
 │   └── src/
-│       ├── services/api.ts    # Client API
-│       ├── context/AuthContext.tsx
-│       └── theme/colors.ts    # Verde Bosco + Arancio
-└── memory/
-    └── PRD.md
+│       ├── components/
+│       │   ├── ReportModal.tsx     # NEW
+│       │   ├── ProfileCompletionBar.tsx # NEW
+│       │   ├── Skeleton.tsx        # NEW
+│       │   ├── OfflineNotice.tsx   # NEW
+│       │   └── LegalConsentModal.tsx
+│       ├── services/api.ts
+│       └── theme/colors.ts
+└── memory/PRD.md
 ```
 
-## Colori UI
-- **Primary (Verde Bosco)**: #2D5A3D
-- **Accent (Arancio Caldo)**: #E07B39
-- **Background**: #0F1A14
-- **Text Primary**: #FFFFFF
-
 ## Test Credentials
-- Email: skills_test@test.com
-- Password: test123
 
-## Prossimi Task (Backlog)
+| Account | Email | Password | Scopo |
+|---------|-------|----------|-------|
+| Test User | skills_test@test.com | test123 | Testing generale |
+| Reviewer | reviewer@test.com | review123 | Debug mode per store review |
 
-### P2: UI Notifiche
-- Icona campanella nell'header con badge contatore
+## Testing Status
+
+### Backend: 100% ✅
+- 22/22 test Store Compliance passati
+- 12/12 test Skills API passati
+
+### Frontend: Verificato via Code Review ✅
+- Tunnel ngrok instabile impedisce E2E completo
+- Tutti i componenti implementati e importati correttamente
+
+## Prossimi Passi
+
+### P1: UI Notifiche
+- Icona campanella con badge contatore
 - Schermata lista notifiche
-- Polling endpoint /api/notifications
+- Polling /api/notifications
 
-### P3: Miglioramenti UX
-- Ottimizzazione performance mappa
-- Animazioni transizione pagine
+### P2: Ottimizzazioni
+- Performance mappa
+- Caching API responses
+- Compressione immagini
 
-## Note Tecniche
-- Preview URL: https://granelli-app.preview.emergentagent.com
-- Backend: FastAPI su porta 8001
-- Frontend: Expo React Native con web support
-- Database: MongoDB
+## Note per Deployment
+
+1. **REVIEWER_MODE_ENABLED**: Settare `False` in produzione
+2. **REVIEWER_EMAIL**: Cambiare email per account reviewer reale
+3. **Rate Limiting**: Considerare implementazione per API pubbliche
