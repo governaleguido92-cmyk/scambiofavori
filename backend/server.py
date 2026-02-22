@@ -534,9 +534,17 @@ class ThanksEntry(BaseModel):
 # CHAT MESSAGES
 # ========================
 
+class MeetingPoint(BaseModel):
+    name: str
+    latitude: float
+    longitude: float
+    address: Optional[str] = None
+
 class MessageCreate(BaseModel):
     favor_id: str
     content: str
+    message_type: Optional[str] = "text"  # text, meeting_point, image
+    meeting_point: Optional[MeetingPoint] = None
 
 class Message(BaseModel):
     message_id: str
@@ -544,8 +552,11 @@ class Message(BaseModel):
     sender_id: str
     sender_name: str
     content: str
+    message_type: str = "text"
+    meeting_point: Optional[MeetingPoint] = None
     is_system: bool = False  # For system messages (blocked, etc.)
     blocked: bool = False  # If message was blocked by filter
+    has_personal_data: bool = False  # If message contains phone/email
     created_at: datetime
 
 class AuthResponse(BaseModel):
