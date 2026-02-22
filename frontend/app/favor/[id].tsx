@@ -100,17 +100,7 @@ export default function FavorDetailScreen() {
               await api.acceptFavor(favor.favor_id, token);
               await loadFavor();
               // Apri automaticamente la chat dopo l'accettazione
-              Alert.alert(
-                'Successo', 
-                'Hai accettato il favore! Vuoi avviare la conversazione?',
-                [
-                  { text: 'Dopo', style: 'cancel' },
-                  { 
-                    text: 'Apri Chat', 
-                    onPress: () => router.push(`/chat/${favor.favor_id}` as any)
-                  }
-                ]
-              );
+              router.push(`/chat/${favor.favor_id}` as any);
             } catch (error: any) {
               Alert.alert('Errore', error.message || 'Impossibile accettare il favore');
             } finally {
