@@ -253,6 +253,9 @@ class User(BaseModel):
     community_score: int = 0
     social_impact_score: int = 0  # New: Social Impact Bar
     can_access_solidarity_fund: bool = False
+    # Competenze utente per matching notifiche
+    skills: List[str] = []  # Lista di categorie in cui l'utente è competente
+    notifications_enabled: bool = True
     # Social Debt Limit System
     reliability_score: float = 5.0  # 1-5 scale, starts at 5
     debt_start_date: Optional[datetime] = None  # When user went into debt
