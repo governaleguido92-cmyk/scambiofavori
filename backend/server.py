@@ -1597,7 +1597,6 @@ async def create_donation(donation_data: DonationCreate, current_user: User = De
         if not recipient:
             raise HTTPException(status_code=404, detail="Destinatario non trovato")
         recipient_name = recipient["name"]
-        is_solidarity_fund = False
         
         await db.users.update_one(
             {"user_id": donation_data.recipient_id},
