@@ -101,11 +101,66 @@ MONEY_FILTER_PATTERNS = [
     r'\b\d+\s*\$',      # 50$
 ]
 
+# Offensive language filter patterns
+OFFENSIVE_PATTERNS = [
+    r'\bstronz[oa]?\b',
+    r'\bcoglion[ei]?\b',
+    r'\bvaffanculo\b',
+    r'\bminchia\b',
+    r'\bcazz[oa]?\b',
+    r'\bfottit[io]\b',
+    r'\bputtana?\b',
+    r'\btroia\b',
+    r'\bbastard[oa]?\b',
+    r'\bidiota\b',
+    r'\bimbecille\b',
+    r'\bdeficiente\b',
+    r'\bscemo\b',
+    r'\bmer[d]+a\b',
+    r'\bfanculo\b',
+]
+
+# Personal data patterns for privacy alerts
+PERSONAL_DATA_PATTERNS = {
+    'phone': r'(\+?\d{2,3}[\s.-]?)?\d{3}[\s.-]?\d{3,4}[\s.-]?\d{3,4}',
+    'email': r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',
+}
+
 def contains_money_reference(text: str) -> bool:
     """Check if text contains references to real money transactions"""
     text_lower = text.lower()
     for pattern in MONEY_FILTER_PATTERNS:
         if re.search(pattern, text_lower, re.IGNORECASE):
+            return True
+    return False
+
+def contains_offensive_language(text: str) -> bool:
+    """Check if text contains offensive language"""
+    text_lower = text.lower()
+    for pattern in OFFENSIVE_PATTERNS:
+        if re.search(pattern, text_lower, re.IGNORECASE):
+            return True
+    return False
+
+def contains_personal_data(text: str) -> dict:
+    """Check if text contains personal data (phone, email)"""
+    result = {'has_personal_data': False, 'types': []}
+    for data_type, pattern in PERSONAL_DATA_PATTERNS.items():
+        if re.search(pattern, text):
+            result['has_personal_data'] = True
+            result['types'].append(data_type)
+    return result
+
+def is_suspicious_link(text: str) -> bool:
+    """Check if text contains suspicious links"""
+    # Block most external links except common safe ones
+    link_pattern = r'https?://[^\s]+'
+    safe_domains = ['maps.google', 'goo.gl/maps', 'openstreetmap']
+    
+    links = re.findall(link_pattern, text.lower())
+    for link in links:
+        is_safe = any(domain in link for domain in safe_domains)
+        if not is_safe:
             return True
     return False
 
