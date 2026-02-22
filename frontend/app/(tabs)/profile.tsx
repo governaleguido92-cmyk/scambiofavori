@@ -454,6 +454,24 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={24} color="#888" />
         </TouchableOpacity>
 
+        {/* Supporter Section - "Sostieni il Progetto" */}
+        <TouchableOpacity
+          style={styles.supporterCard}
+          onPress={() => router.push('/supporter' as any)}
+          data-testid="become-supporter-button"
+        >
+          <View style={styles.referralLeft}>
+            <View style={styles.supporterIconWrapper}>
+              <Ionicons name="heart" size={28} color="#ffd700" />
+            </View>
+            <View>
+              <Text style={styles.supporterTitle}>Sostieni il Progetto</Text>
+              <Text style={styles.supporterSubtitle}>Diventa un Pilastro della Community</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#ffd700" />
+        </TouchableOpacity>
+
         {/* Leaderboard Button */}
         <TouchableOpacity
           style={styles.leaderboardButton}
