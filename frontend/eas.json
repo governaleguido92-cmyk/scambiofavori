@@ -36,18 +36,5 @@
         "EXPO_PUBLIC_BACKEND_URL": "https://community-trades-2.preview.emergentagent.com"
       }
     }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "",
-        "ascAppId": "",
-        "appleTeamId": ""
-      },
-      "android": {
-        "serviceAccountKeyPath": "",
-        "track": "internal"
-      }
-    }
   }
 }
