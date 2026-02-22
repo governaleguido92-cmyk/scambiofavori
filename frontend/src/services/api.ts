@@ -868,4 +868,54 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  // ========================
+  // SUPPORTER SUBSCRIPTION
+  // ========================
+
+  createSubscriptionCheckout: async (originUrl: string, token: string): Promise<{
+    checkout_url: string;
+    session_id: string;
+  }> => {
+    const response = await fetch(`${API_URL}/api/subscription/create-checkout`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ origin_url: originUrl }),
+    });
+    return handleResponse(response);
+  },
+
+  getCheckoutStatus: async (sessionId: string, token: string): Promise<{
+    status: string;
+    payment_status: string;
+    message: string;
+    is_supporter?: boolean;
+  }> => {
+    const response = await fetch(`${API_URL}/api/subscription/status/${sessionId}`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  getMySubscriptionStatus: async (token: string): Promise<{
+    is_supporter: boolean;
+    subscription_status: string | null;
+    supporter_since: string | null;
+    subscription_id: string | null;
+  }> => {
+    const response = await fetch(`${API_URL}/api/subscription/my-status`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  getSubscriptionManageUrl: async (token: string): Promise<{
+    manage_url: string;
+    message: string;
+  }> => {
+    const response = await fetch(`${API_URL}/api/subscription/manage-url`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
 };
