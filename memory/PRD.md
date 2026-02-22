@@ -5,10 +5,28 @@
 
 ## Store Compliance Status: READY ✅
 ## Monetization: SUPPORTER SYSTEM ACTIVE ✅
+## UI Integration: COMPLETE ✅
 
 ---
 
-## NUOVO: Sistema Sostenitori "Pilastro della Community"
+## COMPLETATO: Integrazione UI Sostenitori (Dicembre 2024)
+
+### Componenti Integrati
+- **SupporterBadge nelle Favor Cards**: Badge cuore dorato visibile nelle card dei favori per utenti sostenitori
+- **SupporterProfileBorder nel Profilo**: Bordo dorato attorno all'avatar per sostenitori
+- **SupporterBadge nel Nome Profilo**: Badge "Sostenitore" accanto al nome utente
+- **OfflineNotice Globale**: Banner di connessione persa nel root layout
+- **Skeleton Loading**: Placeholder animati durante il caricamento della lista favori
+- **NetworkErrorBanner**: Banner errore rete con pulsante "Riprova"
+
+### Funzionalità Reviewer (Debug Mode)
+- **Mock QR Scan Button**: Pulsante visibile solo per `reviewer@test.com` nella pagina del favore
+- **API /api/debug/is-reviewer**: Verifica stato reviewer
+- **API /api/debug/mock-qr-scan**: Simula completamento QR per testing
+
+---
+
+## Sistema Sostenitori "Pilastro della Community"
 
 ### Panoramica
 Sistema di micro-sostegno ricorrente per coprire i costi dell'app e premiare i sostenitori.
@@ -17,10 +35,10 @@ Sistema di micro-sostegno ricorrente per coprire i costi dell'app e premiare i s
 - **Piano Unico**: 1€/mese (cancellabile in qualsiasi momento)
 
 ### Benefici Sostenitori
-- **Badge Cuore Dorato**: Icona ❤️ dorata accanto al nome ovunque nell'app
-- **Bordo Profilo Dorato**: Foto profilo con cornice dorata distintiva
+- **Badge Cuore Dorato**: Icona ❤️ dorata accanto al nome ovunque nell'app ✅
+- **Bordo Profilo Dorato**: Foto profilo con cornice dorata distintiva ✅
 - **Visibilità Mappa**: Profilo evidenziato sulla mappa
-- **Badge "Sostenitore"**: Badge permanente nel profilo
+- **Badge "Sostenitore"**: Badge permanente nel profilo ✅
 
 ### Implementazione Tecnica
 
@@ -33,7 +51,7 @@ GET  /api/subscription/manage-url        → URL Customer Portal Stripe
 POST /api/webhook/stripe                 → Webhook eventi Stripe
 ```
 
-#### Database Schema (nuovi campi users)
+#### Campi Modello User
 ```json
 {
   "is_supporter": "bool",
@@ -43,10 +61,17 @@ POST /api/webhook/stripe                 → Webhook eventi Stripe
 }
 ```
 
-#### Frontend
-- **Pagina /supporter**: UI completa con messaggio emozionale, benefici, checkout
-- **SupporterBadge.tsx**: Componenti badge e bordo dorato riutilizzabili
-- **ProfileCompletionBar**: Link "Sostieni il Progetto" nel profilo
+#### Campi Modello Favor
+```json
+{
+  "creator_is_supporter": "bool"  // Per visualizzare badge nelle card
+}
+```
+
+#### Frontend Components
+- **SupporterBadge.tsx**: Badge cuore dorato (small/medium/large)
+- **SupporterProfileBorder**: Wrapper bordo dorato per avatar
+- **UserNameWithBadge**: Nome utente + badge inline
 
 ### Integrazione Stripe
 - **Libreria**: emergentintegrations.payments.stripe.checkout
@@ -70,7 +95,7 @@ POST /api/webhook/stripe                 → Webhook eventi Stripe
 - **UGC Safety**: Report contenuti, blocco utenti bidirezionale
 - **Moderazione**: Filtri anti-link/linguaggio offensivo
 - **GDPR**: Diritto all'oblio, consenso legale
-- **Reviewer Mode**: Mock QR/GPS per tester Apple/Google
+- **Reviewer Mode**: Mock QR/GPS per tester Apple/Google ✅
 
 ### 3. Chat Avanzata
 - Auto-attivazione dopo accettazione
@@ -99,7 +124,7 @@ POST /api/webhook/stripe                 → Webhook eventi Stripe
 - GET /api/auth/google
 
 ### Favori
-- GET /api/favors
+- GET /api/favors (include creator_is_supporter) ✅
 - POST /api/favors (con moderazione)
 - POST /api/favors/{id}/complete
 
@@ -114,14 +139,14 @@ POST /api/webhook/stripe                 → Webhook eventi Stripe
 - GET/PUT /api/user/skills
 - DELETE /api/account
 
-### Subscription (NEW)
+### Subscription
 - POST /api/subscription/create-checkout
 - GET /api/subscription/my-status
 - GET /api/subscription/status/{session_id}
 - GET /api/subscription/manage-url
 - POST /api/webhook/stripe
 
-### Debug/Reviewer
+### Debug/Reviewer ✅
 - GET /api/debug/is-reviewer
 - POST /api/debug/mock-qr-scan
 
@@ -137,23 +162,26 @@ POST /api/webhook/stripe                 → Webhook eventi Stripe
 │   └── tests/
 │       ├── test_skills_api.py
 │       ├── test_store_compliance.py
-│       └── test_subscription_api.py
+│       ├── test_subscription_api.py
+│       └── test_debug_reviewer_api.py  # NEW
 ├── frontend/
 │   ├── app/
-│   │   ├── (auth)/login.tsx     # + Apple placeholder
+│   │   ├── _layout.tsx         # + OfflineNotice globale
+│   │   ├── (auth)/login.tsx    # + Apple placeholder
 │   │   ├── (tabs)/
-│   │   │   ├── index.tsx        # + ReportModal
-│   │   │   ├── profile.tsx      # + ProfileCompletion + SupporterLink
+│   │   │   ├── index.tsx       # + SupporterBadge, Skeleton, NetworkError
+│   │   │   ├── profile.tsx     # + SupporterProfileBorder, SupporterBadge
 │   │   │   └── map.tsx
-│   │   └── supporter.tsx        # NEW - Pagina sostieni
+│   │   ├── favor/[id].tsx      # + Mock QR Button per reviewer
+│   │   └── supporter.tsx       # Pagina sostieni
 │   └── src/
 │       ├── components/
 │       │   ├── ReportModal.tsx
 │       │   ├── ProfileCompletionBar.tsx
-│       │   ├── SupporterBadge.tsx     # NEW
+│       │   ├── SupporterBadge.tsx      # Badge + ProfileBorder + NameWithBadge
 │       │   ├── Skeleton.tsx
 │       │   └── OfflineNotice.tsx
-│       └── services/api.ts
+│       └── services/api.ts             # + checkReviewerStatus, mockQRScan
 └── memory/PRD.md
 ```
 
@@ -166,7 +194,8 @@ POST /api/webhook/stripe                 → Webhook eventi Stripe
 | Skills API | ✅ | 12/12 |
 | Store Compliance | ✅ | 22/22 |
 | Subscription API | ✅ | 12/12 |
-| **Total Backend** | **✅ 100%** | **46/46** |
+| Debug/Reviewer API | ✅ | 13/13 |
+| **Total Backend** | **✅ 100%** | **59/59** |
 
 ---
 
@@ -189,6 +218,7 @@ POST /api/webhook/stripe                 → Webhook eventi Stripe
 ### P2: Ottimizzazioni
 - Performance mappa
 - Caching API
+- Integrazione SupporterBadge nella mappa
 
 ---
 
