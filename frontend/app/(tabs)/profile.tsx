@@ -314,6 +314,18 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Profile Completion Bar */}
+        {token && (
+          <ProfileCompletionBar
+            token={token}
+            onItemPress={(itemId) => {
+              if (itemId === 'skills') {
+                setShowSkillsModal(true);
+              }
+            }}
+          />
+        )}
+
         {/* Badges Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Badge Comunitari</Text>
