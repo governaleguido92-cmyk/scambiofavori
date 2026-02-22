@@ -931,4 +931,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Validity days styles
+  validityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  validityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(78, 204, 163, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  validityBadgeText: {
+    color: '#4ecca3',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  validityScroll: {
+    marginBottom: 8,
+  },
+  validityChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#16213e',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#2a3a5e',
+  },
+  validityChipActive: {
+    backgroundColor: '#4ecca3',
+    borderColor: '#4ecca3',
+  },
+  validityChipText: {
+    color: '#aaa',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  validityChipTextActive: {
+    color: '#1a1a2e',
+  },
+  validityHint: {
+    color: '#666',
+    fontSize: 11,
+    fontStyle: 'italic',
+  },
 });
