@@ -1574,8 +1574,23 @@ async def create_donation(donation_data: DonationCreate, current_user: User = De
     if current_user.soli < donation_data.amount:
         raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
     
+    # ========================
+    # GAMIFICATION: Check if user has access to Solidarity Fund
+    # ========================
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    has_eroe_badge = "eroe_quartiere" in user_doc.get("badges", [])
+    can_access_fund = user_doc.get("can_access_solidarity_fund", False) or has_eroe_badge
+    
+    # Donations to solidarity fund require 5 completed favors (Eroe di Quartiere badge)
+    is_solidarity_fund = donation_data.recipient_id is None
+    if is_solidarity_fund and not can_access_fund:
+        total_favors = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Completa ancora {5 - total_favors} favori per sbloccare l'accesso al Fondo Solidarietà e diventare 'Eroe di Quartiere'!"
+        )
+    
     recipient_name = None
-    is_solidarity_fund = True
     
     if donation_data.recipient_id:
         recipient = await db.users.find_one({"user_id": donation_data.recipient_id}, {"_id": 0})
