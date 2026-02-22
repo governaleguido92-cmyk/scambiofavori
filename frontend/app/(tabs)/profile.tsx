@@ -148,6 +148,12 @@ export default function ProfileScreen() {
   const currentLevel = Math.floor(communityScore / 100) + 1;
   const progressToNext = (communityScore % 100);
 
+  // Calculate Social Impact Bar
+  const socialImpactScore = user?.social_impact_score || 0;
+  const maxSocialImpact = 500; // Max for visualization
+  const socialImpactProgress = Math.min((socialImpactScore / maxSocialImpact) * 100, 100);
+  const socialImpactLevel = Math.floor(socialImpactScore / 100);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
