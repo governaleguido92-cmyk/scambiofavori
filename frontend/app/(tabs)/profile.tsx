@@ -668,6 +668,61 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textAlign: 'center',
   },
+  // Social Impact Bar Styles
+  socialImpactSection: {
+    width: '100%',
+    marginTop: 16,
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+    padding: 12,
+  },
+  socialImpactHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  socialImpactTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  socialImpactLabel: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  socialImpactLevel: {
+    color: '#ff6b6b',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  socialImpactBar: {
+    height: 10,
+    backgroundColor: '#333',
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  socialImpactFill: {
+    height: '100%',
+    backgroundColor: '#ff6b6b',
+    borderRadius: 5,
+  },
+  socialImpactStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  socialImpactScore: {
+    color: '#ff6b6b',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  socialImpactHint: {
+    color: '#666',
+    fontSize: 10,
+  },
   ratingsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
