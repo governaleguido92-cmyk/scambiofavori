@@ -351,6 +351,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  appleNativeButton: {
+    width: '100%',
+    height: 56,
+    marginTop: 12,
+  },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
