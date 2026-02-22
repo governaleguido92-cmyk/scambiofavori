@@ -1790,6 +1790,39 @@ async def get_my_favors(current_user: User = Depends(get_current_user)):
     
     return [Favor(**favor) for favor in favors]
 
+@api_router.get("/favors/{favor_id}/qr-image")
+async def get_favor_qr_image(favor_id: str, current_user: User = Depends(get_current_user)):
+    """Get QR code image for favor completion"""
+    favor_doc = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
+    if not favor_doc:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    # Only creator or accepter can get QR code
+    is_creator = favor_doc["creator_id"] == current_user.user_id
+    is_accepter = favor_doc.get("accepted_by") == current_user.user_id
+    
+    if not is_creator and not is_accepter:
+        raise HTTPException(status_code=403, detail="Non autorizzato a visualizzare il QR code")
+    
+    # Check favor status
+    if favor_doc["status"] != "accepted":
+        raise HTTPException(status_code=400, detail="Il QR code è disponibile solo per favori accettati")
+    
+    # Generate QR image
+    qr_code = favor_doc.get("qr_code")
+    if not qr_code:
+        raise HTTPException(status_code=404, detail="QR code non trovato")
+    
+    qr_image = generate_qr_image(qr_code, favor_id)
+    
+    return {
+        "qr_code": qr_code,
+        "qr_image": qr_image,
+        "favor_id": favor_id,
+        "favor_title": favor_doc.get("title"),
+        "instructions": "Mostra questo QR code all'altra persona per completare il favore"
+    }
+
 @api_router.get("/favors/{favor_id}", response_model=Favor)
 async def get_favor(favor_id: str, request: Request):
     """Get a specific favor"""
