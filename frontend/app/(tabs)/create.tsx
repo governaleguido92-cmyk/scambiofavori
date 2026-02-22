@@ -112,6 +112,12 @@ export default function CreateFavorScreen() {
   };
 
   const handleCreate = async () => {
+    // Check social debt before allowing request
+    if (type === 'request' && isInDebt) {
+      setShowDebtModal(true);
+      return;
+    }
+
     if (!title.trim()) {
       Alert.alert('Errore', 'Inserisci un titolo');
       return;
