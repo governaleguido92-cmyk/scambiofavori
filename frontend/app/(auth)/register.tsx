@@ -137,6 +137,19 @@ export default function RegisterScreen() {
               />
             </View>
 
+            <View style={styles.inputContainer}>
+              <Ionicons name="gift-outline" size={20} color="#888" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Codice Referral (opzionale)"
+                placeholderTextColor="#888"
+                value={referralCode}
+                onChangeText={setReferralCode}
+                autoCapitalize="characters"
+                maxLength={8}
+              />
+            </View>
+
             <TouchableOpacity
               style={styles.registerButton}
               onPress={handleRegister}
