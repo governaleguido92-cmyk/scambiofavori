@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,9 @@ import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Category, ThanksEntry, WallPost, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import colors from '../../src/theme/colors';
+import { ReportModal } from '../../src/components/ReportModal';
+import { FavorsListSkeleton } from '../../src/components/Skeleton';
+import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'car',
