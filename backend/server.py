@@ -1345,9 +1345,8 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
         raise HTTPException(status_code=403, detail="Solo il creatore può completare il favore")
     
     # ========================
-    # PROXIMITY CHECK (50m)
+    # PROXIMITY CHECK (100m) - Geofencing
     # ========================
-    MAX_DISTANCE_METERS = 50
     if data.latitude is not None and data.longitude is not None:
         # Get the other user's last known location from the favor
         if favor.exact_latitude is not None and favor.exact_longitude is not None:
@@ -1357,10 +1356,10 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
             )
             distance_m = distance_km * 1000  # Convert km to meters
             
-            if distance_m > MAX_DISTANCE_METERS:
+            if distance_m > MAX_EXCHANGE_DISTANCE_METERS:
                 raise HTTPException(
                     status_code=400, 
-                    detail=f"Siete troppo lontani per confermare lo scambio ({int(distance_m)}m). Avvicinatevi entro {MAX_DISTANCE_METERS}m."
+                    detail=f"Siete troppo lontani per confermare lo scambio ({int(distance_m)}m). Avvicinatevi entro {MAX_EXCHANGE_DISTANCE_METERS}m."
                 )
     
     # Transfer Soli
