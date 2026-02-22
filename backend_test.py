@@ -294,7 +294,7 @@ class FavorExchangeTester:
             "comment": "Excellent service, very helpful!"
         }
         
-        # User 2 (accepter) reviews User 1 (creator)
+        # User 2 (accepter) reviews User 1 (creator)  
         headers = {"Authorization": f"Bearer {self.user2_token}"}
         result = await self.make_request("POST", "/reviews", review_data, headers)
         
