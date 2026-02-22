@@ -24,17 +24,17 @@ import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
 
 const CATEGORY_ICONS: Record<string, string> = {
-  'Trasporto': 'car',
-  'Spesa': 'cart',
-  'Tecnologia': 'laptop',
-  'Pulizie': 'water',
+  'Trasporto': 'heart-circle',
+  'Spesa': 'heart',
+  'Tecnologia': 'heart-half',
+  'Pulizie': 'home',
   'Compagnia': 'people',
-  'Cucina': 'restaurant',
+  'Cucina': 'heart-circle-outline',
   'Giardinaggio': 'leaf',
-  'Consiglio': 'bulb',
-  'Informazione': 'information-circle',
-  'Aiuto Rapido': 'flash',
-  'Altro': 'ellipsis-horizontal',
+  'Consiglio': 'chatbubble-ellipses',
+  'Informazione': 'hand-left',
+  'Aiuto Rapido': 'heart-sharp',
+  'Altro': 'heart-outline',
 };
 
 export default function HomeScreen() {
