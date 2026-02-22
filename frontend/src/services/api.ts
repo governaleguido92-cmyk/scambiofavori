@@ -333,6 +333,21 @@ export const api = {
     return handleResponse(response);
   },
 
+  appleAuth: async (identityToken: string, userId: string, email?: string, fullName?: string): Promise<AuthResponse> => {
+    const response = await fetch(`${API_URL}/api/auth/apple`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ 
+        identity_token: identityToken, 
+        user_id: userId,
+        email: email,
+        full_name: fullName
+      }),
+      credentials: 'include',
+    });
+    return handleResponse(response);
+  },
+
   getMe: async (token: string): Promise<User> => {
     const response = await fetch(`${API_URL}/api/auth/me`, {
       headers: getHeaders(token),
