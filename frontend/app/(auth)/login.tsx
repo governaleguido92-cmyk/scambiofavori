@@ -25,8 +25,20 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [appleAvailable, setAppleAvailable] = useState(false);
   const { login, exchangeSessionId } = useAuth();
   const router = useRouter();
+
+  // Check if Apple Sign In is available (iOS only)
+  React.useEffect(() => {
+    const checkAppleAvailability = async () => {
+      if (Platform.OS === 'ios') {
+        const isAvailable = await AppleAuthentication.isAvailableAsync();
+        setAppleAvailable(isAvailable);
+      }
+    };
+    checkAppleAvailability();
+  }, []);
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
@@ -71,6 +83,47 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       Alert.alert('Errore', 'Errore durante il login con Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      
+      setIsLoading(true);
+      
+      // Build full name from Apple credential
+      let fullName: string | undefined;
+      if (credential.fullName) {
+        const parts = [credential.fullName.givenName, credential.fullName.familyName].filter(Boolean);
+        fullName = parts.length > 0 ? parts.join(' ') : undefined;
+      }
+      
+      // Send to backend
+      const response = await api.appleAuth(
+        credential.identityToken!,
+        credential.user,
+        credential.email || undefined,
+        fullName
+      );
+      
+      // Save token and navigate
+      await exchangeSessionId(response.token);
+      router.replace('/(tabs)');
+      
+    } catch (error: any) {
+      if (error.code === 'ERR_REQUEST_CANCELED') {
+        // User cancelled - don't show error
+        return;
+      }
+      Alert.alert('Errore', 'Errore durante il login con Apple');
     } finally {
       setIsLoading(false);
     }
