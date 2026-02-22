@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Review } from '../../src/services/api';
+import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'car',
@@ -47,6 +47,7 @@ export default function FavorDetailScreen() {
   const [kindnessRating, setKindnessRating] = useState(5);
   const [impactRating, setImpactRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [publicThanks, setPublicThanks] = useState('');
 
   useEffect(() => {
     loadFavor();
@@ -55,7 +56,7 @@ export default function FavorDetailScreen() {
   const loadFavor = async () => {
     if (!id) return;
     try {
-      const data = await api.getFavor(id);
+      const data = await api.getFavor(id, token || undefined);
       setFavor(data);
       
       if (data.status === 'completed') {
@@ -87,8 +88,8 @@ export default function FavorDetailScreen() {
     Alert.alert(
       'Conferma',
       favor.type === 'offer'
-        ? `Accettando questa offerta, pagherai ${favor.credits_cost} crediti al completamento.`
-        : `Accettando questa richiesta, riceverai ${favor.credits_cost} crediti al completamento.`,
+        ? `Accettando questa offerta, pagherai ${favor.soli_cost} ${CURRENCY_NAME} al completamento.`
+        : `Accettando questa richiesta, riceverai ${favor.soli_cost} ${CURRENCY_NAME} al completamento.`,
       [
         { text: 'Annulla', style: 'cancel' },
         {
@@ -115,7 +116,7 @@ export default function FavorDetailScreen() {
     
     Alert.alert(
       'Conferma Completamento',
-      'I crediti verranno trasferiti. Sei sicuro?',
+      `I ${CURRENCY_NAME} verranno trasferiti. Sei sicuro?`,
       [
         { text: 'Annulla', style: 'cancel' },
         {
@@ -126,7 +127,7 @@ export default function FavorDetailScreen() {
               await api.completeFavor(favor.favor_id, token);
               await refreshUser();
               await loadFavor();
-              Alert.alert('Successo', 'Favore completato! I crediti sono stati trasferiti.');
+              Alert.alert('Successo', `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
             } catch (error: any) {
               Alert.alert('Errore', error.message || 'Impossibile completare il favore');
             } finally {
@@ -149,6 +150,7 @@ export default function FavorDetailScreen() {
         kindnessRating,
         impactRating,
         comment || undefined,
+        publicThanks || undefined,
         token
       );
       setShowReviewForm(false);
@@ -165,7 +167,7 @@ export default function FavorDetailScreen() {
     if (!user || !favor) return false;
     if (favor.status !== 'active') return false;
     if (favor.creator_id === user.user_id) return false;
-    if (favor.type === 'offer' && user.credits < favor.credits_cost) return false;
+    if (favor.type === 'offer' && (user.soli || 0) < favor.soli_cost) return false;
     return true;
   };
 
@@ -287,6 +289,12 @@ export default function FavorDetailScreen() {
               {favor.type === 'offer' ? 'Offerta' : 'Richiesta'}
             </Text>
           </View>
+          {favor.is_emergency && (
+            <View style={styles.emergencyBadge}>
+              <Ionicons name="alert-circle" size={14} color="#ff6b6b" />
+              <Text style={styles.emergencyText}>Urgente</Text>
+            </View>
+          )}
           {favor.is_micro && (
             <View style={styles.microBadge}>
               <Ionicons name="flash" size={14} color="#ff9800" />
@@ -309,12 +317,12 @@ export default function FavorDetailScreen() {
         <Text style={styles.title}>{favor.title}</Text>
         <Text style={styles.description}>{favor.description}</Text>
 
-        {/* Credits and Duration */}
+        {/* Soli and Duration */}
         <View style={styles.infoCards}>
           <View style={styles.infoCard}>
-            <Ionicons name="star" size={24} color="#ffd700" />
-            <Text style={styles.infoValue}>{favor.credits_cost}</Text>
-            <Text style={styles.infoLabel}>crediti</Text>
+            <Text style={styles.infoSymbol}>{CURRENCY_SYMBOL}</Text>
+            <Text style={styles.infoValue}>{favor.soli_cost}</Text>
+            <Text style={styles.infoLabel}>{CURRENCY_NAME}</Text>
           </View>
           <View style={styles.infoCard}>
             <Ionicons name="time" size={24} color="#4ecca3" />
@@ -327,12 +335,17 @@ export default function FavorDetailScreen() {
         <View style={styles.userCard}>
           <View style={styles.userAvatar}>
             <Text style={styles.userAvatarText}>
-              {favor.creator_name.charAt(0).toUpperCase()}
+              {favor.creator_name?.charAt(0).toUpperCase() || 'U'}
             </Text>
           </View>
-          <View>
-            <Text style={styles.userLabel}>Creato da</Text>
+          <View style={styles.userInfo}>
+            <Text style={styles.userLabel}>
+              {favor.type === 'offer' ? 'Donatore' : 'Richiedente'}
+            </Text>
             <Text style={styles.userName}>{favor.creator_name}</Text>
+            {favor.creator_title && (
+              <Text style={styles.userTitle}>{favor.creator_title}</Text>
+            )}
           </View>
         </View>
 
@@ -344,18 +357,22 @@ export default function FavorDetailScreen() {
                 {favor.accepted_by_name.charAt(0).toUpperCase()}
               </Text>
             </View>
-            <View>
-              <Text style={styles.userLabel}>Accettato da</Text>
+            <View style={styles.userInfo}>
+              <Text style={styles.userLabel}>
+                {favor.type === 'offer' ? 'Ricevente' : 'Donatore'}
+              </Text>
               <Text style={styles.userName}>{favor.accepted_by_name}</Text>
             </View>
           </View>
         )}
 
         {/* Location */}
-        {favor.address && (
+        {(favor.address || favor.approximate_latitude) && (
           <View style={styles.locationCard}>
             <Ionicons name="location" size={20} color="#4ecca3" />
-            <Text style={styles.locationText}>{favor.address}</Text>
+            <Text style={styles.locationText}>
+              {favor.address || 'Zona approssimativa disponibile'}
+            </Text>
             {favor.distance_km !== undefined && (
               <Text style={styles.distanceText}>{favor.distance_km} km</Text>
             )}
@@ -394,6 +411,12 @@ export default function FavorDetailScreen() {
                 {review.comment && (
                   <Text style={styles.reviewComment}>{review.comment}</Text>
                 )}
+                {review.public_thanks && (
+                  <View style={styles.publicThanksBox}>
+                    <Ionicons name="heart" size={14} color="#ff6b6b" />
+                    <Text style={styles.publicThanksText}>"{review.public_thanks}"</Text>
+                  </View>
+                )}
               </View>
             ))}
           </View>
@@ -419,6 +442,17 @@ export default function FavorDetailScreen() {
               multiline
               numberOfLines={3}
             />
+
+            <TextInput
+              style={[styles.commentInput, { marginTop: 12 }]}
+              placeholder="Ringraziamento pubblico (opzionale - apparirà nella Bacheca dei Grazie)"
+              placeholderTextColor="#666"
+              value={publicThanks}
+              onChangeText={setPublicThanks}
+              multiline
+              numberOfLines={2}
+            />
+
             <View style={styles.reviewActions}>
               <TouchableOpacity
                 style={styles.cancelReviewButton}
@@ -572,7 +606,7 @@ const styles = StyleSheet.create({
   },
   badgesRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     marginBottom: 16,
     flexWrap: 'wrap',
   },
@@ -612,11 +646,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  emergencyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+  },
+  emergencyText: {
+    color: '#ff6b6b',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   microBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 152, 0, 0.2)',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 16,
     gap: 4,
@@ -661,6 +709,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
+  infoSymbol: {
+    fontSize: 28,
+  },
   infoValue: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -694,6 +745,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4ecca3',
   },
+  userInfo: {
+    flex: 1,
+  },
   userLabel: {
     fontSize: 12,
     color: '#888',
@@ -702,6 +756,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  userTitle: {
+    fontSize: 12,
+    color: '#4ecca3',
+    marginTop: 2,
   },
   locationCard: {
     flexDirection: 'row',
@@ -779,6 +838,21 @@ const styles = StyleSheet.create({
     borderTopColor: '#333',
     paddingTop: 12,
   },
+  publicThanksBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 8,
+  },
+  publicThanksText: {
+    color: '#ccc',
+    fontSize: 13,
+    fontStyle: 'italic',
+    flex: 1,
+  },
   reviewForm: {
     backgroundColor: '#16213e',
     padding: 16,
@@ -793,7 +867,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     color: '#fff',
-    height: 100,
+    height: 80,
     textAlignVertical: 'top',
   },
   reviewActions: {
