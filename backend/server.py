@@ -1796,6 +1796,20 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
         }}
     )
     
+    # ========================
+    # SECURITY LOG: Record transaction for legal purposes
+    # ========================
+    await log_security_transaction(
+        favor_id=favor.favor_id,
+        creator_id=favor.creator_id,
+        accepted_by=favor.accepted_by,
+        duration_hours=favor.duration_hours,
+        granelli_cost=favor.granelli_cost,
+        latitude=data.latitude,
+        longitude=data.longitude,
+        qr_code=data.qr_code if hasattr(data, 'qr_code') else None
+    )
+    
     # Handle referral bonus
     for user_id in [favor.creator_id, favor.accepted_by]:
         user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
