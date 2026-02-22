@@ -190,6 +190,12 @@ export default function FavorDetailScreen() {
     return favor.creator_id === user.user_id || favor.accepted_by === user.user_id;
   };
 
+  const canChat = () => {
+    if (!user || !favor) return false;
+    if (favor.status === 'cancelled' || favor.status === 'completed') return false;
+    return favor.creator_id === user.user_id || favor.accepted_by === user.user_id;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return '#4ecca3';
@@ -262,12 +268,22 @@ export default function FavorDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Dettagli Favore</Text>
-        {canViewQR() && (
-          <TouchableOpacity style={styles.qrButton} onPress={loadQRCode}>
-            <Ionicons name="qr-code" size={24} color="#4ecca3" />
-          </TouchableOpacity>
-        )}
-        {!canViewQR() && <View style={{ width: 40 }} />}
+        <View style={styles.headerActions}>
+          {canChat() && (
+            <TouchableOpacity 
+              style={styles.chatButton} 
+              onPress={() => router.push(`/chat/${favor.favor_id}` as any)}
+              data-testid="chat-button"
+            >
+              <Ionicons name="chatbubble" size={22} color="#4ecca3" />
+            </TouchableOpacity>
+          )}
+          {canViewQR() && (
+            <TouchableOpacity style={styles.qrButton} onPress={loadQRCode}>
+              <Ionicons name="qr-code" size={24} color="#4ecca3" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -594,6 +610,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  chatButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   qrButton: {
     width: 40,
