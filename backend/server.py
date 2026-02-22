@@ -330,6 +330,9 @@ class FavorAccept(BaseModel):
 class FavorComplete(BaseModel):
     favor_id: str
     qr_code: Optional[str] = None
+    # User's current location for proximity check
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class ReviewCreate(BaseModel):
     favor_id: str
