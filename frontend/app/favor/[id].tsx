@@ -112,11 +112,16 @@ export default function FavorDetailScreen() {
     }
   };
 
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [qrInstructions, setQrInstructions] = useState<string>('');
+
   const loadQRCode = async () => {
     if (!token || !favor) return;
     try {
       const data = await api.getFavorQR(favor.favor_id, token);
       setQrCode(data.qr_code);
+      setQrImage(data.qr_image);
+      setQrInstructions(data.instructions);
       setShowQRModal(true);
     } catch (error: any) {
       Alert.alert('Errore', error.message);
