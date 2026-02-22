@@ -194,7 +194,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.soliContainer}>
           <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-          <Text style={styles.soliText}>{item.soli_cost}</Text>
+          <Text style={styles.soliText}>{item.granelli_cost}</Text>
         </View>
       </View>
 
@@ -254,7 +254,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.soliDisplay}>
           <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
-          <Text style={styles.soliDisplayValue}>{user?.soli || 0}</Text>
+          <Text style={styles.soliDisplayValue}>{user?.granelli || 0}</Text>
         </View>
       </View>
 

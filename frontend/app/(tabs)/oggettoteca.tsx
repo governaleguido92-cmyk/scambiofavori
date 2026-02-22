@@ -122,7 +122,7 @@ export default function OggettotecaScreen() {
   const handleBorrow = async (objectId: string, depositSoli: number) => {
     if (!token) return;
     
-    if ((user?.soli || 0) < depositSoli) {
+    if ((user?.granelli || 0) < depositSoli) {
       Alert.alert('Soli insufficienti', `Servono ${depositSoli} ${CURRENCY_NAME} come deposito`);
       return;
     }
@@ -266,7 +266,7 @@ export default function OggettotecaScreen() {
           <View style={styles.depositContainer}>
             <Text style={styles.depositLabel}>Deposito:</Text>
             <Text style={styles.depositSymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.depositValue}>{item.deposit_soli}</Text>
+            <Text style={styles.depositValue}>{item.deposit_granelli}</Text>
           </View>
         </View>
 
@@ -281,7 +281,7 @@ export default function OggettotecaScreen() {
         {item.status === 'available' && !isMine && (
           <TouchableOpacity
             style={styles.borrowButton}
-            onPress={() => handleBorrow(item.object_id, item.deposit_soli)}
+            onPress={() => handleBorrow(item.object_id, item.deposit_granelli)}
           >
             <Ionicons name="hand-left" size={18} color="#fff" />
             <Text style={styles.borrowButtonText}>Prendi in Prestito</Text>

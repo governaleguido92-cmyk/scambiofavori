@@ -121,8 +121,8 @@ export default function CreateFavorScreen() {
     const duration = parseFloat(durationHours) || 1;
     const soliNeeded = isMicro ? 1 : Math.max(1, Math.round(duration));
 
-    if (type === 'request' && (user?.soli || 0) < soliNeeded) {
-      Alert.alert(`${CURRENCY_NAME} insufficienti`, `Hai solo ${user?.soli} ${CURRENCY_NAME} disponibili. Servono ${soliNeeded} ${CURRENCY_NAME}.`);
+    if (type === 'request' && (user?.granelli || 0) < soliNeeded) {
+      Alert.alert(`${CURRENCY_NAME} insufficienti`, `Hai solo ${user?.granelli} ${CURRENCY_NAME} disponibili. Servono ${soliNeeded} ${CURRENCY_NAME}.`);
       return;
     }
 
@@ -190,7 +190,7 @@ export default function CreateFavorScreen() {
             <Text style={styles.title}>Crea Favore</Text>
             <View style={styles.soliDisplay}>
               <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-              <Text style={styles.soliValue}>{user?.soli || 0}</Text>
+              <Text style={styles.soliValue}>{user?.granelli || 0}</Text>
             </View>
           </View>
 

@@ -100,7 +100,7 @@ export default function ProfileScreen() {
       Alert.alert('Errore', 'Inserisci un importo valido');
       return;
     }
-    if (amount > (user?.soli || 0)) {
+    if (amount > (user?.granelli || 0)) {
       Alert.alert('Errore', `${CURRENCY_NAME} insufficienti`);
       return;
     }
@@ -215,7 +215,7 @@ export default function ProfileScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Text style={styles.statSymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.statValue}>{user?.soli || 0}</Text>
+            <Text style={styles.statValue}>{user?.granelli || 0}</Text>
             <Text style={styles.statLabel}>{CURRENCY_NAME}</Text>
           </View>
           <View style={styles.statCard}>

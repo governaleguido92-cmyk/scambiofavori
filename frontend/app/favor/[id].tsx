@@ -88,8 +88,8 @@ export default function FavorDetailScreen() {
     Alert.alert(
       'Conferma',
       favor.type === 'offer'
-        ? `Accettando questa offerta, pagherai ${favor.soli_cost} ${CURRENCY_NAME} al completamento.`
-        : `Accettando questa richiesta, riceverai ${favor.soli_cost} ${CURRENCY_NAME} al completamento.`,
+        ? `Accettando questa offerta, pagherai ${favor.granelli_cost} ${CURRENCY_NAME} al completamento.`
+        : `Accettando questa richiesta, riceverai ${favor.granelli_cost} ${CURRENCY_NAME} al completamento.`,
       [
         { text: 'Annulla', style: 'cancel' },
         {
@@ -167,7 +167,7 @@ export default function FavorDetailScreen() {
     if (!user || !favor) return false;
     if (favor.status !== 'active') return false;
     if (favor.creator_id === user.user_id) return false;
-    if (favor.type === 'offer' && (user.soli || 0) < favor.soli_cost) return false;
+    if (favor.type === 'offer' && (user.granelli || 0) < favor.granelli_cost) return false;
     return true;
   };
 
@@ -321,7 +321,7 @@ export default function FavorDetailScreen() {
         <View style={styles.infoCards}>
           <View style={styles.infoCard}>
             <Text style={styles.infoSymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.infoValue}>{favor.soli_cost}</Text>
+            <Text style={styles.infoValue}>{favor.granelli_cost}</Text>
             <Text style={styles.infoLabel}>{CURRENCY_NAME}</Text>
           </View>
           <View style={styles.infoCard}>

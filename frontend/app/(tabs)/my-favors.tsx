@@ -184,7 +184,7 @@ export default function MyFavorsScreen() {
         <View style={styles.favorFooter}>
           <View style={styles.soliContainer}>
             <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.soliText}>{item.soli_cost} {CURRENCY_NAME}</Text>
+            <Text style={styles.soliText}>{item.granelli_cost} {CURRENCY_NAME}</Text>
           </View>
 
           {/* Actions */}
