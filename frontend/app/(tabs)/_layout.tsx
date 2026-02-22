@@ -3,15 +3,24 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, View, StyleSheet } from 'react-native';
 
+// Theme colors
+const colors = {
+  primary: '#2D5A3D',
+  accent: '#E07B39',
+  background: '#0F1A14',
+  backgroundCard: '#162419',
+  textSecondary: '#A8C4B0',
+};
+
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#4ecca3',
-        tabBarInactiveTintColor: '#888',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#16213e',
+          backgroundColor: colors.backgroundCard,
           borderTopWidth: 0,
           elevation: 0,
           height: Platform.OS === 'ios' ? 90 : 70,
@@ -19,7 +28,7 @@ export default function TabsLayout() {
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600',
         },
       }}
@@ -34,11 +43,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="my-favors"
+        name="map"
         options={{
-          title: 'I Miei',
+          title: 'Mappa',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list" size={size} color={color} />
+            <Ionicons name="map" size={size} color={color} />
           ),
         }}
       />
@@ -48,8 +57,17 @@ export default function TabsLayout() {
           title: 'Crea',
           tabBarIcon: ({ color, size }) => (
             <View style={styles.createButton}>
-              <Ionicons name="add" size={28} color="#1a1a2e" />
+              <Ionicons name="add" size={28} color={colors.background} />
             </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="my-favors"
+        options={{
+          title: 'I Miei',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="list" size={size} color={color} />
           ),
         }}
       />
@@ -74,7 +92,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   createButton: {
-    backgroundColor: '#4ecca3',
+    backgroundColor: colors.accent,
     width: 50,
     height: 50,
     borderRadius: 25,
