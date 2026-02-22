@@ -8,101 +8,140 @@
 - **Sistema**: Scambio favori tramite QR code con geofencing (100m)
 - **Privacy**: Posizioni approssimative, non indirizzi esatti
 
-## Funzionalità Implementate
+## Funzionalità Implementate (Febbraio 2026)
 
-### ✅ Completate (Dicembre 2025)
+### ✅ UI/UX Rinnovata
+- **Nuova Palette Colori**:
+  - Verde Bosco (#2D5A3D) - Colore primario
+  - Arancio Caldo (#E07B39) - Colore accento
+- **Card Favori Moderne**:
+  - Icone categoria grandi
+  - Avatar autore con iniziale
+  - Design con bordi e ombre
+- **Tab Bar Aggiornata**: Home, Mappa, Crea, I Miei, Profilo
 
-#### 1. Chat In-App
-- Messaggistica tra partecipanti di un favore
-- **Filtro Anti-Denaro**: Blocca automaticamente riferimenti a transazioni monetarie (euro, contanti, pagamento, bonifico, iban, paypal, etc.)
-- Endpoint: `POST /api/messages`, `GET /api/messages/{favor_id}`
+### ✅ Mappa Favori
+- Nuova tab "Mappa" nella navigazione
+- Visualizzazione favori con cerchi di prossimità
+- Filtri per tipo (Tutti/Offerte/Richieste)
+- Banner privacy per posizioni approssimative
+- File: `frontend/app/(tabs)/map.tsx`
+
+### ✅ Chat In-App
+- Chat attiva solo dopo accettazione favore
+- Apertura automatica chat dopo accettazione
+- Filtro anti-denaro (blocca euro, contanti, pagamento, etc.)
+- Banner permanente "Non scambiare denaro"
 - File: `frontend/app/chat/[favorId].tsx`
 
-#### 2. Sistema Social Debt
-- **Limite Debito**: -3 Granelli
-- **Restrizioni**: Utenti in debito non possono creare nuove richieste
-- **UI**: Modal informativo, banner avviso, bottone disabilitato
-- **Evidenziazione Feed**: Offerte da utenti in debito mostrate con badge priorità
-- File: `frontend/app/(tabs)/create.tsx`, `frontend/app/(tabs)/index.tsx`
+### ✅ Sistema Gamification
+- **Barra Impatto Sociale** nel profilo
+- **Badge** ("Eroe di Quartiere", etc.)
+- **Livelli** basati su Community Score
+- Rating con stelle e tag etici
 
-#### 3. Sistema Valutazione
-- Rating stelle + Tag Etici
-- Barra Impatto Sociale nel profilo
-- Bacheca dei Grazie
+### ✅ Sistema Notifiche per Competenze
+- Campo `skills` nel profilo utente
+- Notifiche automatiche quando un favore corrisponde alle competenze
+- API: `PUT /api/user/skills`, `GET /api/notifications`
+- File: `backend/server.py` (linee 2112-2200)
 
-#### 4. Navigazione Chat
-- Bottone chat nella schermata dettagli favore
-- Screen chat integrato nel router Expo
+### ✅ Sistema Social Debt
+- Limite debito: -3 Granelli
+- Modal avviso, banner, bottone disabilitato
+- Evidenziazione offerte utenti in debito nel feed
 
-### Backend
-- FastAPI + MongoDB
-- JWT Authentication
-- Geofencing QR code verification
-- Social debt automatic calculation
+### ✅ Durata Annunci
+- Validità configurabile (1-10 giorni)
+- Scadenza automatica annunci
+- Selettore UI nella creazione favore
 
-### Frontend
-- React Native + Expo
-- Expo Router (file-based navigation)
-- AuthContext per gestione stato utente
-
-## Schema Database Chiave
+## Schema Database
 
 ### users
 ```json
 {
   "user_id": "string",
-  "email": "string", 
-  "granelli": "int (default: 3)",
-  "reliability_score": "float (1-5)",
-  "social_impact_score": "int",
-  "in_debt_recovery": "bool"
+  "email": "string",
+  "granelli": "int",
+  "skills": ["string"],  // Competenze
+  "notifications_enabled": "bool",
+  "social_impact_score": "int"
 }
 ```
 
-### favors
+### notifications
 ```json
 {
-  "favor_id": "string",
-  "creator_id": "string",
-  "type": "offer | request",
-  "status": "active | accepted | completed | cancelled",
-  "creator_in_debt": "bool",
-  "granelli_cost": "int"
+  "notification_id": "string",
+  "user_id": "string",
+  "type": "skill_match | favor_update | system",
+  "title": "string",
+  "message": "string",
+  "favor_id": "string?",
+  "read": "bool"
 }
 ```
 
-### messages
-```json
-{
-  "message_id": "string",
-  "favor_id": "string",
-  "sender_id": "string",
-  "content": "string",
-  "blocked": "bool",
-  "is_system": "bool"
-}
+## API Endpoints Principali
+
+### Auth
+- `POST /api/auth/register` - Registrazione
+- `POST /api/auth/login` - Login
+
+### Favori
+- `POST /api/favors` - Crea favore (con notifiche skill match)
+- `GET /api/favors` - Lista favori (filtra scaduti)
+- `POST /api/favors/accept` - Accetta favore
+
+### Chat
+- `POST /api/messages` - Invia messaggio (con filtro denaro)
+- `GET /api/messages/{favor_id}` - Leggi messaggi
+
+### Skills & Notifiche
+- `PUT /api/user/skills` - Aggiorna competenze
+- `GET /api/user/skills` - Leggi competenze
+- `GET /api/notifications` - Lista notifiche
+- `GET /api/notifications/unread-count` - Conteggio non lette
+
+## Architettura
+
+```
+/app
+├── backend/
+│   └── server.py          # FastAPI + MongoDB
+├── frontend/
+│   ├── app/
+│   │   ├── (tabs)/
+│   │   │   ├── index.tsx   # Home con nuovi colori
+│   │   │   ├── map.tsx     # NUOVA Mappa
+│   │   │   ├── create.tsx  # Creazione con validità
+│   │   │   └── profile.tsx # Profilo con impatto
+│   │   └── chat/
+│   │       └── [favorId].tsx # Chat protetta
+│   └── src/
+│       └── theme/
+│           └── colors.ts   # NUOVO Tema colori
 ```
 
 ## Test Coverage
-- 33 test cases passati (100% backend)
-- Test file: `/app/backend/tests/test_chat_and_debt.py`
+- 33+ test cases backend passati
+- Skills API testata e funzionante
+- Notifiche API testata e funzionante
 
-## Backlog (P1)
+## Backlog (P2)
 
 ### Schermata Valutazione Obbligatoria
 - Creare `frontend/app/review.tsx`
-- Navigazione post-completamento favore
-- Tag etici obbligatori
+- Navigazione forzata post-completamento
 
-### Badge UI
-- Badge "Eroe di Quartiere" 
-- Visualizzazione badge nel profilo
+### Integrazione Mappa Reale
+- Implementare react-native-maps con OpenStreetMap
+- Marker interattivi per favori
 
-### Fondo Solidarietà UI
-- Richiesta "regalo" per recupero debito
-- Interfaccia amministrativa
+### UI Fondo Solidarietà
+- Interfaccia richiesta "regalo" per recupero debito
 
 ## Note Tecniche
-- URL Preview: https://favor-exchange-5.preview.emergentagent.com
-- Expo Web ha limitazioni per testing automatizzato
-- Hot reload attivo per frontend e backend
+- Preview URL: https://favor-exchange-5.preview.emergentagent.com
+- Credenziali test: test_chat@test.com / test123
