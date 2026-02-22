@@ -702,7 +702,42 @@ def generate_referral_code() -> str:
     return secrets.token_urlsafe(6).upper()[:8]
 
 def generate_qr_code() -> str:
+    """Generate a unique QR code token"""
     return secrets.token_urlsafe(16)
+
+def generate_qr_image(data: str, favor_id: str = None) -> str:
+    """Generate a beautiful QR code image as base64 string"""
+    # Create QR code with custom styling
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,  # High error correction for logo overlay
+        box_size=10,
+        border=2,
+    )
+    
+    # Create data payload with favor info
+    payload = {
+        "type": "scambio_favori",
+        "code": data,
+        "favor_id": favor_id,
+        "app": "Scambio di Favori"
+    }
+    qr.add_data(str(payload))
+    qr.make(fit=True)
+    
+    # Create image with custom colors (Forest Green theme)
+    img = qr.make_image(
+        fill_color="#2D5A3D",  # Forest green
+        back_color="#FFFFFF"   # White background
+    )
+    
+    # Convert to base64
+    buffer = BytesIO()
+    img.save(buffer, format='PNG')
+    buffer.seek(0)
+    img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    
+    return f"data:image/png;base64,{img_base64}"
 
 async def get_current_user(request: Request) -> User:
     """Get current user from session token"""
