@@ -16,6 +16,8 @@ import math
 import secrets
 import random
 import base64
+import qrcode
+from io import BytesIO
 
 # Stripe integration
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
