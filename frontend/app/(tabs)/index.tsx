@@ -237,8 +237,6 @@ export default function HomeScreen() {
       </View>
     </TouchableOpacity>
   );
-    </TouchableOpacity>
-  );
 
   const renderWallPost = ({ item }: { item: WallPost }) => (
     <View style={styles.wallPostCard}>
