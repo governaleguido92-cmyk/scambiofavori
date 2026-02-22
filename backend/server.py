@@ -1772,6 +1772,109 @@ async def get_favor_reviews(favor_id: str):
     return [Review(**review) for review in reviews]
 
 # ========================
+# CHAT MESSAGES
+# ========================
+
+@api_router.get("/messages/{favor_id}", response_model=List[Message])
+async def get_messages(favor_id: str, current_user: User = Depends(get_current_user)):
+    """Get all messages for a favor - only participants can see"""
+    # Check if user is participant
+    favor = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
+    if not favor:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    is_participant = (
+        favor["creator_id"] == current_user.user_id or 
+        favor.get("accepted_by") == current_user.user_id
+    )
+    if not is_participant:
+        raise HTTPException(status_code=403, detail="Non sei un partecipante di questo favore")
+    
+    messages_cursor = db.messages.find({"favor_id": favor_id}, {"_id": 0}).sort("created_at", 1)
+    messages = await messages_cursor.to_list(500)
+    return [Message(**m) for m in messages]
+
+@api_router.post("/messages", response_model=Message)
+async def send_message(msg: MessageCreate, current_user: User = Depends(get_current_user)):
+    """Send a message in favor chat - with anti-money filter"""
+    # Check if favor exists and user is participant
+    favor = await db.favors.find_one({"favor_id": msg.favor_id}, {"_id": 0})
+    if not favor:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    is_participant = (
+        favor["creator_id"] == current_user.user_id or 
+        favor.get("accepted_by") == current_user.user_id
+    )
+    if not is_participant:
+        raise HTTPException(status_code=403, detail="Non sei un partecipante di questo favore")
+    
+    # Check if favor is in a state that allows messaging
+    if favor["status"] not in ["accepted", "active"]:
+        raise HTTPException(status_code=400, detail="Non puoi inviare messaggi per questo favore")
+    
+    # ========================
+    # REGEX FILTER - Block money references
+    # ========================
+    content = msg.content.strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="Messaggio vuoto")
+    
+    is_blocked = contains_money_reference(content)
+    
+    message_id = f"msg_{uuid.uuid4().hex[:12]}"
+    
+    if is_blocked:
+        # Store blocked attempt and notify
+        blocked_doc = {
+            "message_id": message_id,
+            "favor_id": msg.favor_id,
+            "sender_id": current_user.user_id,
+            "sender_name": current_user.name,
+            "content": "[Messaggio bloccato - riferimento a transazioni in denaro]",
+            "original_content": content,  # Store for admin review
+            "is_system": False,
+            "blocked": True,
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.messages.insert_one(blocked_doc)
+        
+        # Return error to user
+        raise HTTPException(
+            status_code=400, 
+            detail="⚠️ Messaggio bloccato: non sono ammessi riferimenti a transazioni in denaro reale. Usa solo i Granelli per gli scambi!"
+        )
+    
+    # Save valid message
+    message_doc = {
+        "message_id": message_id,
+        "favor_id": msg.favor_id,
+        "sender_id": current_user.user_id,
+        "sender_name": current_user.name,
+        "content": content,
+        "is_system": False,
+        "blocked": False,
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.messages.insert_one(message_doc)
+    
+    # Update last activity for debt system
+    await update_last_activity(current_user.user_id)
+    
+    return Message(**message_doc)
+
+@api_router.get("/messages/{favor_id}/unread")
+async def get_unread_count(favor_id: str, current_user: User = Depends(get_current_user)):
+    """Get unread message count for a favor"""
+    # Simple implementation - count messages not from current user
+    count = await db.messages.count_documents({
+        "favor_id": favor_id,
+        "sender_id": {"$ne": current_user.user_id},
+        "blocked": False
+    })
+    return {"unread": count}
+
+# ========================
 # DONATIONS (FONDO SOLIDARIETÀ)
 # ========================
 
