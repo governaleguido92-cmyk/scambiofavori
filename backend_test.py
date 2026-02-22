@@ -236,14 +236,39 @@ class NewFeaturesAPITester:
 
     async def test_4_proximity_check_50m_limit(self):
         """Test 4: Proximity Check (50m limit) - Should fail when users are too far apart"""
-        if not self.created_favor_id:
+        # Create a new favor specifically for proximity testing
+        favor_data = {
+            "type": "request",  # Request so current user can accept and complete
+            "title": "Proximity Test Favor Request",
+            "description": "Testing proximity check on completion",
+            "category": "Aiuto Rapido",
+            "duration_hours": 1.0,
+            "latitude": self.colosseum["latitude"],
+            "longitude": self.colosseum["longitude"],
+            "is_micro": True
+        }
+        
+        success, response = await self.make_request("POST", "/favors", favor_data)
+        
+        if not success:
             await self.log_result("4. Proximity Check (50m limit)", False, 
-                "No favor available to test proximity check")
+                f"Could not create favor for test: {response}")
             return False
         
-        # Try to complete favor from Vatican (4km away from Colosseum)
+        favor_id = response["favor_id"]
+        
+        # Accept the favor first (required before completion)
+        accept_data = {"favor_id": favor_id}
+        success, response = await self.make_request("POST", "/favors/accept", accept_data)
+        
+        if not success:
+            await self.log_result("4. Proximity Check (50m limit)", False, 
+                f"Could not accept favor: {response}")
+            return False
+        
+        # Now try to complete from Vatican (4km away from Colosseum) - should fail
         complete_data = {
-            "favor_id": self.created_favor_id,
+            "favor_id": favor_id,
             "latitude": self.vatican["latitude"],
             "longitude": self.vatican["longitude"]
         }
