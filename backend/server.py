@@ -1712,6 +1712,22 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
         raise HTTPException(status_code=403, detail="Solo il creatore può completare il favore")
     
     # ========================
+    # ANTI-FRAUD: Daily Hours Limit Check
+    # ========================
+    for user_id in [favor.creator_id, favor.accepted_by]:
+        daily_check = await check_daily_hours_limit(user_id)
+        if daily_check["limit_exceeded"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Limite giornaliero di {MAX_DAILY_HOURS} ore raggiunto. Riprova domani."
+            )
+        if daily_check["remaining_hours"] < favor.duration_hours:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Ore rimanenti oggi: {daily_check['remaining_hours']:.1f}h. Questo favore richiede {favor.duration_hours}h."
+            )
+    
+    # ========================
     # PROXIMITY CHECK (100m) - Geofencing
     # ========================
     if data.latitude is not None and data.longitude is not None:
