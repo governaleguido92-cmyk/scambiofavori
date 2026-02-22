@@ -639,6 +639,83 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Skills Selection Modal */}
+      <Modal visible={showSkillsModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.skillsModal]}>
+            <Text style={styles.modalTitle}>Le Tue Competenze</Text>
+            <Text style={styles.modalDescription}>
+              Seleziona le categorie in cui puoi aiutare. Riceverai notifiche quando qualcuno cerca aiuto in queste aree.
+            </Text>
+            
+            <ScrollView style={styles.skillsList} showsVerticalScrollIndicator={false}>
+              {categories.map((category) => {
+                const isSelected = selectedSkills.includes(category.name);
+                return (
+                  <TouchableOpacity
+                    key={category.name}
+                    style={[styles.skillSelectItem, isSelected && styles.skillSelectItemActive]}
+                    onPress={() => toggleSkill(category.name)}
+                    data-testid={`skill-select-${category.name}`}
+                  >
+                    <View style={[styles.skillSelectIcon, isSelected && styles.skillSelectIconActive]}>
+                      <Ionicons 
+                        name={getCategoryIcon(category.icon) as any} 
+                        size={20} 
+                        color={isSelected ? '#fff' : '#888'} 
+                      />
+                    </View>
+                    <View style={styles.skillSelectInfo}>
+                      <Text style={[styles.skillSelectName, isSelected && styles.skillSelectNameActive]}>
+                        {category.name}
+                      </Text>
+                      {category.is_micro && (
+                        <View style={styles.microBadge}>
+                          <Ionicons name="flash" size={10} color="#ff9800" />
+                          <Text style={styles.microBadgeText}>Micro</Text>
+                        </View>
+                      )}
+                    </View>
+                    <View style={[styles.skillCheckbox, isSelected && styles.skillCheckboxActive]}>
+                      {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            <View style={styles.selectedCount}>
+              <Text style={styles.selectedCountText}>
+                {selectedSkills.length} competenze selezionate
+              </Text>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowSkillsModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Annulla</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalConfirmButton, savingSkills && styles.modalConfirmButtonDisabled]} 
+                onPress={handleSaveSkills}
+                disabled={savingSkills}
+              >
+                {savingSkills ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="save" size={18} color="#fff" />
+                    <Text style={styles.modalConfirmText}>Salva</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
