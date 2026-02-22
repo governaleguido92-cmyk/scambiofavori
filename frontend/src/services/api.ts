@@ -772,4 +772,100 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  // ========================
+  // REPORTING & BLOCKING (Store Compliance)
+  // ========================
+
+  reportContent: async (
+    reportType: 'favor' | 'user',
+    targetId: string,
+    reason: string,
+    description: string | undefined,
+    token: string
+  ): Promise<{ message: string; report_id: string }> => {
+    const response = await fetch(`${API_URL}/api/report`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ report_type: reportType, target_id: targetId, reason, description }),
+    });
+    return handleResponse(response);
+  },
+
+  blockUser: async (userId: string, reason: string | undefined, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/users/block`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ user_id: userId, reason }),
+    });
+    return handleResponse(response);
+  },
+
+  unblockUser: async (userId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/users/block/${userId}`, {
+      method: 'DELETE',
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  getBlockedUsers: async (token: string): Promise<{ blocked_users: Array<{ user_id: string; name: string; title: string }> }> => {
+    const response = await fetch(`${API_URL}/api/users/blocked`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  checkIfBlocked: async (userId: string, token: string): Promise<{ is_blocked: boolean }> => {
+    const response = await fetch(`${API_URL}/api/users/${userId}/is-blocked`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  // ========================
+  // PROFILE COMPLETION
+  // ========================
+
+  getProfileCompletion: async (token: string): Promise<{
+    percentage: number;
+    items: Array<{ id: string; label: string; completed: boolean; points: number }>;
+    completed_count: number;
+    total_count: number;
+    badge_earned: boolean;
+    badge_name: string | null;
+  }> => {
+    const response = await fetch(`${API_URL}/api/users/me/profile-completion`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  // ========================
+  // DEBUG/REVIEWER MODE (Store Approval)
+  // ========================
+
+  isReviewerAccount: async (token: string): Promise<{
+    is_reviewer: boolean;
+    debug_features_enabled: boolean;
+    features: string[];
+  }> => {
+    const response = await fetch(`${API_URL}/api/debug/is-reviewer`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  mockQrScan: async (favorId: string, token: string): Promise<{
+    message: string;
+    favor_id: string;
+    granelli_transferred: number;
+    debug_mode: boolean;
+  }> => {
+    const response = await fetch(`${API_URL}/api/debug/mock-qr-scan?favor_id=${favorId}`, {
+      method: 'POST',
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
 };
