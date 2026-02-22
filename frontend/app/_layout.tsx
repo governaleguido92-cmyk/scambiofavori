@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import LegalConsentModal from '../src/components/LegalConsentModal';
+import { OfflineNotice } from '../src/components/OfflineNotice';
 
 function RootLayoutNav() {
   const { showLegalModal, acceptLegal, user } = useAuth();
@@ -11,6 +12,9 @@ function RootLayoutNav() {
   return (
     <>
       <StatusBar style="light" />
+      {/* Global Offline Notice */}
+      <OfflineNotice />
+      
       <Stack
         screenOptions={{
           headerShown: false,
