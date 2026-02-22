@@ -59,6 +59,14 @@ PRIVACY_RADIUS_METERS = 200
 # Geofencing: max distance for QR exchange
 MAX_EXCHANGE_DISTANCE_METERS = 100
 
+# ========================
+# SOCIAL DEBT LIMIT SYSTEM
+# ========================
+
+DEBT_LIMIT = -3  # Max negative balance allowed
+INACTIVITY_DAYS = 15  # Days before reliability drops
+RELIABILITY_DROP_RATE = 0.5  # How much reliability drops per check
+
 # Badge definitions
 BADGES = {
     "cuore_oro": {
