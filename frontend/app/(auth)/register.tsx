@@ -71,7 +71,10 @@ export default function RegisterScreen() {
           </TouchableOpacity>
 
           <View style={styles.header}>
-            <Ionicons name="person-add" size={60} color="#4ecca3" />
+            <View style={styles.logoContainer}>
+              <Ionicons name="hand-left" size={40} color="#4ecca3" style={styles.handLeft} />
+              <Ionicons name="hand-right" size={40} color="#4ecca3" style={styles.handRight} />
+            </View>
             <Text style={styles.title}>Crea Account</Text>
             <Text style={styles.subtitle}>Unisciti alla community</Text>
           </View>
