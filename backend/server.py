@@ -164,6 +164,44 @@ def is_suspicious_link(text: str) -> bool:
             return True
     return False
 
+def moderate_content(text: str) -> dict:
+    """
+    Content moderation for favor creation (Store Compliance)
+    Returns: {"allowed": bool, "reason": str or None, "warnings": list}
+    """
+    warnings = []
+    
+    # Check for offensive language
+    if contains_offensive_language(text):
+        return {
+            "allowed": False,
+            "reason": "Il testo contiene linguaggio offensivo",
+            "warnings": ["offensive_language"]
+        }
+    
+    # Check for suspicious links
+    if is_suspicious_link(text):
+        return {
+            "allowed": False,
+            "reason": "Non sono ammessi link esterni (eccetto mappe)",
+            "warnings": ["suspicious_link"]
+        }
+    
+    # Check for money references (warning only for favors, but allowed)
+    if contains_money_reference(text):
+        warnings.append("money_reference")
+    
+    # Check for personal data (warning only)
+    personal_data = contains_personal_data(text)
+    if personal_data['has_personal_data']:
+        warnings.append(f"personal_data:{','.join(personal_data['types'])}")
+    
+    return {
+        "allowed": True,
+        "reason": None,
+        "warnings": warnings
+    }
+
 # Badge definitions
 BADGES = {
     "cuore_oro": {
