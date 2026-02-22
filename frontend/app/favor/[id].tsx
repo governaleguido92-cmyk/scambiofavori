@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -23,6 +24,9 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Compagnia': 'people',
   'Cucina': 'restaurant',
   'Giardinaggio': 'leaf',
+  'Consiglio': 'bulb',
+  'Informazione': 'information-circle',
+  'Aiuto Rapido': 'flash',
   'Altro': 'ellipsis-horizontal',
 };
 
@@ -35,7 +39,13 @@ export default function FavorDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  
+  // Review form state
   const [rating, setRating] = useState(5);
+  const [kindnessRating, setKindnessRating] = useState(5);
+  const [impactRating, setImpactRating] = useState(5);
   const [comment, setComment] = useState('');
 
   useEffect(() => {
@@ -48,7 +58,6 @@ export default function FavorDetailScreen() {
       const data = await api.getFavor(id);
       setFavor(data);
       
-      // Load reviews if completed
       if (data.status === 'completed') {
         const reviewsData = await api.getFavorReviews(id);
         setReviews(reviewsData);
@@ -58,6 +67,17 @@ export default function FavorDetailScreen() {
       router.back();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadQRCode = async () => {
+    if (!token || !favor) return;
+    try {
+      const data = await api.getFavorQR(favor.favor_id, token);
+      setQrCode(data.qr_code);
+      setShowQRModal(true);
+    } catch (error: any) {
+      Alert.alert('Errore', error.message);
     }
   };
 
@@ -123,10 +143,17 @@ export default function FavorDetailScreen() {
     
     setActionLoading(true);
     try {
-      await api.createReview(favor.favor_id, rating, comment || undefined, token);
+      await api.createReview(
+        favor.favor_id,
+        rating,
+        kindnessRating,
+        impactRating,
+        comment || undefined,
+        token
+      );
       setShowReviewForm(false);
       await loadFavor();
-      Alert.alert('Grazie!', 'La tua recensione \u00e8 stata pubblicata.');
+      Alert.alert('Grazie!', 'La tua recensione è stata pubblicata.');
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Impossibile pubblicare la recensione');
     } finally {
@@ -150,10 +177,15 @@ export default function FavorDetailScreen() {
   const canReview = () => {
     if (!user || !favor) return false;
     if (favor.status !== 'completed') return false;
-    // Check if user is involved and hasn't reviewed yet
     const isInvolved = favor.creator_id === user.user_id || favor.accepted_by === user.user_id;
     const hasReviewed = reviews.some(r => r.reviewer_id === user.user_id);
     return isInvolved && !hasReviewed;
+  };
+
+  const canViewQR = () => {
+    if (!user || !favor) return false;
+    if (favor.status !== 'accepted') return false;
+    return favor.creator_id === user.user_id || favor.accepted_by === user.user_id;
   };
 
   const getStatusColor = (status: string) => {
@@ -176,24 +208,29 @@ export default function FavorDetailScreen() {
     }
   };
 
-  const renderStars = (value: number, interactive: boolean = false) => {
+  const renderStars = (value: number, onChange?: (v: number) => void, label?: string) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
       stars.push(
         <TouchableOpacity
           key={i}
-          onPress={() => interactive && setRating(i)}
-          disabled={!interactive}
+          onPress={() => onChange && onChange(i)}
+          disabled={!onChange}
         >
           <Ionicons
             name={i <= value ? 'star' : 'star-outline'}
-            size={interactive ? 32 : 18}
+            size={onChange ? 28 : 18}
             color="#ffd700"
           />
         </TouchableOpacity>
       );
     }
-    return stars;
+    return (
+      <View style={styles.starsContainer}>
+        {label && <Text style={styles.starsLabel}>{label}</Text>}
+        <View style={styles.starsRow}>{stars}</View>
+      </View>
+    );
   };
 
   if (loading) {
@@ -223,7 +260,12 @@ export default function FavorDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Dettagli Favore</Text>
-        <View style={{ width: 40 }} />
+        {canViewQR() && (
+          <TouchableOpacity style={styles.qrButton} onPress={loadQRCode}>
+            <Ionicons name="qr-code" size={24} color="#4ecca3" />
+          </TouchableOpacity>
+        )}
+        {!canViewQR() && <View style={{ width: 40 }} />}
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -245,6 +287,12 @@ export default function FavorDetailScreen() {
               {favor.type === 'offer' ? 'Offerta' : 'Richiesta'}
             </Text>
           </View>
+          {favor.is_micro && (
+            <View style={styles.microBadge}>
+              <Ionicons name="flash" size={14} color="#ff9800" />
+              <Text style={styles.microText}>Micro</Text>
+            </View>
+          )}
         </View>
 
         {/* Category */}
@@ -261,14 +309,17 @@ export default function FavorDetailScreen() {
         <Text style={styles.title}>{favor.title}</Text>
         <Text style={styles.description}>{favor.description}</Text>
 
-        {/* Credits */}
-        <View style={styles.creditsCard}>
-          <Ionicons name="star" size={28} color="#ffd700" />
-          <View>
-            <Text style={styles.creditsValue}>{favor.credits_cost} crediti</Text>
-            <Text style={styles.creditsLabel}>
-              {favor.type === 'offer' ? 'Paghi al completamento' : 'Ricevi al completamento'}
-            </Text>
+        {/* Credits and Duration */}
+        <View style={styles.infoCards}>
+          <View style={styles.infoCard}>
+            <Ionicons name="star" size={24} color="#ffd700" />
+            <Text style={styles.infoValue}>{favor.credits_cost}</Text>
+            <Text style={styles.infoLabel}>crediti</Text>
+          </View>
+          <View style={styles.infoCard}>
+            <Ionicons name="time" size={24} color="#4ecca3" />
+            <Text style={styles.infoValue}>{favor.duration_hours}</Text>
+            <Text style={styles.infoLabel}>ore</Text>
           </View>
         </View>
 
@@ -305,6 +356,9 @@ export default function FavorDetailScreen() {
           <View style={styles.locationCard}>
             <Ionicons name="location" size={20} color="#4ecca3" />
             <Text style={styles.locationText}>{favor.address}</Text>
+            {favor.distance_km !== undefined && (
+              <Text style={styles.distanceText}>{favor.distance_km} km</Text>
+            )}
           </View>
         )}
 
@@ -316,8 +370,25 @@ export default function FavorDetailScreen() {
               <View key={review.review_id} style={styles.reviewCard}>
                 <View style={styles.reviewHeader}>
                   <Text style={styles.reviewerName}>{review.reviewer_name}</Text>
-                  <View style={styles.starsRow}>
-                    {renderStars(review.rating)}
+                </View>
+                <View style={styles.ratingsGrid}>
+                  <View style={styles.ratingItem}>
+                    <Text style={styles.ratingLabel}>Efficienza</Text>
+                    <View style={styles.starsRow}>
+                      {renderStars(review.rating)}
+                    </View>
+                  </View>
+                  <View style={styles.ratingItem}>
+                    <Text style={styles.ratingLabel}>Gentilezza</Text>
+                    <View style={styles.starsRow}>
+                      {renderStars(review.kindness_rating)}
+                    </View>
+                  </View>
+                  <View style={styles.ratingItem}>
+                    <Text style={styles.ratingLabel}>Impatto</Text>
+                    <View style={styles.starsRow}>
+                      {renderStars(review.impact_rating)}
+                    </View>
                   </View>
                 </View>
                 {review.comment && (
@@ -331,10 +402,14 @@ export default function FavorDetailScreen() {
         {/* Review Form */}
         {showReviewForm && (
           <View style={styles.reviewForm}>
-            <Text style={styles.sectionTitle}>Lascia una recensione</Text>
-            <View style={styles.starsRow}>
-              {renderStars(rating, true)}
+            <Text style={styles.sectionTitle}>Lascia una Recensione</Text>
+            
+            <View style={styles.reviewRatings}>
+              {renderStars(rating, setRating, 'Efficienza')}
+              {renderStars(kindnessRating, setKindnessRating, 'Gentilezza')}
+              {renderStars(impactRating, setImpactRating, 'Impatto Sociale')}
             </View>
+
             <TextInput
               style={styles.commentInput}
               placeholder="Commento (opzionale)"
@@ -413,6 +488,37 @@ export default function FavorDetailScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* QR Code Modal */}
+      <Modal visible={showQRModal} transparent animationType="fade">
+        <View style={styles.qrModalOverlay}>
+          <View style={styles.qrModalContent}>
+            <Text style={styles.qrModalTitle}>Check-in QR</Text>
+            <Text style={styles.qrModalDescription}>
+              Mostra questo codice all'altra persona per validare l'incontro
+            </Text>
+            
+            <View style={styles.qrCodeBox}>
+              <Ionicons name="qr-code" size={120} color="#4ecca3" />
+              <Text style={styles.qrCodeText}>{qrCode?.slice(0, 16)}...</Text>
+            </View>
+
+            {favor.checkin_completed && (
+              <View style={styles.checkinComplete}>
+                <Ionicons name="checkmark-circle" size={24} color="#4ecca3" />
+                <Text style={styles.checkinCompleteText}>Check-in completato!</Text>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={styles.qrModalClose}
+              onPress={() => setShowQRModal(false)}
+            >
+              <Text style={styles.qrModalCloseText}>Chiudi</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -455,6 +561,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
+  qrButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   content: {
     padding: 20,
   },
@@ -462,6 +574,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
+    flexWrap: 'wrap',
   },
   statusBadge: {
     flexDirection: 'row',
@@ -499,6 +612,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  microBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+  },
+  microText: {
+    color: '#ff9800',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   categoryContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -520,25 +647,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#aaa',
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  creditsCard: {
+  infoCards: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#16213e',
-    padding: 16,
-    borderRadius: 16,
-    gap: 16,
+    gap: 12,
     marginBottom: 16,
   },
-  creditsValue: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#ffd700',
+  infoCard: {
+    flex: 1,
+    backgroundColor: '#16213e',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  creditsLabel: {
-    fontSize: 14,
+  infoValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 8,
+  },
+  infoLabel: {
+    fontSize: 12,
     color: '#888',
+    marginTop: 4,
   },
   userCard: {
     flexDirection: 'row',
@@ -585,6 +717,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
   },
+  distanceText: {
+    color: '#4ecca3',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   reviewsSection: {
     marginTop: 16,
   },
@@ -601,15 +738,34 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   reviewHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   reviewerName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  ratingsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  ratingItem: {
+    alignItems: 'center',
+  },
+  ratingLabel: {
+    color: '#888',
+    fontSize: 11,
+    marginBottom: 4,
+  },
+  starsContainer: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  starsLabel: {
+    color: '#888',
+    fontSize: 12,
+    marginBottom: 8,
   },
   starsRow: {
     flexDirection: 'row',
@@ -619,6 +775,9 @@ const styles = StyleSheet.create({
     color: '#aaa',
     fontSize: 14,
     lineHeight: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+    paddingTop: 12,
   },
   reviewForm: {
     backgroundColor: '#16213e',
@@ -626,12 +785,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginTop: 16,
   },
+  reviewRatings: {
+    marginBottom: 16,
+  },
   commentInput: {
     backgroundColor: '#1a1a2e',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
-    marginTop: 16,
     height: 100,
     textAlignVertical: 'top',
   },
@@ -710,5 +871,67 @@ const styles = StyleSheet.create({
     color: '#ffd700',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  qrModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  qrModalContent: {
+    backgroundColor: '#16213e',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 350,
+    alignItems: 'center',
+  },
+  qrModalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  qrModalDescription: {
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  qrCodeBox: {
+    backgroundColor: '#1a1a2e',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  qrCodeText: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 12,
+    fontFamily: 'monospace',
+  },
+  checkinComplete: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+  },
+  checkinCompleteText: {
+    color: '#4ecca3',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  qrModalClose: {
+    backgroundColor: '#1a1a2e',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  qrModalCloseText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });
