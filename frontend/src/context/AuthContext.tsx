@@ -102,6 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await checkLegalStatus(response.token);
   };
 
+  const loginWithToken = async (newToken: string, newUser: User) => {
+    await saveToken(newToken);
+    setUser(newUser);
+    await checkLegalStatus(newToken);
+  };
+
   const acceptLegal = async () => {
     if (!token) return;
     try {
