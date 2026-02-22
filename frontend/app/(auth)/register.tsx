@@ -163,8 +163,8 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             <View style={styles.bonusContainer}>
-              <Ionicons name="gift" size={24} color="#4ecca3" />
-              <Text style={styles.bonusText}>Riceverai 10 crediti gratis!</Text>
+              <Text style={styles.bonusIcon}>☀️</Text>
+              <Text style={styles.bonusText}>Riceverai 10 Soli di benvenuto!</Text>
             </View>
 
             <View style={styles.loginContainer}>
