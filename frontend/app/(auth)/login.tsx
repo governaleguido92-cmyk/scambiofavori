@@ -114,8 +114,8 @@ export default function LoginScreen() {
         fullName
       );
       
-      // Save token and navigate
-      await exchangeSessionId(response.token);
+      // Use login with the received token directly
+      await loginWithToken(response.token, response.user);
       router.replace('/(tabs)');
       
     } catch (error: any) {
