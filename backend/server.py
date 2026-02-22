@@ -2117,6 +2117,100 @@ async def get_my_referral_code(current_user: User = Depends(get_current_user)):
     }
 
 # ========================
+# GDPR & LEGAL COMPLIANCE
+# ========================
+
+@api_router.post("/legal/accept")
+async def accept_legal_terms(current_user: User = Depends(get_current_user)):
+    """Accept Terms of Service and Privacy Policy"""
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$set": {
+                "legal_accepted": True,
+                "legal_accepted_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    return {"message": "Termini e condizioni accettati", "legal_accepted": True}
+
+@api_router.get("/legal/status")
+async def get_legal_status(current_user: User = Depends(get_current_user)):
+    """Check if user has accepted legal terms"""
+    user_doc = await db.users.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0, "legal_accepted": 1, "legal_accepted_at": 1}
+    )
+    return {
+        "legal_accepted": user_doc.get("legal_accepted", False) if user_doc else False,
+        "legal_accepted_at": user_doc.get("legal_accepted_at") if user_doc else None
+    }
+
+class DeleteAccountRequest(BaseModel):
+    confirm_email: str
+    reason: Optional[str] = None
+
+@api_router.delete("/account")
+async def delete_account(
+    request: DeleteAccountRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    GDPR Diritto all'Oblio - Cancellazione definitiva account
+    Elimina tutti i dati sensibili dell'utente
+    """
+    # Verifica email per conferma
+    if request.confirm_email.lower() != current_user.email.lower():
+        raise HTTPException(status_code=400, detail="Email di conferma non corrisponde")
+    
+    user_id = current_user.user_id
+    
+    # 1. Elimina tutti i messaggi dell'utente
+    await db.messages.delete_many({"sender_id": user_id})
+    
+    # 2. Elimina notifiche
+    await db.notifications.delete_many({"user_id": user_id})
+    
+    # 3. Anonimizza i favori creati (mantieni per storico ma rimuovi dati personali)
+    await db.favors.update_many(
+        {"creator_id": user_id},
+        {
+            "$set": {
+                "creator_name": "[Utente Eliminato]",
+                "creator_id": "deleted_user",
+                "exact_latitude": None,
+                "exact_longitude": None,
+                "address": None
+            }
+        }
+    )
+    
+    # 4. Anonimizza favori accettati
+    await db.favors.update_many(
+        {"accepted_by": user_id},
+        {
+            "$set": {
+                "accepted_by_name": "[Utente Eliminato]",
+                "accepted_by": "deleted_user"
+            }
+        }
+    )
+    
+    # 5. Anonimizza recensioni
+    await db.reviews.update_many(
+        {"reviewer_id": user_id},
+        {"$set": {"reviewer_name": "[Utente Eliminato]", "reviewer_id": "deleted_user"}}
+    )
+    
+    # 6. Elimina definitivamente l'account utente
+    await db.users.delete_one({"user_id": user_id})
+    
+    return {
+        "message": "Account eliminato con successo",
+        "details": "Tutti i tuoi dati personali sono stati cancellati in conformità al GDPR"
+    }
+
+# ========================
 # SKILLS & NOTIFICATIONS
 # ========================
 
