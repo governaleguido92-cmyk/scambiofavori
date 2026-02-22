@@ -1403,6 +1403,10 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     
     await db.favors.insert_one(favor_doc)
     
+    # Invia notifiche agli utenti con competenze corrispondenti (solo per richieste)
+    if favor_data.type == "request":
+        await create_skill_match_notifications(favor_doc)
+    
     # For public response, hide exact location
     favor_doc["exact_latitude"] = None
     favor_doc["exact_longitude"] = None
