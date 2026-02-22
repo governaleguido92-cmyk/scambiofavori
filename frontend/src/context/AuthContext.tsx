@@ -158,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         exchangeSessionId,
+        loginWithToken,
         logout,
         refreshUser,
         acceptLegal,
