@@ -58,6 +58,7 @@ export interface User {
   community_score: number;
   social_impact_score: number;  // New: Social Impact Bar
   can_access_solidarity_fund: boolean;
+  is_supporter: boolean;  // Supporter subscription status
   // Social Debt Limit fields
   reliability_score: number;
   debt_start_date?: string;
