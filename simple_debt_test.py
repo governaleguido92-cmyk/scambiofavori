@@ -11,7 +11,7 @@ from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
 
 # Get the backend URL from environment
-BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://granelli-app.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://community-trades-2.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
 # MongoDB connection
