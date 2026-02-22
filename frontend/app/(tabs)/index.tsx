@@ -197,10 +197,25 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-        <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-          <Text style={styles.typeText}>
-            {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
-          </Text>
+        <View style={styles.headerActions}>
+          <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
+            <Text style={styles.typeText}>
+              {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
+            </Text>
+          </View>
+          {/* Report Button */}
+          {item.creator_id !== user?.user_id && (
+            <TouchableOpacity
+              style={styles.reportButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleReportFavor(item.favor_id, item.title);
+              }}
+              data-testid={`report-favor-${item.favor_id}`}
+            >
+              <Ionicons name="flag-outline" size={16} color="#888" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
