@@ -709,21 +709,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 107, 107, 0.2)',
   },
   typeText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: '#fff',
   },
   favorTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   favorDescription: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#888',
-    lineHeight: 20,
-    marginBottom: 12,
+    lineHeight: 17,
+    marginBottom: 10,
   },
   favorFooter: {
     flexDirection: 'row',
@@ -733,28 +733,28 @@ const styles = StyleSheet.create({
   creatorInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     flex: 1,
   },
   creatorName: {
     color: '#888',
-    fontSize: 14,
+    fontSize: 12,
   },
   creatorTitle: {
     color: '#666',
-    fontSize: 12,
+    fontSize: 10,
   },
   soliContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   soliSymbol: {
-    fontSize: 18,
+    fontSize: 14,
   },
   soliText: {
     color: '#ffd700',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   distanceContainer: {
