@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Scambio di Favori API
-Tests all the key endpoints according to the review request
+Backend Testing for Scambio di Favori API - NEW FEATURES
+Focused testing on the new features: Proximity Check, Gamification, Solidarity Fund Access Control, and Privacy Layer
 """
 
 import asyncio
@@ -9,10 +9,11 @@ import httpx
 import json
 import os
 import sys
+import math
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-# Get the backend URL from environment
+# Get the backend URL from environment  
 BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://kindness-hub-13.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
