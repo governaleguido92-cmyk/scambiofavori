@@ -203,6 +203,11 @@ class User(BaseModel):
     community_score: int = 0
     social_impact_score: int = 0  # New: Social Impact Bar
     can_access_solidarity_fund: bool = False
+    # Social Debt Limit System
+    reliability_score: float = 5.0  # 1-5 scale, starts at 5
+    debt_start_date: Optional[datetime] = None  # When user went into debt
+    last_activity_date: Optional[datetime] = None  # Last app activity
+    in_debt_recovery: bool = False  # Using solidarity fund for recovery
     # Privacy: approximate location for public display
     approximate_latitude: Optional[float] = None
     approximate_longitude: Optional[float] = None
