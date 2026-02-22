@@ -6,11 +6,15 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
+  legalAccepted: boolean;
+  showLegalModal: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, referralCode?: string) => Promise<void>;
   exchangeSessionId: (sessionId: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  acceptLegal: () => Promise<void>;
+  deleteAccount: (confirmEmail: string, reason?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [legalAccepted, setLegalAccepted] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
 
   const saveToken = async (newToken: string) => {
     await AsyncStorage.setItem('token', newToken);
@@ -29,6 +35,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.removeItem('token');
     setToken(null);
   };
+
+  const checkLegalStatus = useCallback(async (authToken: string) => {
+    try {
+      const status = await api.getLegalStatus(authToken);
+      setLegalAccepted(status.legal_accepted);
+      setShowLegalModal(!status.legal_accepted);
+    } catch (error) {
+      console.log('Error checking legal status:', error);
+      setShowLegalModal(true);
+    }
+  }, []);
 
   const refreshUser = useCallback(async () => {
     if (!token) return;
@@ -48,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setToken(storedToken);
           const userData = await api.getMe(storedToken);
           setUser(userData);
+          await checkLegalStatus(storedToken);
         }
       } catch (error) {
         console.log('Auth check error:', error);
@@ -58,24 +76,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     checkAuth();
-  }, []);
+  }, [checkLegalStatus]);
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
     await saveToken(response.token);
     setUser(response.user);
+    await checkLegalStatus(response.token);
   };
 
   const register = async (email: string, password: string, name: string, referralCode?: string) => {
     const response = await api.register(email, password, name, referralCode);
     await saveToken(response.token);
     setUser(response.user);
+    // New users always need to accept legal terms
+    setLegalAccepted(false);
+    setShowLegalModal(true);
   };
 
   const exchangeSessionId = async (sessionId: string) => {
     const response = await api.exchangeSession(sessionId);
     await saveToken(response.token);
     setUser(response.user);
+    await checkLegalStatus(response.token);
+  };
+
+  const acceptLegal = async () => {
+    if (!token) return;
+    try {
+      await api.acceptLegalTerms(token);
+      setLegalAccepted(true);
+      setShowLegalModal(false);
+    } catch (error) {
+      console.log('Error accepting legal terms:', error);
+      throw error;
+    }
+  };
+
+  const deleteAccount = async (confirmEmail: string, reason?: string) => {
+    if (!token) return;
+    try {
+      await api.deleteAccount(confirmEmail, reason, token);
+      await clearToken();
+      setUser(null);
+      setLegalAccepted(false);
+    } catch (error) {
+      console.log('Error deleting account:', error);
+      throw error;
+    }
   };
 
   const logout = async () => {
@@ -88,6 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     await clearToken();
     setUser(null);
+    setLegalAccepted(false);
+    setShowLegalModal(false);
   };
 
   return (
@@ -96,11 +146,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         token,
         loading,
+        legalAccepted,
+        showLegalModal,
         login,
         register,
         exchangeSessionId,
         logout,
         refreshUser,
+        acceptLegal,
+        deleteAccount,
       }}
     >
       {children}
