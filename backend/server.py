@@ -2029,11 +2029,14 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     # Update last activity for debt system
     await update_last_activity(current_user.user_id)
     
-    response = Message(**message_doc)
+    response_dict = message_doc.copy()
+    response_dict["created_at"] = response_dict["created_at"].isoformat()
+    
     # Add warnings to response if any
     if response_warnings:
-        return {"message": response, "warnings": response_warnings}
-    return response
+        response_dict["warnings"] = response_warnings
+    
+    return response_dict
 
 # ========================
 # CHAT REPORTING SYSTEM
