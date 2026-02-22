@@ -1530,6 +1530,7 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
         "rating": review_data.rating,
         "kindness_rating": review_data.kindness_rating,
         "impact_rating": review_data.impact_rating,
+        "ethical_tags": review_data.ethical_tags,
         "comment": review_data.comment,
         "public_thanks": review_data.public_thanks,
         "created_at": datetime.now(timezone.utc)
