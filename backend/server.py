@@ -3428,6 +3428,12 @@ async def health_check():
 # Include router
 app.include_router(api_router)
 
+# Mount static files for uploads
+from fastapi.staticfiles import StaticFiles
+UPLOAD_PATH = Path("/app/uploads")
+UPLOAD_PATH.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_PATH)), name="uploads")
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
