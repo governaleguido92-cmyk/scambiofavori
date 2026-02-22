@@ -19,6 +19,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="favor/[id]" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="chat/[favorId]" options={{ presentation: 'card' }} />
         </Stack>
       </AuthProvider>
     </SafeAreaProvider>
