@@ -332,8 +332,8 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Supporter Promo Banner - Only for non-supporters */}
-      {user && !user.is_supporter && (
+      {/* Supporter Promo Banner OR Thanks Board */}
+      {user && !user.is_supporter ? (
         <TouchableOpacity 
           style={styles.promoBanner}
           onPress={() => router.push('/supporter')}
@@ -352,10 +352,7 @@ export default function HomeScreen() {
             <Ionicons name="chevron-forward" size={20} color="#FFD700" />
           </View>
         </TouchableOpacity>
-      )}
-
-      {/* Thanks Board Widget */}
-      {thanksBoard.length > 0 && (
+      ) : thanksBoard.length > 0 ? (
         <View style={styles.thanksBoardSection}>
           <View style={styles.thanksBoardHeader}>
             <Ionicons name="heart" size={18} color="#ff6b6b" />
@@ -370,7 +367,7 @@ export default function HomeScreen() {
             contentContainerStyle={styles.thanksBoardList}
           />
         </View>
-      )}
+      ) : null}
 
       {/* Tab Selector */}
       <View style={styles.tabSelector}>
