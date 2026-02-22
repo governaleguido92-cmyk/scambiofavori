@@ -148,9 +148,21 @@ export default function LoginScreen() {
               style={styles.googleButton}
               onPress={handleGoogleLogin}
               disabled={isLoading}
+              data-testid="google-login-button"
             >
               <Ionicons name="logo-google" size={20} color="#fff" />
               <Text style={styles.googleButtonText}>Continua con Google</Text>
+            </TouchableOpacity>
+
+            {/* Apple Sign In - Placeholder per App Store */}
+            <TouchableOpacity
+              style={styles.appleButton}
+              onPress={() => Alert.alert('Prossimamente', 'Accedi con Apple sarà disponibile presto!')}
+              disabled={isLoading}
+              data-testid="apple-login-button"
+            >
+              <Ionicons name="logo-apple" size={20} color="#fff" />
+              <Text style={styles.appleButtonText}>Continua con Apple</Text>
             </TouchableOpacity>
 
             <View style={styles.registerContainer}>
