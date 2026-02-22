@@ -97,38 +97,86 @@ class SocialDebtAPITester:
                 f"Registration failed: {response}")
             return False
 
-    async def simulate_debt_by_spending_granelli(self):
-        """Create debt by making favor requests that cost granelli"""
-        print("📉 Simulating debt by creating favor requests...")
+    async def simulate_debt_by_completing_favors(self):
+        """Create debt by creating and having offers accepted and completed"""
+        print("📉 Simulating debt by creating offers that get completed...")
         
-        # Create 5 favor requests to spend initial 3 granelli and go into debt
-        favors_created = 0
-        for i in range(5):
+        # Create a helper user to accept our offers
+        helper_user = {
+            "email": f"helper_{datetime.now().microsecond}@scambiodifavori.com",
+            "name": "Luigi Aiutante",
+            "password": "luigihelper123"
+        }
+        
+        success, helper_response = await self.make_request("POST", "/auth/register", helper_user)
+        if not success:
+            print(f"    ❌ Failed to create helper user: {helper_response}")
+            return 0
+        
+        helper_token = helper_response["token"]
+        helper_user_id = helper_response["user"]["user_id"]
+        print(f"    ✅ Created helper user: {helper_user_id}")
+        
+        # Create requests that will cost granelli when completed
+        favors_completed = 0
+        created_favors = []
+        
+        for i in range(6):  # Create 6 requests (1 granello each = -6 total, starting from +3 = -3 final)
             favor_data = {
                 "type": "request",
-                "title": f"Aiuto per spesa {i+1}",
+                "title": f"Aiuto con spesa {i+1}",
                 "description": f"Ho bisogno di aiuto per portare la spesa - richiesta {i+1}",
-                "category": "Spesa",
-                "duration_hours": 1.0,
+                "category": "Aiuto Rapido",  # Micro favor = 1 granello
+                "duration_hours": 0.5,
                 "latitude": 41.8902,
                 "longitude": 12.4922,
-                "address": f"Via del Test {i+1}, Roma"
+                "address": f"Via della Spesa {i+1}, Roma",
+                "is_micro": True
             }
             
             success, response = await self.make_request("POST", "/favors", favor_data)
             if success:
-                favors_created += 1
-                print(f"    Created favor {i+1}: {response.get('title')}")
-            else:
-                # Check if it's the debt block error
-                if response.get("status_code") == 403:
-                    print(f"    ✅ Debt block triggered at favor {i+1}")
-                    break
+                favor_id = response.get("favor_id")
+                created_favors.append(favor_id)
+                print(f"    Created request {i+1}: {favor_id}")
+                
+                # Have helper accept the favor
+                headers = {"Authorization": f"Bearer {helper_token}"}
+                accept_data = {"favor_id": favor_id}
+                success2, accept_response = await self.make_request("POST", "/favors/accept", accept_data, headers=headers)
+                
+                if success2:
+                    print(f"    Helper accepted favor {i+1}")
+                    
+                    # Complete the favor (this should deduct granelli from our user)
+                    complete_data = {
+                        "favor_id": favor_id,
+                        "latitude": 41.8902,
+                        "longitude": 12.4922
+                    }
+                    success3, complete_response = await self.make_request("POST", "/favors/complete", complete_data, headers=headers)
+                    
+                    if success3:
+                        favors_completed += 1
+                        print(f"    ✅ Completed favor {i+1} - granelli should be deducted")
+                        
+                        # Check current balance after each completion
+                        success4, debt_status = await self.make_request("GET", "/debt-status")
+                        if success4:
+                            current_granelli = debt_status.get("granelli", 0)
+                            print(f"        Current balance: {current_granelli} granelli")
+                            if current_granelli <= -3:
+                                print(f"        🚨 Reached debt limit at favor {i+1}")
+                                break
+                    else:
+                        print(f"    ❌ Failed to complete favor {i+1}: {complete_response}")
                 else:
-                    print(f"    ❌ Unexpected error on favor {i+1}: {response}")
+                    print(f"    ❌ Failed to accept favor {i+1}: {accept_response}")
+            else:
+                print(f"    ❌ Failed to create favor {i+1}: {response}")
         
-        print(f"📊 Created {favors_created} favors before hitting debt limit")
-        return favors_created
+        print(f"📊 Completed {favors_completed} favors to simulate debt")
+        return favors_completed
 
     # ======================== DEBT SYSTEM TESTS ========================
 
