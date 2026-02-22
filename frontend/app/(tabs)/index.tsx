@@ -21,6 +21,7 @@ import colors from '../../src/theme/colors';
 import { ReportModal } from '../../src/components/ReportModal';
 import { FavorsListSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
+import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'car',
