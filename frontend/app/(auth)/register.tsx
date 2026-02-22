@@ -260,4 +260,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  handLeft: {
+    transform: [{ rotate: '45deg' }],
+    marginRight: -8,
+  },
+  handRight: {
+    transform: [{ rotate: '-45deg' }, { scaleX: -1 }],
+    marginLeft: -8,
+  },
 });
