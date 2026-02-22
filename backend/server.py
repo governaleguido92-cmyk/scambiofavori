@@ -1576,11 +1576,27 @@ async def get_favors(
     favors_cursor = db.favors.find(query, {"_id": 0, "exact_latitude": 0, "exact_longitude": 0}).sort(sort_order).limit(100)
     favors = await favors_cursor.to_list(100)
     
+    # Get all unique creator IDs to batch check supporter status
+    creator_ids = list(set(f.get("creator_id") for f in favors if f.get("creator_id")))
+    
+    # Batch fetch supporter status for all creators
+    supporter_status = {}
+    if creator_ids:
+        creators_cursor = db.users.find(
+            {"user_id": {"$in": creator_ids}},
+            {"_id": 0, "user_id": 1, "is_supporter": 1, "subscription_status": 1}
+        )
+        async for creator in creators_cursor:
+            is_supporter = creator.get("is_supporter", False) and creator.get("subscription_status") == "active"
+            supporter_status[creator["user_id"]] = is_supporter
+    
     result = []
     for favor in favors:
         # Imposta valori di default per campi nuovi
         favor.setdefault("validity_days", 3)
         favor.setdefault("expires_at", None)
+        # Add supporter status from batch lookup
+        favor["creator_is_supporter"] = supporter_status.get(favor.get("creator_id"), False)
         favor_obj = Favor(**favor)
         
         if latitude and longitude and favor_obj.approximate_latitude and favor_obj.approximate_longitude:
