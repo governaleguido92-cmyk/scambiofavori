@@ -139,12 +139,10 @@ export default function FavorDetailScreen() {
             setActionLoading(true);
             try {
               await api.acceptFavor(favor.favor_id, token);
-              await loadFavor();
-              // Apri automaticamente la chat dopo l'accettazione
-              router.push(`/chat/${favor.favor_id}` as any);
+              // Naviga direttamente alla chat sostituendo la pagina corrente
+              router.replace(`/chat/${favor.favor_id}` as any);
             } catch (error: any) {
               Alert.alert('Errore', error.message || 'Impossibile accettare il favore');
-            } finally {
               setActionLoading(false);
             }
           },
