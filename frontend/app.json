@@ -1,22 +1,40 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Scambio di Favori",
+    "slug": "scambio-di-favori",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
-    "userInterfaceStyle": "automatic",
+    "scheme": "scambiodifavori",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "owner": "emergent",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.emergent.scambiodifavori",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Questa app usa la fotocamera per scansionare codici QR e caricare foto profilo.",
+        "NSPhotoLibraryUsageDescription": "Questa app accede alla libreria foto per permetterti di scegliere una foto profilo.",
+        "NSLocationWhenInUseUsageDescription": "Questa app usa la tua posizione per mostrarti favori nelle vicinanze."
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#000"
+        "backgroundColor": "#0F1A14"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.emergent.scambiodifavori",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -31,12 +49,30 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#000"
+          "backgroundColor": "#0F1A14"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Questa app accede alle tue foto per permetterti di scegliere una foto profilo."
+        }
+      ],
+      "expo-apple-authentication",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Questa app usa la tua posizione per mostrarti favori nelle vicinanze."
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "scambio-di-favori"
+      }
     }
   }
 }
