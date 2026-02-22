@@ -38,7 +38,7 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="heart" size={size} color={color} />
           ),
         }}
       />
@@ -47,7 +47,7 @@ export default function TabsLayout() {
         options={{
           title: 'Mappa',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map" size={size} color={color} />
+            <Ionicons name="people" size={size} color={color} />
           ),
         }}
       />
@@ -57,7 +57,7 @@ export default function TabsLayout() {
           title: 'Crea',
           tabBarIcon: ({ color, size }) => (
             <View style={styles.createButton}>
-              <Ionicons name="add" size={28} color={colors.background} />
+              <Ionicons name="heart-circle" size={28} color={colors.background} />
             </View>
           ),
         }}
@@ -67,7 +67,7 @@ export default function TabsLayout() {
         options={{
           title: 'I Miei',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list" size={size} color={color} />
+            <Ionicons name="heart-half" size={size} color={color} />
           ),
         }}
       />
@@ -76,7 +76,7 @@ export default function TabsLayout() {
         options={{
           title: 'Profilo',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+            <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
