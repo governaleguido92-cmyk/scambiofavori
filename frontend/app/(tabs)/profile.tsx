@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Badge, LeaderboardUser } from '../../src/services/api';
+import { api, Badge, LeaderboardUser, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const BADGE_ICONS: Record<string, string> = {
   'heart': 'heart',
@@ -24,6 +24,8 @@ const BADGE_ICONS: Record<string, string> = {
   'people': 'people',
   'flash': 'flash',
   'footsteps': 'footsteps',
+  'sunny': 'sunny',
+  'ribbon': 'ribbon',
 };
 
 export default function ProfileScreen() {
@@ -98,8 +100,8 @@ export default function ProfileScreen() {
       Alert.alert('Errore', 'Inserisci un importo valido');
       return;
     }
-    if (amount > (user?.credits || 0)) {
-      Alert.alert('Errore', 'Crediti insufficienti');
+    if (amount > (user?.soli || 0)) {
+      Alert.alert('Errore', `${CURRENCY_NAME} insufficienti`);
       return;
     }
 
@@ -109,7 +111,7 @@ export default function ProfileScreen() {
       await loadData();
       setShowDonateModal(false);
       setDonationAmount('1');
-      Alert.alert('Grazie!', `Hai donato ${amount} crediti al Fondo Solidarietà`);
+      Alert.alert('Grazie!', `Hai donato ${amount} ${CURRENCY_NAME} al Fondo Solidarietà`);
     } catch (error: any) {
       Alert.alert('Errore', error.message);
     }
@@ -119,7 +121,7 @@ export default function ProfileScreen() {
     if (!referralInfo) return;
     try {
       await Share.share({
-        message: `Unisciti a Scambio di Favori! Usa il mio codice referral: ${referralInfo.referral_code} per iniziare con bonus crediti!`,
+        message: `Unisciti a Scambio di Favori! Usa il mio codice referral: ${referralInfo.referral_code} per iniziare con bonus ${CURRENCY_NAME}!`,
       });
     } catch (error) {
       console.log('Error sharing:', error);
@@ -177,6 +179,7 @@ export default function ProfileScreen() {
             </View>
           </View>
           <Text style={styles.userName}>{user?.name}</Text>
+          <Text style={styles.userTitle}>{user?.title || 'Nuovo Vicino'}</Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
           
           {/* Community Score Progress Bar */}
@@ -211,14 +214,14 @@ export default function ProfileScreen() {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <Ionicons name="star" size={28} color="#ffd700" />
-            <Text style={styles.statValue}>{user?.credits || 0}</Text>
-            <Text style={styles.statLabel}>Crediti</Text>
+            <Text style={styles.statSymbol}>{CURRENCY_SYMBOL}</Text>
+            <Text style={styles.statValue}>{user?.soli || 0}</Text>
+            <Text style={styles.statLabel}>{CURRENCY_NAME}</Text>
           </View>
           <View style={styles.statCard}>
             <Ionicons name="gift" size={28} color="#4ecca3" />
             <Text style={styles.statValue}>{user?.total_favors_given || 0}</Text>
-            <Text style={styles.statLabel}>Dati</Text>
+            <Text style={styles.statLabel}>Donati</Text>
           </View>
           <View style={styles.statCard}>
             <Ionicons name="hand-left" size={28} color="#ff6b6b" />
@@ -228,7 +231,7 @@ export default function ProfileScreen() {
           <View style={styles.statCard}>
             <Ionicons name="time" size={28} color="#2196f3" />
             <Text style={styles.statValue}>{(user?.total_hours_helped || 0).toFixed(1)}h</Text>
-            <Text style={styles.statLabel}>Ore Aiutate</Text>
+            <Text style={styles.statLabel}>Ore Donate</Text>
           </View>
         </View>
 
@@ -267,7 +270,7 @@ export default function ProfileScreen() {
             <View style={styles.fundInfo}>
               <Ionicons name="heart" size={32} color="#ff6b6b" />
               <View>
-                <Text style={styles.fundAmount}>{solidarityFund} crediti</Text>
+                <Text style={styles.fundAmount}>{solidarityFund} {CURRENCY_NAME}</Text>
                 <Text style={styles.fundLabel}>disponibili per chi ha bisogno</Text>
               </View>
             </View>
@@ -311,19 +314,32 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={24} color="#888" />
         </TouchableOpacity>
 
+        {/* Oggettoteca Button */}
+        <TouchableOpacity
+          style={styles.oggettotecaButton}
+          onPress={() => router.push('/oggettoteca' as any)}
+        >
+          <Ionicons name="cube" size={24} color="#9c27b0" />
+          <Text style={styles.oggettotecaButtonText}>Oggettoteca</Text>
+          <View style={styles.oggettotecaBadge}>
+            <Text style={styles.oggettotecaBadgeText}>Presta e Prendi</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#888" />
+        </TouchableOpacity>
+
         {/* Info Cards */}
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Come Funziona</Text>
+          <Text style={styles.sectionTitle}>Come Funzionano i {CURRENCY_NAME}</Text>
           
           <View style={styles.infoCard}>
             <View style={styles.infoItem}>
               <View style={[styles.infoIcon, { backgroundColor: '#4ecca320' }]}>
-                <Ionicons name="time" size={20} color="#4ecca3" />
+                <Text style={styles.infoIconText}>{CURRENCY_SYMBOL}</Text>
               </View>
               <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>1 Ora = 1 Credito</Text>
+                <Text style={styles.infoTitle}>1 Ora = 1 Sole</Text>
                 <Text style={styles.infoDescription}>
-                  Parità di valore: ogni ora di aiuto vale uguale
+                  Ogni favore fatto è un raggio di sole che illumina il quartiere
                 </Text>
               </View>
             </View>
@@ -367,7 +383,7 @@ export default function ProfileScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Dona al Fondo Solidarietà</Text>
             <Text style={styles.modalDescription}>
-              I tuoi crediti aiuteranno anziani e persone fragili della community
+              I tuoi {CURRENCY_NAME} aiuteranno anziani e persone fragili della community
             </Text>
             
             <View style={styles.donateInputContainer}>
@@ -391,7 +407,7 @@ export default function ProfileScreen() {
                 <Ionicons name="add" size={24} color="#fff" />
               </TouchableOpacity>
             </View>
-            <Text style={styles.donateCreditsLabel}>crediti</Text>
+            <Text style={styles.donateCreditsLabel}>{CURRENCY_NAME}</Text>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -415,7 +431,7 @@ export default function ProfileScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Invita i Tuoi Amici</Text>
             <Text style={styles.modalDescription}>
-              Guadagna {referralInfo?.bonus_per_referral || 3} crediti quando un amico completa il primo favore
+              Guadagna {referralInfo?.bonus_per_referral || 3} {CURRENCY_NAME} quando un amico completa il primo favore
             </Text>
             
             <View style={styles.referralCodeBox}>
@@ -432,7 +448,7 @@ export default function ProfileScreen() {
                 <Text style={styles.referralStatValue}>
                   {(referralInfo?.successful_referrals || 0) * (referralInfo?.bonus_per_referral || 3)}
                 </Text>
-                <Text style={styles.referralStatLabel}>Crediti Guadagnati</Text>
+                <Text style={styles.referralStatLabel}>{CURRENCY_NAME} Guadagnati</Text>
               </View>
             </View>
 
@@ -480,16 +496,7 @@ export default function ProfileScreen() {
                   </View>
                   <View style={styles.leaderboardInfo}>
                     <Text style={styles.leaderboardName}>{item.name}</Text>
-                    <View style={styles.leaderboardBadges}>
-                      {item.badges.slice(0, 3).map((badgeId) => (
-                        <View key={badgeId} style={styles.minieBadge}>
-                          <Ionicons name="ribbon" size={12} color="#4ecca3" />
-                        </View>
-                      ))}
-                      {item.badges.length > 3 && (
-                        <Text style={styles.moreBadges}>+{item.badges.length - 3}</Text>
-                      )}
-                    </View>
+                    <Text style={styles.leaderboardTitle}>{item.title}</Text>
                   </View>
                   <View style={styles.leaderboardScore}>
                     <Text style={styles.leaderboardScoreValue}>{item.community_score}</Text>
@@ -587,6 +594,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+    marginBottom: 2,
+  },
+  userTitle: {
+    fontSize: 14,
+    color: '#4ecca3',
+    fontWeight: '600',
     marginBottom: 4,
   },
   userEmail: {
@@ -658,6 +671,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
+  },
+  statSymbol: {
+    fontSize: 28,
   },
   statValue: {
     fontSize: 24,
@@ -778,13 +794,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   leaderboardButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
     flex: 1,
+  },
+  oggettotecaButton: {
+    backgroundColor: '#16213e',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  oggettotecaButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  oggettotecaBadge: {
+    backgroundColor: '#9c27b020',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    flex: 1,
+  },
+  oggettotecaBadgeText: {
+    color: '#9c27b0',
+    fontSize: 11,
+    fontWeight: '600',
   },
   infoSection: {
     marginBottom: 20,
@@ -805,6 +847,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+  },
+  infoIconText: {
+    fontSize: 20,
   },
   infoText: {
     flex: 1,
@@ -993,19 +1038,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  leaderboardBadges: {
-    flexDirection: 'row',
-    marginTop: 4,
-    gap: 4,
-  },
-  minieBadge: {
-    backgroundColor: '#4ecca320',
-    padding: 2,
-    borderRadius: 4,
-  },
-  moreBadges: {
-    color: '#888',
-    fontSize: 10,
+  leaderboardTitle: {
+    color: '#4ecca3',
+    fontSize: 12,
   },
   leaderboardScore: {
     alignItems: 'flex-end',

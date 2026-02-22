@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Category } from '../../src/services/api';
+import { api, Favor, Category, ThanksEntry, WallPost, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'car',
@@ -24,6 +24,9 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Compagnia': 'people',
   'Cucina': 'restaurant',
   'Giardinaggio': 'leaf',
+  'Consiglio': 'bulb',
+  'Informazione': 'information-circle',
+  'Aiuto Rapido': 'flash',
   'Altro': 'ellipsis-horizontal',
 };
 
@@ -37,6 +40,9 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [thanksBoard, setThanksBoard] = useState<ThanksEntry[]>([]);
+  const [wallPosts, setWallPosts] = useState<WallPost[]>([]);
+  const [activeTab, setActiveTab] = useState<'favors' | 'wall'>('favors');
 
   const getLocation = async () => {
     try {
@@ -59,6 +65,28 @@ export default function HomeScreen() {
       setCategories(data);
     } catch (error) {
       console.log('Error loading categories:', error);
+    }
+  };
+
+  const loadThanksBoard = async () => {
+    try {
+      const data = await api.getThanksBoard(5);
+      setThanksBoard(data);
+    } catch (error) {
+      console.log('Error loading thanks board:', error);
+    }
+  };
+
+  const loadWallPosts = async () => {
+    try {
+      const data = await api.getWallPosts(
+        location?.latitude,
+        location?.longitude,
+        2.0 // 2km radius
+      );
+      setWallPosts(data);
+    } catch (error) {
+      console.log('Error loading wall posts:', error);
     }
   };
 
@@ -85,7 +113,14 @@ export default function HomeScreen() {
   useEffect(() => {
     getLocation();
     loadCategories();
+    loadThanksBoard();
   }, []);
+
+  useEffect(() => {
+    if (location) {
+      loadWallPosts();
+    }
+  }, [location]);
 
   useEffect(() => {
     loadFavors();
@@ -94,7 +129,21 @@ export default function HomeScreen() {
   const onRefresh = () => {
     setRefreshing(true);
     loadFavors();
+    loadThanksBoard();
+    loadWallPosts();
   };
+
+  const renderThanksCard = ({ item }: { item: ThanksEntry }) => (
+    <View style={styles.thanksCard}>
+      <View style={styles.thanksHeader}>
+        <Ionicons name="heart" size={16} color="#ff6b6b" />
+        <Text style={styles.thanksGiver}>{item.giver_name}</Text>
+        <Text style={styles.thanksArrow}>ringrazia</Text>
+        <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
+      </View>
+      <Text style={styles.thanksMessage}>"{item.message}"</Text>
+    </View>
+  );
 
   const renderFavorCard = ({ item }: { item: Favor }) => (
     <TouchableOpacity
@@ -110,10 +159,23 @@ export default function HomeScreen() {
           />
           <Text style={styles.categoryText}>{item.category}</Text>
         </View>
-        <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-          <Text style={styles.typeText}>
-            {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
-          </Text>
+        <View style={styles.favorBadges}>
+          {item.is_emergency && (
+            <View style={styles.emergencyBadge}>
+              <Ionicons name="alert-circle" size={14} color="#ff6b6b" />
+              <Text style={styles.emergencyText}>Urgente</Text>
+            </View>
+          )}
+          {item.is_micro && (
+            <View style={styles.microBadge}>
+              <Ionicons name="flash" size={14} color="#ff9800" />
+            </View>
+          )}
+          <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
+            <Text style={styles.typeText}>
+              {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -126,10 +188,13 @@ export default function HomeScreen() {
         <View style={styles.creatorInfo}>
           <Ionicons name="person-circle" size={20} color="#888" />
           <Text style={styles.creatorName}>{item.creator_name}</Text>
+          {item.creator_title && (
+            <Text style={styles.creatorTitle}>• {item.creator_title}</Text>
+          )}
         </View>
-        <View style={styles.creditsContainer}>
-          <Ionicons name="star" size={16} color="#ffd700" />
-          <Text style={styles.creditsText}>{item.credits_cost}</Text>
+        <View style={styles.soliContainer}>
+          <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
+          <Text style={styles.soliText}>{item.soli_cost}</Text>
         </View>
       </View>
 
@@ -142,88 +207,215 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
+  const renderWallPost = ({ item }: { item: WallPost }) => (
+    <View style={styles.wallPostCard}>
+      <View style={styles.wallPostHeader}>
+        <View style={styles.wallPostAuthor}>
+          <View style={styles.wallPostAvatar}>
+            <Text style={styles.wallPostAvatarText}>
+              {item.author_name?.charAt(0).toUpperCase() || 'U'}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.wallPostAuthorName}>{item.author_name}</Text>
+            <Text style={styles.wallPostAuthorTitle}>{item.author_title}</Text>
+          </View>
+        </View>
+        {item.post_type === 'thanks' && (
+          <View style={styles.thanksTypeBadge}>
+            <Ionicons name="heart" size={12} color="#ff6b6b" />
+            <Text style={styles.thanksTypeText}>Grazie</Text>
+          </View>
+        )}
+      </View>
+      <Text style={styles.wallPostContent}>{item.content}</Text>
+      <View style={styles.wallPostFooter}>
+        <View style={styles.wallPostLikes}>
+          <Ionicons name="heart-outline" size={18} color="#888" />
+          <Text style={styles.wallPostLikesText}>{item.likes}</Text>
+        </View>
+        {item.distance_km !== undefined && (
+          <View style={styles.wallPostDistance}>
+            <Ionicons name="location-outline" size={14} color="#888" />
+            <Text style={styles.wallPostDistanceText}>{item.distance_km} km</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
           <Text style={styles.subtitle}>Trova favori nelle vicinanze</Text>
         </View>
-        <View style={styles.creditsDisplay}>
-          <Ionicons name="star" size={20} color="#ffd700" />
-          <Text style={styles.creditsValue}>{user?.credits || 0}</Text>
+        <View style={styles.soliDisplay}>
+          <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
+          <Text style={styles.soliDisplayValue}>{user?.soli || 0}</Text>
         </View>
       </View>
 
-      {/* Type Filter */}
-      <View style={styles.typeFilter}>
-        {['all', 'offer', 'request'].map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={[styles.typeButton, selectedType === type && styles.typeButtonActive]}
-            onPress={() => setSelectedType(type)}
-          >
-            <Text style={[styles.typeButtonText, selectedType === type && styles.typeButtonTextActive]}>
-              {type === 'all' ? 'Tutti' : type === 'offer' ? 'Offerte' : 'Richieste'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Thanks Board Widget */}
+      {thanksBoard.length > 0 && (
+        <View style={styles.thanksBoardSection}>
+          <View style={styles.thanksBoardHeader}>
+            <Ionicons name="heart" size={18} color="#ff6b6b" />
+            <Text style={styles.thanksBoardTitle}>Bacheca dei Grazie</Text>
+          </View>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={thanksBoard}
+            renderItem={renderThanksCard}
+            keyExtractor={(item) => item.thanks_id}
+            contentContainerStyle={styles.thanksBoardList}
+          />
+        </View>
+      )}
 
-      {/* Categories */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesContainer}
-        contentContainerStyle={styles.categoriesContent}
-      >
+      {/* Tab Selector */}
+      <View style={styles.tabSelector}>
         <TouchableOpacity
-          style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-          onPress={() => setSelectedCategory(null)}
+          style={[styles.tab, activeTab === 'favors' && styles.tabActive]}
+          onPress={() => setActiveTab('favors')}
         >
-          <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-            Tutti
+          <Ionicons
+            name="hand-left"
+            size={18}
+            color={activeTab === 'favors' ? '#1a1a2e' : '#888'}
+          />
+          <Text style={[styles.tabText, activeTab === 'favors' && styles.tabTextActive]}>
+            Favori
           </Text>
         </TouchableOpacity>
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.name}
-            style={[styles.categoryChip, selectedCategory === cat.name && styles.categoryChipActive]}
-            onPress={() => setSelectedCategory(cat.name)}
-          >
-            <Ionicons
-              name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-              size={16}
-              color={selectedCategory === cat.name ? '#1a1a2e' : '#4ecca3'}
-            />
-            <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
-              {cat.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'wall' && styles.tabActive]}
+          onPress={() => setActiveTab('wall')}
+        >
+          <Ionicons
+            name="newspaper"
+            size={18}
+            color={activeTab === 'wall' ? '#1a1a2e' : '#888'}
+          />
+          <Text style={[styles.tabText, activeTab === 'wall' && styles.tabTextActive]}>
+            Muro del Quartiere
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4ecca3" />
-        </View>
-      ) : favors.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="search" size={60} color="#333" />
-          <Text style={styles.emptyText}>Nessun favore trovato</Text>
-          <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
-        </View>
+      {activeTab === 'favors' ? (
+        <>
+          {/* Type Filter */}
+          <View style={styles.typeFilter}>
+            {['all', 'offer', 'request'].map((type) => (
+              <TouchableOpacity
+                key={type}
+                style={[styles.typeButton, selectedType === type && styles.typeButtonActive]}
+                onPress={() => setSelectedType(type)}
+              >
+                <Text style={[styles.typeButtonText, selectedType === type && styles.typeButtonTextActive]}>
+                  {type === 'all' ? 'Tutti' : type === 'offer' ? 'Offerte' : 'Richieste'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Categories */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesContainer}
+            contentContainerStyle={styles.categoriesContent}
+          >
+            <TouchableOpacity
+              style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
+              onPress={() => setSelectedCategory(null)}
+            >
+              <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
+                Tutti
+              </Text>
+            </TouchableOpacity>
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat.name}
+                style={[
+                  styles.categoryChip,
+                  selectedCategory === cat.name && styles.categoryChipActive,
+                  cat.is_micro && styles.categoryChipMicro,
+                ]}
+                onPress={() => setSelectedCategory(cat.name)}
+              >
+                <Ionicons
+                  name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
+                  size={16}
+                  color={selectedCategory === cat.name ? '#1a1a2e' : cat.is_micro ? '#ff9800' : '#4ecca3'}
+                />
+                <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
+                  {cat.name}
+                </Text>
+                {cat.is_micro && (
+                  <Ionicons
+                    name="flash"
+                    size={12}
+                    color={selectedCategory === cat.name ? '#1a1a2e' : '#ff9800'}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#4ecca3" />
+            </View>
+          ) : favors.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="search" size={60} color="#333" />
+              <Text style={styles.emptyText}>Nessun favore trovato</Text>
+              <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={favors}
+              renderItem={renderFavorCard}
+              keyExtractor={(item) => item.favor_id}
+              contentContainerStyle={styles.listContent}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
+              }
+            />
+          )}
+        </>
       ) : (
+        /* Neighborhood Wall */
         <FlatList
-          data={favors}
-          renderItem={renderFavorCard}
-          keyExtractor={(item) => item.favor_id}
+          data={wallPosts}
+          renderItem={renderWallPost}
+          keyExtractor={(item) => item.post_id}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
           }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="newspaper-outline" size={60} color="#333" />
+              <Text style={styles.emptyText}>Nessun post nel quartiere</Text>
+              <Text style={styles.emptySubtext}>Sii il primo a condividere qualcosa!</Text>
+            </View>
+          }
         />
       )}
+
+      {/* Emergency Button */}
+      <TouchableOpacity
+        style={styles.emergencyButton}
+        onPress={() => router.push('/emergencies' as any)}
+      >
+        <Ionicons name="alert-circle" size={24} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -251,19 +443,101 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 4,
   },
-  creditsDisplay: {
+  soliDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#16213e',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    gap: 8,
+    gap: 6,
   },
-  creditsValue: {
+  soliDisplaySymbol: {
+    fontSize: 20,
+  },
+  soliDisplayValue: {
     color: '#ffd700',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  thanksBoardSection: {
+    marginTop: 8,
+    paddingBottom: 8,
+  },
+  thanksBoardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 8,
+    gap: 8,
+  },
+  thanksBoardTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  thanksBoardList: {
+    paddingHorizontal: 20,
+  },
+  thanksCard: {
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 12,
+    marginRight: 12,
+    width: 280,
+  },
+  thanksHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  thanksGiver: {
+    color: '#4ecca3',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  thanksArrow: {
+    color: '#888',
+    fontSize: 12,
+  },
+  thanksReceiver: {
+    color: '#4ecca3',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  thanksMessage: {
+    color: '#ccc',
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  tabSelector: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 12,
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+  },
+  tabActive: {
+    backgroundColor: '#4ecca3',
+  },
+  tabText: {
+    color: '#888',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  tabTextActive: {
+    color: '#1a1a2e',
   },
   typeFilter: {
     flexDirection: 'row',
@@ -308,6 +582,10 @@ const styles = StyleSheet.create({
   categoryChipActive: {
     backgroundColor: '#4ecca3',
   },
+  categoryChipMicro: {
+    borderWidth: 1,
+    borderColor: '#ff9800',
+  },
   categoryChipText: {
     color: '#888',
     fontSize: 14,
@@ -325,6 +603,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 60,
   },
   emptyText: {
     color: '#888',
@@ -361,6 +640,30 @@ const styles = StyleSheet.create({
     color: '#4ecca3',
     fontSize: 12,
     fontWeight: '600',
+  },
+  favorBadges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  emergencyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 4,
+  },
+  emergencyText: {
+    color: '#ff6b6b',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  microBadge: {
+    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+    padding: 4,
+    borderRadius: 8,
   },
   typeBadge: {
     paddingHorizontal: 12,
@@ -399,17 +702,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flex: 1,
   },
   creatorName: {
     color: '#888',
     fontSize: 14,
   },
-  creditsContainer: {
+  creatorTitle: {
+    color: '#666',
+    fontSize: 12,
+  },
+  soliContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  creditsText: {
+  soliSymbol: {
+    fontSize: 18,
+  },
+  soliText: {
     color: '#ffd700',
     fontSize: 16,
     fontWeight: 'bold',
@@ -423,5 +734,106 @@ const styles = StyleSheet.create({
   distanceText: {
     color: '#4ecca3',
     fontSize: 12,
+  },
+  wallPostCard: {
+    backgroundColor: '#16213e',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  wallPostHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  wallPostAuthor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  wallPostAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1a1a2e',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  wallPostAvatarText: {
+    color: '#4ecca3',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  wallPostAuthorName: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  wallPostAuthorTitle: {
+    color: '#888',
+    fontSize: 12,
+  },
+  thanksTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 4,
+  },
+  thanksTypeText: {
+    color: '#ff6b6b',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  wallPostContent: {
+    color: '#ccc',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  wallPostFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+  },
+  wallPostLikes: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  wallPostLikesText: {
+    color: '#888',
+    fontSize: 14,
+  },
+  wallPostDistance: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  wallPostDistanceText: {
+    color: '#888',
+    fontSize: 12,
+  },
+  emergencyButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#ff6b6b',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#ff6b6b',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
