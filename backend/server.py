@@ -275,7 +275,7 @@ class Favor(BaseModel):
     description: str
     category: str
     duration_hours: float
-    granelli_cost: int  # Renamed from credits_cost
+    granelli_cost: int = 1  # Default to 1 if not present
     status: str = "active"
     accepted_by: Optional[str] = None
     accepted_by_name: Optional[str] = None
