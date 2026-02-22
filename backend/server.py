@@ -301,6 +301,7 @@ class FavorCreate(BaseModel):
     description: str
     category: str
     duration_hours: float = 1.0
+    validity_days: int = 3  # Durata annuncio (1-10 giorni, default 3)
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     address: Optional[str] = None
@@ -318,6 +319,8 @@ class Favor(BaseModel):
     category: str
     duration_hours: float
     granelli_cost: int = 1  # Default to 1 if not present
+    validity_days: int = 3  # Durata annuncio
+    expires_at: Optional[datetime] = None  # Data scadenza annuncio
     status: str = "active"
     accepted_by: Optional[str] = None
     accepted_by_name: Optional[str] = None
