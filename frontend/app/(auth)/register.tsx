@@ -255,6 +255,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
     gap: 8,
   },
+  bonusIcon: {
+    fontSize: 24,
+  },
   bonusText: {
     color: '#4ecca3',
     fontSize: 16,
