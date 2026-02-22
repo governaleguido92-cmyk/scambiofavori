@@ -54,21 +54,18 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="oggettoteca"
-        options={{
-          title: 'Oggetti',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cube" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profilo',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="oggettoteca"
+        options={{
+          href: null, // Hide from tab bar
         }}
       />
     </Tabs>
