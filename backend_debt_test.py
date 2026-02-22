@@ -98,10 +98,10 @@ class SocialDebtAPITester:
             return False
 
     async def simulate_debt_by_completing_favors(self):
-        """Create debt by creating and having offers accepted and completed"""
-        print("📉 Simulating debt by creating offers that get completed...")
+        """Create debt by accepting helper's offers and completing them"""
+        print("📉 Simulating debt by accepting and completing helper offers...")
         
-        # Create a helper user to accept our offers
+        # Create a helper user to create offers
         helper_user = {
             "email": f"helper_{datetime.now().microsecond}@scambiodifavori.com",
             "name": "Luigi Aiutante",
@@ -117,15 +117,15 @@ class SocialDebtAPITester:
         helper_user_id = helper_response["user"]["user_id"]
         print(f"    ✅ Created helper user: {helper_user_id}")
         
-        # Create requests that will cost granelli when completed
+        # Have helper create offers that we (main user) will accept and complete
         favors_completed = 0
-        created_favors = []
         
-        for i in range(6):  # Create 6 requests (1 granello each = -6 total, starting from +3 = -3 final)
+        for i in range(6):  # Accept 6 offers (1 granello each = -6 total, starting from +3 = -3 final)
+            # Helper creates an offer
             favor_data = {
-                "type": "request",
-                "title": f"Aiuto con spesa {i+1}",
-                "description": f"Ho bisogno di aiuto per portare la spesa - richiesta {i+1}",
+                "type": "offer",
+                "title": f"Offro aiuto spesa {i+1}",
+                "description": f"Posso aiutare con la spesa - offerta {i+1}",
                 "category": "Aiuto Rapido",  # Micro favor = 1 granello
                 "duration_hours": 0.5,
                 "latitude": 41.8902,
@@ -134,31 +134,30 @@ class SocialDebtAPITester:
                 "is_micro": True
             }
             
-            success, response = await self.make_request("POST", "/favors", favor_data)
+            headers = {"Authorization": f"Bearer {helper_token}"}
+            success, response = await self.make_request("POST", "/favors", favor_data, headers=headers)
             if success:
                 favor_id = response.get("favor_id")
-                created_favors.append(favor_id)
-                print(f"    Created request {i+1}: {favor_id}")
+                print(f"    Helper created offer {i+1}: {favor_id}")
                 
-                # Have helper accept the favor
-                headers = {"Authorization": f"Bearer {helper_token}"}
+                # Main user accepts the offer (should cost us granelli when completed)
                 accept_data = {"favor_id": favor_id}
-                success2, accept_response = await self.make_request("POST", "/favors/accept", accept_data, headers=headers)
+                success2, accept_response = await self.make_request("POST", "/favors/accept", accept_data)
                 
                 if success2:
-                    print(f"    Helper accepted favor {i+1}")
+                    print(f"    Main user accepted offer {i+1}")
                     
-                    # Complete the favor (this should deduct granelli from our user)
+                    # Complete the favor (this should deduct granelli from main user)
                     complete_data = {
                         "favor_id": favor_id,
                         "latitude": 41.8902,
                         "longitude": 12.4922
                     }
-                    success3, complete_response = await self.make_request("POST", "/favors/complete", complete_data, headers=headers)
+                    success3, complete_response = await self.make_request("POST", "/favors/complete", complete_data)
                     
                     if success3:
                         favors_completed += 1
-                        print(f"    ✅ Completed favor {i+1} - granelli should be deducted")
+                        print(f"    ✅ Completed offer {i+1} - granelli should be deducted from main user")
                         
                         # Check current balance after each completion
                         success4, debt_status = await self.make_request("GET", "/debt-status")
@@ -169,11 +168,14 @@ class SocialDebtAPITester:
                                 print(f"        🚨 Reached debt limit at favor {i+1}")
                                 break
                     else:
-                        print(f"    ❌ Failed to complete favor {i+1}: {complete_response}")
+                        print(f"    ❌ Failed to complete offer {i+1}: {complete_response}")
+                        break
                 else:
-                    print(f"    ❌ Failed to accept favor {i+1}: {accept_response}")
+                    print(f"    ❌ Failed to accept offer {i+1}: {accept_response}")
+                    break
             else:
-                print(f"    ❌ Failed to create favor {i+1}: {response}")
+                print(f"    ❌ Failed to create offer {i+1}: {response}")
+                break
         
         print(f"📊 Completed {favors_completed} favors to simulate debt")
         return favors_completed
