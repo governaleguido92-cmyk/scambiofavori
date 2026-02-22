@@ -3553,6 +3553,19 @@ async def get_unread_count(current_user: User = Depends(get_current_user)):
     })
     return {"unread_count": count}
 
+@api_router.get("/download/frontend-zip")
+async def download_frontend_zip():
+    """Download frontend ZIP file for build"""
+    from fastapi.responses import FileResponse
+    zip_path = Path("/app/uploads/scambio-di-favori-frontend.zip")
+    if not zip_path.exists():
+        raise HTTPException(status_code=404, detail="File non trovato")
+    return FileResponse(
+        path=str(zip_path),
+        filename="scambio-di-favori-frontend.zip",
+        media_type="application/zip"
+    )
+
 async def create_skill_match_notifications(favor_doc: dict):
     """Create notifications for users whose skills match the favor's category"""
     # Find users with matching skills who are not the favor creator
