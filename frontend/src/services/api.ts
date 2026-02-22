@@ -573,4 +573,10 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  // QR Code (for favor check-in)
+  getFavorQR: async (favorId: string, token: string): Promise<{ qr_code: string }> => {
+    const favor = await api.getFavor(favorId, token);
+    return { qr_code: favor.qr_code || '' };
+  },
 };
