@@ -2152,6 +2152,378 @@ class Report(BaseModel):
     status: str = "pending"  # pending, confirmed, dismissed
     created_at: datetime
 
+# ========================
+# EXTENDED REPORTING & BLOCKING SYSTEM (Store Compliance)
+# ========================
+
+class GeneralReportCreate(BaseModel):
+    """Report for favors or user profiles (not chat-specific)"""
+    report_type: str  # "favor" or "user"
+    target_id: str  # favor_id or user_id
+    reason: str  # "offensive", "spam", "fraud", "inappropriate", "fake_profile", "other"
+    description: Optional[str] = None
+
+class BlockUserRequest(BaseModel):
+    """Block a user bidirectionally"""
+    user_id: str
+    reason: Optional[str] = None
+
+# Reviewer test account for store approval
+REVIEWER_EMAIL = "reviewer@test.com"
+REVIEWER_MODE_ENABLED = True
+
+@api_router.post("/report")
+async def report_content(report: GeneralReportCreate, current_user: User = Depends(get_current_user)):
+    """Universal report endpoint for favors and user profiles"""
+    
+    # Validate report type
+    if report.report_type not in ["favor", "user"]:
+        raise HTTPException(status_code=400, detail="Tipo segnalazione non valido")
+    
+    # Cannot report yourself
+    if report.report_type == "user" and report.target_id == current_user.user_id:
+        raise HTTPException(status_code=400, detail="Non puoi segnalare te stesso")
+    
+    # Validate target exists
+    if report.report_type == "favor":
+        target = await db.favors.find_one({"favor_id": report.target_id})
+        if not target:
+            raise HTTPException(status_code=404, detail="Favore non trovato")
+        # Cannot report your own favor
+        if target["creator_id"] == current_user.user_id:
+            raise HTTPException(status_code=400, detail="Non puoi segnalare il tuo favore")
+    else:
+        target = await db.users.find_one({"user_id": report.target_id})
+        if not target:
+            raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # Check for duplicate report
+    existing = await db.general_reports.find_one({
+        "reporter_id": current_user.user_id,
+        "report_type": report.report_type,
+        "target_id": report.target_id
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Hai già segnalato questo contenuto")
+    
+    report_id = f"greport_{uuid.uuid4().hex[:12]}"
+    report_doc = {
+        "report_id": report_id,
+        "reporter_id": current_user.user_id,
+        "report_type": report.report_type,
+        "target_id": report.target_id,
+        "reason": report.reason,
+        "description": report.description,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.general_reports.insert_one(report_doc)
+    
+    # Check for auto-moderation threshold (5+ reports)
+    total_reports = await db.general_reports.count_documents({
+        "target_id": report.target_id,
+        "report_type": report.report_type
+    })
+    
+    if total_reports >= 5:
+        if report.report_type == "favor":
+            # Hide the favor
+            await db.favors.update_one(
+                {"favor_id": report.target_id},
+                {"$set": {"status": "hidden_reported", "hidden_at": datetime.now(timezone.utc)}}
+            )
+        elif report.report_type == "user":
+            # Shadow ban the user
+            await db.users.update_one(
+                {"user_id": report.target_id},
+                {"$set": {"banned_from_chat": True, "shadow_banned": True}}
+            )
+    
+    return {
+        "message": "Segnalazione inviata. Grazie per aiutarci a mantenere la community sicura.",
+        "report_id": report_id
+    }
+
+@api_router.post("/users/block")
+async def block_user(block_req: BlockUserRequest, current_user: User = Depends(get_current_user)):
+    """Block a user bidirectionally - both users won't see each other"""
+    
+    if block_req.user_id == current_user.user_id:
+        raise HTTPException(status_code=400, detail="Non puoi bloccare te stesso")
+    
+    # Check target user exists
+    target_user = await db.users.find_one({"user_id": block_req.user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # Check if already blocked
+    existing = await db.blocked_users.find_one({
+        "$or": [
+            {"blocker_id": current_user.user_id, "blocked_id": block_req.user_id},
+            {"blocker_id": block_req.user_id, "blocked_id": current_user.user_id}
+        ]
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Utente già bloccato")
+    
+    block_id = f"block_{uuid.uuid4().hex[:12]}"
+    block_doc = {
+        "block_id": block_id,
+        "blocker_id": current_user.user_id,
+        "blocked_id": block_req.user_id,
+        "reason": block_req.reason,
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.blocked_users.insert_one(block_doc)
+    
+    return {"message": "Utente bloccato. Non vedrai più questo utente e lui non vedrà te."}
+
+@api_router.delete("/users/block/{user_id}")
+async def unblock_user(user_id: str, current_user: User = Depends(get_current_user)):
+    """Unblock a user"""
+    
+    result = await db.blocked_users.delete_one({
+        "$or": [
+            {"blocker_id": current_user.user_id, "blocked_id": user_id},
+            {"blocker_id": user_id, "blocked_id": current_user.user_id}
+        ]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Blocco non trovato")
+    
+    return {"message": "Utente sbloccato"}
+
+@api_router.get("/users/blocked")
+async def get_blocked_users(current_user: User = Depends(get_current_user)):
+    """Get list of blocked users"""
+    
+    blocks = await db.blocked_users.find({
+        "$or": [
+            {"blocker_id": current_user.user_id},
+            {"blocked_id": current_user.user_id}
+        ]
+    }, {"_id": 0}).to_list(100)
+    
+    blocked_ids = set()
+    for block in blocks:
+        if block["blocker_id"] == current_user.user_id:
+            blocked_ids.add(block["blocked_id"])
+        else:
+            blocked_ids.add(block["blocker_id"])
+    
+    # Get user info for blocked users
+    blocked_users = []
+    for user_id in blocked_ids:
+        user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+        if user:
+            blocked_users.append({
+                "user_id": user["user_id"],
+                "name": user["name"],
+                "title": user.get("title", "Nuovo Vicino")
+            })
+    
+    return {"blocked_users": blocked_users}
+
+@api_router.get("/users/{user_id}/is-blocked")
+async def check_if_blocked(user_id: str, current_user: User = Depends(get_current_user)):
+    """Check if a user is blocked"""
+    
+    block = await db.blocked_users.find_one({
+        "$or": [
+            {"blocker_id": current_user.user_id, "blocked_id": user_id},
+            {"blocker_id": user_id, "blocked_id": current_user.user_id}
+        ]
+    })
+    
+    return {"is_blocked": block is not None}
+
+# Helper function to get blocked user IDs for filtering
+async def get_blocked_user_ids(user_id: str) -> set:
+    """Get all user IDs that should be hidden from this user (bidirectional blocks)"""
+    blocks = await db.blocked_users.find({
+        "$or": [
+            {"blocker_id": user_id},
+            {"blocked_id": user_id}
+        ]
+    }).to_list(1000)
+    
+    blocked_ids = set()
+    for block in blocks:
+        if block["blocker_id"] == user_id:
+            blocked_ids.add(block["blocked_id"])
+        else:
+            blocked_ids.add(block["blocker_id"])
+    
+    return blocked_ids
+
+# ========================
+# PROFILE COMPLETION TRACKING
+# ========================
+
+@api_router.get("/users/me/profile-completion")
+async def get_profile_completion(current_user: User = Depends(get_current_user)):
+    """Get profile completion percentage and missing items"""
+    
+    completion_items = []
+    total_items = 4
+    completed_items = 0
+    
+    # 1. Name (25%)
+    has_name = bool(current_user.name and len(current_user.name) > 1)
+    completion_items.append({
+        "id": "name",
+        "label": "Nome profilo",
+        "completed": has_name,
+        "points": 25
+    })
+    if has_name:
+        completed_items += 1
+    
+    # 2. Profile photo (25%) - Check if user has avatar_url
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    has_photo = bool(user_doc.get("avatar_url"))
+    completion_items.append({
+        "id": "photo",
+        "label": "Foto profilo",
+        "completed": has_photo,
+        "points": 25
+    })
+    if has_photo:
+        completed_items += 1
+    
+    # 3. Skills/Competenze (25%)
+    has_skills = bool(current_user.skills and len(current_user.skills) > 0)
+    completion_items.append({
+        "id": "skills",
+        "label": "Competenze",
+        "completed": has_skills,
+        "points": 25
+    })
+    if has_skills:
+        completed_items += 1
+    
+    # 4. First completed favor (25%)
+    completed_favors = await db.favors.count_documents({
+        "$or": [
+            {"creator_id": current_user.user_id, "status": "completed"},
+            {"accepted_by": current_user.user_id, "status": "completed"}
+        ]
+    })
+    has_completed_favor = completed_favors > 0
+    completion_items.append({
+        "id": "first_favor",
+        "label": "Primo favore completato",
+        "completed": has_completed_favor,
+        "points": 25
+    })
+    if has_completed_favor:
+        completed_items += 1
+    
+    percentage = (completed_items / total_items) * 100
+    
+    # Check if eligible for completion badge
+    badge_earned = False
+    if percentage == 100:
+        # Award "Profilo Completo" badge if not already earned
+        if "profilo_completo" not in (current_user.badges or []):
+            await db.users.update_one(
+                {"user_id": current_user.user_id},
+                {"$addToSet": {"badges": "profilo_completo"}}
+            )
+            badge_earned = True
+    
+    return {
+        "percentage": int(percentage),
+        "items": completion_items,
+        "completed_count": completed_items,
+        "total_count": total_items,
+        "badge_earned": badge_earned,
+        "badge_name": "Profilo Completo" if badge_earned else None
+    }
+
+# ========================
+# REVIEWER/DEBUG MODE (Store Approval)
+# ========================
+
+@api_router.post("/debug/mock-qr-scan")
+async def mock_qr_scan(favor_id: str, current_user: User = Depends(get_current_user)):
+    """Mock QR scan for reviewer accounts - simulates completing a favor without actual QR"""
+    
+    # Only allow for reviewer account
+    if current_user.email != REVIEWER_EMAIL and not REVIEWER_MODE_ENABLED:
+        raise HTTPException(status_code=403, detail="Funzione disponibile solo per account di test")
+    
+    favor = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
+    if not favor:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    if favor["status"] != "accepted":
+        raise HTTPException(status_code=400, detail="Il favore deve essere in stato 'accettato'")
+    
+    # Check if user is participant
+    is_creator = favor["creator_id"] == current_user.user_id
+    is_acceptor = favor.get("accepted_by") == current_user.user_id
+    
+    if not is_creator and not is_acceptor:
+        raise HTTPException(status_code=403, detail="Non sei un partecipante di questo favore")
+    
+    # Simulate QR completion
+    granelli_cost = favor.get("granelli_cost", 1)
+    
+    # Transfer granelli
+    if favor["type"] == "offer":
+        giver_id = favor["creator_id"]
+        receiver_id = favor["accepted_by"]
+    else:
+        giver_id = favor["accepted_by"]
+        receiver_id = favor["creator_id"]
+    
+    # Update balances
+    await db.users.update_one(
+        {"user_id": receiver_id},
+        {"$inc": {"granelli": granelli_cost}}
+    )
+    
+    # Update favor status
+    await db.favors.update_one(
+        {"favor_id": favor_id},
+        {
+            "$set": {
+                "status": "completed",
+                "completed_at": datetime.now(timezone.utc),
+                "completion_method": "mock_qr_debug"
+            }
+        }
+    )
+    
+    # Update social impact scores
+    await db.users.update_one(
+        {"user_id": giver_id},
+        {"$inc": {"social_impact_score": 20, "favors_given": 1}}
+    )
+    await db.users.update_one(
+        {"user_id": receiver_id},
+        {"$inc": {"social_impact_score": 10, "favors_received": 1}}
+    )
+    
+    return {
+        "message": "DEBUG: Favore completato tramite mock QR scan",
+        "favor_id": favor_id,
+        "granelli_transferred": granelli_cost,
+        "debug_mode": True
+    }
+
+@api_router.get("/debug/is-reviewer")
+async def check_reviewer_status(current_user: User = Depends(get_current_user)):
+    """Check if current user is a reviewer account"""
+    is_reviewer = current_user.email == REVIEWER_EMAIL
+    return {
+        "is_reviewer": is_reviewer,
+        "debug_features_enabled": is_reviewer and REVIEWER_MODE_ENABLED,
+        "features": ["mock_qr_scan", "mock_gps"] if is_reviewer else []
+    }
+
 @api_router.post("/chat/report")
 async def report_user_in_chat(report: ReportCreate, current_user: User = Depends(get_current_user)):
     """Report a user for inappropriate behavior in chat"""
