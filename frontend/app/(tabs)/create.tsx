@@ -10,6 +10,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -26,6 +27,9 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Compagnia': 'people',
   'Cucina': 'restaurant',
   'Giardinaggio': 'leaf',
+  'Consiglio': 'bulb',
+  'Informazione': 'information-circle',
+  'Aiuto Rapido': 'flash',
   'Altro': 'ellipsis-horizontal',
 };
 
@@ -36,12 +40,13 @@ export default function CreateFavorScreen() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
-  const [credits, setCredits] = useState('1');
+  const [durationHours, setDurationHours] = useState('1');
   const [address, setAddress] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [isMicro, setIsMicro] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -56,6 +61,15 @@ export default function CreateFavorScreen() {
       console.log('Error loading categories:', error);
     }
   };
+
+  // Auto-detect micro category
+  useEffect(() => {
+    const cat = categories.find(c => c.name === category);
+    if (cat?.is_micro) {
+      setIsMicro(true);
+      setDurationHours('0.25'); // 15 minutes for micro
+    }
+  }, [category, categories]);
 
   const getLocation = async () => {
     setGettingLocation(true);
@@ -72,7 +86,6 @@ export default function CreateFavorScreen() {
         longitude: loc.coords.longitude,
       });
 
-      // Try to get address
       try {
         const [addr] = await Location.reverseGeocodeAsync({
           latitude: loc.coords.latitude,
@@ -105,9 +118,11 @@ export default function CreateFavorScreen() {
       return;
     }
 
-    const creditsNum = parseInt(credits) || 1;
-    if (type === 'request' && (user?.credits || 0) < creditsNum) {
-      Alert.alert('Crediti insufficienti', `Hai solo ${user?.credits} crediti disponibili`);
+    const duration = parseFloat(durationHours) || 1;
+    const creditsNeeded = isMicro ? 1 : Math.max(1, Math.round(duration));
+
+    if (type === 'request' && (user?.credits || 0) < creditsNeeded) {
+      Alert.alert('Crediti insufficienti', `Hai solo ${user?.credits} crediti disponibili. Servono ${creditsNeeded} crediti.`);
       return;
     }
 
@@ -121,10 +136,11 @@ export default function CreateFavorScreen() {
           title: title.trim(),
           description: description.trim(),
           category,
-          credits_cost: creditsNum,
+          duration_hours: duration,
           latitude: location?.latitude,
           longitude: location?.longitude,
           address: address || undefined,
+          is_micro: isMicro,
         },
         token
       );
@@ -133,17 +149,19 @@ export default function CreateFavorScreen() {
       
       Alert.alert(
         'Successo',
-        type === 'offer' ? 'La tua offerta è stata pubblicata!' : 'La tua richiesta è stata pubblicata!',
+        type === 'offer' 
+          ? 'La tua offerta è stata pubblicata!' 
+          : 'La tua richiesta è stata pubblicata!',
         [
           {
             text: 'OK',
             onPress: () => {
-              // Reset form
               setTitle('');
               setDescription('');
-              setCredits('1');
+              setDurationHours('1');
               setAddress('');
               setLocation(null);
+              setIsMicro(false);
               router.push('/(tabs)');
             },
           },
@@ -155,6 +173,8 @@ export default function CreateFavorScreen() {
       setIsLoading(false);
     }
   };
+
+  const creditsPreview = isMicro ? 1 : Math.max(1, Math.round(parseFloat(durationHours) || 1));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -211,12 +231,29 @@ export default function CreateFavorScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* Micro Favor Toggle */}
+          <View style={styles.microToggle}>
+            <View style={styles.microToggleLeft}>
+              <Ionicons name="flash" size={20} color="#ff9800" />
+              <View>
+                <Text style={styles.microToggleLabel}>Micro-Favore</Text>
+                <Text style={styles.microToggleHint}>Consiglio o info rapida (1 credito)</Text>
+              </View>
+            </View>
+            <Switch
+              value={isMicro}
+              onValueChange={setIsMicro}
+              trackColor={{ false: '#333', true: '#ff9800' }}
+              thumbColor={isMicro ? '#fff' : '#888'}
+            />
+          </View>
+
           {/* Title Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Titolo</Text>
             <TextInput
               style={styles.input}
-              placeholder="Es: Aiuto con la spesa"
+              placeholder={isMicro ? "Es: Consiglio su ristorante" : "Es: Aiuto con la spesa"}
               placeholderTextColor="#666"
               value={title}
               onChangeText={setTitle}
@@ -251,51 +288,77 @@ export default function CreateFavorScreen() {
               {categories.map((cat) => (
                 <TouchableOpacity
                   key={cat.name}
-                  style={[styles.categoryChip, category === cat.name && styles.categoryChipActive]}
+                  style={[
+                    styles.categoryChip,
+                    category === cat.name && styles.categoryChipActive,
+                    cat.is_micro && styles.categoryChipMicro,
+                  ]}
                   onPress={() => setCategory(cat.name)}
                 >
                   <Ionicons
                     name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
                     size={18}
-                    color={category === cat.name ? '#1a1a2e' : '#4ecca3'}
+                    color={category === cat.name ? '#1a1a2e' : cat.is_micro ? '#ff9800' : '#4ecca3'}
                   />
-                  <Text style={[styles.categoryChipText, category === cat.name && styles.categoryChipTextActive]}>
+                  <Text style={[
+                    styles.categoryChipText,
+                    category === cat.name && styles.categoryChipTextActive,
+                  ]}>
                     {cat.name}
                   </Text>
+                  {cat.is_micro && (
+                    <Ionicons name="flash" size={12} color={category === cat.name ? '#1a1a2e' : '#ff9800'} />
+                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
-          {/* Credits Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Crediti</Text>
-            <View style={styles.creditsInput}>
-              <TouchableOpacity
-                style={styles.creditButton}
-                onPress={() => setCredits(String(Math.max(1, parseInt(credits) - 1)))}
-              >
-                <Ionicons name="remove" size={24} color="#fff" />
-              </TouchableOpacity>
-              <TextInput
-                style={styles.creditValue}
-                value={credits}
-                onChangeText={(text) => setCredits(text.replace(/[^0-9]/g, ''))}
-                keyboardType="number-pad"
-                maxLength={2}
-              />
-              <TouchableOpacity
-                style={styles.creditButton}
-                onPress={() => setCredits(String(parseInt(credits) + 1))}
-              >
-                <Ionicons name="add" size={24} color="#fff" />
-              </TouchableOpacity>
+          {/* Duration Input (not for micro favors) */}
+          {!isMicro && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Durata Stimata</Text>
+              <View style={styles.durationContainer}>
+                <TouchableOpacity
+                  style={styles.durationButton}
+                  onPress={() => setDurationHours(String(Math.max(0.5, parseFloat(durationHours) - 0.5)))}
+                >
+                  <Ionicons name="remove" size={24} color="#fff" />
+                </TouchableOpacity>
+                <View style={styles.durationDisplay}>
+                  <TextInput
+                    style={styles.durationValue}
+                    value={durationHours}
+                    onChangeText={setDurationHours}
+                    keyboardType="decimal-pad"
+                    maxLength={4}
+                  />
+                  <Text style={styles.durationUnit}>ore</Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.durationButton}
+                  onPress={() => setDurationHours(String(parseFloat(durationHours) + 0.5))}
+                >
+                  <Ionicons name="add" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.parityInfo}>
+                <Ionicons name="information-circle" size={16} color="#4ecca3" />
+                <Text style={styles.parityText}>1 ora = 1 credito (Parità di Valore)</Text>
+              </View>
             </View>
-            {type === 'request' && (
-              <Text style={styles.creditsWarning}>
-                Verranno scalati {credits} crediti al completamento
-              </Text>
-            )}
+          )}
+
+          {/* Credits Preview */}
+          <View style={styles.creditsPreview}>
+            <Text style={styles.creditsPreviewLabel}>
+              {type === 'offer' ? 'Guadagnerai:' : 'Spenderai:'}
+            </Text>
+            <View style={styles.creditsPreviewValue}>
+              <Ionicons name="star" size={24} color="#ffd700" />
+              <Text style={styles.creditsPreviewNumber}>{creditsPreview}</Text>
+              <Text style={styles.creditsPreviewUnit}>crediti</Text>
+            </View>
           </View>
 
           {/* Location */}
@@ -391,7 +454,7 @@ const styles = StyleSheet.create({
   typeSelector: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   typeButton: {
     flex: 1,
@@ -427,6 +490,29 @@ const styles = StyleSheet.create({
   typeButtonSubtextActive: {
     color: '#1a1a2e',
     opacity: 0.8,
+  },
+  microToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  microToggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  microToggleLabel: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  microToggleHint: {
+    color: '#888',
+    fontSize: 12,
   },
   inputGroup: {
     marginBottom: 20,
@@ -464,6 +550,10 @@ const styles = StyleSheet.create({
   categoryChipActive: {
     backgroundColor: '#4ecca3',
   },
+  categoryChipMicro: {
+    borderWidth: 1,
+    borderColor: '#ff9800',
+  },
   categoryChipText: {
     color: '#888',
     fontSize: 14,
@@ -472,13 +562,13 @@ const styles = StyleSheet.create({
     color: '#1a1a2e',
     fontWeight: '600',
   },
-  creditsInput: {
+  durationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 20,
   },
-  creditButton: {
+  durationButton: {
     backgroundColor: '#16213e',
     width: 50,
     height: 50,
@@ -486,21 +576,61 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  creditValue: {
+  durationDisplay: {
+    alignItems: 'center',
+  },
+  durationValue: {
     backgroundColor: '#16213e',
+    color: '#4ecca3',
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    width: 100,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  durationUnit: {
+    color: '#888',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  parityInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 12,
+  },
+  parityText: {
+    color: '#4ecca3',
+    fontSize: 12,
+  },
+  creditsPreview: {
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  creditsPreviewLabel: {
+    color: '#888',
+    fontSize: 14,
+  },
+  creditsPreviewValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  creditsPreviewNumber: {
     color: '#ffd700',
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    width: 80,
-    paddingVertical: 12,
-    borderRadius: 12,
   },
-  creditsWarning: {
-    color: '#ff6b6b',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 8,
+  creditsPreviewUnit: {
+    color: '#888',
+    fontSize: 14,
   },
   locationButton: {
     flexDirection: 'row',
@@ -535,7 +665,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 16,
     gap: 10,
-    marginTop: 16,
+    marginTop: 8,
   },
   submitButtonRequest: {
     backgroundColor: '#ff6b6b',
