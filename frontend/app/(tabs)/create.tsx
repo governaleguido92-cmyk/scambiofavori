@@ -17,7 +17,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Category } from '../../src/services/api';
+import { api, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'car',
@@ -119,10 +119,10 @@ export default function CreateFavorScreen() {
     }
 
     const duration = parseFloat(durationHours) || 1;
-    const creditsNeeded = isMicro ? 1 : Math.max(1, Math.round(duration));
+    const soliNeeded = isMicro ? 1 : Math.max(1, Math.round(duration));
 
-    if (type === 'request' && (user?.credits || 0) < creditsNeeded) {
-      Alert.alert('Crediti insufficienti', `Hai solo ${user?.credits} crediti disponibili. Servono ${creditsNeeded} crediti.`);
+    if (type === 'request' && (user?.soli || 0) < soliNeeded) {
+      Alert.alert(`${CURRENCY_NAME} insufficienti`, `Hai solo ${user?.soli} ${CURRENCY_NAME} disponibili. Servono ${soliNeeded} ${CURRENCY_NAME}.`);
       return;
     }
 
@@ -174,7 +174,7 @@ export default function CreateFavorScreen() {
     }
   };
 
-  const creditsPreview = isMicro ? 1 : Math.max(1, Math.round(parseFloat(durationHours) || 1));
+  const soliPreview = isMicro ? 1 : Math.max(1, Math.round(parseFloat(durationHours) || 1));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -188,9 +188,9 @@ export default function CreateFavorScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.title}>Crea Favore</Text>
-            <View style={styles.creditsDisplay}>
-              <Ionicons name="star" size={16} color="#ffd700" />
-              <Text style={styles.creditsValue}>{user?.credits || 0}</Text>
+            <View style={styles.soliDisplay}>
+              <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
+              <Text style={styles.soliValue}>{user?.soli || 0}</Text>
             </View>
           </View>
 
@@ -206,10 +206,10 @@ export default function CreateFavorScreen() {
                 color={type === 'offer' ? '#1a1a2e' : '#4ecca3'}
               />
               <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>
-                Offri
+                Dona
               </Text>
               <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>
-                Guadagna crediti
+                Guadagna {CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
 
@@ -223,10 +223,10 @@ export default function CreateFavorScreen() {
                 color={type === 'request' ? '#1a1a2e' : '#ff6b6b'}
               />
               <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>
-                Richiedi
+                Ricevi
               </Text>
               <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>
-                Spendi crediti
+                Spendi {CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
           </View>
@@ -237,7 +237,7 @@ export default function CreateFavorScreen() {
               <Ionicons name="flash" size={20} color="#ff9800" />
               <View>
                 <Text style={styles.microToggleLabel}>Micro-Favore</Text>
-                <Text style={styles.microToggleHint}>Consiglio o info rapida (1 credito)</Text>
+                <Text style={styles.microToggleHint}>Consiglio o info rapida (1 Sole)</Text>
               </View>
             </View>
             <Switch
@@ -344,20 +344,20 @@ export default function CreateFavorScreen() {
               </View>
               <View style={styles.parityInfo}>
                 <Ionicons name="information-circle" size={16} color="#4ecca3" />
-                <Text style={styles.parityText}>1 ora = 1 credito (Parità di Valore)</Text>
+                <Text style={styles.parityText}>1 ora = 1 Sole (Parità di Valore)</Text>
               </View>
             </View>
           )}
 
-          {/* Credits Preview */}
-          <View style={styles.creditsPreview}>
-            <Text style={styles.creditsPreviewLabel}>
+          {/* Soli Preview */}
+          <View style={styles.soliPreview}>
+            <Text style={styles.soliPreviewLabel}>
               {type === 'offer' ? 'Guadagnerai:' : 'Spenderai:'}
             </Text>
-            <View style={styles.creditsPreviewValue}>
-              <Ionicons name="star" size={24} color="#ffd700" />
-              <Text style={styles.creditsPreviewNumber}>{creditsPreview}</Text>
-              <Text style={styles.creditsPreviewUnit}>crediti</Text>
+            <View style={styles.soliPreviewValue}>
+              <Text style={styles.soliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
+              <Text style={styles.soliPreviewNumber}>{soliPreview}</Text>
+              <Text style={styles.soliPreviewUnit}>{CURRENCY_NAME}</Text>
             </View>
           </View>
 
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  creditsDisplay: {
+  soliDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#16213e',
@@ -446,7 +446,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     gap: 6,
   },
-  creditsValue: {
+  soliSymbol: {
+    fontSize: 18,
+  },
+  soliValue: {
     color: '#ffd700',
     fontSize: 16,
     fontWeight: 'bold',
@@ -605,7 +608,7 @@ const styles = StyleSheet.create({
     color: '#4ecca3',
     fontSize: 12,
   },
-  creditsPreview: {
+  soliPreview: {
     backgroundColor: '#16213e',
     borderRadius: 12,
     padding: 16,
@@ -614,21 +617,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  creditsPreviewLabel: {
+  soliPreviewLabel: {
     color: '#888',
     fontSize: 14,
   },
-  creditsPreviewValue: {
+  soliPreviewValue: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  creditsPreviewNumber: {
+  soliPreviewSymbol: {
+    fontSize: 24,
+  },
+  soliPreviewNumber: {
     color: '#ffd700',
     fontSize: 24,
     fontWeight: 'bold',
   },
-  creditsPreviewUnit: {
+  soliPreviewUnit: {
     color: '#888',
     fontSize: 14,
   },

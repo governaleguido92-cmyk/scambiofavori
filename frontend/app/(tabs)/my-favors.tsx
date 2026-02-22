@@ -13,10 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor } from '../../src/services/api';
+import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 export default function MyFavorsScreen() {
-  const { user, token } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const [favors, setFavors] = useState<Favor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ export default function MyFavorsScreen() {
     if (!token) return;
     Alert.alert(
       'Conferma Completamento',
-      'Sei sicuro di voler segnare questo favore come completato? I crediti verranno trasferiti.',
+      `Sei sicuro di voler segnare questo favore come completato? I ${CURRENCY_NAME} verranno trasferiti.`,
       [
         { text: 'Annulla', style: 'cancel' },
         {
@@ -59,8 +59,9 @@ export default function MyFavorsScreen() {
           onPress: async () => {
             try {
               await api.completeFavor(favorId, token);
+              await refreshUser();
               loadMyFavors();
-              Alert.alert('Successo', 'Favore completato! I crediti sono stati trasferiti.');
+              Alert.alert('Successo', `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
             } catch (error: any) {
               Alert.alert('Errore', error.message || 'Impossibile completare il favore');
             }
@@ -145,10 +146,22 @@ export default function MyFavorsScreen() {
               {getStatusText(item.status)}
             </Text>
           </View>
-          <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-            <Text style={styles.typeText}>
-              {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
-            </Text>
+          <View style={styles.badgesRow}>
+            {item.is_emergency && (
+              <View style={styles.emergencyBadge}>
+                <Ionicons name="alert-circle" size={12} color="#ff6b6b" />
+              </View>
+            )}
+            {item.is_micro && (
+              <View style={styles.microBadge}>
+                <Ionicons name="flash" size={12} color="#ff9800" />
+              </View>
+            )}
+            <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
+              <Text style={styles.typeText}>
+                {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -169,9 +182,9 @@ export default function MyFavorsScreen() {
         </View>
 
         <View style={styles.favorFooter}>
-          <View style={styles.creditsContainer}>
-            <Ionicons name="star" size={16} color="#ffd700" />
-            <Text style={styles.creditsText}>{item.credits_cost} crediti</Text>
+          <View style={styles.soliContainer}>
+            <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
+            <Text style={styles.soliText}>{item.soli_cost} {CURRENCY_NAME}</Text>
           </View>
 
           {/* Actions */}
@@ -351,6 +364,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  badgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  emergencyBadge: {
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    padding: 4,
+    borderRadius: 8,
+  },
+  microBadge: {
+    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+    padding: 4,
+    borderRadius: 8,
+  },
   typeBadge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -394,12 +422,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  creditsContainer: {
+  soliContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
-  creditsText: {
+  soliSymbol: {
+    fontSize: 16,
+  },
+  soliText: {
     color: '#ffd700',
     fontSize: 14,
     fontWeight: 'bold',
