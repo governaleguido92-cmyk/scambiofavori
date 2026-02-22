@@ -140,6 +140,46 @@ export default function ProfileScreen() {
     }
   };
 
+  const toggleSkill = (skillName: string) => {
+    setSelectedSkills(prev => 
+      prev.includes(skillName)
+        ? prev.filter(s => s !== skillName)
+        : [...prev, skillName]
+    );
+  };
+
+  const handleSaveSkills = async () => {
+    if (!token) return;
+    setSavingSkills(true);
+    try {
+      const result = await api.updateUserSkills(selectedSkills, token);
+      setUserSkills(result.skills);
+      setShowSkillsModal(false);
+      Alert.alert('Successo', 'Competenze aggiornate! Riceverai notifiche per favori in queste categorie.');
+    } catch (error: any) {
+      Alert.alert('Errore', error.message || 'Impossibile salvare le competenze');
+    } finally {
+      setSavingSkills(false);
+    }
+  };
+
+  const getCategoryIcon = (iconName: string) => {
+    const iconMap: Record<string, string> = {
+      'car': 'car',
+      'cart': 'cart',
+      'laptop': 'laptop',
+      'water': 'water',
+      'people': 'people',
+      'restaurant': 'restaurant',
+      'leaf': 'leaf',
+      'bulb': 'bulb',
+      'information-circle': 'information-circle',
+      'flash': 'flash',
+      'ellipsis-horizontal': 'ellipsis-horizontal',
+    };
+    return iconMap[iconName] || 'help-circle';
+  };
+
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
