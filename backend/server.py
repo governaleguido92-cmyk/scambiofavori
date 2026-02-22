@@ -43,18 +43,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ========================
-# CONSTANTS - RENAMED CREDITS TO "SOLI" ☀️
+# CONSTANTS - CURRENCY "GRANELLI" 💎
 # ========================
 
-WELCOME_SOLI = 10  # Soli di Benvenuto
-REFERRAL_BONUS = 3  # Bonus referral etico
-SOLI_PER_HOUR = 1  # 1 ora = 1 sole
+WELCOME_GRANELLI = 3  # Granelli di Benvenuto
+REFERRAL_BONUS = 2  # Bonus referral etico
+GRANELLI_PER_HOUR = 1  # 1 ora = 1 granello
 
-CURRENCY_NAME = "Soli"  # "Ogni favore fatto è un raggio di sole che illumina il quartiere"
-CURRENCY_SYMBOL = "☀️"
+CURRENCY_NAME = "Granelli"  # "Ogni favore fatto è un granello di sabbia che costruisce la community"
+CURRENCY_SYMBOL = "💎"
 
 # Privacy: approximate location radius in meters
 PRIVACY_RADIUS_METERS = 200
+
+# Geofencing: max distance for QR exchange
+MAX_EXCHANGE_DISTANCE_METERS = 100
 
 # Badge definitions
 BADGES = {
