@@ -1018,6 +1018,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  debugButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#9b59b6',
+    padding: 14,
+    borderRadius: 16,
+    gap: 10,
+    borderWidth: 2,
+    borderColor: '#8e44ad',
+    borderStyle: 'dashed',
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   reviewButton: {
     flexDirection: 'row',
     alignItems: 'center',
