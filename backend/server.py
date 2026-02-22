@@ -67,6 +67,48 @@ DEBT_LIMIT = -3  # Max negative balance allowed
 INACTIVITY_DAYS = 15  # Days before reliability drops
 RELIABILITY_DROP_RATE = 0.5  # How much reliability drops per check
 
+# ========================
+# CHAT MESSAGE FILTER (Anti-Money)
+# ========================
+import re
+
+# Regex patterns to block real money transactions
+MONEY_FILTER_PATTERNS = [
+    r'\b\d+\s*€',  # 50€, 100 €
+    r'€\s*\d+',    # €50, € 100
+    r'\b\d+\s*euro\b',  # 50 euro
+    r'\beuro\s*\d+',    # euro 50
+    r'\b\d+\s*EUR\b',   # 50 EUR
+    r'\bpagamento\b',   # pagamento
+    r'\bpagare\b',      # pagare
+    r'\bsoldi\b',       # soldi
+    r'\bcontanti\b',    # contanti
+    r'\bbonifico\b',    # bonifico
+    r'\bpaypal\b',      # paypal
+    r'\biban\b',        # iban
+    r'\bcarta\s*(di\s*credito|di\s*debito)?\b',  # carta, carta di credito
+    r'\bbancomat\b',    # bancomat
+    r'\bsatispay\b',    # satispay
+    r'\brevolut\b',     # revolut
+    r'\bpostepay\b',    # postepay
+    r'\btrasferimento\s*(bancario|denaro)?\b',  # trasferimento
+    r'\bcompenso\b',    # compenso
+    r'\btariffa\b',     # tariffa
+    r'\bprezzo\b',      # prezzo
+    r'\bcosto\b',       # costo (in money context)
+    r'\b\d+\s*dollari?\b',  # dollari
+    r'\$\s*\d+',        # $50
+    r'\b\d+\s*\$',      # 50$
+]
+
+def contains_money_reference(text: str) -> bool:
+    """Check if text contains references to real money transactions"""
+    text_lower = text.lower()
+    for pattern in MONEY_FILTER_PATTERNS:
+        if re.search(pattern, text_lower, re.IGNORECASE):
+            return True
+    return False
+
 # Badge definitions
 BADGES = {
     "cuore_oro": {
