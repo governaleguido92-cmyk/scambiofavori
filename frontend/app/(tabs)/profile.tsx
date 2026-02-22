@@ -10,12 +10,13 @@ import {
   Modal,
   Share,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Badge, LeaderboardUser, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Badge, LeaderboardUser, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const BADGE_ICONS: Record<string, string> = {
   'heart': 'heart',
