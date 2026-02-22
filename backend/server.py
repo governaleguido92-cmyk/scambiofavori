@@ -2759,18 +2759,24 @@ async def mock_qr_scan(favor_id: str, current_user: User = Depends(get_current_u
     # Simulate QR completion
     granelli_cost = favor.get("granelli_cost", 1)
     
-    # Transfer granelli
+    # Transfer granelli based on favor type
     if favor["type"] == "offer":
-        giver_id = favor["creator_id"]
-        receiver_id = favor["accepted_by"]
+        # Offer: creator gives service, acceptor pays
+        giver_id = favor["creator_id"]  # gives service, receives granelli
+        payer_id = favor["accepted_by"]  # receives service, pays granelli
     else:
-        giver_id = favor["accepted_by"]
-        receiver_id = favor["creator_id"]
+        # Request: creator requests service, acceptor provides
+        giver_id = favor["accepted_by"]  # gives service, receives granelli
+        payer_id = favor["creator_id"]  # receives service, pays granelli
     
-    # Update balances
+    # Update balances - giver receives, payer pays
     await db.users.update_one(
-        {"user_id": receiver_id},
-        {"$inc": {"granelli": granelli_cost}}
+        {"user_id": giver_id},
+        {"$inc": {"granelli": granelli_cost, "total_favors_given": 1}}
+    )
+    await db.users.update_one(
+        {"user_id": payer_id},
+        {"$inc": {"granelli": -granelli_cost, "total_favors_received": 1}}
     )
     
     # Update favor status
@@ -2788,11 +2794,11 @@ async def mock_qr_scan(favor_id: str, current_user: User = Depends(get_current_u
     # Update social impact scores
     await db.users.update_one(
         {"user_id": giver_id},
-        {"$inc": {"social_impact_score": 20, "favors_given": 1}}
+        {"$inc": {"social_impact_score": 20}}
     )
     await db.users.update_one(
-        {"user_id": receiver_id},
-        {"$inc": {"social_impact_score": 10, "favors_received": 1}}
+        {"user_id": payer_id},
+        {"$inc": {"social_impact_score": 10}}
     )
     
     return {
