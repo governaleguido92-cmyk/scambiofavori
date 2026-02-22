@@ -45,7 +45,7 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
-      await register(email, password, name);
+      await register(email, password, name, referralCode || undefined);
       router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Registrazione fallita');
