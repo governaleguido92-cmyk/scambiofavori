@@ -394,11 +394,38 @@ export const api = {
     return handleResponse(response);
   },
 
-  sendMessage: async (favorId: string, content: string, token: string): Promise<ChatMessage> => {
+  sendMessage: async (favorId: string, content: string, token: string): Promise<any> => {
     const response = await fetch(`${API_URL}/api/messages`, {
       method: 'POST',
       headers: getHeaders(token),
       body: JSON.stringify({ favor_id: favorId, content }),
+    });
+    return handleResponse(response);
+  },
+
+  getChatStatus: async (favorId: string, token: string): Promise<ChatStatus> => {
+    const response = await fetch(`${API_URL}/api/chat/status/${favorId}`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  reportUserInChat: async (
+    favorId: string, 
+    reportedUserId: string, 
+    reason: string, 
+    description: string,
+    token: string
+  ): Promise<{ message: string; report_id: string }> => {
+    const response = await fetch(`${API_URL}/api/chat/report`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({
+        favor_id: favorId,
+        reported_user_id: reportedUserId,
+        reason,
+        description,
+      }),
     });
     return handleResponse(response);
   },
