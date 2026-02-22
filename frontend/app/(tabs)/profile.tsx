@@ -27,10 +27,13 @@ const BADGE_ICONS: Record<string, string> = {
   'home': 'home',
   'school': 'school',
   'people': 'people',
-  'flash': 'flash',
+  'flash': 'heart-sharp',
   'footsteps': 'footsteps',
-  'sunny': 'sunny',
-  'ribbon': 'ribbon',
+  'sunny': 'heart-circle',
+  'ribbon': 'heart-half',
+  'star': 'heart',
+  'trophy': 'heart-circle-outline',
+  'medal': 'heart-outline',
 };
 
 export default function ProfileScreen() {
