@@ -73,7 +73,7 @@ export interface Favor {
   description: string;
   category: string;
   duration_hours: number;
-  soli_cost: number;  // Renamed from credits_cost
+  granelli_cost: number;  // Renamed from credits_cost
   status: 'active' | 'accepted' | 'completed' | 'cancelled';
   accepted_by?: string;
   accepted_by_name?: string;
@@ -99,7 +99,7 @@ export interface LendableObject {
   name: string;
   description: string;
   category: string;
-  deposit_soli: number;
+  deposit_granelli: number;
   status: 'available' | 'borrowed' | 'unavailable';
   borrowed_by?: string;
   borrowed_by_name?: string;
@@ -186,7 +186,7 @@ export interface ObjectCreateData {
   name: string;
   description: string;
   category: string;
-  deposit_soli: number;
+  deposit_granelli: number;
   latitude?: number;
   longitude?: number;
 }
