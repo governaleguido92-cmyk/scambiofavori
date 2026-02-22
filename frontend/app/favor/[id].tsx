@@ -9,6 +9,7 @@ import {
   Alert,
   TextInput,
   Modal,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -17,12 +18,12 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const CATEGORY_ICONS: Record<string, string> = {
-  'Trasporto': 'car',
-  'Spesa': 'cart',
-  'Tecnologia': 'laptop',
-  'Pulizie': 'water',
+  'Trasporto': 'heart-circle',
+  'Spesa': 'heart',
+  'Tecnologia': 'heart-half',
+  'Pulizie': 'home',
   'Compagnia': 'people',
-  'Cucina': 'restaurant',
+  'Cucina': 'heart-circle-outline',
   'Giardinaggio': 'leaf',
   'Consiglio': 'bulb',
   'Informazione': 'information-circle',
