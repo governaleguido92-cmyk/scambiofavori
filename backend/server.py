@@ -418,6 +418,7 @@ class Favor(BaseModel):
     creator_id: str
     creator_name: str
     creator_title: str = "Nuovo Vicino"
+    creator_is_supporter: bool = False  # For golden badge display
     type: str
     title: str
     description: str
