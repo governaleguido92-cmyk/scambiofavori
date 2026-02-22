@@ -243,7 +243,7 @@ class User(BaseModel):
     average_kindness: float = 0.0
     average_impact: float = 0.0
     perfect_reviews_count: int = 0
-    referral_code: str
+    referral_code: Optional[str] = None
     referred_by: Optional[str] = None
     successful_referrals: int = 0
     badges: List[str] = []
@@ -262,7 +262,7 @@ class User(BaseModel):
     approximate_latitude: Optional[float] = None
     approximate_longitude: Optional[float] = None
     neighborhood: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
 class FavorCategory(BaseModel):
     name: str
