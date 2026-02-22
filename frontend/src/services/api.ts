@@ -85,6 +85,7 @@ export interface Favor {
   creator_id: string;
   creator_name: string;
   creator_title: string;
+  creator_is_supporter: boolean;  // For golden badge display
   type: 'offer' | 'request';
   title: string;
   description: string;
