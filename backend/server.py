@@ -2110,6 +2110,98 @@ async def get_my_referral_code(current_user: User = Depends(get_current_user)):
     }
 
 # ========================
+# SKILLS & NOTIFICATIONS
+# ========================
+
+class SkillsUpdate(BaseModel):
+    skills: List[str]
+
+class Notification(BaseModel):
+    notification_id: str
+    user_id: str
+    type: str  # "skill_match", "favor_update", "system"
+    title: str
+    message: str
+    favor_id: Optional[str] = None
+    read: bool = False
+    created_at: datetime
+
+@api_router.put("/user/skills")
+async def update_user_skills(skills_data: SkillsUpdate, current_user: User = Depends(get_current_user)):
+    """Update user's skills/competencies"""
+    # Validate skills against available categories
+    valid_categories = [c["name"] for c in FAVOR_CATEGORIES]
+    valid_skills = [s for s in skills_data.skills if s in valid_categories]
+    
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"skills": valid_skills}}
+    )
+    
+    return {"message": "Competenze aggiornate", "skills": valid_skills}
+
+@api_router.get("/user/skills")
+async def get_user_skills(current_user: User = Depends(get_current_user)):
+    """Get user's skills"""
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0, "skills": 1})
+    return {"skills": user_doc.get("skills", []) if user_doc else []}
+
+@api_router.get("/notifications")
+async def get_notifications(current_user: User = Depends(get_current_user)):
+    """Get user's notifications"""
+    notifications = await db.notifications.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(50).to_list(50)
+    return notifications
+
+@api_router.post("/notifications/read/{notification_id}")
+async def mark_notification_read(notification_id: str, current_user: User = Depends(get_current_user)):
+    """Mark notification as read"""
+    await db.notifications.update_one(
+        {"notification_id": notification_id, "user_id": current_user.user_id},
+        {"$set": {"read": True}}
+    )
+    return {"message": "Notifica segnata come letta"}
+
+@api_router.get("/notifications/unread-count")
+async def get_unread_count(current_user: User = Depends(get_current_user)):
+    """Get count of unread notifications"""
+    count = await db.notifications.count_documents({
+        "user_id": current_user.user_id,
+        "read": False
+    })
+    return {"unread_count": count}
+
+async def create_skill_match_notifications(favor_doc: dict):
+    """Create notifications for users whose skills match the favor's category"""
+    # Find users with matching skills who are not the favor creator
+    matching_users = await db.users.find({
+        "skills": favor_doc["category"],
+        "user_id": {"$ne": favor_doc["creator_id"]},
+        "notifications_enabled": {"$ne": False}
+    }, {"_id": 0, "user_id": 1}).to_list(100)
+    
+    notifications = []
+    for user in matching_users:
+        notification = {
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+            "user_id": user["user_id"],
+            "type": "skill_match",
+            "title": "Nuovo favore per te!",
+            "message": f"C'è una nuova richiesta di '{favor_doc['title']}' nella categoria {favor_doc['category']}",
+            "favor_id": favor_doc["favor_id"],
+            "read": False,
+            "created_at": datetime.now(timezone.utc)
+        }
+        notifications.append(notification)
+    
+    if notifications:
+        await db.notifications.insert_many(notifications)
+    
+    return len(notifications)
+
+# ========================
 # HEALTH CHECK
 # ========================
 
