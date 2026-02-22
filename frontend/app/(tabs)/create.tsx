@@ -492,6 +492,14 @@ export default function CreateFavorScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {/* Ethical Banner */}
+          <View style={styles.ethicalBanner}>
+            <Ionicons name="shield-checkmark-outline" size={16} color="#2D5A3D" />
+            <Text style={styles.ethicalBannerText}>
+              Pubblicando, confermi che il favore rispetta i nostri standard etici e di sicurezza
+            </Text>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
