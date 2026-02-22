@@ -1420,6 +1420,15 @@ async def get_favors(
     """Get favors (uses approximate location for privacy)"""
     query = {"status": status}
     
+    # Filtra annunci scaduti (solo per status active)
+    if status == "active":
+        now = datetime.now(timezone.utc)
+        query["$or"] = [
+            {"expires_at": {"$gt": now}},  # Non ancora scaduto
+            {"expires_at": None},           # Vecchi annunci senza scadenza
+            {"expires_at": {"$exists": False}}  # Compatibilità con dati esistenti
+        ]
+    
     if type:
         query["type"] = type
     if category:
@@ -1437,6 +1446,9 @@ async def get_favors(
     
     result = []
     for favor in favors:
+        # Imposta valori di default per campi nuovi
+        favor.setdefault("validity_days", 3)
+        favor.setdefault("expires_at", None)
         favor_obj = Favor(**favor)
         
         if latitude and longitude and favor_obj.approximate_latitude and favor_obj.approximate_longitude:
