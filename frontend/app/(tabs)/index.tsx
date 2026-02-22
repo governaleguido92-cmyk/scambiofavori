@@ -461,19 +461,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   thanksBoardSection: {
-    marginTop: 8,
-    paddingBottom: 8,
+    marginTop: 4,
+    paddingBottom: 4,
   },
   thanksBoardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 8,
-    gap: 8,
+    marginBottom: 4,
+    gap: 6,
   },
   thanksBoardTitle: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   thanksBoardList: {
@@ -481,29 +481,29 @@ const styles = StyleSheet.create({
   },
   thanksCard: {
     backgroundColor: '#16213e',
-    borderRadius: 12,
-    padding: 12,
-    marginRight: 12,
-    width: 280,
+    borderRadius: 10,
+    padding: 8,
+    marginRight: 8,
+    width: 200,
   },
   thanksHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
+    gap: 4,
+    marginBottom: 4,
   },
   thanksGiver: {
     color: '#4ecca3',
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
   },
   thanksArrow: {
     color: '#888',
-    fontSize: 12,
+    fontSize: 10,
   },
   thanksReceiver: {
     color: '#4ecca3',
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
   },
   thanksMessage: {
