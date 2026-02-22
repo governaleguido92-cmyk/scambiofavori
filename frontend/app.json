@@ -7,7 +7,7 @@
     "icon": "./assets/images/app-image.png",
     "scheme": "scambiodifavori",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.emergent.scambiodifavori",
