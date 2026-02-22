@@ -814,6 +814,8 @@ async def exchange_session(request: Request, response: Response):
             "is_vulnerable": False,
             "identity_verified": True,
             "community_score": 0,
+            "social_impact_score": 0,
+            "can_access_solidarity_fund": False,
             "approximate_latitude": None,
             "approximate_longitude": None,
             "neighborhood": None,
