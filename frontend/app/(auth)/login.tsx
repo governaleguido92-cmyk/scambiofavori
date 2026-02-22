@@ -44,8 +44,8 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-    const redirectUrl = Linking.createURL('/');
+    // Use the deployed web URL for OAuth redirect (required for web-based OAuth flows)
+    const redirectUrl = process.env.EXPO_PUBLIC_BACKEND_URL || Linking.createURL('/');
     const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
     
     try {
