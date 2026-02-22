@@ -352,6 +352,8 @@ class User(BaseModel):
     community_score: int = 0
     social_impact_score: int = 0  # New: Social Impact Bar
     can_access_solidarity_fund: bool = False
+    # Supporter subscription status
+    is_supporter: bool = False
     # Competenze utente per matching notifiche
     skills: List[str] = []  # Lista di categorie in cui l'utente è competente
     notifications_enabled: bool = True
