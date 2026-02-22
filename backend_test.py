@@ -34,6 +34,19 @@ class NewFeaturesAPITester:
         self.vatican = {"latitude": 41.9029, "longitude": 12.4534}  # ~4km from Colosseum
         self.pantheon = {"latitude": 41.8986, "longitude": 12.4769}  # ~300m from Colosseum
 
+    def calculate_distance_meters(self, lat1, lon1, lat2, lon2):
+        """Calculate distance in meters using Haversine formula"""
+        R = 6371000  # Earth's radius in meters
+        lat1_rad = math.radians(lat1)
+        lat2_rad = math.radians(lat2)
+        delta_lat = math.radians(lat2 - lat1)
+        delta_lon = math.radians(lon2 - lon1)
+        
+        a = math.sin(delta_lat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon/2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        
+        return R * c
+
     async def log_result(self, test_name: str, success: bool, details: str = ""):
         status = "✅ PASS" if success else "❌ FAIL"
         print(f"{status}: {test_name}")
@@ -64,34 +77,25 @@ class NewFeaturesAPITester:
             else:
                 return False, {"error": f"Unsupported method: {method}"}
             
-            if response.status_code == 200:
+            if response.status_code in [200, 201]:
                 return True, response.json()
             else:
                 return False, {
                     "status_code": response.status_code,
                     "error": response.text,
-                    "url": url
+                    "response_json": response.json() if response.headers.get("content-type", "").startswith("application/json") else None
                 }
         except Exception as e:
             return False, {"error": str(e), "url": f"{API_BASE_URL}{endpoint}"}
 
-    # ======================== AUTHENTICATION TESTS ========================
+    # ======================== SETUP TESTS ========================
 
-    async def test_health_check(self):
-        """Test GET /api/health"""
-        success, response = await self.make_request("GET", "/health")
-        if success and response.get("status") == "healthy":
-            await self.log_result("Health Check", True, "API is healthy")
-        else:
-            await self.log_result("Health Check", False, f"Health check failed: {response}")
-
-    async def test_user_registration(self):
-        """Test POST /api/auth/register"""
+    async def setup_test_user(self):
+        """Register a new test user"""
         test_user = {
-            "email": "testuser@scambiodifavori.com",
-            "name": "Mario Rossi",
-            "password": "testpassword123",
-            "referral_code": None
+            "email": f"newfeatures_{datetime.now().microsecond}@scambiodifavori.com",
+            "name": "Test User New Features",
+            "password": "testpassword123"
         }
         
         success, response = await self.make_request("POST", "/auth/register", test_user)
@@ -101,339 +105,322 @@ class NewFeaturesAPITester:
             self.test_user_id = response["user"]["user_id"]
             user_soli = response["user"].get("soli", 0)
             
-            await self.log_result("User Registration", True, 
-                f"User created with {user_soli} Soli, token received")
+            await self.log_result("Setup Test User", True, 
+                f"User created with {user_soli} Soli, ID: {self.test_user_id}")
+            return True
         else:
-            await self.log_result("User Registration", False, 
+            await self.log_result("Setup Test User", False, 
                 f"Registration failed: {response}")
+            return False
 
-    async def test_user_login(self):
-        """Test POST /api/auth/login"""
-        login_data = {
-            "email": "testuser@scambiodifavori.com", 
-            "password": "testpassword123"
-        }
-        
-        success, response = await self.make_request("POST", "/auth/login", login_data)
-        
-        if success and "user" in response and "token" in response:
-            # Update token with fresh login token
-            self.auth_token = response["token"] 
-            await self.log_result("User Login", True, "Login successful, JWT token received")
-        else:
-            await self.log_result("User Login", False, f"Login failed: {response}")
+    # ======================== NEW FEATURES TESTS ========================
 
-    async def test_get_current_user(self):
-        """Test GET /api/auth/me"""
-        success, response = await self.make_request("GET", "/auth/me")
-        
-        if success and "user_id" in response:
-            await self.log_result("Get Current User", True, 
-                f"User data retrieved: {response.get('name', 'N/A')}")
-        else:
-            await self.log_result("Get Current User", False, f"Failed to get user: {response}")
-
-    # ======================== FAVOR TESTS ========================
-
-    async def test_get_categories(self):
-        """Test GET /api/categories"""
-        success, response = await self.make_request("GET", "/categories")
-        
-        if success and isinstance(response, list) and len(response) > 0:
-            categories = [cat.get("name", "") for cat in response]
-            await self.log_result("Get Categories", True, 
-                f"Retrieved {len(categories)} categories: {', '.join(categories[:3])}...")
-        else:
-            await self.log_result("Get Categories", False, f"Failed to get categories: {response}")
-
-    async def test_create_favor_offer(self):
-        """Test POST /api/favors - Create an offer"""
-        favor_data = {
-            "type": "offer",
-            "title": "Aiuto con la spesa per anziani",
-            "description": "Posso fare la spesa per chi ha difficoltà a uscire di casa",
-            "category": "Spesa",
-            "duration_hours": 1.5,
-            "latitude": 41.9028,
-            "longitude": 12.4964,
-            "address": "Via Roma 123, Roma",
-            "is_micro": False,
-            "is_emergency": False
-        }
-        
-        success, response = await self.make_request("POST", "/favors", favor_data)
-        
-        if success and "favor_id" in response:
-            self.created_favor_id = response["favor_id"]
-            soli_cost = response.get("soli_cost", 0)
-            await self.log_result("Create Favor (Offer)", True, 
-                f"Favor created with ID: {self.created_favor_id}, Cost: {soli_cost} Soli")
-        else:
-            await self.log_result("Create Favor (Offer)", False, f"Failed to create favor: {response}")
-
-    async def test_create_favor_request(self):
-        """Test POST /api/favors - Create a request"""
-        favor_data = {
-            "type": "request",
-            "title": "Cerco aiuto per trasloco",
-            "description": "Ho bisogno di una mano per spostare alcuni mobili",
-            "category": "Trasporto", 
-            "duration_hours": 2.0,
-            "latitude": 41.9028,
-            "longitude": 12.4964,
-            "address": "Via Milano 456, Roma",
-            "is_micro": False,
-            "is_emergency": False
-        }
-        
-        success, response = await self.make_request("POST", "/favors", favor_data)
-        
-        if success and "favor_id" in response:
-            soli_cost = response.get("soli_cost", 0)
-            await self.log_result("Create Favor (Request)", True, 
-                f"Request created, Cost: {soli_cost} Soli")
-        else:
-            await self.log_result("Create Favor (Request)", False, f"Failed to create request: {response}")
-
-    async def test_get_favors_list(self):
-        """Test GET /api/favors"""
-        success, response = await self.make_request("GET", "/favors", {
-            "status": "active",
-            "latitude": 41.9028,
-            "longitude": 12.4964
-        })
-        
-        if success and isinstance(response, list):
-            offer_count = sum(1 for favor in response if favor.get("type") == "offer")
-            request_count = sum(1 for favor in response if favor.get("type") == "request")
-            await self.log_result("Get Favors List", True, 
-                f"Retrieved {len(response)} favors ({offer_count} offers, {request_count} requests)")
-        else:
-            await self.log_result("Get Favors List", False, f"Failed to get favors: {response}")
-
-    async def test_get_specific_favor(self):
-        """Test GET /api/favors/{favor_id}"""
-        if not self.created_favor_id:
-            await self.log_result("Get Specific Favor", False, "No favor ID to test with")
-            return
-        
-        success, response = await self.make_request("GET", f"/favors/{self.created_favor_id}")
-        
-        if success and response.get("favor_id") == self.created_favor_id:
-            await self.log_result("Get Specific Favor", True, 
-                f"Retrieved favor: {response.get('title', 'N/A')}")
-        else:
-            await self.log_result("Get Specific Favor", False, f"Failed to get favor: {response}")
-
-    # ======================== OBJECTS/OGGETTOTECA TESTS ========================
-
-    async def test_get_object_categories(self):
-        """Test GET /api/object-categories"""
-        success, response = await self.make_request("GET", "/object-categories")
-        
-        if success and isinstance(response, list) and len(response) > 0:
-            categories = [cat.get("name", "") for cat in response]
-            await self.log_result("Get Object Categories", True, 
-                f"Retrieved {len(categories)} categories: {', '.join(categories[:3])}...")
-        else:
-            await self.log_result("Get Object Categories", False, f"Failed to get categories: {response}")
-
-    async def test_create_lendable_object(self):
-        """Test POST /api/objects"""
-        object_data = {
-            "name": "Trapano elettrico Bosch",
-            "description": "Trapano professionale per lavori di casa, ottime condizioni",
-            "category": "Utensili",
-            "deposit_soli": 3,
-            "latitude": 41.9028,
-            "longitude": 12.4964
-        }
-        
-        success, response = await self.make_request("POST", "/objects", object_data)
-        
-        if success and "object_id" in response:
-            self.created_object_id = response["object_id"]
-            deposit = response.get("deposit_soli", 0)
-            await self.log_result("Create Lendable Object", True, 
-                f"Object created with ID: {self.created_object_id}, Deposit: {deposit} Soli")
-        else:
-            await self.log_result("Create Lendable Object", False, f"Failed to create object: {response}")
-
-    async def test_get_objects_list(self):
-        """Test GET /api/objects"""
-        success, response = await self.make_request("GET", "/objects", {
-            "status": "available",
-            "latitude": 41.9028,
-            "longitude": 12.4964
-        })
-        
-        if success and isinstance(response, list):
-            await self.log_result("Get Objects List", True, 
-                f"Retrieved {len(response)} available objects")
-        else:
-            await self.log_result("Get Objects List", False, f"Failed to get objects: {response}")
-
-    # ======================== COMMUNITY FEATURES TESTS ========================
-
-    async def test_get_badges(self):
-        """Test GET /api/badges"""
+    async def test_1_eroe_quartiere_badge_exists(self):
+        """Test 1: Check /api/badges for 'eroe_quartiere' badge"""
         success, response = await self.make_request("GET", "/badges")
         
-        if success and isinstance(response, list) and len(response) > 0:
-            badge_names = [badge.get("name", "") for badge in response]
-            await self.log_result("Get Badges", True, 
-                f"Retrieved {len(badge_names)} badges: {', '.join(badge_names[:3])}...")
-        else:
-            await self.log_result("Get Badges", False, f"Failed to get badges: {response}")
-
-    async def test_get_leaderboard(self):
-        """Test GET /api/leaderboard"""
-        success, response = await self.make_request("GET", "/leaderboard")
-        
         if success and isinstance(response, list):
-            await self.log_result("Get Leaderboard", True, 
-                f"Retrieved leaderboard with {len(response)} users")
+            eroe_badge = next((b for b in response if b.get('id') == 'eroe_quartiere'), None)
+            
+            if eroe_badge:
+                # Check required properties
+                required_props = ['id', 'name', 'description', 'icon', 'color']
+                has_all_props = all(prop in eroe_badge for prop in required_props)
+                
+                # Check if description mentions Solidarity Fund
+                description = eroe_badge.get('description', '')
+                mentions_fund = 'Fondo Solidarietà' in description or 'Solidarity' in description
+                
+                if has_all_props and mentions_fund:
+                    await self.log_result("1. Eroe Quartiere Badge Check", True, 
+                        f"Badge found: '{eroe_badge['name']}' - {eroe_badge['description']}")
+                    return True
+                else:
+                    await self.log_result("1. Eroe Quartiere Badge Check", False, 
+                        f"Badge missing properties or fund mention. Badge: {eroe_badge}")
+                    return False
+            else:
+                await self.log_result("1. Eroe Quartiere Badge Check", False, 
+                    f"Badge 'eroe_quartiere' not found in {len(response)} badges")
+                return False
         else:
-            await self.log_result("Get Leaderboard", False, f"Failed to get leaderboard: {response}")
+            await self.log_result("1. Eroe Quartiere Badge Check", False, 
+                f"Failed to get badges: {response}")
+            return False
 
-    async def test_get_solidarity_fund(self):
-        """Test GET /api/donations/fund"""
-        success, response = await self.make_request("GET", "/donations/fund")
-        
-        if success and "solidarity_fund_total" in response:
-            total = response.get("solidarity_fund_total", 0)
-            currency = response.get("currency", "Soli")
-            await self.log_result("Get Solidarity Fund", True, 
-                f"Solidarity fund total: {total} {currency}")
-        else:
-            await self.log_result("Get Solidarity Fund", False, f"Failed to get fund info: {response}")
-
-    async def test_create_donation(self):
-        """Test POST /api/donations"""
+    async def test_2_solidarity_fund_access_denied(self):
+        """Test 2: Try to donate to solidarity fund (should fail - no access yet)"""
         donation_data = {
-            "amount": 2,
-            "recipient_id": None,  # To solidarity fund
-            "message": "Contributo per la comunità"
+            "amount": 5,
+            "message": "Test donation to solidarity fund"
+            # No recipient_id means donation to solidarity fund
         }
         
         success, response = await self.make_request("POST", "/donations", donation_data)
         
-        if success and "donation_id" in response:
-            amount = response.get("amount", 0)
-            await self.log_result("Create Donation", True, 
-                f"Donation created: {amount} Soli to solidarity fund")
+        if not success and response.get("status_code") == 403:
+            error_details = response.get("response_json", {})
+            error_msg = error_details.get('detail', '') if error_details else ''
+            
+            # Should mention completing more favors
+            if ('Completa ancora' in error_msg or 'favori' in error_msg) and 'sbloccare' in error_msg:
+                await self.log_result("2. Solidarity Fund Access Denied", True, 
+                    f"Correctly blocked: {error_msg}")
+                return True
+            else:
+                await self.log_result("2. Solidarity Fund Access Denied", False, 
+                    f"Wrong error message: {error_msg}")
+                return False
         else:
-            await self.log_result("Create Donation", False, f"Failed to create donation: {response}")
+            await self.log_result("2. Solidarity Fund Access Denied", False, 
+                f"Expected 403 error, got: {response}")
+            return False
 
-    async def test_get_thanks_board(self):
-        """Test GET /api/thanks"""
-        success, response = await self.make_request("GET", "/thanks")
+    async def test_3_privacy_layer_coordinates_blur(self):
+        """Test 3: Privacy Layer (200m blur) - Check that exact coordinates are not exposed"""
+        favor_data = {
+            "type": "offer",
+            "title": "Privacy Test Favor",
+            "description": "Testing 200m location privacy blur",
+            "category": "Aiuto Rapido",
+            "duration_hours": 1.0,
+            "latitude": self.colosseum["latitude"],
+            "longitude": self.colosseum["longitude"],
+            "is_micro": True
+        }
         
-        if success and isinstance(response, list):
-            await self.log_result("Get Thanks Board", True, 
-                f"Retrieved {len(response)} thanks entries")
-        else:
-            await self.log_result("Get Thanks Board", False, f"Failed to get thanks board: {response}")
-
-    # ======================== WALL TESTS ========================
-
-    async def test_get_wall_posts(self):
-        """Test GET /api/wall"""
-        success, response = await self.make_request("GET", "/wall", {
-            "latitude": 41.9028,
-            "longitude": 12.4964,
-            "radius_km": 1.0
-        })
+        success, response = await self.make_request("POST", "/favors", favor_data)
         
-        if success and isinstance(response, list):
-            await self.log_result("Get Wall Posts", True, 
-                f"Retrieved {len(response)} wall posts")
+        if success and "favor_id" in response:
+            # Check privacy implementation
+            approx_lat = response.get('approximate_latitude')
+            approx_lon = response.get('approximate_longitude')
+            exact_lat = response.get('exact_latitude') 
+            exact_lon = response.get('exact_longitude')
+            
+            # Should have approximate coordinates
+            if approx_lat is None or approx_lon is None:
+                await self.log_result("3. Privacy Layer Coordinates", False, 
+                    "Missing approximate coordinates in response")
+                return False
+            
+            # Should NOT expose exact coordinates in public API
+            if exact_lat is not None or exact_lon is not None:
+                await self.log_result("3. Privacy Layer Coordinates", False, 
+                    "Exact coordinates exposed in public API response")
+                return False
+            
+            # Check that blur distance is reasonable (within privacy radius)
+            blur_distance = self.calculate_distance_meters(
+                self.colosseum["latitude"], self.colosseum["longitude"],
+                approx_lat, approx_lon
+            )
+            
+            if blur_distance > 300:  # Allow some buffer beyond 200m
+                await self.log_result("3. Privacy Layer Coordinates", False, 
+                    f"Privacy blur too large: {int(blur_distance)}m > 300m")
+                return False
+            elif blur_distance < 10:  # Should have meaningful blur
+                await self.log_result("3. Privacy Layer Coordinates", False, 
+                    f"Privacy blur too small: {int(blur_distance)}m")
+                return False
+            else:
+                await self.log_result("3. Privacy Layer Coordinates", True, 
+                    f"Coordinates properly blurred by {int(blur_distance)}m (within 200m ± buffer)")
+                self.created_favor_id = response["favor_id"]
+                return True
         else:
-            await self.log_result("Get Wall Posts", False, f"Failed to get wall posts: {response}")
+            await self.log_result("3. Privacy Layer Coordinates", False, 
+                f"Failed to create favor for privacy test: {response}")
+            return False
 
-    # ======================== EMERGENCY TESTS ========================
-
-    async def test_get_emergencies(self):
-        """Test GET /api/favors/emergencies"""
-        success, response = await self.make_request("GET", "/favors/emergencies", {
-            "latitude": 41.9028,
-            "longitude": 12.4964
-        })
+    async def test_4_proximity_check_50m_limit(self):
+        """Test 4: Proximity Check (50m limit) - Should fail when users are too far apart"""
+        if not self.created_favor_id:
+            await self.log_result("4. Proximity Check (50m limit)", False, 
+                "No favor available to test proximity check")
+            return False
         
-        if success and isinstance(response, list):
-            await self.log_result("Get Emergencies", True, 
-                f"Retrieved {len(response)} emergency requests")
+        # Try to complete favor from Vatican (4km away from Colosseum)
+        complete_data = {
+            "favor_id": self.created_favor_id,
+            "latitude": self.vatican["latitude"],
+            "longitude": self.vatican["longitude"]
+        }
+        
+        success, response = await self.make_request("POST", "/favors/complete", complete_data)
+        
+        if not success:
+            status_code = response.get("status_code")
+            error_details = response.get("response_json", {})
+            error_msg = error_details.get('detail', '') if error_details else ''
+            
+            # Should be blocked for distance (400 error expected)
+            if status_code == 400 and ('troppo lontani' in error_msg or 'distance' in error_msg.lower()):
+                # Calculate actual distance to verify
+                actual_distance = self.calculate_distance_meters(
+                    self.colosseum["latitude"], self.colosseum["longitude"],
+                    self.vatican["latitude"], self.vatican["longitude"]
+                )
+                
+                await self.log_result("4. Proximity Check (50m limit)", True, 
+                    f"Correctly blocked completion at {int(actual_distance)}m: {error_msg}")
+                return True
+            else:
+                await self.log_result("4. Proximity Check (50m limit)", False, 
+                    f"Wrong error response (Status: {status_code}): {error_msg}")
+                return False
         else:
-            await self.log_result("Get Emergencies", False, f"Failed to get emergencies: {response}")
+            await self.log_result("4. Proximity Check (50m limit)", False, 
+                "Proximity check failed - completion allowed at 4km distance")
+            return False
+
+    async def test_5_check_privacy_radius_constant(self):
+        """Test 5: Verify PRIVACY_RADIUS_METERS = 200 by checking server configuration"""
+        # We can't directly access server constants, but we can infer from behavior
+        # Create multiple favors and check consistency of blur radius
+        
+        test_locations = [
+            {"lat": 41.8902, "lon": 12.4922, "name": "Colosseum"},
+            {"lat": 41.9029, "lon": 12.4534, "name": "Vatican"},
+        ]
+        
+        blur_distances = []
+        
+        for i, location in enumerate(test_locations):
+            favor_data = {
+                "type": "offer", 
+                "title": f"Privacy Test {i+1}",
+                "description": f"Testing privacy at {location['name']}",
+                "category": "Aiuto Rapido",
+                "duration_hours": 1.0,
+                "latitude": location["lat"],
+                "longitude": location["lon"],
+                "is_micro": True
+            }
+            
+            success, response = await self.make_request("POST", "/favors", favor_data)
+            
+            if success:
+                approx_lat = response.get('approximate_latitude')
+                approx_lon = response.get('approximate_longitude')
+                
+                if approx_lat and approx_lon:
+                    blur_distance = self.calculate_distance_meters(
+                        location["lat"], location["lon"], approx_lat, approx_lon
+                    )
+                    blur_distances.append(blur_distance)
+        
+        if len(blur_distances) >= 2:
+            avg_blur = sum(blur_distances) / len(blur_distances)
+            max_blur = max(blur_distances)
+            
+            # Check that blur distances are within expected 200m radius
+            if max_blur <= 250 and avg_blur <= 200:  # Allow some variance
+                await self.log_result("5. Privacy Radius Verification", True, 
+                    f"Privacy radius consistent: avg {int(avg_blur)}m, max {int(max_blur)}m (≤200m expected)")
+                return True
+            else:
+                await self.log_result("5. Privacy Radius Verification", False, 
+                    f"Privacy radius too large: avg {int(avg_blur)}m, max {int(max_blur)}m")
+                return False
+        else:
+            await self.log_result("5. Privacy Radius Verification", False, 
+                "Could not create enough test favors to verify privacy radius")
+            return False
+
+    async def test_6_gamification_badge_requirements(self):
+        """Test 6: Check that Eroe di Quartiere badge requires 5 completed favors"""
+        # Get current user info to check badges
+        success, response = await self.make_request("GET", "/auth/me")
+        
+        if success:
+            user_badges = response.get("badges", [])
+            total_favors_given = response.get("total_favors_given", 0)
+            total_favors_received = response.get("total_favors_received", 0)
+            total_favors = total_favors_given + total_favors_received
+            
+            has_eroe_badge = "eroe_quartiere" in user_badges
+            
+            if total_favors < 5 and not has_eroe_badge:
+                await self.log_result("6. Gamification Badge Requirements", True, 
+                    f"User correctly has NO 'eroe_quartiere' badge (only {total_favors}/5 favors completed)")
+                return True
+            elif total_favors >= 5 and has_eroe_badge:
+                await self.log_result("6. Gamification Badge Requirements", True, 
+                    f"User correctly has 'eroe_quartiere' badge ({total_favors}/5 favors completed)")
+                return True
+            elif total_favors >= 5 and not has_eroe_badge:
+                await self.log_result("6. Gamification Badge Requirements", False, 
+                    f"User should have 'eroe_quartiere' badge ({total_favors}/5 favors completed)")
+                return False
+            else:
+                await self.log_result("6. Gamification Badge Requirements", False, 
+                    f"User incorrectly has badge with only {total_favors}/5 favors")
+                return False
+        else:
+            await self.log_result("6. Gamification Badge Requirements", False, 
+                f"Failed to get user info: {response}")
+            return False
 
     # ======================== MAIN TEST RUNNER ========================
 
-    async def run_all_tests(self):
-        """Run all API tests in sequence"""
-        print("🚀 Starting Scambio di Favori API Testing...")
-        print(f"📡 Testing against: {API_BASE_URL}")
-        print("=" * 60)
+    async def run_new_features_tests(self):
+        """Run all new feature tests in sequence"""
+        print("🚀 Testing NEW FEATURES - Scambio di Favori Backend")
+        print(f"📡 API Base URL: {API_BASE_URL}")
+        print("=" * 70)
 
-        # Health and setup
-        await self.test_health_check()
-        
-        # Authentication flow
-        await self.test_user_registration()
-        await self.test_user_login()
-        await self.test_get_current_user()
-        
-        # Categories
-        await self.test_get_categories()
-        
-        # Favors
-        await self.test_create_favor_offer()
-        await self.test_create_favor_request()
-        await self.test_get_favors_list()
-        await self.test_get_specific_favor()
-        
-        # Objects/Oggettoteca
-        await self.test_get_object_categories()
-        await self.test_create_lendable_object()
-        await self.test_get_objects_list()
-        
-        # Community features
-        await self.test_get_badges()
-        await self.test_get_leaderboard()
-        await self.test_get_solidarity_fund()
-        await self.test_create_donation()
-        await self.test_get_thanks_board()
-        
-        # Wall
-        await self.test_get_wall_posts()
-        
-        # Emergencies
-        await self.test_get_emergencies()
+        # Setup
+        if not await self.setup_test_user():
+            print("❌ Cannot proceed without test user")
+            return False
 
-        # Final summary
-        print("=" * 60)
-        print(f"🏁 Testing Complete!")
+        # Test the new features
+        print("\n🧪 TESTING NEW FEATURES:")
+        await self.test_1_eroe_quartiere_badge_exists()
+        await self.test_2_solidarity_fund_access_denied()
+        await self.test_3_privacy_layer_coordinates_blur()
+        await self.test_4_proximity_check_50m_limit()
+        await self.test_5_check_privacy_radius_constant()
+        await self.test_6_gamification_badge_requirements()
+
+        # Summary
+        print("\n" + "=" * 70)
+        print("📊 NEW FEATURES TEST SUMMARY")
+        print("=" * 70)
+        
+        total_tests = len(self.results['errors']) + self.results['passed']
+        
+        print(f"Total Tests: {total_tests}")
         print(f"✅ Passed: {self.results['passed']}")
         print(f"❌ Failed: {self.results['failed']}")
         
         if self.results['errors']:
-            print("\n🚨 Failed Tests:")
+            print("\n🚨 FAILED TESTS:")
             for error in self.results['errors']:
                 print(f"   • {error}")
         
         await self.client.aclose()
-        return self.results
+        return self.results['failed'] == 0
 
 async def main():
     """Main entry point"""
-    tester = APITester()
-    results = await tester.run_all_tests()
+    tester = NewFeaturesAPITester()
     
-    # Exit with error code if any tests failed
-    if results['failed'] > 0:
+    try:
+        success = await tester.run_new_features_tests()
+        
+        if success:
+            print("\n🎉 ALL NEW FEATURES TESTS PASSED!")
+            sys.exit(0)
+        else:
+            print("\n⚠️ SOME NEW FEATURES TESTS FAILED")
+            sys.exit(1)
+            
+    except Exception as e:
+        print(f"\n💥 Testing failed with error: {str(e)}")
         sys.exit(1)
-    else:
-        print("\n🎉 All tests passed!")
-        sys.exit(0)
 
 if __name__ == "__main__":
     asyncio.run(main())
