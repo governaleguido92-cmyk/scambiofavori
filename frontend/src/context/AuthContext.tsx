@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, referralCode?: string) => Promise<void>;
   exchangeSessionId: (sessionId: string) => Promise<void>;
+  loginWithToken: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   acceptLegal: () => Promise<void>;
