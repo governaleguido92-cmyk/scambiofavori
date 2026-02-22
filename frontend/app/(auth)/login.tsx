@@ -26,7 +26,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
-  const { login, exchangeSessionId } = useAuth();
+  const { login, exchangeSessionId, loginWithToken } = useAuth();
   const router = useRouter();
 
   // Check if Apple Sign In is available (iOS only)
