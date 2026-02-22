@@ -37,27 +37,38 @@ export default function ProfileScreen() {
   const [showDonateModal, setShowDonateModal] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showSkillsModal, setShowSkillsModal] = useState(false);
   const [donationAmount, setDonationAmount] = useState('1');
   const [solidarityFund, setSolidarityFund] = useState(0);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [referralInfo, setReferralInfo] = useState<{ referral_code: string; successful_referrals: number; bonus_per_referral: number } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // Skills state
+  const [userSkills, setUserSkills] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [savingSkills, setSavingSkills] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
-      const [myBadges, allBadgesData, fundData, leaderboardData, referralData] = await Promise.all([
+      const [myBadges, allBadgesData, fundData, leaderboardData, referralData, skillsData, categoriesData] = await Promise.all([
         api.getMyBadges(token),
         api.getAllBadges(),
         api.getSolidarityFund(),
         api.getLeaderboard(),
         api.getReferralCode(token),
+        api.getUserSkills(token),
+        api.getCategories(),
       ]);
       setBadges(myBadges);
       setAllBadges(allBadgesData);
       setSolidarityFund(fundData.solidarity_fund_total);
       setLeaderboard(leaderboardData);
       setReferralInfo(referralData);
+      setUserSkills(skillsData.skills || []);
+      setSelectedSkills(skillsData.skills || []);
+      setCategories(categoriesData);
     } catch (error) {
       console.log('Error loading profile data:', error);
     }
