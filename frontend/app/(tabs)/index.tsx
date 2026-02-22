@@ -332,6 +332,28 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* Supporter Promo Banner - Only for non-supporters */}
+      {user && !user.is_supporter && (
+        <TouchableOpacity 
+          style={styles.promoBanner}
+          onPress={() => router.push('/supporter')}
+          data-testid="supporter-promo-banner"
+        >
+          <View style={styles.promoBannerContent}>
+            <View style={styles.promoBannerIcon}>
+              <Ionicons name="heart" size={24} color="#FFD700" />
+            </View>
+            <View style={styles.promoBannerText}>
+              <Text style={styles.promoBannerTitle}>Diventa Sostenitore!</Text>
+              <Text style={styles.promoBannerSubtitle}>
+                Solo 1€/mese per supportare la community e ottenere il badge dorato ✨
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#FFD700" />
+          </View>
+        </TouchableOpacity>
+      )}
+
       {/* Thanks Board Widget */}
       {thanksBoard.length > 0 && (
         <View style={styles.thanksBoardSection}>
