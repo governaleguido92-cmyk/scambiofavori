@@ -17,18 +17,22 @@ from typing import Dict, Any, Optional
 BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://kindness-hub-13.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
-class APITester:
+class NewFeaturesAPITester:
     def __init__(self):
         self.client = httpx.AsyncClient(timeout=30.0)
         self.auth_token = None
         self.test_user_id = None
         self.created_favor_id = None
-        self.created_object_id = None
         self.results = {
             "passed": 0,
             "failed": 0,
             "errors": []
         }
+        
+        # Test locations for proximity testing (Rome coordinates)
+        self.colosseum = {"latitude": 41.8902, "longitude": 12.4922}
+        self.vatican = {"latitude": 41.9029, "longitude": 12.4534}  # ~4km from Colosseum
+        self.pantheon = {"latitude": 41.8986, "longitude": 12.4769}  # ~300m from Colosseum
 
     async def log_result(self, test_name: str, success: bool, details: str = ""):
         status = "✅ PASS" if success else "❌ FAIL"
