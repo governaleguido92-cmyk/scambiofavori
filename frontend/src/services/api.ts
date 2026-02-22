@@ -85,10 +85,22 @@ export interface Favor {
   distance_km?: number;
   is_micro: boolean;
   is_emergency: boolean;
+  creator_in_debt: boolean;  // For priority highlighting
   qr_code?: string;
   checkin_completed: boolean;
   created_at: string;
   completed_at?: string;
+}
+
+// Debt Status Response
+export interface DebtStatus {
+  granelli: number;
+  in_debt: boolean;
+  can_request: boolean;
+  debt_limit: number;
+  reliability_score: number;
+  in_debt_recovery: boolean;
+  message?: string;
 }
 
 export interface LendableObject {
