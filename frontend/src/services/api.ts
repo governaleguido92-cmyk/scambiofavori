@@ -665,4 +665,74 @@ export const api = {
     const favor = await api.getFavor(favorId, token);
     return { qr_code: favor.qr_code || '' };
   },
+
+  // ========================
+  // LEGAL & GDPR
+  // ========================
+  
+  acceptLegalTerms: async (token: string): Promise<{ message: string; legal_accepted: boolean }> => {
+    const response = await fetch(`${API_URL}/api/legal/accept`, {
+      method: 'POST',
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  getLegalStatus: async (token: string): Promise<{ legal_accepted: boolean; legal_accepted_at: string | null }> => {
+    const response = await fetch(`${API_URL}/api/legal/status`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  deleteAccount: async (confirmEmail: string, reason: string | undefined, token: string): Promise<{ message: string; details: string }> => {
+    const response = await fetch(`${API_URL}/api/account`, {
+      method: 'DELETE',
+      headers: getHeaders(token),
+      body: JSON.stringify({ confirm_email: confirmEmail, reason }),
+    });
+    return handleResponse(response);
+  },
+
+  // ========================
+  // SKILLS & NOTIFICATIONS
+  // ========================
+  
+  updateUserSkills: async (skills: string[], token: string): Promise<{ message: string; skills: string[] }> => {
+    const response = await fetch(`${API_URL}/api/user/skills`, {
+      method: 'PUT',
+      headers: getHeaders(token),
+      body: JSON.stringify({ skills }),
+    });
+    return handleResponse(response);
+  },
+
+  getUserSkills: async (token: string): Promise<{ skills: string[] }> => {
+    const response = await fetch(`${API_URL}/api/user/skills`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  getNotifications: async (token: string): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/api/notifications`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  markNotificationRead: async (notificationId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/notifications/read/${notificationId}`, {
+      method: 'POST',
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  getUnreadNotificationsCount: async (token: string): Promise<{ unread_count: number }> => {
+    const response = await fetch(`${API_URL}/api/notifications/unread-count`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
 };
