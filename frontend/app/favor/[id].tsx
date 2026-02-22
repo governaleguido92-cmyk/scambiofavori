@@ -607,17 +607,33 @@ export default function FavorDetailScreen() {
       <Modal visible={showQRModal} transparent animationType="fade">
         <View style={styles.qrModalOverlay}>
           <View style={styles.qrModalContent}>
-            <Text style={styles.qrModalTitle}>Check-in QR</Text>
+            <View style={styles.qrModalHeader}>
+              <Ionicons name="heart-circle" size={32} color="#4ecca3" />
+              <Text style={styles.qrModalTitle}>Check-in QR</Text>
+            </View>
+            
             <Text style={styles.qrModalDescription}>
-              Mostra questo codice all'altra persona per validare l'incontro
+              {qrInstructions || 'Mostra questo codice all\'altra persona per completare il favore'}
             </Text>
             
             <View style={styles.qrCodeBox}>
-              <Ionicons name="qr-code" size={120} color="#4ecca3" />
-              <Text style={styles.qrCodeText}>{qrCode?.slice(0, 16)}...</Text>
+              {qrImage ? (
+                <Image 
+                  source={{ uri: qrImage }} 
+                  style={styles.qrCodeImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Ionicons name="qr-code" size={120} color="#4ecca3" />
+              )}
+            </View>
+            
+            <View style={styles.qrCodeInfo}>
+              <Ionicons name="shield-checkmark" size={16} color="#4ecca3" />
+              <Text style={styles.qrCodeInfoText}>Codice sicuro monouso</Text>
             </View>
 
-            {favor.checkin_completed && (
+            {favor?.checkin_completed && (
               <View style={styles.checkinComplete}>
                 <Ionicons name="checkmark-circle" size={24} color="#4ecca3" />
                 <Text style={styles.checkinCompleteText}>Check-in completato!</Text>
