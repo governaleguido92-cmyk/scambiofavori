@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   Switch,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -18,6 +19,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+
+const DEBT_LIMIT = -3; // Social debt threshold
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'car',
@@ -47,6 +50,10 @@ export default function CreateFavorScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [isMicro, setIsMicro] = useState(false);
+  const [showDebtModal, setShowDebtModal] = useState(false);
+
+  // Check if user is in social debt
+  const isInDebt = (user?.granelli || 0) <= DEBT_LIMIT;
 
   useEffect(() => {
     loadCategories();
