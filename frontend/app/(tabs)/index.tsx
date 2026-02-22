@@ -637,6 +637,26 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
   },
+  favorCardDebtHighlight: {
+    borderWidth: 2,
+    borderColor: 'rgba(255, 107, 107, 0.5)',
+    backgroundColor: '#1a1f2e',
+  },
+  debtPriorityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 107, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 6,
+  },
+  debtPriorityText: {
+    color: '#ff6b6b',
+    fontSize: 11,
+    fontWeight: '600',
+  },
   favorHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
