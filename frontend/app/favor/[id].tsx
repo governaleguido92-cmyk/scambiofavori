@@ -41,6 +41,7 @@ export default function FavorDetailScreen() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [isReviewer, setIsReviewer] = useState(false);
   
   // Review form state
   const [rating, setRating] = useState(5);
@@ -51,7 +52,47 @@ export default function FavorDetailScreen() {
 
   useEffect(() => {
     loadFavor();
+    checkReviewerStatus();
   }, [id]);
+
+  const checkReviewerStatus = async () => {
+    if (!token) return;
+    try {
+      const status = await api.checkReviewerStatus(token);
+      setIsReviewer(status.debug_features_enabled || false);
+    } catch (error) {
+      // Non è un reviewer o l'endpoint non esiste
+      setIsReviewer(false);
+    }
+  };
+
+  const handleMockQRScan = async () => {
+    if (!token || !favor) return;
+    
+    Alert.alert(
+      '🔧 Debug Mode',
+      'Simulare una scansione QR per completare questo favore?',
+      [
+        { text: 'Annulla', style: 'cancel' },
+        {
+          text: 'Simula QR',
+          onPress: async () => {
+            setActionLoading(true);
+            try {
+              await api.mockQRScan(favor.favor_id, token);
+              await refreshUser();
+              await loadFavor();
+              Alert.alert('✅ Debug', 'QR scan simulato con successo! Favore completato.');
+            } catch (error: any) {
+              Alert.alert('Errore', error.message || 'Impossibile simulare QR scan');
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const loadFavor = async () => {
     if (!id) return;
