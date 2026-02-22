@@ -507,8 +507,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   thanksMessage: {
-    color: '#ccc',
-    fontSize: 12,
+    color: '#aaa',
+    fontSize: 10,
     fontStyle: 'italic',
   },
   tabSelector: {
