@@ -18,7 +18,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Badge, LeaderboardUser, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Badge, LeaderboardUser, Category, CURRENCY_NAME, CURRENCY_SYMBOL, getImageUrl } from '../../src/services/api';
 import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar';
 import { SupporterProfileBorder, SupporterBadge } from '../../src/components/SupporterBadge';
 
