@@ -4,49 +4,44 @@
     "slug": "scambio-di-favori",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/app-image.png",
     "scheme": "scambiodifavori",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.emergent.scambiodifavori",
       "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "Questa app usa la fotocamera per scansionare codici QR e caricare foto profilo.",
-        "NSPhotoLibraryUsageDescription": "Questa app accede alla libreria foto per permetterti di scegliere una foto profilo.",
-        "NSLocationWhenInUseUsageDescription": "Questa app usa la tua posizione per mostrarti favori nelle vicinanze."
-      },
-      "usesAppleSignIn": true
+        "NSCameraUsageDescription": "Questa app usa la fotocamera per scansionare codici QR.",
+        "NSPhotoLibraryUsageDescription": "Questa app accede alla libreria foto per la foto profilo.",
+        "NSLocationWhenInUseUsageDescription": "Questa app usa la posizione per mostrare favori vicini."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/app-image.png",
         "backgroundColor": "#0F1A14"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.emergent.scambiodifavori",
       "versionCode": 1,
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/app-image.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/app-image.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#0F1A14"
@@ -55,14 +50,13 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Questa app accede alle tue foto per permetterti di scegliere una foto profilo."
+          "photosPermission": "Accesso alle foto per la foto profilo."
         }
       ],
-      "expo-apple-authentication",
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Questa app usa la tua posizione per mostrarti favori nelle vicinanze."
+          "locationWhenInUsePermission": "Per mostrare favori vicini."
         }
       ]
     ],
@@ -70,11 +64,9 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
       "eas": {
         "projectId": "451c9e7f-fa11-4914-a8f0-7ff3d07cde8f"
       }
-    },
-    "owner": "domenico2026"
+    }
   }
 }
