@@ -1883,7 +1883,7 @@ async def get_messages(favor_id: str, current_user: User = Depends(get_current_u
 
 @api_router.post("/messages", response_model=Message)
 async def send_message(msg: MessageCreate, current_user: User = Depends(get_current_user)):
-    """Send a message in favor chat - with anti-money filter"""
+    """Send a message in favor chat - with content filters and moderation"""
     # Check if favor exists and user is participant
     favor = await db.favors.find_one({"favor_id": msg.favor_id}, {"_id": 0})
     if not favor:
@@ -1896,59 +1896,247 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     if not is_participant:
         raise HTTPException(status_code=403, detail="Non sei un partecipante di questo favore")
     
+    # ========================
+    # CHECK READ-ONLY STATUS
+    # ========================
+    # Chat becomes read-only 24h after completion or cancellation
+    if favor["status"] in ["completed", "cancelled"]:
+        completed_at = favor.get("completed_at") or favor.get("created_at")
+        if completed_at:
+            time_since = datetime.now(timezone.utc) - completed_at.replace(tzinfo=timezone.utc)
+            if time_since.total_seconds() > 24 * 3600:  # 24 hours
+                raise HTTPException(
+                    status_code=403, 
+                    detail="Chat in sola lettura - il favore è stato completato/annullato da più di 24 ore"
+                )
+    
     # Check if favor is in a state that allows messaging
-    if favor["status"] not in ["accepted", "active"]:
+    if favor["status"] not in ["accepted", "active", "completed", "cancelled"]:
         raise HTTPException(status_code=400, detail="Non puoi inviare messaggi per questo favore")
     
     # ========================
-    # REGEX FILTER - Block money references
+    # SHADOW BAN CHECK
     # ========================
+    user_reports = await db.reports.count_documents({
+        "reported_user_id": current_user.user_id,
+        "status": "confirmed"
+    })
+    if user_reports >= 3:
+        raise HTTPException(
+            status_code=403,
+            detail="La tua capacità di inviare messaggi è stata sospesa a causa di segnalazioni multiple"
+        )
+    
     content = msg.content.strip()
     if not content:
         raise HTTPException(status_code=400, detail="Messaggio vuoto")
     
-    is_blocked = contains_money_reference(content)
+    # ========================
+    # CONTENT FILTERS
+    # ========================
+    response_warnings = []
     
-    message_id = f"msg_{uuid.uuid4().hex[:12]}"
-    
-    if is_blocked:
-        # Store blocked attempt and notify
+    # 1. Money filter
+    if contains_money_reference(content):
+        message_id = f"msg_{uuid.uuid4().hex[:12]}"
         blocked_doc = {
             "message_id": message_id,
             "favor_id": msg.favor_id,
             "sender_id": current_user.user_id,
             "sender_name": current_user.name,
             "content": "[Messaggio bloccato - riferimento a transazioni in denaro]",
-            "original_content": content,  # Store for admin review
+            "original_content": content,
             "is_system": False,
             "blocked": True,
+            "block_reason": "money",
             "created_at": datetime.now(timezone.utc)
         }
         await db.messages.insert_one(blocked_doc)
-        
-        # Return error to user
         raise HTTPException(
             status_code=400, 
-            detail="⚠️ Messaggio bloccato: non sono ammessi riferimenti a transazioni in denaro reale. Usa solo i Granelli per gli scambi!"
+            detail="⚠️ Messaggio bloccato: non sono ammessi riferimenti a denaro reale. Usa solo i Granelli!"
         )
     
+    # 2. Offensive language filter
+    if contains_offensive_language(content):
+        message_id = f"msg_{uuid.uuid4().hex[:12]}"
+        blocked_doc = {
+            "message_id": message_id,
+            "favor_id": msg.favor_id,
+            "sender_id": current_user.user_id,
+            "sender_name": current_user.name,
+            "content": "[Messaggio bloccato - linguaggio inappropriato]",
+            "original_content": content,
+            "is_system": False,
+            "blocked": True,
+            "block_reason": "offensive",
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.messages.insert_one(blocked_doc)
+        raise HTTPException(
+            status_code=400, 
+            detail="⚠️ Messaggio bloccato: linguaggio inappropriato non ammesso"
+        )
+    
+    # 3. Suspicious links filter
+    if is_suspicious_link(content):
+        raise HTTPException(
+            status_code=400,
+            detail="⚠️ Link esterni non ammessi. Puoi condividere solo link di mappe (Google Maps, OpenStreetMap)"
+        )
+    
+    # 4. Personal data warning (not blocked, just flagged)
+    personal_data_check = contains_personal_data(content)
+    if personal_data_check['has_personal_data']:
+        response_warnings.append({
+            "type": "personal_data",
+            "message": "Stai condividendo dati personali. Assicurati di fidarti del tuo vicino prima di procedere.",
+            "data_types": personal_data_check['types']
+        })
+    
     # Save valid message
+    message_id = f"msg_{uuid.uuid4().hex[:12]}"
     message_doc = {
         "message_id": message_id,
         "favor_id": msg.favor_id,
         "sender_id": current_user.user_id,
         "sender_name": current_user.name,
         "content": content,
+        "message_type": msg.message_type or "text",  # text, meeting_point, image
         "is_system": False,
         "blocked": False,
+        "has_personal_data": personal_data_check['has_personal_data'],
         "created_at": datetime.now(timezone.utc)
     }
+    
+    # Add meeting point data if provided
+    if msg.meeting_point:
+        message_doc["meeting_point"] = msg.meeting_point
+    
     await db.messages.insert_one(message_doc)
     
     # Update last activity for debt system
     await update_last_activity(current_user.user_id)
     
-    return Message(**message_doc)
+    response = Message(**message_doc)
+    # Add warnings to response if any
+    if response_warnings:
+        return {"message": response, "warnings": response_warnings}
+    return response
+
+# ========================
+# CHAT REPORTING SYSTEM
+# ========================
+
+class ReportCreate(BaseModel):
+    favor_id: str
+    reported_user_id: str
+    reason: str  # "offensive", "money_request", "spam", "inappropriate", "other"
+    description: Optional[str] = None
+
+class Report(BaseModel):
+    report_id: str
+    favor_id: str
+    reporter_id: str
+    reported_user_id: str
+    reason: str
+    description: Optional[str] = None
+    status: str = "pending"  # pending, confirmed, dismissed
+    created_at: datetime
+
+@api_router.post("/chat/report")
+async def report_user_in_chat(report: ReportCreate, current_user: User = Depends(get_current_user)):
+    """Report a user for inappropriate behavior in chat"""
+    # Verify favor exists and reporter is participant
+    favor = await db.favors.find_one({"favor_id": report.favor_id}, {"_id": 0})
+    if not favor:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    is_participant = (
+        favor["creator_id"] == current_user.user_id or 
+        favor.get("accepted_by") == current_user.user_id
+    )
+    if not is_participant:
+        raise HTTPException(status_code=403, detail="Non sei un partecipante di questo favore")
+    
+    # Cannot report yourself
+    if report.reported_user_id == current_user.user_id:
+        raise HTTPException(status_code=400, detail="Non puoi segnalare te stesso")
+    
+    # Check if already reported this user for this favor
+    existing = await db.reports.find_one({
+        "favor_id": report.favor_id,
+        "reporter_id": current_user.user_id,
+        "reported_user_id": report.reported_user_id
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Hai già segnalato questo utente per questo favore")
+    
+    report_id = f"report_{uuid.uuid4().hex[:12]}"
+    report_doc = {
+        "report_id": report_id,
+        "favor_id": report.favor_id,
+        "reporter_id": current_user.user_id,
+        "reported_user_id": report.reported_user_id,
+        "reason": report.reason,
+        "description": report.description,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.reports.insert_one(report_doc)
+    
+    # Check for shadow ban threshold
+    total_reports = await db.reports.count_documents({
+        "reported_user_id": report.reported_user_id
+    })
+    
+    # Auto-confirm if user has 5+ reports (shadow ban threshold)
+    if total_reports >= 5:
+        await db.reports.update_many(
+            {"reported_user_id": report.reported_user_id, "status": "pending"},
+            {"$set": {"status": "confirmed"}}
+        )
+    
+    return {
+        "message": "Segnalazione inviata. Grazie per aiutarci a mantenere la community sicura.",
+        "report_id": report_id
+    }
+
+@api_router.get("/chat/status/{favor_id}")
+async def get_chat_status(favor_id: str, current_user: User = Depends(get_current_user)):
+    """Get chat status (active, read-only, etc.)"""
+    favor = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
+    if not favor:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    is_participant = (
+        favor["creator_id"] == current_user.user_id or 
+        favor.get("accepted_by") == current_user.user_id
+    )
+    if not is_participant:
+        raise HTTPException(status_code=403, detail="Non sei un partecipante di questo favore")
+    
+    status = "active"
+    read_only = False
+    read_only_reason = None
+    
+    if favor["status"] in ["completed", "cancelled"]:
+        completed_at = favor.get("completed_at") or favor.get("created_at")
+        if completed_at:
+            time_since = datetime.now(timezone.utc) - completed_at.replace(tzinfo=timezone.utc)
+            if time_since.total_seconds() > 24 * 3600:
+                status = "read_only"
+                read_only = True
+                read_only_reason = "Il favore è stato completato/annullato da più di 24 ore"
+    
+    return {
+        "status": status,
+        "read_only": read_only,
+        "read_only_reason": read_only_reason,
+        "favor_status": favor["status"],
+        "favor_title": favor["title"],
+        "granelli_cost": favor.get("granelli_cost", 1)
+    }
 
 @api_router.get("/messages/{favor_id}/unread")
 async def get_unread_count(favor_id: str, current_user: User = Depends(get_current_user)):
