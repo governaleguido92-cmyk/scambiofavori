@@ -374,6 +374,30 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Chat Messages
+  getMessages: async (favorId: string, token: string): Promise<ChatMessage[]> => {
+    const response = await fetch(`${API_URL}/api/messages/${favorId}`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  sendMessage: async (favorId: string, content: string, token: string): Promise<ChatMessage> => {
+    const response = await fetch(`${API_URL}/api/messages`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ favor_id: favorId, content }),
+    });
+    return handleResponse(response);
+  },
+
+  getUnreadCount: async (favorId: string, token: string): Promise<{ unread: number }> => {
+    const response = await fetch(`${API_URL}/api/messages/${favorId}/unread`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
   // Il Nostro Patto
   getPatto: async (): Promise<PattoContent> => {
     const response = await fetch(`${API_URL}/api/patto`);
