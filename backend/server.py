@@ -1045,7 +1045,7 @@ async def exchange_session(request: Request, response: Response):
     
     async with httpx.AsyncClient() as client:
         auth_response = await client.get(
-            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+            OAUTH_SESSION_URL,
             headers={"X-Session-ID": session_id}
         )
     
