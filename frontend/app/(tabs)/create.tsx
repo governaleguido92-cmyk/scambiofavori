@@ -203,9 +203,27 @@ export default function CreateFavorScreen() {
             <Text style={styles.title}>Crea Favore</Text>
             <View style={styles.soliDisplay}>
               <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-              <Text style={styles.soliValue}>{user?.granelli || 0}</Text>
+              <Text style={[styles.soliValue, isInDebt && styles.soliValueDebt]}>{user?.granelli || 0}</Text>
             </View>
           </View>
+
+          {/* Debt Warning Banner */}
+          {isInDebt && (
+            <TouchableOpacity 
+              style={styles.debtBanner}
+              onPress={() => setShowDebtModal(true)}
+              data-testid="debt-warning-banner"
+            >
+              <Ionicons name="warning" size={20} color="#ff6b6b" />
+              <View style={styles.debtBannerText}>
+                <Text style={styles.debtBannerTitle}>Sei in Debito Sociale</Text>
+                <Text style={styles.debtBannerSubtitle}>
+                  Non puoi fare nuove richieste. Tocca per saperne di più.
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#ff6b6b" />
+            </TouchableOpacity>
+          )}
 
           {/* Type Selector */}
           <View style={styles.typeSelector}>
