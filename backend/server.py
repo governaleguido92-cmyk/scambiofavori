@@ -121,6 +121,14 @@ BADGES = {
         "icon": "ribbon",
         "color": "#00bcd4",
         "requirement": {"type": "high_rating", "value": 4.5}
+    },
+    "eroe_quartiere": {
+        "id": "eroe_quartiere",
+        "name": "Eroe di Quartiere",
+        "description": "Hai completato 5 favori - Accesso al Fondo Solidarietà sbloccato!",
+        "icon": "sunny",
+        "color": "#ffd700",
+        "requirement": {"type": "favors_completed", "value": 5}
     }
 }
 
