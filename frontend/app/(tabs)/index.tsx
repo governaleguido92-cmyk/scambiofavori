@@ -312,6 +312,12 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Network Error Banner */}
+      <NetworkErrorBanner 
+        visible={networkError} 
+        onRetry={onRefresh}
+      />
+      
       {/* Header */}
       <View style={styles.header}>
         <View>
