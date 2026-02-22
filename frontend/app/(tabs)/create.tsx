@@ -421,9 +421,14 @@ export default function CreateFavorScreen() {
 
           {/* Submit Button */}
           <TouchableOpacity
-            style={[styles.submitButton, type === 'request' && styles.submitButtonRequest]}
+            style={[
+              styles.submitButton, 
+              type === 'request' && styles.submitButtonRequest,
+              type === 'request' && isInDebt && styles.submitButtonDisabled
+            ]}
             onPress={handleCreate}
-            disabled={isLoading}
+            disabled={isLoading || (type === 'request' && isInDebt)}
+            data-testid="create-favor-submit"
           >
             {isLoading ? (
               <ActivityIndicator color="#1a1a2e" />
@@ -432,9 +437,12 @@ export default function CreateFavorScreen() {
                 <Ionicons
                   name={type === 'offer' ? 'gift' : 'hand-left'}
                   size={20}
-                  color="#1a1a2e"
+                  color={type === 'request' && isInDebt ? '#666' : '#1a1a2e'}
                 />
-                <Text style={styles.submitButtonText}>
+                <Text style={[
+                  styles.submitButtonText,
+                  type === 'request' && isInDebt && styles.submitButtonTextDisabled
+                ]}>
                   {type === 'offer' ? 'Pubblica Offerta' : 'Pubblica Richiesta'}
                 </Text>
               </>
@@ -442,6 +450,54 @@ export default function CreateFavorScreen() {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Social Debt Modal */}
+      <Modal
+        visible={showDebtModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDebtModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalIconContainer}>
+                <Ionicons name="warning" size={40} color="#ff6b6b" />
+              </View>
+              <Text style={styles.modalTitle}>Debito Sociale</Text>
+            </View>
+            
+            <Text style={styles.modalText}>
+              Il tuo saldo di {CURRENCY_NAME} è sceso a {user?.granelli || 0} {CURRENCY_SYMBOL}, 
+              superando il limite di debito consentito ({DEBT_LIMIT}).
+            </Text>
+
+            <View style={styles.modalInfoBox}>
+              <Text style={styles.modalInfoTitle}>Come tornare in positivo:</Text>
+              <View style={styles.modalInfoItem}>
+                <Ionicons name="gift-outline" size={18} color="#4ecca3" />
+                <Text style={styles.modalInfoText}>Offri favori alla community</Text>
+              </View>
+              <View style={styles.modalInfoItem}>
+                <Ionicons name="heart-outline" size={18} color="#4ecca3" />
+                <Text style={styles.modalInfoText}>Richiedi aiuto dal Fondo Solidarietà</Text>
+              </View>
+            </View>
+
+            <Text style={styles.modalWarning}>
+              Le tue offerte sono evidenziate nel feed per aiutarti a guadagnare {CURRENCY_NAME} più rapidamente.
+            </Text>
+
+            <TouchableOpacity 
+              style={styles.modalButton}
+              onPress={() => setShowDebtModal(false)}
+              data-testid="close-debt-modal"
+            >
+              <Text style={styles.modalButtonText}>Ho capito</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
