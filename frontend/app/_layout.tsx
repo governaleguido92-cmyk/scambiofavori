@@ -1,26 +1,46 @@
 import React from 'react';
 import { Stack } from 'expo-router';
-import { AuthProvider } from '../src/context/AuthContext';
+import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import LegalConsentModal from '../src/components/LegalConsentModal';
+
+function RootLayoutNav() {
+  const { showLegalModal, acceptLegal, user } = useAuth();
+
+  return (
+    <>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: '#0F1A14' },
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="favor/[id]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="chat/[favorId]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="legal" options={{ presentation: 'modal' }} />
+      </Stack>
+      
+      {/* Legal Consent Modal - shows after login/register if not accepted */}
+      {user && (
+        <LegalConsentModal
+          visible={showLegalModal}
+          onAccept={acceptLegal}
+        />
+      )}
+    </>
+  );
+}
 
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: '#1a1a2e' },
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="favor/[id]" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="chat/[favorId]" options={{ presentation: 'card' }} />
-        </Stack>
+        <RootLayoutNav />
       </AuthProvider>
     </SafeAreaProvider>
   );
