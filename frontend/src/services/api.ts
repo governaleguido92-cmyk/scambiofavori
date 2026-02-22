@@ -944,4 +944,27 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  // Profile Picture Upload
+  uploadProfilePicture: async (imageUri: string, token: string): Promise<{ picture: string }> => {
+    const formData = new FormData();
+    const filename = imageUri.split('/').pop() || 'photo.jpg';
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    
+    formData.append('file', {
+      uri: imageUri,
+      name: filename,
+      type,
+    } as any);
+
+    const response = await fetch(`${API_URL}/api/users/me/picture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    return handleResponse(response);
+  },
 };
