@@ -3,141 +3,123 @@
 ## Overview
 "Scambio di Favori" è una piattaforma community iperlocale per lo scambio di favori tra vicini, con un sistema di valuta interna chiamato "Granelli" (💎).
 
-## Core Concept
-- **Valuta**: Granelli (💎) - Bonus benvenuto: 3 Granelli
-- **Sistema**: Scambio favori tramite QR code con geofencing (100m)
-- **Privacy**: Posizioni approssimative, non indirizzi esatti
+## Funzionalità Chat Avanzata (Febbraio 2026)
 
-## Funzionalità Implementate (Febbraio 2026)
+### 1. Logica di Attivazione
+- ✅ Chat creata automaticamente dopo accettazione favore
+- ✅ Chat "Sola Lettura" dopo 24h dal completamento/annullamento
+- API: `GET /api/chat/status/{favorId}` - ritorna `read_only: true/false`
 
-### ✅ Sezione Legale & GDPR Compliance
+### 2. Moderazione Anti-Abuso
 
-#### 1. Pagina Note Legali (`/legal`)
-- **Termini di Servizio (ToS)**:
-  - Natura della piattaforma (intermediario)
-  - Esonero responsabilità
-  - Divieto scambio denaro (ban permanente)
-  - Obblighi dell'utente
-- **Privacy Policy** (GDPR Compliant):
-  - Dati raccolti (email, GPS, utilizzo)
-  - Uso dati GPS (solo raggio approssimativo)
-  - Conservazione dati
-  - Diritti utente (accesso, rettifica, cancellazione, portabilità)
+#### Filtro Parole Chiave
+- **Denaro** (bloccato): euro, pagamento, bonifico, prezzo, contanti, paypal, iban, carta
+- **Linguaggio Offensivo** (bloccato): lista di parolacce italiane
+- **Link Sospetti** (bloccato): tutti tranne Google Maps/OpenStreetMap
 
-#### 2. Workflow Consenso
-- Modal obbligatorio post-registrazione/login
-- Checkbox "Ho letto e accetto ToS e Privacy"
-- Campo `legal_accepted` nel database
-- Blocco funzioni se non accettato
+#### Alert Privacy
+- Quando si condividono telefono/email, appare warning:
+  - "Stai condividendo dati personali. Assicurati di fidarti del tuo vicino."
 
-#### 3. Diritto all'Oblio (GDPR Art. 17)
-- Pulsante "Elimina Account" in Impostazioni
-- Alert conferma con email
-- Cancellazione definitiva:
-  - Email e dati personali
-  - Messaggi chat
-  - Notifiche
-  - Invalidazione Granelli
-- Anonimizzazione favori per storico
+### 3. Funzionalità Meeting Point
+- Tasto "Invia Punto di Incontro" per condividere luoghi pubblici
+- Evita condivisione indirizzo privato
 
-#### 4. Banner Etico
-- Testo nel form creazione: "Pubblicando, confermi che il favore rispetta i nostri standard etici e di sicurezza"
+### 4. Sistema Segnalazioni (Safety First)
+- **Tasto Report**: Sempre visibile nell'header chat
+- **Motivi segnalazione**:
+  - Linguaggio offensivo
+  - Richiesta di denaro
+  - Spam
+  - Comportamento inappropriato
+  - Altro
+- **Shadow Ban**: Automatico dopo 5+ segnalazioni confermate
+- API: `POST /api/chat/report`
 
-### ✅ UI/UX Rinnovata
-- **Nuova Palette Colori**:
-  - Verde Bosco (#2D5A3D) - primario
-  - Arancio Caldo (#E07B39) - accento
-- **Card Favori Moderne** con avatar autore
-- **Tab Bar**: Home, Mappa, Crea, I Miei, Profilo
+### 5. UI/UX Chat
+- **Colori**: Verde Bosco (#2D5A3D) + Arancio (#E07B39)
+- **Header**: Titolo favore + Valore Granelli
+- **Banner Etico**: "Lo scambio è basato sul tempo, non sul denaro"
+- **Avatar**: Iniziale nome utente
+- **Messaggi bloccati**: Badge rosso "Bloccato"
 
-### ✅ Mappa Favori
-- Tab "Mappa" con cerchi di prossimità
-- Filtri tipo (Tutti/Offerte/Richieste)
-- Banner privacy posizioni
+## Test API Chat
 
-### ✅ Chat In-App
-- Chat post-accettazione
-- Filtro anti-denaro automatico
-- Banner permanente anti-denaro
+```bash
+# Filtro denaro ✅
+"Pagami 50 euro" → BLOCCATO
 
-### ✅ Sistema Notifiche Competenze
-- Campo `skills` utente
-- Notifiche matching favori ↔ competenze
+# Filtro offensivo ✅  
+"Sei uno stronzo" → BLOCCATO
 
-### ✅ Sistema Social Debt
-- Limite: -3 Granelli
-- Modal avviso, blocco richieste
-- Evidenziazione offerte utenti in debito
+# Warning dati personali ✅
+"Chiamami: 333-1234567" → OK + Warning
 
-### ✅ Durata Annunci
-- Validità 1-10 giorni
-- Scadenza automatica
+# Link sospetti ✅
+"Vai su http://scam.com" → BLOCCATO
 
-## API Endpoints
-
-### Legal & GDPR
-- `GET /api/legal/status` - Stato accettazione
-- `POST /api/legal/accept` - Accetta termini
-- `DELETE /api/account` - Elimina account (GDPR)
-
-### Auth
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-
-### Favori & Chat
-- `POST /api/favors`
-- `GET /api/favors`
-- `POST /api/messages`
-- `GET /api/messages/{favor_id}`
-
-### Skills & Notifiche
-- `PUT /api/user/skills`
-- `GET /api/notifications`
-
-## File Struttura
-
-```
-/app
-├── backend/
-│   └── server.py              # API + GDPR endpoints
-├── frontend/
-│   ├── app/
-│   │   ├── legal.tsx          # Pagina Note Legali
-│   │   ├── (tabs)/
-│   │   │   ├── index.tsx      # Home
-│   │   │   ├── map.tsx        # Mappa
-│   │   │   ├── create.tsx     # Crea + banner etico
-│   │   │   └── profile.tsx    # Profilo
-│   │   └── _layout.tsx        # Layout + Legal Modal
-│   └── src/
-│       ├── components/
-│       │   └── LegalConsentModal.tsx
-│       ├── context/
-│       │   └── AuthContext.tsx  # + legal state
-│       ├── services/
-│       │   └── api.ts           # + legal/delete APIs
-│       └── theme/
-│           └── colors.ts
+# Messaggio normale ✅
+"Ci vediamo domani!" → OK
 ```
 
-## Test API Results
+## Struttura File
 
 ```
-Legal Status: {"legal_accepted":false} ✅
-Accept Legal: {"message":"Termini e condizioni accettati"} ✅
-After Accept: {"legal_accepted":true} ✅
+Backend:
+- server.py lines 76-140: Filtri (MONEY_FILTER_PATTERNS, OFFENSIVE_PATTERNS, PERSONAL_DATA_PATTERNS)
+- server.py lines 1895-2040: Endpoint messaggi con filtri
+- server.py lines 2042-2120: Endpoint report e chat status
+
+Frontend:
+- app/chat/[favorId].tsx: UI completa con report, meeting point, alerts
 ```
 
-## Backlog (P2)
+## Schema Database
 
-### Schermata Valutazione Obbligatoria
-- UI rating post-completamento favore
+### messages
+```json
+{
+  "message_id": "string",
+  "favor_id": "string",
+  "sender_id": "string",
+  "content": "string",
+  "message_type": "text | meeting_point | image",
+  "blocked": "bool",
+  "block_reason": "money | offensive | link",
+  "has_personal_data": "bool"
+}
+```
 
-### Integrazione Mappa Reale
-- react-native-maps con OpenStreetMap
+### reports
+```json
+{
+  "report_id": "string",
+  "favor_id": "string",
+  "reporter_id": "string",
+  "reported_user_id": "string",
+  "reason": "offensive | money_request | spam | inappropriate | other",
+  "status": "pending | confirmed | dismissed"
+}
+```
 
-### UI Competenze nel Profilo
-- Selezione categorie expertise
+## Altre Funzionalità Implementate
+
+### Sezione Legale & GDPR
+- Pagina Note Legali (`/legal`)
+- Modal consenso obbligatorio
+- Diritto all'Oblio (DELETE /api/account)
+
+### UI/UX
+- Palette Verde Bosco + Arancio Caldo
+- Card favori moderne
+- Tab Mappa
+
+### Sistema Notifiche Competenze
+- Matching favori ↔ skills utente
+
+### Sistema Social Debt
+- Limite -3 Granelli
+- Evidenziazione utenti in debito
 
 ## Note Tecniche
 - Preview: https://favor-exchange-5.preview.emergentagent.com
