@@ -147,9 +147,21 @@ export default function HomeScreen() {
 
   const renderFavorCard = ({ item }: { item: Favor }) => (
     <TouchableOpacity
-      style={styles.favorCard}
+      style={[
+        styles.favorCard,
+        item.creator_in_debt && item.type === 'offer' && styles.favorCardDebtHighlight
+      ]}
       onPress={() => router.push(`/favor/${item.favor_id}`)}
+      data-testid={`favor-card-${item.favor_id}`}
     >
+      {/* Debt Priority Badge */}
+      {item.creator_in_debt && item.type === 'offer' && (
+        <View style={styles.debtPriorityBadge}>
+          <Ionicons name="heart" size={12} color="#ff6b6b" />
+          <Text style={styles.debtPriorityText}>Aiutalo a tornare in positivo!</Text>
+        </View>
+      )}
+
       <View style={styles.favorHeader}>
         <View style={styles.categoryBadge}>
           <Ionicons
