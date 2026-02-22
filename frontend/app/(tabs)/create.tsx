@@ -154,6 +154,7 @@ export default function CreateFavorScreen() {
           description: description.trim(),
           category,
           duration_hours: duration,
+          validity_days: validityDays,
           latitude: location?.latitude,
           longitude: location?.longitude,
           address: address || undefined,
@@ -176,6 +177,7 @@ export default function CreateFavorScreen() {
               setTitle('');
               setDescription('');
               setDurationHours('1');
+              setValidityDays(3);
               setAddress('');
               setLocation(null);
               setIsMicro(false);
