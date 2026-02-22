@@ -809,35 +809,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   creatorName: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 12,
+    fontWeight: '500',
   },
   creatorTitle: {
-    color: '#666',
+    color: colors.textMuted,
     fontSize: 10,
   },
   soliContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    backgroundColor: colors.backgroundLight,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    gap: 4,
   },
   soliSymbol: {
-    fontSize: 14,
+    fontSize: 16,
   },
   soliText: {
-    color: '#ffd700',
-    fontSize: 14,
+    color: colors.granelli,
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+  soliLabel: {
+    color: colors.textMuted,
+    fontSize: 10,
   },
   distanceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 8,
   },
   distanceText: {
-    color: '#4ecca3',
+    color: colors.accent,
     fontSize: 12,
+    fontWeight: '500',
   },
   wallPostCard: {
     backgroundColor: '#16213e',
