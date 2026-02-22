@@ -209,16 +209,26 @@ export default function LoginScreen() {
               <Text style={styles.googleButtonText}>Continua con Google</Text>
             </TouchableOpacity>
 
-            {/* Apple Sign In - Placeholder per App Store */}
-            <TouchableOpacity
-              style={styles.appleButton}
-              onPress={() => Alert.alert('Prossimamente', 'Accedi con Apple sarà disponibile presto!')}
-              disabled={isLoading}
-              data-testid="apple-login-button"
-            >
-              <Ionicons name="logo-apple" size={20} color="#fff" />
-              <Text style={styles.appleButtonText}>Continua con Apple</Text>
-            </TouchableOpacity>
+            {/* Apple Sign In - Native per iOS, placeholder per altre piattaforme */}
+            {Platform.OS === 'ios' && appleAvailable ? (
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                cornerRadius={12}
+                style={styles.appleNativeButton}
+                onPress={handleAppleLogin}
+              />
+            ) : (
+              <TouchableOpacity
+                style={styles.appleButton}
+                onPress={() => Alert.alert('Disponibile su iOS', 'Accedi con Apple è disponibile solo su dispositivi iOS.')}
+                disabled={isLoading}
+                data-testid="apple-login-button"
+              >
+                <Ionicons name="logo-apple" size={20} color="#fff" />
+                <Text style={styles.appleButtonText}>Continua con Apple</Text>
+              </TouchableOpacity>
+            )}
 
             <View style={styles.registerContainer}>
               <Text style={styles.registerText}>Non hai un account? </Text>
