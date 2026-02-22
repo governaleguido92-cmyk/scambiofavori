@@ -46,6 +46,11 @@ export interface User {
   community_score: number;
   social_impact_score: number;  // New: Social Impact Bar
   can_access_solidarity_fund: boolean;
+  // Social Debt Limit fields
+  reliability_score: number;
+  debt_start_date?: string;
+  last_activity_date?: string;
+  in_debt_recovery: boolean;
   approximate_latitude?: number;
   approximate_longitude?: number;
   neighborhood?: string;
