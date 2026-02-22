@@ -289,6 +289,7 @@ class Favor(BaseModel):
     distance_km: Optional[float] = None
     is_micro: bool = False
     is_emergency: bool = False
+    creator_in_debt: bool = False  # For priority highlighting in feed
     qr_code: Optional[str] = None
     checkin_completed: bool = False
     created_at: datetime
