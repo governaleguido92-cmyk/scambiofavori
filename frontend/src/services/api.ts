@@ -11,6 +11,18 @@ export interface EthicalTag {
   icon: string;
 }
 
+// Chat Messages
+export interface ChatMessage {
+  message_id: string;
+  favor_id: string;
+  sender_id: string;
+  sender_name: string;
+  content: string;
+  is_system: boolean;
+  blocked: boolean;
+  created_at: string;
+}
+
 export interface Badge {
   id: string;
   name: string;
