@@ -229,16 +229,23 @@ export default function ProfileScreen() {
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
-              </Text>
-            </View>
+            <SupporterProfileBorder isSupporter={user?.is_supporter || false} size={80}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </Text>
+              </View>
+            </SupporterProfileBorder>
             <View style={styles.levelBadge}>
               <Text style={styles.levelText}>Lv.{currentLevel}</Text>
             </View>
           </View>
-          <Text style={styles.userName}>{user?.name}</Text>
+          <View style={styles.nameContainer}>
+            <Text style={styles.userName}>{user?.name}</Text>
+            {user?.is_supporter && (
+              <SupporterBadge size="medium" showLabel={true} style={{ marginLeft: 8 }} />
+            )}
+          </View>
           <Text style={styles.userTitle}>{user?.title || 'Nuovo Vicino'}</Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
           
