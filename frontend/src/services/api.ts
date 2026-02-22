@@ -1,8 +1,15 @@
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
-// Currency renamed to "Soli" ☀️
-export const CURRENCY_NAME = "Soli";
-export const CURRENCY_SYMBOL = "☀️";
+// Currency renamed to "Granelli" 💎
+export const CURRENCY_NAME = "Granelli";
+export const CURRENCY_SYMBOL = "💎";
+
+// Ethical tags for reviews
+export interface EthicalTag {
+  id: string;
+  label: string;
+  icon: string;
+}
 
 export interface Badge {
   id: string;
@@ -18,7 +25,7 @@ export interface User {
   email: string;
   name: string;
   picture?: string;
-  soli: number;  // Renamed from credits
+  granelli: number;  // Renamed to Granelli
   total_favors_given: number;
   total_favors_received: number;
   micro_favors_completed: number;
@@ -37,6 +44,8 @@ export interface User {
   is_vulnerable: boolean;
   identity_verified: boolean;
   community_score: number;
+  social_impact_score: number;  // New: Social Impact Bar
+  can_access_solidarity_fund: boolean;
   approximate_latitude?: number;
   approximate_longitude?: number;
   neighborhood?: string;
