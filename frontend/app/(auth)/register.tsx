@@ -163,8 +163,8 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             <View style={styles.bonusContainer}>
-              <Text style={styles.bonusIcon}>☀️</Text>
-              <Text style={styles.bonusText}>Riceverai 10 Soli di benvenuto!</Text>
+              <Text style={styles.bonusIcon}>💎</Text>
+              <Text style={styles.bonusText}>Riceverai 3 Granelli di benvenuto!</Text>
             </View>
 
             <View style={styles.loginContainer}>
