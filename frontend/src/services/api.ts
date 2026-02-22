@@ -1,5 +1,12 @@
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
+// Helper to get full URL for uploaded images
+export const getImageUrl = (path: string | undefined | null): string | undefined => {
+  if (!path) return undefined;
+  if (path.startsWith('http')) return path;
+  return `${API_URL}${path}`;
+};
+
 // Currency renamed to "Granelli" 💎
 export const CURRENCY_NAME = "Granelli";
 export const CURRENCY_SYMBOL = "💎";
