@@ -274,13 +274,30 @@ export default function ProfileScreen() {
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
-            <SupporterProfileBorder isSupporter={user?.is_supporter || false} size={80}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </Text>
+            <TouchableOpacity onPress={pickImage} disabled={uploadingImage}>
+              <SupporterProfileBorder isSupporter={user?.is_supporter || false} size={80}>
+                {profileImage || user?.picture ? (
+                  <Image 
+                    source={{ uri: profileImage || user?.picture }} 
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </Text>
+                  </View>
+                )}
+              </SupporterProfileBorder>
+              {/* Camera icon overlay */}
+              <View style={styles.cameraIconContainer}>
+                {uploadingImage ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="camera" size={16} color="#fff" />
+                )}
               </View>
-            </SupporterProfileBorder>
+            </TouchableOpacity>
             <View style={styles.levelBadge}>
               <Text style={styles.levelText}>Lv.{currentLevel}</Text>
             </View>
