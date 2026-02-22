@@ -989,4 +989,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontStyle: 'italic',
   },
+  ethicalBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(45, 90, 61, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(45, 90, 61, 0.2)',
+  },
+  ethicalBannerText: {
+    flex: 1,
+    fontSize: 11,
+    color: '#2D5A3D',
+    lineHeight: 16,
+  },
 });
