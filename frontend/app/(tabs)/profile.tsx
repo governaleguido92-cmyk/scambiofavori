@@ -278,7 +278,7 @@ export default function ProfileScreen() {
               <SupporterProfileBorder isSupporter={user?.is_supporter || false} size={80}>
                 {profileImage || user?.picture ? (
                   <Image 
-                    source={{ uri: profileImage || user?.picture }} 
+                    source={{ uri: profileImage || getImageUrl(user?.picture) }} 
                     style={styles.avatarImage}
                   />
                 ) : (
