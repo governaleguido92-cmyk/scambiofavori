@@ -398,6 +398,44 @@ export default function CreateFavorScreen() {
             </View>
           </View>
 
+          {/* Validity Days Selector */}
+          <View style={styles.inputGroup}>
+            <View style={styles.validityHeader}>
+              <Text style={styles.label}>Durata Annuncio</Text>
+              <View style={styles.validityBadge}>
+                <Ionicons name="time-outline" size={14} color="#4ecca3" />
+                <Text style={styles.validityBadgeText}>{validityDays} {validityDays === 1 ? 'giorno' : 'giorni'}</Text>
+              </View>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.validityScroll}
+            >
+              {validityOptions.map((days) => (
+                <TouchableOpacity
+                  key={days}
+                  style={[
+                    styles.validityChip,
+                    validityDays === days && styles.validityChipActive,
+                  ]}
+                  onPress={() => setValidityDays(days)}
+                  data-testid={`validity-${days}`}
+                >
+                  <Text style={[
+                    styles.validityChipText,
+                    validityDays === days && styles.validityChipTextActive,
+                  ]}>
+                    {days} {days === 1 ? 'g' : 'gg'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <Text style={styles.validityHint}>
+              L'annuncio scadrà automaticamente dopo {validityDays} {validityDays === 1 ? 'giorno' : 'giorni'}
+            </Text>
+          </View>
+
           {/* Location */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Posizione (opzionale)</Text>
