@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api, User } from '../services/api';
+import { api, User, CURRENCY_NAME } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -40,7 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
-  // Check for existing session on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -116,3 +115,6 @@ export function useAuth() {
   }
   return context;
 }
+
+// Export currency name for use in components
+export { CURRENCY_NAME };
