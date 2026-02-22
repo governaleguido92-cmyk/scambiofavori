@@ -648,9 +648,16 @@ async def update_community_score(user_id: str):
     score += int(user_doc.get("average_kindness", 0) * 10)
     score += int(user_doc.get("average_impact", 0) * 10)
     
+    # Calculate Social Impact Score (for the Social Impact Bar)
+    total_favors = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
+    social_impact = total_favors * 20  # 20 points per favor
+    social_impact += user_doc.get("emergencies_helped", 0) * 50  # 50 points per emergency
+    social_impact += user_doc.get("total_donations", 0) * 10  # 10 points per donation
+    social_impact += int(user_doc.get("total_hours_helped", 0) * 15)  # 15 points per hour helped
+    
     await db.users.update_one(
         {"user_id": user_id},
-        {"$set": {"community_score": score}}
+        {"$set": {"community_score": score, "social_impact_score": social_impact}}
     )
 
 # ========================
