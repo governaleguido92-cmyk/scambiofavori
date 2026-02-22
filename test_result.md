@@ -44,6 +44,49 @@ All screens implemented:
 - ✅ **Priority Highlighting**: creator_in_debt flag correctly set to true when user in debt creates offers
 - ✅ **Reliability Score Tracking**: Properly initialized at 5.0, includes debt tracking fields (debt_start_date, last_activity_date)
 
+### Detailed Social Debt Limit Test Findings:
+
+**1. Debt Status Endpoint (✅ COMPREHENSIVE PASS)**
+- Positive balance (5 granelli): granelli=5, in_debt=False, can_request=True ✅
+- Moderate debt (-2 granelli): granelli=-2, in_debt=True, can_request=True ✅  
+- At debt limit (-3 granelli): granelli=-3, in_debt=True, can_request=False ✅
+- All fields present: debt_limit=-3, reliability_score=5.0, in_debt_recovery status ✅
+
+**2. Social Debt Block Mechanism (✅ PASS)**
+- 403 Forbidden error correctly triggered when granelli ≤ -3 ✅
+- Proper Italian error message: "Il tuo serbatoio di tempo è vuoto. Offri un piccolo aiuto per ricaricarlo!" ✅
+- Block applies specifically to favor requests of type="request" ✅
+
+**3. Debt Recovery from Solidarity Fund (✅ PASS)**
+- Successfully transfers granelli from solidarity fund to user in debt ✅
+- Respects maximum 3 granelli per recovery request ✅
+- Sets in_debt_recovery flag to true after successful recovery ✅
+- Prevents duplicate recovery requests (correct error handling) ✅
+- Correctly calculates new balance and returned_positive status ✅
+
+**4. Priority Highlighting for Debt Users (✅ PASS)**
+- creator_in_debt flag correctly set to True for offers created by users in debt ✅
+- Flag properly included in favor creation response and favor listings ✅
+- Enables frontend to highlight offers from users needing help ✅
+
+**5. Reliability Score System (✅ PASS)**
+- Initial reliability_score correctly set to 5.0 for new users ✅
+- Debt tracking fields (debt_start_date, last_activity_date) properly included in user model ✅
+- System ready for reliability decay implementation based on inactivity ✅
+
+**Overall Assessment**: ✅ **SOCIAL DEBT LIMIT SYSTEM FULLY FUNCTIONAL**
+- All core functionality implemented and working correctly
+- Proper error handling and Italian localization
+- Database integration working properly
+- Ready for production deployment
+
+**Test Flow Successfully Verified:**
+1. ✅ New user starts with 3 granelli, can_request=true
+2. ✅ User can create favors until balance reaches -3 granelli 
+3. ✅ System blocks further requests when debt limit reached
+4. ✅ User can request recovery from solidarity fund (max 3 granelli)
+5. ✅ Offers from debt users show priority highlighting flag
+
 **Test Results Summary:**
 - ✅ **Eroe di Quartiere Badge System**: Badge correctly defined and accessible via API
 - ✅ **Solidarity Fund Access Control**: Properly blocks users with < 5 completed favors
