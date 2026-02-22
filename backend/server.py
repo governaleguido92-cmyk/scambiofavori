@@ -466,6 +466,24 @@ class ThanksEntry(BaseModel):
     message: str
     created_at: datetime
 
+# ========================
+# CHAT MESSAGES
+# ========================
+
+class MessageCreate(BaseModel):
+    favor_id: str
+    content: str
+
+class Message(BaseModel):
+    message_id: str
+    favor_id: str
+    sender_id: str
+    sender_name: str
+    content: str
+    is_system: bool = False  # For system messages (blocked, etc.)
+    blocked: bool = False  # If message was blocked by filter
+    created_at: datetime
+
 class AuthResponse(BaseModel):
     user: User
     token: str
