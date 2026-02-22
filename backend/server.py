@@ -1399,6 +1399,17 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     if favor_data.type not in ["offer", "request"]:
         raise HTTPException(status_code=400, detail="Tipo deve essere 'offer' o 'request'")
     
+    # ========================
+    # CONTENT MODERATION (Store Compliance)
+    # ========================
+    content_to_check = f"{favor_data.title} {favor_data.description}"
+    moderation_result = moderate_content(content_to_check)
+    if not moderation_result["allowed"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Contenuto non consentito: {moderation_result['reason']}. Modifica il testo e riprova."
+        )
+    
     granelli_cost = max(1, int(favor_data.duration_hours * GRANELLI_PER_HOUR))
     
     category_info = next((c for c in FAVOR_CATEGORIES if c["name"] == favor_data.category), None)
