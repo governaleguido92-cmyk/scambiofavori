@@ -885,6 +885,15 @@ async def get_my_badges(current_user: User = Depends(get_current_user)):
     return earned
 
 # ========================
+# ETHICAL TAGS FOR REVIEWS
+# ========================
+
+@api_router.get("/ethical-tags")
+async def get_ethical_tags():
+    """Get all ethical tags for mandatory review screen"""
+    return ETHICAL_TAGS
+
+# ========================
 # IL NOSTRO PATTO
 # ========================
 
