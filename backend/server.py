@@ -674,6 +674,78 @@ async def update_community_score(user_id: str):
     )
 
 # ========================
+# SOCIAL DEBT LIMIT SYSTEM
+# ========================
+
+async def check_debt_status(user_id: str) -> dict:
+    """Check user's debt status and update accordingly"""
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not user_doc:
+        return {"can_request": True, "in_debt": False}
+    
+    granelli = user_doc.get("granelli", 0)
+    in_debt = granelli < 0
+    can_request = granelli > DEBT_LIMIT
+    
+    # Track debt start date
+    if in_debt and not user_doc.get("debt_start_date"):
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"debt_start_date": datetime.now(timezone.utc)}}
+        )
+    elif not in_debt and user_doc.get("debt_start_date"):
+        # User recovered from debt - clear debt date
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"debt_start_date": None, "in_debt_recovery": False}}
+        )
+    
+    return {
+        "can_request": can_request,
+        "in_debt": in_debt,
+        "granelli": granelli,
+        "debt_limit": DEBT_LIMIT
+    }
+
+async def check_reliability_decay(user_id: str):
+    """Check if user's reliability should decay due to inactivity while in debt"""
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not user_doc:
+        return
+    
+    granelli = user_doc.get("granelli", 0)
+    debt_start = user_doc.get("debt_start_date")
+    last_activity = user_doc.get("last_activity_date")
+    reliability = user_doc.get("reliability_score", 5.0)
+    
+    if granelli >= 0 or not debt_start:
+        return  # Not in debt
+    
+    # Check if user has been inactive for INACTIVITY_DAYS while in debt
+    if last_activity:
+        days_inactive = (datetime.now(timezone.utc) - last_activity).days
+        if days_inactive >= INACTIVITY_DAYS and reliability > 1.0:
+            new_reliability = max(1.0, reliability - RELIABILITY_DROP_RATE)
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {"reliability_score": new_reliability}}
+            )
+
+async def update_last_activity(user_id: str):
+    """Update user's last activity timestamp"""
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {"last_activity_date": datetime.now(timezone.utc)}}
+    )
+
+async def check_return_to_positive(user_id: str, old_balance: int, new_balance: int) -> bool:
+    """Check if user just returned to positive balance"""
+    if old_balance < 0 and new_balance >= 0:
+        # User returned to positive - this is a celebration moment
+        return True
+    return False
+
+# ========================
 # AUTH ENDPOINTS
 # ========================
 
