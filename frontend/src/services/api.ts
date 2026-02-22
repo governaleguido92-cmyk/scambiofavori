@@ -722,9 +722,17 @@ export const api = {
   },
 
   // QR Code (for favor check-in)
-  getFavorQR: async (favorId: string, token: string): Promise<{ qr_code: string }> => {
-    const favor = await api.getFavor(favorId, token);
-    return { qr_code: favor.qr_code || '' };
+  getFavorQR: async (favorId: string, token: string): Promise<{ 
+    qr_code: string; 
+    qr_image: string;
+    favor_id: string;
+    favor_title: string;
+    instructions: string;
+  }> => {
+    const response = await fetch(`${API_URL}/api/favors/${favorId}/qr-image`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
   },
 
   // ========================
