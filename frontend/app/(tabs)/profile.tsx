@@ -52,6 +52,49 @@ export default function ProfileScreen() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [savingSkills, setSavingSkills] = useState(false);
+  // Profile picture state
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const pickImage = async () => {
+    // Richiedi permessi
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permesso negato', 'È necessario il permesso per accedere alla libreria foto.');
+      return;
+    }
+
+    // Apri la libreria foto
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+      // Upload dell'immagine al server
+      await uploadProfileImage(imageUri);
+    }
+  };
+
+  const uploadProfileImage = async (uri: string) => {
+    if (!token) return;
+    setUploadingImage(true);
+    try {
+      await api.uploadProfilePicture(uri, token);
+      await refreshUser();
+      Alert.alert('Successo', 'Foto profilo aggiornata!');
+    } catch (error: any) {
+      console.log('Error uploading image:', error);
+      Alert.alert('Errore', 'Impossibile caricare la foto. Riprova.');
+      setProfileImage(null);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const loadData = useCallback(async () => {
     if (!token) return;
