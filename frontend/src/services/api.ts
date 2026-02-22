@@ -206,11 +206,21 @@ export interface FavorCreateData {
   description: string;
   category: string;
   duration_hours: number;
+  validity_days?: number;
   latitude?: number;
   longitude?: number;
   address?: string;
   is_micro?: boolean;
   is_emergency?: boolean;
+}
+
+export interface ChatStatus {
+  status: string;
+  read_only: boolean;
+  read_only_reason: string | null;
+  favor_status: string;
+  favor_title: string;
+  granelli_cost: number;
 }
 
 export interface ObjectCreateData {
