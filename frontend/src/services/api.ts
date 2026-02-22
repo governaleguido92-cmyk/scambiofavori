@@ -920,4 +920,28 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  // Debug/Reviewer API
+  checkReviewerStatus: async (token: string): Promise<{
+    is_reviewer: boolean;
+    debug_features_enabled: boolean;
+    features: string[];
+  }> => {
+    const response = await fetch(`${API_URL}/api/debug/is-reviewer`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  mockQRScan: async (favorId: string, token: string): Promise<{
+    message: string;
+    favor_id: string;
+    debug_mode: boolean;
+  }> => {
+    const response = await fetch(`${API_URL}/api/debug/mock-qr-scan?favor_id=${favorId}`, {
+      method: 'POST',
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
 };
