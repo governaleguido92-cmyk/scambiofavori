@@ -58,6 +58,15 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
 
           {/* Content */}
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Disclaimer Box */}
+            <View style={styles.disclaimerBox}>
+              <Ionicons name="information-circle" size={20} color={colors.warning} />
+              <Text style={styles.disclaimerText}>
+                L'app è un facilitatore e non risponde della condotta degli utenti. 
+                Ogni scambio avviene sotto la tua esclusiva responsabilità.
+              </Text>
+            </View>
+
             {/* Summary Box */}
             <View style={styles.summaryBox}>
               <Text style={styles.summaryTitle}>In breve:</Text>
