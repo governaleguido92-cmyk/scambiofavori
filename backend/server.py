@@ -2022,14 +2022,15 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     
     # Add meeting point data if provided
     if msg.meeting_point:
-        message_doc["meeting_point"] = msg.meeting_point
+        message_doc["meeting_point"] = msg.meeting_point.dict()
     
     await db.messages.insert_one(message_doc)
     
     # Update last activity for debt system
     await update_last_activity(current_user.user_id)
     
-    response_dict = message_doc.copy()
+    # Prepare response (remove _id added by MongoDB)
+    response_dict = {k: v for k, v in message_doc.items() if k != '_id'}
     response_dict["created_at"] = response_dict["created_at"].isoformat()
     
     # Add warnings to response if any
