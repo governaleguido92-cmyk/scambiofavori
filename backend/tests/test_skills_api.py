@@ -113,18 +113,14 @@ class TestCategoriesEndpoint:
 class TestSkillsEndpoints:
     """User skills CRUD tests"""
     
-    def test_get_skills_requires_auth(self, api_client):
+    def test_get_skills_requires_auth(self):
         """Test GET /api/user/skills requires authentication"""
-        # Clear auth header for this test
-        original_auth = api_client.headers.get("Authorization")
-        api_client.headers.pop("Authorization", None)
+        # Use a fresh session without any auth
+        fresh_session = requests.Session()
+        fresh_session.headers.update({"Content-Type": "application/json"})
         
-        response = api_client.get(f"{BASE_URL}/api/user/skills")
-        assert response.status_code == 401, "Should return 401 without auth"
-        
-        # Restore auth header
-        if original_auth:
-            api_client.headers.update({"Authorization": original_auth})
+        response = fresh_session.get(f"{BASE_URL}/api/user/skills")
+        assert response.status_code == 401, f"Should return 401 without auth, got {response.status_code}"
     
     def test_get_skills_authenticated(self, authenticated_client):
         """Test GET /api/user/skills returns user skills"""
