@@ -1797,6 +1797,90 @@ async def get_my_donations(current_user: User = Depends(get_current_user)):
     return [Donation(**d) for d in donations]
 
 # ========================
+# SOCIAL DEBT LIMIT ENDPOINTS
+# ========================
+
+@api_router.get("/debt-status")
+async def get_debt_status(current_user: User = Depends(get_current_user)):
+    """Get user's current debt status"""
+    await update_last_activity(current_user.user_id)
+    await check_reliability_decay(current_user.user_id)
+    
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    granelli = user_doc.get("granelli", 0)
+    
+    return {
+        "granelli": granelli,
+        "in_debt": granelli < 0,
+        "can_request": granelli > DEBT_LIMIT,
+        "debt_limit": DEBT_LIMIT,
+        "reliability_score": user_doc.get("reliability_score", 5.0),
+        "in_debt_recovery": user_doc.get("in_debt_recovery", False),
+        "message": "Il tuo serbatoio di tempo è vuoto. Offri un piccolo aiuto per ricaricarlo!" if granelli <= DEBT_LIMIT else None
+    }
+
+@api_router.post("/debt-recovery/request")
+async def request_debt_recovery(current_user: User = Depends(get_current_user)):
+    """Request recovery from Solidarity Fund - 'Chiedi un Dono'"""
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    granelli = user_doc.get("granelli", 0)
+    
+    if granelli >= 0:
+        raise HTTPException(status_code=400, detail="Non sei in debito")
+    
+    if user_doc.get("in_debt_recovery"):
+        raise HTTPException(status_code=400, detail="Hai già una richiesta di recupero attiva")
+    
+    # Check solidarity fund has enough
+    pipeline = [
+        {"$match": {"is_solidarity_fund": True}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    result = await db.donations.aggregate(pipeline).to_list(1)
+    fund_total = result[0]["total"] if result else 0
+    
+    debt_amount = abs(granelli)
+    recovery_amount = min(debt_amount, 3)  # Max 3 granelli per recovery
+    
+    if fund_total < recovery_amount:
+        raise HTTPException(status_code=400, detail="Fondo Solidarietà insufficiente. Riprova più tardi.")
+    
+    # Transfer from solidarity fund to user
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {"granelli": recovery_amount},
+            "$set": {"in_debt_recovery": True, "debt_start_date": None}
+        }
+    )
+    
+    # Record the gift from community
+    gift_doc = {
+        "donation_id": f"gift_{uuid.uuid4().hex[:12]}",
+        "donor_id": "solidarity_fund",
+        "donor_name": "Fondo Solidarietà",
+        "recipient_id": current_user.user_id,
+        "recipient_name": current_user.name,
+        "amount": -recovery_amount,  # Negative to show withdrawal from fund
+        "is_solidarity_fund": True,
+        "message": f"Dono dalla Community a {current_user.name}",
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.donations.insert_one(gift_doc)
+    
+    # Check if user returned to positive
+    new_balance = granelli + recovery_amount
+    returned_positive = await check_return_to_positive(current_user.user_id, granelli, new_balance)
+    
+    return {
+        "success": True,
+        "amount_received": recovery_amount,
+        "new_balance": new_balance,
+        "returned_positive": returned_positive,
+        "message": "La community ti ha fatto un dono! Bentornato tra i sostenitori attivi!" if returned_positive else f"Hai ricevuto {recovery_amount} {CURRENCY_NAME} dalla community."
+    }
+
+# ========================
 # USER PROFILE ENDPOINTS
 # ========================
 
