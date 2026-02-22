@@ -763,9 +763,128 @@ const styles = StyleSheet.create({
   submitButtonRequest: {
     backgroundColor: '#ff6b6b',
   },
+  submitButtonDisabled: {
+    backgroundColor: '#333',
+    opacity: 0.6,
+  },
   submitButtonText: {
     color: '#1a1a2e',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  submitButtonTextDisabled: {
+    color: '#666',
+  },
+  // Debt styles
+  soliValueDebt: {
+    color: '#ff6b6b',
+  },
+  debtBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 107, 0.15)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 107, 0.3)',
+    gap: 12,
+  },
+  debtBannerText: {
+    flex: 1,
+  },
+  debtBannerTitle: {
+    color: '#ff6b6b',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  debtBannerSubtitle: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#16213e',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 360,
+    alignItems: 'center',
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalIconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  modalText: {
+    color: '#aaa',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  modalInfoBox: {
+    backgroundColor: '#1a1a2e',
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+    marginBottom: 16,
+  },
+  modalInfoTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  modalInfoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  modalInfoText: {
+    color: '#aaa',
+    fontSize: 13,
+  },
+  modalWarning: {
+    color: '#4ecca3',
+    fontSize: 12,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: '#4ecca3',
+    paddingHorizontal: 40,
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#1a1a2e',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
