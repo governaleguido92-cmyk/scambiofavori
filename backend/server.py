@@ -378,29 +378,29 @@ class FavorCategory(BaseModel):
     is_micro: bool = False
 
 FAVOR_CATEGORIES = [
-    {"name": "Trasporto", "icon": "car", "is_micro": False},
-    {"name": "Spesa", "icon": "cart", "is_micro": False},
-    {"name": "Tecnologia", "icon": "laptop", "is_micro": False},
-    {"name": "Pulizie", "icon": "water", "is_micro": False},
+    {"name": "Trasporto", "icon": "heart-circle", "is_micro": False},
+    {"name": "Spesa", "icon": "heart", "is_micro": False},
+    {"name": "Tecnologia", "icon": "heart-half", "is_micro": False},
+    {"name": "Pulizie", "icon": "home", "is_micro": False},
     {"name": "Compagnia", "icon": "people", "is_micro": False},
-    {"name": "Cucina", "icon": "restaurant", "is_micro": False},
+    {"name": "Cucina", "icon": "heart-circle-outline", "is_micro": False},
     {"name": "Giardinaggio", "icon": "leaf", "is_micro": False},
-    {"name": "Consiglio", "icon": "bulb", "is_micro": True},
-    {"name": "Informazione", "icon": "information-circle", "is_micro": True},
-    {"name": "Aiuto Rapido", "icon": "flash", "is_micro": True},
-    {"name": "Altro", "icon": "ellipsis-horizontal", "is_micro": False},
+    {"name": "Consiglio", "icon": "chatbubble-ellipses", "is_micro": True},
+    {"name": "Informazione", "icon": "hand-left", "is_micro": True},
+    {"name": "Aiuto Rapido", "icon": "heart-sharp", "is_micro": True},
+    {"name": "Altro", "icon": "heart-outline", "is_micro": False},
 ]
 
 # Object categories for Oggettoteca
 OBJECT_CATEGORIES = [
-    {"name": "Utensili", "icon": "hammer"},
-    {"name": "Cucina", "icon": "restaurant"},
+    {"name": "Utensili", "icon": "heart-circle"},
+    {"name": "Cucina", "icon": "heart-circle-outline"},
     {"name": "Giardino", "icon": "leaf"},
-    {"name": "Sport", "icon": "football"},
-    {"name": "Elettronica", "icon": "laptop"},
-    {"name": "Bambini", "icon": "happy"},
-    {"name": "Fai da te", "icon": "construct"},
-    {"name": "Altro", "icon": "cube"},
+    {"name": "Sport", "icon": "heart-half"},
+    {"name": "Elettronica", "icon": "heart"},
+    {"name": "Bambini", "icon": "people"},
+    {"name": "Fai da te", "icon": "home"},
+    {"name": "Altro", "icon": "heart-outline"},
 ]
 
 class FavorCreate(BaseModel):
