@@ -32,6 +32,18 @@ All screens implemented:
 ### Backend New Features Test Results ✅ MOSTLY WORKING  
 **Test Focus:** Proximity Check, Gamification, Solidarity Fund Access Control, Privacy Layer
 
+## 🆕 SOCIAL DEBT LIMIT SYSTEM TESTING - 2026-02-22
+
+### Social Debt Limit System Test Results ✅ FULLY WORKING
+**Test Focus:** Debt Status Endpoint, Debt Block Mechanism, Recovery System, Priority Highlighting, Reliability Score
+
+**Test Results Summary:**
+- ✅ **Debt Status Endpoint (GET /api/debt-status)**: Returns correct granelli, in_debt, can_request, debt_limit (-3), reliability_score, in_debt_recovery
+- ✅ **Social Debt Block**: Successfully blocks favor requests when granelli ≤ -3 with correct message "Il tuo serbatoio di tempo è vuoto. Offri un piccolo aiuto per ricaricarlo!"
+- ✅ **Debt Recovery System (POST /api/debt-recovery/request)**: Transfers max 3 granelli from solidarity fund, sets in_debt_recovery flag correctly
+- ✅ **Priority Highlighting**: creator_in_debt flag correctly set to true when user in debt creates offers
+- ✅ **Reliability Score Tracking**: Properly initialized at 5.0, includes debt tracking fields (debt_start_date, last_activity_date)
+
 **Test Results Summary:**
 - ✅ **Eroe di Quartiere Badge System**: Badge correctly defined and accessible via API
 - ✅ **Solidarity Fund Access Control**: Properly blocks users with < 5 completed favors
