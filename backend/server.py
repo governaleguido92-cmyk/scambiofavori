@@ -1347,11 +1347,12 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
     MAX_DISTANCE_METERS = 50
     if data.latitude is not None and data.longitude is not None:
         # Get the other user's last known location from the favor
-        if favor.latitude is not None and favor.longitude is not None:
-            distance_m = haversine_distance(
+        if favor.exact_latitude is not None and favor.exact_longitude is not None:
+            distance_km = calculate_distance(
                 data.latitude, data.longitude,
-                favor.latitude, favor.longitude
-            ) * 1000  # Convert km to meters
+                favor.exact_latitude, favor.exact_longitude
+            )
+            distance_m = distance_km * 1000  # Convert km to meters
             
             if distance_m > MAX_DISTANCE_METERS:
                 raise HTTPException(
