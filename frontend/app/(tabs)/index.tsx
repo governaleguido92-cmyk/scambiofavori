@@ -159,65 +159,84 @@ export default function HomeScreen() {
       {/* Debt Priority Badge */}
       {item.creator_in_debt && item.type === 'offer' && (
         <View style={styles.debtPriorityBadge}>
-          <Ionicons name="heart" size={12} color="#ff6b6b" />
+          <Ionicons name="heart" size={12} color={colors.debt} />
           <Text style={styles.debtPriorityText}>Aiutalo a tornare in positivo!</Text>
         </View>
       )}
 
+      {/* Modern Header with Category Icon and Author */}
       <View style={styles.favorHeader}>
-        <View style={styles.categoryBadge}>
+        <View style={styles.categoryIconContainer}>
           <Ionicons
             name={(CATEGORY_ICONS[item.category] || 'ellipsis-horizontal') as any}
-            size={16}
-            color="#4ecca3"
+            size={24}
+            color={colors.primary}
           />
-          <Text style={styles.categoryText}>{item.category}</Text>
         </View>
-        <View style={styles.favorBadges}>
-          {item.is_emergency && (
-            <View style={styles.emergencyBadge}>
-              <Ionicons name="alert-circle" size={14} color="#ff6b6b" />
-              <Text style={styles.emergencyText}>Urgente</Text>
+        <View style={styles.headerContent}>
+          <View style={styles.authorRow}>
+            <View style={styles.authorAvatar}>
+              <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
             </View>
-          )}
-          {item.is_micro && (
-            <View style={styles.microBadge}>
-              <Ionicons name="flash" size={14} color="#ff9800" />
+            <View style={styles.authorInfo}>
+              <Text style={styles.creatorName}>{item.creator_name}</Text>
+              <Text style={styles.creatorTitle}>{item.creator_title || 'Nuovo Vicino'}</Text>
             </View>
-          )}
-          <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-            <Text style={styles.typeText}>
-              {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
-            </Text>
           </View>
+        </View>
+        <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
+          <Text style={styles.typeText}>
+            {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
+          </Text>
         </View>
       </View>
 
+      {/* Title and Description */}
       <Text style={styles.favorTitle}>{item.title}</Text>
       <Text style={styles.favorDescription} numberOfLines={2}>
         {item.description}
       </Text>
 
-      <View style={styles.favorFooter}>
-        <View style={styles.creatorInfo}>
-          <Ionicons name="person-circle" size={20} color="#888" />
-          <Text style={styles.creatorName}>{item.creator_name}</Text>
-          {item.creator_title && (
-            <Text style={styles.creatorTitle}>• {item.creator_title}</Text>
-          )}
+      {/* Badges Row */}
+      <View style={styles.badgesRow}>
+        <View style={styles.categoryBadge}>
+          <Ionicons
+            name={(CATEGORY_ICONS[item.category] || 'ellipsis-horizontal') as any}
+            size={12}
+            color={colors.primary}
+          />
+          <Text style={styles.categoryText}>{item.category}</Text>
         </View>
+        {item.is_emergency && (
+          <View style={styles.emergencyBadge}>
+            <Ionicons name="alert-circle" size={12} color={colors.error} />
+            <Text style={styles.emergencyText}>Urgente</Text>
+          </View>
+        )}
+        {item.is_micro && (
+          <View style={styles.microBadge}>
+            <Ionicons name="flash" size={12} color={colors.accent} />
+            <Text style={styles.microText}>Micro</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Footer with Granelli and Distance */}
+      <View style={styles.favorFooter}>
         <View style={styles.soliContainer}>
           <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
           <Text style={styles.soliText}>{item.granelli_cost}</Text>
+          <Text style={styles.soliLabel}>{CURRENCY_NAME}</Text>
         </View>
+        {item.distance_km !== null && item.distance_km !== undefined && (
+          <View style={styles.distanceContainer}>
+            <Ionicons name="location" size={14} color={colors.accent} />
+            <Text style={styles.distanceText}>{item.distance_km} km</Text>
+          </View>
+        )}
       </View>
-
-      {item.distance_km !== null && item.distance_km !== undefined && (
-        <View style={styles.distanceContainer}>
-          <Ionicons name="location" size={14} color="#4ecca3" />
-          <Text style={styles.distanceText}>{item.distance_km} km</Text>
-        </View>
-      )}
+    </TouchableOpacity>
+  );
     </TouchableOpacity>
   );
 
