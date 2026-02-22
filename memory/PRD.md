@@ -6,6 +6,7 @@
 ## Store Compliance Status: READY ✅
 ## Monetization: SUPPORTER SYSTEM ACTIVE ✅
 ## UI Integration: COMPLETE ✅
+## UX Flow: OPTIMIZED ✅
 
 ---
 
@@ -18,6 +19,10 @@
 - **OfflineNotice Globale**: Banner di connessione persa nel root layout
 - **Skeleton Loading**: Placeholder animati durante il caricamento della lista favori
 - **NetworkErrorBanner**: Banner errore rete con pulsante "Riprova"
+- **Banner Promozionale Sostenitori**: Banner nella home per utenti non-sostenitori con CTA per diventare sostenitori
+
+### UX Flow Migliorati
+- **Chat Automatica dopo Accettazione**: Quando un utente accetta un favore, viene automaticamente reindirizzato alla chat per coordinare i dettagli
 
 ### Funzionalità Reviewer (Debug Mode)
 - **Mock QR Scan Button**: Pulsante visibile solo per `reviewer@test.com` nella pagina del favore
