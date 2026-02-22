@@ -340,19 +340,6 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={24} color="#888" />
         </TouchableOpacity>
 
-        {/* Oggettoteca Button */}
-        <TouchableOpacity
-          style={styles.oggettotecaButton}
-          onPress={() => router.push('/oggettoteca' as any)}
-        >
-          <Ionicons name="cube" size={24} color="#9c27b0" />
-          <Text style={styles.oggettotecaButtonText}>Oggettoteca</Text>
-          <View style={styles.oggettotecaBadge}>
-            <Text style={styles.oggettotecaBadgeText}>Presta e Prendi</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={24} color="#888" />
-        </TouchableOpacity>
-
         {/* Info Cards */}
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>Come Funzionano i {CURRENCY_NAME}</Text>
