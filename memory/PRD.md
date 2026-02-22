@@ -122,5 +122,5 @@ Frontend:
 - Evidenziazione utenti in debito
 
 ## Note Tecniche
-- Preview: https://favor-exchange-5.preview.emergentagent.com
+- Preview: https://granelli-app.preview.emergentagent.com
 - Test user: test_chat@test.com / test123

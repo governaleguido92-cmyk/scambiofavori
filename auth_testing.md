@@ -31,14 +31,14 @@ print('User ID: ' + userId);
 ## Step 2: Test Backend API
 ```bash
 # Test auth endpoint
-curl -X GET "https://favor-exchange-5.preview.emergentagent.com/api/auth/me" \
+curl -X GET "https://granelli-app.preview.emergentagent.com/api/auth/me" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN"
 
 # Test protected endpoints
-curl -X GET "https://favor-exchange-5.preview.emergentagent.com/api/favors/my" \
+curl -X GET "https://granelli-app.preview.emergentagent.com/api/favors/my" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN"
 
-curl -X POST "https://favor-exchange-5.preview.emergentagent.com/api/favors" \
+curl -X POST "https://granelli-app.preview.emergentagent.com/api/favors" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN" \
   -d '{"type": "offer", "title": "Test Favor", "description": "Test", "category": "Altro", "credits_cost": 1}'
@@ -56,7 +56,7 @@ await page.context.add_cookies([{
     "secure": true,
     "sameSite": "None"
 }]);
-await page.goto("https://favor-exchange-5.preview.emergentagent.com");
+await page.goto("https://granelli-app.preview.emergentagent.com");
 ```
 
 ## Quick Debug
