@@ -14,6 +14,7 @@ import jwt
 import httpx
 import math
 import secrets
+import random
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -42,19 +43,25 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ========================
-# CONSTANTS
+# CONSTANTS - RENAMED CREDITS TO "SOLI" ☀️
 # ========================
 
-WELCOME_CREDITS = 10  # Credito di Benvenuto
-REFERRAL_BONUS = 3    # Bonus referral etico
-CREDITS_PER_HOUR = 1  # 1 ora = 1 credito
+WELCOME_SOLI = 10  # Soli di Benvenuto
+REFERRAL_BONUS = 3  # Bonus referral etico
+SOLI_PER_HOUR = 1  # 1 ora = 1 sole
+
+CURRENCY_NAME = "Soli"  # "Ogni favore fatto è un raggio di sole che illumina il quartiere"
+CURRENCY_SYMBOL = "☀️"
+
+# Privacy: approximate location radius in meters
+PRIVACY_RADIUS_METERS = 200
 
 # Badge definitions
 BADGES = {
     "cuore_oro": {
         "id": "cuore_oro",
         "name": "Cuore d'Oro",
-        "description": "Hai donato almeno 10 crediti al Fondo Solidarietà",
+        "description": f"Hai donato almeno 10 {CURRENCY_NAME} al Fondo Solidarietà",
         "icon": "heart",
         "color": "#ffd700",
         "requirement": {"type": "donations", "value": 10}
@@ -98,8 +105,40 @@ BADGES = {
         "icon": "footsteps",
         "color": "#4caf50",
         "requirement": {"type": "first_favor", "value": 1}
+    },
+    "angelo_quartiere": {
+        "id": "angelo_quartiere",
+        "name": "Angelo del Quartiere",
+        "description": "Hai risposto a 5 Emergenze Gentilezza",
+        "icon": "sunny",
+        "color": "#e91e63",
+        "requirement": {"type": "emergencies_helped", "value": 5}
+    },
+    "vicino_virtuoso": {
+        "id": "vicino_virtuoso",
+        "name": "Vicino Virtuoso",
+        "description": "Rating medio superiore a 4.5 stelle con almeno 10 recensioni",
+        "icon": "ribbon",
+        "color": "#00bcd4",
+        "requirement": {"type": "high_rating", "value": 4.5}
     }
 }
+
+# User role titles based on stats
+def get_user_title(user_doc: dict) -> str:
+    """Get user's community title based on their stats"""
+    badges = user_doc.get("badges", [])
+    rating = user_doc.get("average_rating", 0)
+    emergencies = user_doc.get("emergencies_helped", 0)
+    
+    if "angelo_quartiere" in badges:
+        return "Angelo del Quartiere"
+    elif "vicino_virtuoso" in badges or rating >= 4.5:
+        return "Vicino Virtuoso"
+    elif len(badges) >= 3:
+        return "Membro Attivo"
+    else:
+        return "Nuovo Vicino"
 
 # ========================
 # MODELS
@@ -132,10 +171,11 @@ class User(BaseModel):
     email: str
     name: str
     picture: Optional[str] = None
-    credits: int = WELCOME_CREDITS
+    soli: int = WELCOME_SOLI  # Renamed from credits
     total_favors_given: int = 0
     total_favors_received: int = 0
     micro_favors_completed: int = 0
+    emergencies_helped: int = 0
     total_hours_helped: float = 0.0
     total_donations: int = 0
     average_rating: float = 0.0
@@ -146,9 +186,14 @@ class User(BaseModel):
     referred_by: Optional[str] = None
     successful_referrals: int = 0
     badges: List[str] = []
-    is_vulnerable: bool = False  # Utente fragile/anziano
+    title: str = "Nuovo Vicino"
+    is_vulnerable: bool = False
     identity_verified: bool = False
-    community_score: int = 0  # Barra di crescita
+    community_score: int = 0
+    # Privacy: approximate location for public display
+    approximate_latitude: Optional[float] = None
+    approximate_longitude: Optional[float] = None
+    neighborhood: Optional[str] = None
     created_at: datetime
 
 class FavorCategory(BaseModel):
@@ -170,53 +215,129 @@ FAVOR_CATEGORIES = [
     {"name": "Altro", "icon": "ellipsis-horizontal", "is_micro": False},
 ]
 
+# Object categories for Oggettoteca
+OBJECT_CATEGORIES = [
+    {"name": "Utensili", "icon": "hammer"},
+    {"name": "Cucina", "icon": "restaurant"},
+    {"name": "Giardino", "icon": "leaf"},
+    {"name": "Sport", "icon": "football"},
+    {"name": "Elettronica", "icon": "laptop"},
+    {"name": "Bambini", "icon": "happy"},
+    {"name": "Fai da te", "icon": "construct"},
+    {"name": "Altro", "icon": "cube"},
+]
+
 class FavorCreate(BaseModel):
     type: str  # "offer" or "request"
     title: str
     description: str
     category: str
-    duration_hours: float = 1.0  # Parità di valore: 1 ora = 1 credito
+    duration_hours: float = 1.0
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     address: Optional[str] = None
-    is_micro: bool = False  # Micro-favore
+    is_micro: bool = False
+    is_emergency: bool = False  # Emergenza Gentilezza
 
 class Favor(BaseModel):
     favor_id: str
     creator_id: str
     creator_name: str
+    creator_title: str = "Nuovo Vicino"
     type: str
     title: str
     description: str
     category: str
     duration_hours: float
-    credits_cost: int  # Calcolato da duration_hours
+    soli_cost: int  # Renamed from credits_cost
     status: str = "active"
     accepted_by: Optional[str] = None
     accepted_by_name: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    # Privacy: only show approximate location publicly
+    approximate_latitude: Optional[float] = None
+    approximate_longitude: Optional[float] = None
+    # Exact location only shared after acceptance
+    exact_latitude: Optional[float] = None
+    exact_longitude: Optional[float] = None
     address: Optional[str] = None
     distance_km: Optional[float] = None
     is_micro: bool = False
-    qr_code: Optional[str] = None  # Per check-in
+    is_emergency: bool = False
+    qr_code: Optional[str] = None
     checkin_completed: bool = False
     created_at: datetime
     completed_at: Optional[datetime] = None
+
+# Oggettoteca Models
+class ObjectCreate(BaseModel):
+    name: str
+    description: str
+    category: str
+    deposit_soli: int = 2  # Deposito cauzionale in Soli
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+class LendableObject(BaseModel):
+    object_id: str
+    owner_id: str
+    owner_name: str
+    owner_title: str = "Nuovo Vicino"
+    name: str
+    description: str
+    category: str
+    deposit_soli: int
+    status: str = "available"  # available, borrowed, unavailable
+    borrowed_by: Optional[str] = None
+    borrowed_by_name: Optional[str] = None
+    approximate_latitude: Optional[float] = None
+    approximate_longitude: Optional[float] = None
+    distance_km: Optional[float] = None
+    borrow_date: Optional[datetime] = None
+    return_date: Optional[datetime] = None
+    created_at: datetime
+
+class BorrowRequest(BaseModel):
+    object_id: str
+
+class ReturnObject(BaseModel):
+    object_id: str
+    condition: str = "good"  # good, damaged
+
+# Wall Post (Muro del Quartiere)
+class WallPostCreate(BaseModel):
+    content: str
+    post_type: str = "general"  # general, thanks, announcement
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+class WallPost(BaseModel):
+    post_id: str
+    author_id: str
+    author_name: str
+    author_title: str = "Nuovo Vicino"
+    content: str
+    post_type: str
+    likes: int = 0
+    liked_by: List[str] = []
+    approximate_latitude: Optional[float] = None
+    approximate_longitude: Optional[float] = None
+    distance_km: Optional[float] = None
+    created_at: datetime
 
 class FavorAccept(BaseModel):
     favor_id: str
 
 class FavorComplete(BaseModel):
     favor_id: str
-    qr_code: Optional[str] = None  # Per validazione check-in
+    qr_code: Optional[str] = None
 
 class ReviewCreate(BaseModel):
     favor_id: str
-    rating: int  # 1-5 efficienza
-    kindness_rating: int = 5  # 1-5 gentilezza
-    impact_rating: int = 5  # 1-5 impatto sociale
+    rating: int
+    kindness_rating: int = 5
+    impact_rating: int = 5
     comment: Optional[str] = None
+    public_thanks: Optional[str] = None  # For Bacheca dei Grazie
 
 class Review(BaseModel):
     review_id: str
@@ -228,11 +349,12 @@ class Review(BaseModel):
     kindness_rating: int
     impact_rating: int
     comment: Optional[str] = None
+    public_thanks: Optional[str] = None
     created_at: datetime
 
 class DonationCreate(BaseModel):
     amount: int
-    recipient_id: Optional[str] = None  # None = Fondo Solidarietà generale
+    recipient_id: Optional[str] = None
     message: Optional[str] = None
 
 class Donation(BaseModel):
@@ -246,9 +368,72 @@ class Donation(BaseModel):
     is_solidarity_fund: bool
     created_at: datetime
 
+# Bacheca dei Grazie
+class ThanksEntry(BaseModel):
+    thanks_id: str
+    favor_id: str
+    favor_title: str
+    giver_id: str
+    giver_name: str
+    receiver_id: str
+    receiver_name: str
+    message: str
+    created_at: datetime
+
 class AuthResponse(BaseModel):
     user: User
     token: str
+
+# Il Nostro Patto
+PATTO_CONTENT = {
+    "title": "Il Nostro Patto",
+    "subtitle": "I valori che ci guidano come comunità",
+    "encouraged": [
+        {
+            "title": "Puntualità",
+            "icon": "time",
+            "description": "Se accetti un favore, rispetta l'impegno. Il tempo degli altri è sacro."
+        },
+        {
+            "title": "Trasparenza",
+            "icon": "eye",
+            "description": "Sii chiaro su cosa puoi fare e cosa no. Non serve essere supereroi, basta essere onesti."
+        },
+        {
+            "title": "Reciprocità",
+            "icon": "sync",
+            "description": f"L'app vive se tutti danno e ricevono. Non accumulare {CURRENCY_NAME} senza mai spenderli, e non spendere senza mai offrire."
+        },
+        {
+            "title": "Gentilezza",
+            "icon": "heart",
+            "description": "Ogni interazione è un'opportunità per rendere il quartiere un posto migliore."
+        }
+    ],
+    "forbidden": [
+        {
+            "title": "Sfruttamento Professionale",
+            "icon": "briefcase",
+            "description": "L'app non serve a trovare manovalanza gratuita per la tua azienda. È per aiuti personali e spontanei."
+        },
+        {
+            "title": "Scambio di Denaro",
+            "icon": "cash",
+            "description": f"È severamente vietato chiedere o offrire euro all'interno della piattaforma. Usiamo solo il tempo ({CURRENCY_NAME})."
+        },
+        {
+            "title": "Maleducazione",
+            "icon": "alert-circle",
+            "description": "Comportamenti irrispettosi portano all'esclusione immediata dalla community. Proteggiamo la nostra armonia."
+        }
+    ],
+    "currency_explanation": {
+        "name": CURRENCY_NAME,
+        "symbol": CURRENCY_SYMBOL,
+        "meaning": "Ogni favore fatto è un raggio di sole che illumina il quartiere. I Soli rappresentano il tempo e l'energia che doniamo agli altri.",
+        "exchange_rate": f"1 ora = 1 {CURRENCY_NAME[:-1]}e"
+    }
+}
 
 # ========================
 # AUTH HELPERS
@@ -284,7 +469,7 @@ def generate_qr_code() -> str:
     return secrets.token_urlsafe(16)
 
 async def get_current_user(request: Request) -> User:
-    """Get current user from session token (cookie) or Authorization header"""
+    """Get current user from session token"""
     session_token = request.cookies.get("session_token")
     
     if not session_token:
@@ -299,6 +484,10 @@ async def get_current_user(request: Request) -> User:
     if user_id:
         user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
         if user_doc:
+            user_doc["title"] = get_user_title(user_doc)
+            # Rename credits to soli for backwards compatibility
+            if "credits" in user_doc:
+                user_doc["soli"] = user_doc.pop("credits")
             return User(**user_doc)
     
     session_doc = await db.user_sessions.find_one({"session_token": session_token}, {"_id": 0})
@@ -317,6 +506,9 @@ async def get_current_user(request: Request) -> User:
     if not user_doc:
         raise HTTPException(status_code=401, detail="Utente non trovato")
     
+    user_doc["title"] = get_user_title(user_doc)
+    if "credits" in user_doc:
+        user_doc["soli"] = user_doc.pop("credits")
     return User(**user_doc)
 
 # ========================
@@ -324,9 +516,8 @@ async def get_current_user(request: Request) -> User:
 # ========================
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Calculate distance in km between two points using Haversine formula"""
+    """Calculate distance in km using Haversine formula"""
     R = 6371
-    
     lat1_rad = math.radians(lat1)
     lat2_rad = math.radians(lat2)
     delta_lat = math.radians(lat2 - lat1)
@@ -337,6 +528,23 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     
     return R * c
 
+def approximate_location(lat: float, lon: float, radius_meters: int = PRIVACY_RADIUS_METERS) -> tuple:
+    """
+    Add random offset to create approximate location for privacy.
+    Returns (approx_lat, approx_lon)
+    """
+    # Convert radius from meters to degrees (approximately)
+    radius_deg = radius_meters / 111000  # 1 degree ≈ 111km
+    
+    # Random angle and distance
+    angle = random.uniform(0, 2 * math.pi)
+    distance = random.uniform(0, radius_deg)
+    
+    offset_lat = distance * math.cos(angle)
+    offset_lon = distance * math.sin(angle) / math.cos(math.radians(lat))
+    
+    return (lat + offset_lat, lon + offset_lon)
+
 async def check_and_award_badges(user_id: str):
     """Check if user earned new badges"""
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
@@ -345,6 +553,9 @@ async def check_and_award_badges(user_id: str):
     
     current_badges = user_doc.get("badges", [])
     new_badges = []
+    
+    # Get review count for high_rating badge
+    review_count = await db.reviews.count_documents({"reviewed_id": user_id})
     
     for badge_id, badge_info in BADGES.items():
         if badge_id in current_badges:
@@ -369,6 +580,11 @@ async def check_and_award_badges(user_id: str):
             total = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
             if total >= req["value"]:
                 earned = True
+        elif req["type"] == "emergencies_helped" and user_doc.get("emergencies_helped", 0) >= req["value"]:
+            earned = True
+        elif req["type"] == "high_rating":
+            if review_count >= 10 and user_doc.get("average_rating", 0) >= req["value"]:
+                earned = True
         
         if earned:
             new_badges.append(badge_id)
@@ -380,7 +596,7 @@ async def check_and_award_badges(user_id: str):
         )
 
 async def update_community_score(user_id: str):
-    """Update user's community score (barra di crescita)"""
+    """Update user's community score"""
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     if not user_doc:
         return
@@ -390,6 +606,7 @@ async def update_community_score(user_id: str):
     score += user_doc.get("total_favors_received", 0) * 5
     score += user_doc.get("total_donations", 0) * 15
     score += user_doc.get("successful_referrals", 0) * 20
+    score += user_doc.get("emergencies_helped", 0) * 25
     score += len(user_doc.get("badges", [])) * 25
     score += int(user_doc.get("average_rating", 0) * 10)
     score += int(user_doc.get("average_kindness", 0) * 10)
@@ -406,7 +623,7 @@ async def update_community_score(user_id: str):
 
 @api_router.post("/auth/register", response_model=AuthResponse)
 async def register(user_data: UserCreate):
-    """Register a new user with email/password"""
+    """Register a new user"""
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email già registrata")
@@ -415,7 +632,6 @@ async def register(user_data: UserCreate):
     hashed_password = hash_password(user_data.password)
     referral_code = generate_referral_code()
     
-    # Check referral
     referred_by = None
     if user_data.referral_code:
         referrer = await db.users.find_one({"referral_code": user_data.referral_code})
@@ -428,10 +644,11 @@ async def register(user_data: UserCreate):
         "name": user_data.name,
         "picture": None,
         "password_hash": hashed_password,
-        "credits": WELCOME_CREDITS,
+        "soli": WELCOME_SOLI,
         "total_favors_given": 0,
         "total_favors_received": 0,
         "micro_favors_completed": 0,
+        "emergencies_helped": 0,
         "total_hours_helped": 0.0,
         "total_donations": 0,
         "average_rating": 0.0,
@@ -442,9 +659,13 @@ async def register(user_data: UserCreate):
         "referred_by": referred_by,
         "successful_referrals": 0,
         "badges": [],
+        "title": "Nuovo Vicino",
         "is_vulnerable": False,
         "identity_verified": False,
         "community_score": 0,
+        "approximate_latitude": None,
+        "approximate_longitude": None,
+        "neighborhood": None,
         "created_at": datetime.now(timezone.utc)
     }
     
@@ -470,6 +691,9 @@ async def login(credentials: UserLogin, response: Response):
     
     token = create_jwt_token(user_doc["user_id"])
     user_doc.pop("password_hash", None)
+    user_doc["title"] = get_user_title(user_doc)
+    if "credits" in user_doc:
+        user_doc["soli"] = user_doc.pop("credits")
     
     response.set_cookie(
         key="session_token",
@@ -485,7 +709,7 @@ async def login(credentials: UserLogin, response: Response):
 
 @api_router.post("/auth/session")
 async def exchange_session(request: Request, response: Response):
-    """Exchange session_id from Google OAuth for session token"""
+    """Exchange session_id from Google OAuth"""
     body = await request.json()
     session_id = body.get("session_id")
     
@@ -526,10 +750,11 @@ async def exchange_session(request: Request, response: Response):
             "email": email,
             "name": name,
             "picture": picture,
-            "credits": WELCOME_CREDITS,
+            "soli": WELCOME_SOLI,
             "total_favors_given": 0,
             "total_favors_received": 0,
             "micro_favors_completed": 0,
+            "emergencies_helped": 0,
             "total_hours_helped": 0.0,
             "total_donations": 0,
             "average_rating": 0.0,
@@ -540,9 +765,13 @@ async def exchange_session(request: Request, response: Response):
             "referred_by": None,
             "successful_referrals": 0,
             "badges": [],
+            "title": "Nuovo Vicino",
             "is_vulnerable": False,
             "identity_verified": True,
             "community_score": 0,
+            "approximate_latitude": None,
+            "approximate_longitude": None,
+            "neighborhood": None,
             "created_at": datetime.now(timezone.utc)
         }
         await db.users.insert_one(user_doc)
@@ -566,6 +795,9 @@ async def exchange_session(request: Request, response: Response):
     )
     
     user_doc.pop("password_hash", None)
+    user_doc["title"] = get_user_title(user_doc)
+    if "credits" in user_doc:
+        user_doc["soli"] = user_doc.pop("credits")
     
     return {"user": User(**user_doc), "token": session_token}
 
@@ -585,26 +817,23 @@ async def logout(response: Response, request: Request):
     return {"message": "Logout effettuato"}
 
 # ========================
-# CATEGORIES ENDPOINT
+# CATEGORIES & BADGES
 # ========================
 
 @api_router.get("/categories")
 async def get_categories():
-    """Get all favor categories"""
     return FAVOR_CATEGORIES
 
-# ========================
-# BADGES ENDPOINT
-# ========================
+@api_router.get("/object-categories")
+async def get_object_categories():
+    return OBJECT_CATEGORIES
 
 @api_router.get("/badges")
 async def get_all_badges():
-    """Get all available badges"""
     return list(BADGES.values())
 
 @api_router.get("/badges/my")
 async def get_my_badges(current_user: User = Depends(get_current_user)):
-    """Get current user's earned badges"""
     earned = []
     for badge_id in current_user.badges:
         if badge_id in BADGES:
@@ -613,49 +842,320 @@ async def get_my_badges(current_user: User = Depends(get_current_user)):
     return earned
 
 # ========================
+# IL NOSTRO PATTO
+# ========================
+
+@api_router.get("/patto")
+async def get_patto():
+    """Get 'Il Nostro Patto' - community guidelines"""
+    return PATTO_CONTENT
+
+# ========================
+# CURRENCY INFO
+# ========================
+
+@api_router.get("/currency")
+async def get_currency_info():
+    """Get currency (Soli) information"""
+    return {
+        "name": CURRENCY_NAME,
+        "symbol": CURRENCY_SYMBOL,
+        "welcome_bonus": WELCOME_SOLI,
+        "per_hour": SOLI_PER_HOUR,
+        "referral_bonus": REFERRAL_BONUS,
+        "explanation": PATTO_CONTENT["currency_explanation"]
+    }
+
+# ========================
+# MURO DEL QUARTIERE (Neighborhood Wall)
+# ========================
+
+@api_router.post("/wall", response_model=WallPost)
+async def create_wall_post(post_data: WallPostCreate, current_user: User = Depends(get_current_user)):
+    """Create a post on the neighborhood wall"""
+    post_id = f"post_{uuid.uuid4().hex[:12]}"
+    
+    approx_lat, approx_lon = None, None
+    if post_data.latitude and post_data.longitude:
+        approx_lat, approx_lon = approximate_location(post_data.latitude, post_data.longitude)
+    
+    post_doc = {
+        "post_id": post_id,
+        "author_id": current_user.user_id,
+        "author_name": current_user.name,
+        "author_title": current_user.title,
+        "content": post_data.content,
+        "post_type": post_data.post_type,
+        "likes": 0,
+        "liked_by": [],
+        "approximate_latitude": approx_lat,
+        "approximate_longitude": approx_lon,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.wall_posts.insert_one(post_doc)
+    return WallPost(**post_doc)
+
+@api_router.get("/wall", response_model=List[WallPost])
+async def get_wall_posts(
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    radius_km: float = 0.5,  # Default 500 meters for hyper-local
+    post_type: Optional[str] = None
+):
+    """Get neighborhood wall posts (hyper-local feed)"""
+    query = {}
+    if post_type:
+        query["post_type"] = post_type
+    
+    posts_cursor = db.wall_posts.find(query, {"_id": 0}).sort("created_at", -1).limit(50)
+    posts = await posts_cursor.to_list(50)
+    
+    result = []
+    for post in posts:
+        post_obj = WallPost(**post)
+        
+        if latitude and longitude and post_obj.approximate_latitude and post_obj.approximate_longitude:
+            distance = calculate_distance(latitude, longitude, post_obj.approximate_latitude, post_obj.approximate_longitude)
+            post_obj.distance_km = round(distance, 2)
+            
+            if distance > radius_km:
+                continue
+        
+        result.append(post_obj)
+    
+    if latitude and longitude:
+        result.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
+    
+    return result
+
+@api_router.post("/wall/{post_id}/like")
+async def like_wall_post(post_id: str, current_user: User = Depends(get_current_user)):
+    """Like/unlike a wall post"""
+    post = await db.wall_posts.find_one({"post_id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post non trovato")
+    
+    liked_by = post.get("liked_by", [])
+    if current_user.user_id in liked_by:
+        # Unlike
+        await db.wall_posts.update_one(
+            {"post_id": post_id},
+            {"$pull": {"liked_by": current_user.user_id}, "$inc": {"likes": -1}}
+        )
+        return {"liked": False}
+    else:
+        # Like
+        await db.wall_posts.update_one(
+            {"post_id": post_id},
+            {"$push": {"liked_by": current_user.user_id}, "$inc": {"likes": 1}}
+        )
+        return {"liked": True}
+
+# ========================
+# OGGETTOTECA (Object Lending)
+# ========================
+
+@api_router.post("/objects", response_model=LendableObject)
+async def create_lendable_object(obj_data: ObjectCreate, current_user: User = Depends(get_current_user)):
+    """Add an object to the Oggettoteca"""
+    object_id = f"obj_{uuid.uuid4().hex[:12]}"
+    
+    approx_lat, approx_lon = None, None
+    if obj_data.latitude and obj_data.longitude:
+        approx_lat, approx_lon = approximate_location(obj_data.latitude, obj_data.longitude)
+    
+    obj_doc = {
+        "object_id": object_id,
+        "owner_id": current_user.user_id,
+        "owner_name": current_user.name,
+        "owner_title": current_user.title,
+        "name": obj_data.name,
+        "description": obj_data.description,
+        "category": obj_data.category,
+        "deposit_soli": obj_data.deposit_soli,
+        "status": "available",
+        "borrowed_by": None,
+        "borrowed_by_name": None,
+        "approximate_latitude": approx_lat,
+        "approximate_longitude": approx_lon,
+        "borrow_date": None,
+        "return_date": None,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.objects.insert_one(obj_doc)
+    return LendableObject(**obj_doc)
+
+@api_router.get("/objects", response_model=List[LendableObject])
+async def get_objects(
+    category: Optional[str] = None,
+    status: str = "available",
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
+    max_distance_km: float = 5.0
+):
+    """Get lendable objects from Oggettoteca"""
+    query = {"status": status}
+    if category:
+        query["category"] = category
+    
+    objects_cursor = db.objects.find(query, {"_id": 0}).sort("created_at", -1).limit(100)
+    objects = await objects_cursor.to_list(100)
+    
+    result = []
+    for obj in objects:
+        obj_model = LendableObject(**obj)
+        
+        if latitude and longitude and obj_model.approximate_latitude and obj_model.approximate_longitude:
+            distance = calculate_distance(latitude, longitude, obj_model.approximate_latitude, obj_model.approximate_longitude)
+            obj_model.distance_km = round(distance, 2)
+            
+            if distance > max_distance_km:
+                continue
+        
+        result.append(obj_model)
+    
+    if latitude and longitude:
+        result.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
+    
+    return result
+
+@api_router.get("/objects/my")
+async def get_my_objects(current_user: User = Depends(get_current_user)):
+    """Get current user's objects"""
+    query = {
+        "$or": [
+            {"owner_id": current_user.user_id},
+            {"borrowed_by": current_user.user_id}
+        ]
+    }
+    objects_cursor = db.objects.find(query, {"_id": 0})
+    objects = await objects_cursor.to_list(100)
+    return [LendableObject(**obj) for obj in objects]
+
+@api_router.post("/objects/borrow")
+async def borrow_object(data: BorrowRequest, current_user: User = Depends(get_current_user)):
+    """Borrow an object (requires deposit in Soli)"""
+    obj = await db.objects.find_one({"object_id": data.object_id}, {"_id": 0})
+    if not obj:
+        raise HTTPException(status_code=404, detail="Oggetto non trovato")
+    
+    if obj["status"] != "available":
+        raise HTTPException(status_code=400, detail="Oggetto non disponibile")
+    
+    if obj["owner_id"] == current_user.user_id:
+        raise HTTPException(status_code=400, detail="Non puoi prendere in prestito il tuo oggetto")
+    
+    if current_user.soli < obj["deposit_soli"]:
+        raise HTTPException(status_code=400, detail=f"Soli insufficienti. Servono {obj['deposit_soli']} {CURRENCY_NAME} come deposito")
+    
+    # Hold deposit
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$inc": {"soli": -obj["deposit_soli"]}}
+    )
+    
+    await db.objects.update_one(
+        {"object_id": data.object_id},
+        {"$set": {
+            "status": "borrowed",
+            "borrowed_by": current_user.user_id,
+            "borrowed_by_name": current_user.name,
+            "borrow_date": datetime.now(timezone.utc)
+        }}
+    )
+    
+    return {"message": f"Oggetto preso in prestito. {obj['deposit_soli']} {CURRENCY_NAME} trattenuti come deposito."}
+
+@api_router.post("/objects/return")
+async def return_object(data: ReturnObject, current_user: User = Depends(get_current_user)):
+    """Return a borrowed object"""
+    obj = await db.objects.find_one({"object_id": data.object_id}, {"_id": 0})
+    if not obj:
+        raise HTTPException(status_code=404, detail="Oggetto non trovato")
+    
+    if obj["borrowed_by"] != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Non hai preso in prestito questo oggetto")
+    
+    # Return deposit based on condition
+    if data.condition == "good":
+        # Full deposit back to borrower
+        await db.users.update_one(
+            {"user_id": current_user.user_id},
+            {"$inc": {"soli": obj["deposit_soli"]}}
+        )
+        message = f"Oggetto restituito. {obj['deposit_soli']} {CURRENCY_NAME} restituiti."
+    else:
+        # Deposit goes to owner as compensation
+        await db.users.update_one(
+            {"user_id": obj["owner_id"]},
+            {"$inc": {"soli": obj["deposit_soli"]}}
+        )
+        message = f"Oggetto restituito danneggiato. {obj['deposit_soli']} {CURRENCY_NAME} trasferiti al proprietario."
+    
+    await db.objects.update_one(
+        {"object_id": data.object_id},
+        {"$set": {
+            "status": "available",
+            "borrowed_by": None,
+            "borrowed_by_name": None,
+            "return_date": datetime.now(timezone.utc)
+        }}
+    )
+    
+    return {"message": message}
+
+# ========================
 # FAVORS ENDPOINTS
 # ========================
 
 @api_router.post("/favors", response_model=Favor)
 async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get_current_user)):
-    """Create a new favor (offer or request)"""
+    """Create a new favor"""
     if favor_data.type not in ["offer", "request"]:
         raise HTTPException(status_code=400, detail="Tipo deve essere 'offer' o 'request'")
     
-    # Calculate credits based on duration (1 hour = 1 credit)
-    credits_cost = max(1, int(favor_data.duration_hours * CREDITS_PER_HOUR))
+    soli_cost = max(1, int(favor_data.duration_hours * SOLI_PER_HOUR))
     
-    # Check if category is micro
     category_info = next((c for c in FAVOR_CATEGORIES if c["name"] == favor_data.category), None)
     is_micro = favor_data.is_micro or (category_info and category_info.get("is_micro", False))
     
-    # Micro favors have lower credit cost
     if is_micro:
-        credits_cost = 1
+        soli_cost = 1
     
-    if favor_data.type == "request" and current_user.credits < credits_cost:
-        raise HTTPException(status_code=400, detail="Crediti insufficienti")
+    if favor_data.type == "request" and current_user.soli < soli_cost:
+        raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
     
     favor_id = f"favor_{uuid.uuid4().hex[:12]}"
     qr_code = generate_qr_code()
+    
+    # Privacy: create approximate location
+    approx_lat, approx_lon = None, None
+    if favor_data.latitude and favor_data.longitude:
+        approx_lat, approx_lon = approximate_location(favor_data.latitude, favor_data.longitude)
     
     favor_doc = {
         "favor_id": favor_id,
         "creator_id": current_user.user_id,
         "creator_name": current_user.name,
+        "creator_title": current_user.title,
         "type": favor_data.type,
         "title": favor_data.title,
         "description": favor_data.description,
         "category": favor_data.category,
         "duration_hours": favor_data.duration_hours,
-        "credits_cost": credits_cost,
+        "soli_cost": soli_cost,
         "status": "active",
         "accepted_by": None,
         "accepted_by_name": None,
-        "latitude": favor_data.latitude,
-        "longitude": favor_data.longitude,
+        "approximate_latitude": approx_lat,
+        "approximate_longitude": approx_lon,
+        "exact_latitude": favor_data.latitude,
+        "exact_longitude": favor_data.longitude,
         "address": favor_data.address,
         "is_micro": is_micro,
+        "is_emergency": favor_data.is_emergency,
         "qr_code": qr_code,
         "checkin_completed": False,
         "created_at": datetime.now(timezone.utc),
@@ -663,6 +1163,11 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     }
     
     await db.favors.insert_one(favor_doc)
+    
+    # For public response, hide exact location
+    favor_doc["exact_latitude"] = None
+    favor_doc["exact_longitude"] = None
+    
     return Favor(**favor_doc)
 
 @api_router.get("/favors", response_model=List[Favor])
@@ -671,11 +1176,12 @@ async def get_favors(
     category: Optional[str] = None,
     status: str = "active",
     is_micro: Optional[bool] = None,
+    is_emergency: Optional[bool] = None,
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
     max_distance_km: Optional[float] = None
 ):
-    """Get all favors with optional filters"""
+    """Get favors (uses approximate location for privacy)"""
     query = {"status": status}
     
     if type:
@@ -684,16 +1190,21 @@ async def get_favors(
         query["category"] = category
     if is_micro is not None:
         query["is_micro"] = is_micro
+    if is_emergency is not None:
+        query["is_emergency"] = is_emergency
     
-    favors_cursor = db.favors.find(query, {"_id": 0}).sort("created_at", -1).limit(100)
+    # Sort emergencies first
+    sort_order = [("is_emergency", -1), ("created_at", -1)]
+    
+    favors_cursor = db.favors.find(query, {"_id": 0, "exact_latitude": 0, "exact_longitude": 0}).sort(sort_order).limit(100)
     favors = await favors_cursor.to_list(100)
     
     result = []
     for favor in favors:
         favor_obj = Favor(**favor)
         
-        if latitude and longitude and favor_obj.latitude and favor_obj.longitude:
-            distance = calculate_distance(latitude, longitude, favor_obj.latitude, favor_obj.longitude)
+        if latitude and longitude and favor_obj.approximate_latitude and favor_obj.approximate_longitude:
+            distance = calculate_distance(latitude, longitude, favor_obj.approximate_latitude, favor_obj.approximate_longitude)
             favor_obj.distance_km = round(distance, 2)
             
             if max_distance_km and distance > max_distance_km:
@@ -702,91 +1213,38 @@ async def get_favors(
         result.append(favor_obj)
     
     if latitude and longitude:
-        result.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
+        result.sort(key=lambda x: (not x.is_emergency, x.distance_km if x.distance_km else float('inf')))
     
     return result
 
-@api_router.get("/favors/nearby")
-async def get_nearby_favors(
+@api_router.get("/favors/emergencies")
+async def get_emergencies(
     latitude: float,
     longitude: float,
-    radius_km: float = 5.0,
-    type: Optional[str] = None
+    current_user: User = Depends(get_current_user)
 ):
-    """Get favors in neighborhood (filtri di prossimità)"""
-    query = {"status": "active"}
-    if type:
-        query["type"] = type
+    """Get nearby emergency requests (for notifications)"""
+    query = {"status": "active", "is_emergency": True}
     
-    favors_cursor = db.favors.find(query, {"_id": 0})
-    favors = await favors_cursor.to_list(500)
+    favors_cursor = db.favors.find(query, {"_id": 0, "exact_latitude": 0, "exact_longitude": 0})
+    favors = await favors_cursor.to_list(50)
     
     nearby = []
     for favor in favors:
-        if favor.get("latitude") and favor.get("longitude"):
-            distance = calculate_distance(latitude, longitude, favor["latitude"], favor["longitude"])
-            if distance <= radius_km:
+        if favor.get("approximate_latitude") and favor.get("approximate_longitude"):
+            distance = calculate_distance(latitude, longitude, favor["approximate_latitude"], favor["approximate_longitude"])
+            if distance <= 2.0:  # Within 2km
                 favor["distance_km"] = round(distance, 2)
                 nearby.append(Favor(**favor))
     
+    # Sort by distance
     nearby.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
-    return nearby
-
-@api_router.get("/favors/suggestions")
-async def get_favor_suggestions(
-    latitude: Optional[float] = None,
-    longitude: Optional[float] = None,
-    current_user: User = Depends(get_current_user)
-):
-    """Get personalized favor suggestions (notifiche predittive)"""
-    suggestions = []
     
-    # Find nearby favors that match user's history
-    query = {"status": "active", "creator_id": {"$ne": current_user.user_id}}
-    favors_cursor = db.favors.find(query, {"_id": 0}).limit(50)
-    favors = await favors_cursor.to_list(50)
-    
-    # Get user's completed favors to understand preferences
-    user_favors = await db.favors.find(
-        {"$or": [{"creator_id": current_user.user_id}, {"accepted_by": current_user.user_id}]},
-        {"_id": 0, "category": 1}
-    ).to_list(100)
-    
-    preferred_categories = [f["category"] for f in user_favors]
-    
-    for favor in favors:
-        score = 0
-        
-        # Boost score for preferred categories
-        if favor.get("category") in preferred_categories:
-            score += 20
-        
-        # Boost score for nearby favors
-        if latitude and longitude and favor.get("latitude") and favor.get("longitude"):
-            distance = calculate_distance(latitude, longitude, favor["latitude"], favor["longitude"])
-            if distance <= 2:
-                score += 30
-            elif distance <= 5:
-                score += 20
-            elif distance <= 10:
-                score += 10
-            favor["distance_km"] = round(distance, 2)
-        
-        # Boost micro favors for quick engagement
-        if favor.get("is_micro"):
-            score += 10
-        
-        favor["suggestion_score"] = score
-        suggestions.append(favor)
-    
-    # Sort by suggestion score
-    suggestions.sort(key=lambda x: x.get("suggestion_score", 0), reverse=True)
-    
-    return [Favor(**s) for s in suggestions[:10]]
+    return nearby[:10]  # Return top 10 nearest
 
 @api_router.get("/favors/my", response_model=List[Favor])
 async def get_my_favors(current_user: User = Depends(get_current_user)):
-    """Get current user's favors"""
+    """Get current user's favors (includes exact location for own favors)"""
     query = {
         "$or": [
             {"creator_id": current_user.user_id},
@@ -800,29 +1258,29 @@ async def get_my_favors(current_user: User = Depends(get_current_user)):
     return [Favor(**favor) for favor in favors]
 
 @api_router.get("/favors/{favor_id}", response_model=Favor)
-async def get_favor(favor_id: str):
+async def get_favor(favor_id: str, request: Request):
     """Get a specific favor"""
     favor_doc = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    # Check if user is involved to show exact location
+    try:
+        current_user = await get_current_user(request)
+        is_involved = favor_doc["creator_id"] == current_user.user_id or favor_doc.get("accepted_by") == current_user.user_id
+        
+        if not is_involved:
+            favor_doc["exact_latitude"] = None
+            favor_doc["exact_longitude"] = None
+    except:
+        favor_doc["exact_latitude"] = None
+        favor_doc["exact_longitude"] = None
+    
     return Favor(**favor_doc)
-
-@api_router.get("/favors/{favor_id}/qr")
-async def get_favor_qr(favor_id: str, current_user: User = Depends(get_current_user)):
-    """Get QR code for favor check-in"""
-    favor_doc = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
-    if not favor_doc:
-        raise HTTPException(status_code=404, detail="Favore non trovato")
-    
-    # Only involved users can see QR
-    if favor_doc["creator_id"] != current_user.user_id and favor_doc.get("accepted_by") != current_user.user_id:
-        raise HTTPException(status_code=403, detail="Non autorizzato")
-    
-    return {"qr_code": favor_doc.get("qr_code")}
 
 @api_router.post("/favors/accept", response_model=Favor)
 async def accept_favor(data: FavorAccept, current_user: User = Depends(get_current_user)):
-    """Accept a favor"""
+    """Accept a favor (reveals exact location)"""
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
@@ -835,8 +1293,8 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     if favor.creator_id == current_user.user_id:
         raise HTTPException(status_code=400, detail="Non puoi accettare il tuo stesso favore")
     
-    if favor.type == "offer" and current_user.credits < favor.credits_cost:
-        raise HTTPException(status_code=400, detail="Crediti insufficienti per accettare questo favore")
+    if favor.type == "offer" and current_user.soli < favor.soli_cost:
+        raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti per accettare questo favore")
     
     await db.favors.update_one(
         {"favor_id": data.favor_id},
@@ -847,38 +1305,13 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
         }}
     )
     
+    # Return with exact location now revealed
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
     return Favor(**favor_doc)
 
-@api_router.post("/favors/checkin")
-async def checkin_favor(data: FavorComplete, current_user: User = Depends(get_current_user)):
-    """Validate check-in with QR code"""
-    favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
-    if not favor_doc:
-        raise HTTPException(status_code=404, detail="Favore non trovato")
-    
-    if favor_doc.get("qr_code") != data.qr_code:
-        raise HTTPException(status_code=400, detail="QR code non valido")
-    
-    # Only the other party can check-in
-    if favor_doc["creator_id"] == current_user.user_id:
-        # Creator is checking in, must be the accepter's QR
-        pass
-    elif favor_doc.get("accepted_by") == current_user.user_id:
-        pass
-    else:
-        raise HTTPException(status_code=403, detail="Non autorizzato")
-    
-    await db.favors.update_one(
-        {"favor_id": data.favor_id},
-        {"$set": {"checkin_completed": True}}
-    )
-    
-    return {"message": "Check-in completato", "checkin_completed": True}
-
 @api_router.post("/favors/complete", response_model=Favor)
 async def complete_favor(data: FavorComplete, current_user: User = Depends(get_current_user)):
-    """Mark a favor as completed"""
+    """Complete a favor and transfer Soli"""
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
@@ -891,40 +1324,47 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
     if favor.creator_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Solo il creatore può completare il favore")
     
-    # Transfer credits
+    # Transfer Soli
     if favor.type == "offer":
         await db.users.update_one(
             {"user_id": favor.creator_id},
             {"$inc": {
-                "credits": favor.credits_cost,
+                "soli": favor.soli_cost,
                 "total_favors_given": 1,
                 "total_hours_helped": favor.duration_hours
             }}
         )
         await db.users.update_one(
             {"user_id": favor.accepted_by},
-            {"$inc": {"credits": -favor.credits_cost, "total_favors_received": 1}}
+            {"$inc": {"soli": -favor.soli_cost, "total_favors_received": 1}}
         )
     else:
         await db.users.update_one(
             {"user_id": favor.creator_id},
-            {"$inc": {"credits": -favor.credits_cost, "total_favors_received": 1}}
+            {"$inc": {"soli": -favor.soli_cost, "total_favors_received": 1}}
         )
         await db.users.update_one(
             {"user_id": favor.accepted_by},
             {"$inc": {
-                "credits": favor.credits_cost,
+                "soli": favor.soli_cost,
                 "total_favors_given": 1,
                 "total_hours_helped": favor.duration_hours
             }}
         )
     
-    # Update micro favors count
+    # Update micro favors and emergency counts
     if favor.is_micro:
         helper_id = favor.accepted_by if favor.type == "request" else favor.creator_id
         await db.users.update_one(
             {"user_id": helper_id},
             {"$inc": {"micro_favors_completed": 1}}
+        )
+    
+    if favor.is_emergency:
+        helper_id = favor.accepted_by if favor.type == "request" else favor.creator_id
+        await db.users.update_one(
+            {"user_id": helper_id},
+            {"$inc": {"emergencies_helped": 1}}
         )
     
     await db.favors.update_one(
@@ -935,21 +1375,20 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
         }}
     )
     
-    # Handle referral bonus (first favor completed)
+    # Handle referral bonus
     for user_id in [favor.creator_id, favor.accepted_by]:
         user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
         if user and user.get("referred_by"):
             total_favors = user.get("total_favors_given", 0) + user.get("total_favors_received", 0)
-            if total_favors == 1:  # First favor just completed
-                # Give bonus to referrer
+            if total_favors == 1:
                 await db.users.update_one(
                     {"user_id": user["referred_by"]},
-                    {"$inc": {"credits": REFERRAL_BONUS, "successful_referrals": 1}}
+                    {"$inc": {"soli": REFERRAL_BONUS, "successful_referrals": 1}}
                 )
                 await check_and_award_badges(user["referred_by"])
                 await update_community_score(user["referred_by"])
     
-    # Check badges and update scores
+    # Check badges
     await check_and_award_badges(favor.creator_id)
     await check_and_award_badges(favor.accepted_by)
     await update_community_score(favor.creator_id)
@@ -965,12 +1404,10 @@ async def cancel_favor(favor_id: str, current_user: User = Depends(get_current_u
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
     
-    favor = Favor(**favor_doc)
-    
-    if favor.creator_id != current_user.user_id:
+    if favor_doc["creator_id"] != current_user.user_id:
         raise HTTPException(status_code=403, detail="Solo il creatore può cancellare il favore")
     
-    if favor.status == "completed":
+    if favor_doc["status"] == "completed":
         raise HTTPException(status_code=400, detail="Non puoi cancellare un favore completato")
     
     await db.favors.update_one(
@@ -981,25 +1418,23 @@ async def cancel_favor(favor_id: str, current_user: User = Depends(get_current_u
     return {"message": "Favore cancellato"}
 
 # ========================
-# REVIEWS ENDPOINTS
+# REVIEWS & BACHECA DEI GRAZIE
 # ========================
 
 @api_router.post("/reviews", response_model=Review)
 async def create_review(review_data: ReviewCreate, current_user: User = Depends(get_current_user)):
-    """Create a review with qualitative feedback"""
+    """Create a review with optional public thanks"""
     favor_doc = await db.favors.find_one({"favor_id": review_data.favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
     
-    favor = Favor(**favor_doc)
-    
-    if favor.status != "completed":
+    if favor_doc["status"] != "completed":
         raise HTTPException(status_code=400, detail="Puoi recensire solo favori completati")
     
-    if current_user.user_id == favor.creator_id:
-        reviewed_id = favor.accepted_by
-    elif current_user.user_id == favor.accepted_by:
-        reviewed_id = favor.creator_id
+    if current_user.user_id == favor_doc["creator_id"]:
+        reviewed_id = favor_doc["accepted_by"]
+    elif current_user.user_id == favor_doc["accepted_by"]:
+        reviewed_id = favor_doc["creator_id"]
     else:
         raise HTTPException(status_code=403, detail="Non puoi recensire questo favore")
     
@@ -1026,10 +1461,27 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
         "kindness_rating": review_data.kindness_rating,
         "impact_rating": review_data.impact_rating,
         "comment": review_data.comment,
+        "public_thanks": review_data.public_thanks,
         "created_at": datetime.now(timezone.utc)
     }
     
     await db.reviews.insert_one(review_doc)
+    
+    # Add to Bacheca dei Grazie if public thanks provided
+    if review_data.public_thanks:
+        reviewed_user = await db.users.find_one({"user_id": reviewed_id}, {"_id": 0})
+        thanks_doc = {
+            "thanks_id": f"thanks_{uuid.uuid4().hex[:12]}",
+            "favor_id": review_data.favor_id,
+            "favor_title": favor_doc["title"],
+            "giver_id": current_user.user_id,
+            "giver_name": current_user.name,
+            "receiver_id": reviewed_id,
+            "receiver_name": reviewed_user["name"] if reviewed_user else "Utente",
+            "message": review_data.public_thanks,
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.thanks.insert_one(thanks_doc)
     
     # Update user's average ratings
     reviews_cursor = db.reviews.find({"reviewed_id": reviewed_id}, {"_id": 0})
@@ -1055,16 +1507,21 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
     
     return Review(**review_doc)
 
+@api_router.get("/thanks", response_model=List[ThanksEntry])
+async def get_thanks_board(limit: int = 20):
+    """Get Bacheca dei Grazie (public thanks board)"""
+    thanks_cursor = db.thanks.find({}, {"_id": 0}).sort("created_at", -1).limit(limit)
+    thanks = await thanks_cursor.to_list(limit)
+    return [ThanksEntry(**t) for t in thanks]
+
 @api_router.get("/reviews/user/{user_id}", response_model=List[Review])
 async def get_user_reviews(user_id: str):
-    """Get all reviews for a user"""
     reviews_cursor = db.reviews.find({"reviewed_id": user_id}, {"_id": 0}).sort("created_at", -1)
     reviews = await reviews_cursor.to_list(100)
     return [Review(**review) for review in reviews]
 
 @api_router.get("/reviews/favor/{favor_id}", response_model=List[Review])
 async def get_favor_reviews(favor_id: str):
-    """Get all reviews for a favor"""
     reviews_cursor = db.reviews.find({"favor_id": favor_id}, {"_id": 0})
     reviews = await reviews_cursor.to_list(10)
     return [Review(**review) for review in reviews]
@@ -1075,34 +1532,31 @@ async def get_favor_reviews(favor_id: str):
 
 @api_router.post("/donations", response_model=Donation)
 async def create_donation(donation_data: DonationCreate, current_user: User = Depends(get_current_user)):
-    """Donate credits to solidarity fund or specific user"""
+    """Donate Soli to solidarity fund or specific user"""
     if donation_data.amount < 1:
-        raise HTTPException(status_code=400, detail="L'importo deve essere almeno 1 credito")
+        raise HTTPException(status_code=400, detail=f"L'importo deve essere almeno 1 {CURRENCY_NAME[:-1]}e")
     
-    if current_user.credits < donation_data.amount:
-        raise HTTPException(status_code=400, detail="Crediti insufficienti")
+    if current_user.soli < donation_data.amount:
+        raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
     
     recipient_name = None
     is_solidarity_fund = True
     
     if donation_data.recipient_id:
-        # Direct donation to a user
         recipient = await db.users.find_one({"user_id": donation_data.recipient_id}, {"_id": 0})
         if not recipient:
             raise HTTPException(status_code=404, detail="Destinatario non trovato")
         recipient_name = recipient["name"]
         is_solidarity_fund = False
         
-        # Transfer credits to recipient
         await db.users.update_one(
             {"user_id": donation_data.recipient_id},
-            {"$inc": {"credits": donation_data.amount}}
+            {"$inc": {"soli": donation_data.amount}}
         )
     
-    # Deduct from donor
     await db.users.update_one(
         {"user_id": current_user.user_id},
-        {"$inc": {"credits": -donation_data.amount, "total_donations": donation_data.amount}}
+        {"$inc": {"soli": -donation_data.amount, "total_donations": donation_data.amount}}
     )
     
     donation_id = f"donation_{uuid.uuid4().hex[:12]}"
@@ -1135,126 +1589,53 @@ async def get_solidarity_fund():
     ]
     result = await db.donations.aggregate(pipeline).to_list(1)
     total = result[0]["total"] if result else 0
-    return {"solidarity_fund_total": total}
+    return {"solidarity_fund_total": total, "currency": CURRENCY_NAME}
 
 @api_router.get("/donations/my")
 async def get_my_donations(current_user: User = Depends(get_current_user)):
-    """Get current user's donations"""
     donations_cursor = db.donations.find({"donor_id": current_user.user_id}, {"_id": 0}).sort("created_at", -1)
     donations = await donations_cursor.to_list(100)
     return [Donation(**d) for d in donations]
-
-@api_router.post("/donations/claim")
-async def claim_solidarity_credits(current_user: User = Depends(get_current_user)):
-    """Claim credits from solidarity fund (only for vulnerable users)"""
-    if not current_user.is_vulnerable:
-        raise HTTPException(status_code=403, detail="Solo utenti fragili possono richiedere crediti dal fondo")
-    
-    # Check fund balance
-    pipeline = [
-        {"$match": {"is_solidarity_fund": True}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
-    ]
-    result = await db.donations.aggregate(pipeline).to_list(1)
-    fund_total = result[0]["total"] if result else 0
-    
-    # Calculate already claimed
-    claimed_pipeline = [
-        {"$match": {"recipient_id": current_user.user_id, "is_solidarity_fund": True}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
-    ]
-    claimed_result = await db.donations.aggregate(claimed_pipeline).to_list(1)
-    already_claimed = claimed_result[0]["total"] if claimed_result else 0
-    
-    # Limit: max 5 credits per user from fund
-    max_claim = min(5 - already_claimed, fund_total)
-    if max_claim <= 0:
-        raise HTTPException(status_code=400, detail="Hai già ricevuto il massimo dal fondo o il fondo è vuoto")
-    
-    claim_amount = min(3, max_claim)  # Claim 3 at a time
-    
-    await db.users.update_one(
-        {"user_id": current_user.user_id},
-        {"$inc": {"credits": claim_amount}}
-    )
-    
-    # Record the claim
-    await db.donations.insert_one({
-        "donation_id": f"claim_{uuid.uuid4().hex[:12]}",
-        "donor_id": "solidarity_fund",
-        "donor_name": "Fondo Solidarietà",
-        "recipient_id": current_user.user_id,
-        "recipient_name": current_user.name,
-        "amount": -claim_amount,  # Negative to track fund usage
-        "message": "Prelievo dal Fondo Solidarietà",
-        "is_solidarity_fund": True,
-        "created_at": datetime.now(timezone.utc)
-    })
-    
-    return {"message": f"Hai ricevuto {claim_amount} crediti dal Fondo Solidarietà", "amount": claim_amount}
 
 # ========================
 # USER PROFILE ENDPOINTS
 # ========================
 
-@api_router.get("/users/{user_id}", response_model=User)
+@api_router.get("/users/{user_id}")
 async def get_user_profile(user_id: str):
     """Get a user's public profile"""
-    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0})
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0, "exact_latitude": 0, "exact_longitude": 0})
     if not user_doc:
         raise HTTPException(status_code=404, detail="Utente non trovato")
-    return User(**user_doc)
-
-@api_router.patch("/users/me")
-async def update_my_profile(
-    is_vulnerable: Optional[bool] = None,
-    current_user: User = Depends(get_current_user)
-):
-    """Update current user's profile"""
-    updates = {}
-    if is_vulnerable is not None:
-        updates["is_vulnerable"] = is_vulnerable
     
-    if updates:
-        await db.users.update_one(
-            {"user_id": current_user.user_id},
-            {"$set": updates}
-        )
+    user_doc["title"] = get_user_title(user_doc)
+    if "credits" in user_doc:
+        user_doc["soli"] = user_doc.pop("credits")
     
-    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0, "password_hash": 0})
     return User(**user_doc)
-
-@api_router.get("/users/vulnerable/list")
-async def get_vulnerable_users():
-    """Get list of vulnerable users who might need help"""
-    users_cursor = db.users.find(
-        {"is_vulnerable": True},
-        {"_id": 0, "user_id": 1, "name": 1, "credits": 1, "community_score": 1}
-    ).limit(50)
-    users = await users_cursor.to_list(50)
-    return users
 
 @api_router.get("/leaderboard")
 async def get_leaderboard():
-    """Get community leaderboard by community score"""
+    """Get community leaderboard"""
     users_cursor = db.users.find(
         {},
         {"_id": 0, "user_id": 1, "name": 1, "community_score": 1, "badges": 1, "total_favors_given": 1}
     ).sort("community_score", -1).limit(20)
     users = await users_cursor.to_list(20)
+    
+    # Add titles
+    for user in users:
+        user["title"] = get_user_title(user)
+    
     return users
-
-# ========================
-# REFERRAL ENDPOINT
-# ========================
 
 @api_router.get("/referral/code")
 async def get_my_referral_code(current_user: User = Depends(get_current_user)):
-    """Get current user's referral code"""
     return {
         "referral_code": current_user.referral_code,
         "successful_referrals": current_user.successful_referrals,
-        "bonus_per_referral": REFERRAL_BONUS
+        "bonus_per_referral": REFERRAL_BONUS,
+        "currency": CURRENCY_NAME
     }
 
 # ========================
@@ -1263,7 +1644,12 @@ async def get_my_referral_code(current_user: User = Depends(get_current_user)):
 
 @api_router.get("/")
 async def root():
-    return {"message": "Scambio di Favori API v2.0", "status": "running"}
+    return {
+        "message": "Scambio di Favori API v3.0",
+        "status": "running",
+        "currency": CURRENCY_NAME,
+        "features": ["Muro del Quartiere", "Oggettoteca", "Emergenze Gentilezza", "Bacheca dei Grazie"]
+    }
 
 @api_router.get("/health")
 async def health_check():
