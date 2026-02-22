@@ -8,7 +8,6 @@
     "scheme": "scambiodifavori",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "owner": "emergent",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.emergent.scambiodifavori",
