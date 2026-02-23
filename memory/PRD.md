@@ -1,5 +1,18 @@
 # Scambio di Favori - Product Requirements Document
 
+## Last Update: December 2025
+
+### Recent Changes
+- **Build Preview Update**: Added dedicated `simulator` profile in `eas.json` for local iOS builds
+- **ZIP Package Updated**: `/app/downloads/scambio-di-favori-frontend.zip` with BUILD_INSTRUCTIONS.md
+- **Backend Status**: Verified healthy at `https://hyperlocal-hub-8.preview.emergentagent.com`
+
+### Current Priority Tasks
+1. 🔴 **P0**: User testing local iOS build with Xcode
+2. 🟠 **P1**: Verify Legal Consent Modal fix
+3. 🟠 **P2**: Fix Photo Upload from Library
+4. 🟡 **P2**: Update Offline Notice component (awaiting user clarification)
+
 ## Overview
 "Scambio di Favori" è una piattaforma community iperlocale per lo scambio di favori tra vicini, con un sistema di valuta interna chiamato "Granelli" (💎).
 
