@@ -132,13 +132,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Successo - chiudi il modal
       setLegalAccepted(true);
       setShowLegalModal(false);
+      
+      // Controlla se l'utente ha già visto l'onboarding
+      const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
+      }
     } catch (error) {
       console.error('Error accepting legal terms:', error);
       // Anche in caso di errore, chiudi il modal per non bloccare l'utente
-      // L'utente vedrà di nuovo il modal al prossimo login se non è stato salvato
       setLegalAccepted(true);
       setShowLegalModal(false);
+      
+      // Mostra comunque l'onboarding se non l'ha mai visto
+      const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
+      }
     }
+  };
+
+  const completeOnboarding = async () => {
+    await AsyncStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
   };
 
   const deleteAccount = async (confirmEmail: string, reason?: string) => {
