@@ -1,62 +1,73 @@
-# Scambio di Favori - Build Instructions
+# 🚀 Build per Simulatore iOS con Xcode
 
-## 📱 Come Creare la Build Android APK
+## Prerequisiti
+- macOS con Xcode installato (almeno versione 14)
+- Node.js (versione 18+)
+- yarn o npm
 
-### Prerequisiti
-- Node.js 18+ installato
-- Yarn installato (`npm install -g yarn`)
-- EAS CLI installato (`npm install -g eas-cli`)
+## Istruzioni Passo-Passo
 
-### Passaggi
+### 1. Scarica e Estrai il ZIP
+Scarica `scambio-di-favori-frontend.zip` e estrailo in una cartella.
 
-1. **Estrai lo ZIP** in una cartella
+### 2. Apri il Terminale
+Apri il Terminale e naviga nella cartella estratta:
+```bash
+cd ~/Downloads/scambio-di-favori-frontend
+```
+(o dovunque hai estratto il file)
 
-2. **Apri il terminale** nella cartella estratta
-
-3. **Installa le dipendenze:**
+### 3. Installa le Dipendenze
 ```bash
 yarn install
 ```
-
-4. **Esporta il token Expo:**
+oppure
 ```bash
-export EXPO_TOKEN="r4-_d7d37WouNJBFc9ERsh9r3k6OlvL3umbuAqIk"
+npm install
 ```
 
-Su Windows PowerShell:
-```powershell
-$env:EXPO_TOKEN="r4-_d7d37WouNJBFc9ERsh9r3k6OlvL3umbuAqIk"
-```
-
-5. **Avvia la build:**
+### 4. Avvia la Build per Simulatore iOS
 ```bash
-eas build --platform android --profile preview
+npx expo run:ios
 ```
 
-6. **Quando ti chiede "Generate a new Android Keystore?":**
-   - Rispondi **Y** (Yes)
+Questo comando:
+- Genera il progetto iOS nativo nella cartella `ios/`
+- Compila l'app con Xcode
+- Avvia il simulatore iOS
+- Installa e lancia l'app
 
-7. **Attendi ~15 minuti**
-   La build verrà eseguita sui server Expo
-
-8. **Scarica l'APK:**
-   - Vai su: https://expo.dev/accounts/domenico2026/projects/scambio-di-favori/builds
-   - Clicca sulla build completata
-   - Scarica l'APK
-
-### Build iOS (richiede Mac + Apple Developer Account)
+### 5. (Alternativa) Build con EAS
+Se vuoi usare EAS Build per creare un file .app:
 ```bash
-eas build --platform ios --profile preview
+npx eas-cli build --profile simulator --platform ios --local
 ```
 
----
-
-## 🔗 Backend URL
-L'app è configurata per usare:
+## Configurazione Backend
+L'app è già configurata per connettersi al backend:
 ```
 https://hyperlocal-hub-8.preview.emergentagent.com
 ```
 
-## 📧 Supporto
-Account Expo: domenico2026
-Progetto: https://expo.dev/accounts/domenico2026/projects/scambio-di-favori
+## Troubleshooting
+
+### "Command not found: expo"
+```bash
+npm install -g expo-cli eas-cli
+```
+
+### Errore di Pods
+```bash
+cd ios && pod install && cd ..
+```
+
+### Reset Completo
+```bash
+rm -rf node_modules ios android
+yarn install
+npx expo run:ios
+```
+
+## Account di Test
+- **Email**: reviewer@test.com
+- **Password**: review123
