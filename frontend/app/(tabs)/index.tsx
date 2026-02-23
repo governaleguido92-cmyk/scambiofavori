@@ -60,8 +60,8 @@ export default function HomeScreen() {
   const loadUnreadCount = useCallback(async () => {
     if (!token) return;
     try {
-      const data = await api.getUnreadNotificationCount(token);
-      setUnreadNotifications(data.count);
+      const data = await api.getUnreadNotificationsCount(token);
+      setUnreadNotifications(data.unread_count);
     } catch (error) {
       console.log('Error loading notification count:', error);
     }
