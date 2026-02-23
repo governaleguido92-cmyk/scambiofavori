@@ -62,7 +62,7 @@ export default function LoginScreen() {
     let redirectUrl: string;
     if (Platform.OS === 'web') {
       // On web, use the current origin for proper OAuth callback
-      redirectUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      redirectUrl = window.location.origin;
     } else {
       // On native (iOS/Android), use deep linking
       redirectUrl = Linking.createURL('/');
