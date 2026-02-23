@@ -440,6 +440,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: colors.textSecondary,
   },
+  circleCreatorText: {
+    fontSize: 8,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
   privacyBanner: {
     position: 'absolute',
     bottom: 16,
