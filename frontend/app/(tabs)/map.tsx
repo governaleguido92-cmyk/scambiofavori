@@ -15,6 +15,8 @@ import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, CURRENCY_SYMBOL } from '../../src/services/api';
 import colors from '../../src/theme/colors';
+import { SupporterBadge } from '../../src/components/SupporterBadge';
+import { MapMarkersSkeleton } from '../../src/components/Skeleton';
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.02;
