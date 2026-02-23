@@ -36,10 +36,8 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'local-dev-secret-key-not-for-producti
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_DAYS = 7
 
-# Stripe Config
-STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
-if not STRIPE_API_KEY:
-    raise ValueError("STRIPE_API_KEY environment variable is required")
+# Stripe Config - Use env var, with test key fallback for local development
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_emergent')
 
 # OAuth Config
 OAUTH_SESSION_URL = os.environ.get('OAUTH_SESSION_URL', 'https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data')
