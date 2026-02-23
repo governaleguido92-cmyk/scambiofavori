@@ -445,7 +445,6 @@ class Favor(BaseModel):
     exact_longitude: Optional[float] = None
     address: Optional[str] = None
     distance_km: Optional[float] = None
-    is_micro: bool = False
     is_emergency: bool = False
     creator_in_debt: bool = False  # For priority highlighting in feed
     qr_code: Optional[str] = None
