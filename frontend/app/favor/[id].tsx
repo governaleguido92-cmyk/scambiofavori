@@ -357,12 +357,6 @@ export default function FavorDetailScreen() {
               <Text style={styles.emergencyText}>Urgente</Text>
             </View>
           )}
-          {favor.is_micro && (
-            <View style={styles.microBadge}>
-              <Ionicons name="flash" size={14} color="#ff9800" />
-              <Text style={styles.microText}>Micro</Text>
-            </View>
-          )}
         </View>
 
         {/* Category */}
