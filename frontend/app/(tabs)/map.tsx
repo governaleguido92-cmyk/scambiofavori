@@ -327,6 +327,10 @@ const styles = StyleSheet.create({
   filterTextActive: {
     color: colors.background,
   },
+  skeletonContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
