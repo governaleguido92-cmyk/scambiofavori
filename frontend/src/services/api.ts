@@ -1,15 +1,6 @@
 // Production backend URL - fallback to deployed URL if env var is empty
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://hungry-rats-ask.loca.lt';
 
-// Helper for fetch with localtunnel bypass header
-const fetchWithBypass = (url: string, options: RequestInit = {}) => {
-  const headers = {
-    ...options.headers,
-    'Bypass-Tunnel-Reminder': 'true',
-  };
-  return fetch(url, { ...options, headers });
-};
-
 // Helper to get full URL for uploaded images
 export const getImageUrl = (path: string | undefined | null): string | undefined => {
   if (!path) return undefined;
