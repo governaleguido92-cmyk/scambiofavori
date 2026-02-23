@@ -68,14 +68,18 @@ export default function LoginScreen() {
       redirectUrl = Linking.createURL('/');
     }
     
+    console.log('Google Login - Platform:', Platform.OS, 'Redirect URL:', redirectUrl);
     const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
     
     try {
+      setIsLoading(true);
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+      console.log('Google Login - Result:', result.type);
       
       if (result.type === 'success' && result.url) {
         // Extract session_id from URL fragment
         const url = result.url;
+        console.log('Google Login - Callback URL:', url);
         const hashIndex = url.indexOf('#');
         if (hashIndex !== -1) {
           const fragment = url.substring(hashIndex + 1);
@@ -83,14 +87,25 @@ export default function LoginScreen() {
           const sessionId = params.get('session_id');
           
           if (sessionId) {
-            setIsLoading(true);
+            console.log('Google Login - Session ID found, exchanging...');
             await exchangeSessionId(sessionId);
             router.replace('/(tabs)');
+          } else {
+            console.log('Google Login - No session_id in fragment');
+            Alert.alert('Errore', 'Sessione non trovata nella risposta');
           }
+        } else {
+          console.log('Google Login - No hash fragment in URL');
+          Alert.alert('Errore', 'Risposta non valida dal server di autenticazione');
         }
+      } else if (result.type === 'cancel') {
+        console.log('Google Login - Cancelled by user');
+      } else {
+        console.log('Google Login - Unexpected result type:', result.type);
       }
     } catch (error: any) {
-      Alert.alert('Errore', 'Errore durante il login con Google');
+      console.error('Google Login Error:', error);
+      Alert.alert('Errore', error.message || 'Errore durante il login con Google');
     } finally {
       setIsLoading(false);
     }
