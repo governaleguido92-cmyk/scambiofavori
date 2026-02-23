@@ -342,9 +342,27 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
           <Text style={styles.subtitle}>Trova favori nelle vicinanze</Text>
         </View>
-        <View style={styles.soliDisplay}>
-          <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
-          <Text style={styles.soliDisplayValue}>{user?.granelli || 0}</Text>
+        <View style={styles.headerRight}>
+          {/* Notifications Bell */}
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => router.push('/notifications')}
+            data-testid="notifications-button"
+          >
+            <Ionicons name="notifications" size={22} color={colors.textPrimary} />
+            {unreadNotifications > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          {/* Granelli Display */}
+          <View style={styles.soliDisplay}>
+            <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
+            <Text style={styles.soliDisplayValue}>{user?.granelli || 0}</Text>
+          </View>
         </View>
       </View>
 
