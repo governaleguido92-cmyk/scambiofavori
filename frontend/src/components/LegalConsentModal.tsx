@@ -32,17 +32,13 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
     setLoading(true);
     try {
       await onAccept();
-      // If successful, the modal will close automatically via visible prop
-      // Keep loading true as the modal is about to disappear
+      // Il modal si chiuderà tramite la prop visible
     } catch (error: any) {
-      console.error('Error accepting legal terms:', error);
+      // L'errore è già gestito in AuthContext, il modal si chiuderà comunque
+      console.error('Error in handleAccept:', error);
+    } finally {
+      // Reset loading in ogni caso
       setLoading(false);
-      // Show error to user so they know something went wrong
-      Alert.alert(
-        'Errore',
-        error?.message || 'Impossibile accettare i termini. Riprova.',
-        [{ text: 'OK' }]
-      );
     }
   };
 
