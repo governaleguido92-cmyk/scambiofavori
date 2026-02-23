@@ -384,17 +384,17 @@ class FavorCategory(BaseModel):
     is_micro: bool = False
 
 FAVOR_CATEGORIES = [
-    {"name": "Trasporto", "icon": "heart-circle", "is_micro": False},
-    {"name": "Spesa", "icon": "heart", "is_micro": False},
-    {"name": "Tecnologia", "icon": "heart-half", "is_micro": False},
-    {"name": "Pulizie", "icon": "home", "is_micro": False},
-    {"name": "Compagnia", "icon": "people", "is_micro": False},
-    {"name": "Cucina", "icon": "heart-circle-outline", "is_micro": False},
-    {"name": "Giardinaggio", "icon": "leaf", "is_micro": False},
-    {"name": "Consiglio", "icon": "chatbubble-ellipses", "is_micro": True},
-    {"name": "Informazione", "icon": "hand-left", "is_micro": True},
-    {"name": "Aiuto Rapido", "icon": "heart-sharp", "is_micro": True},
-    {"name": "Altro", "icon": "heart-outline", "is_micro": False},
+    {"name": "Trasporto", "icon": "car"},
+    {"name": "Spesa", "icon": "cart"},
+    {"name": "Tecnologia", "icon": "laptop"},
+    {"name": "Pulizie", "icon": "home"},
+    {"name": "Compagnia", "icon": "people"},
+    {"name": "Cucina", "icon": "restaurant"},
+    {"name": "Giardinaggio", "icon": "leaf"},
+    {"name": "Babysitting", "icon": "happy"},
+    {"name": "Animali", "icon": "paw"},
+    {"name": "Ripetizioni", "icon": "school"},
+    {"name": "Altro", "icon": "ellipsis-horizontal"},
 ]
 
 # Object categories for Oggettoteca
