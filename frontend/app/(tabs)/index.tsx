@@ -465,25 +465,17 @@ export default function HomeScreen() {
                 style={[
                   styles.categoryChip,
                   selectedCategory === cat.name && styles.categoryChipActive,
-                  cat.is_micro && styles.categoryChipMicro,
                 ]}
                 onPress={() => setSelectedCategory(cat.name)}
               >
                 <Ionicons
                   name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
                   size={16}
-                  color={selectedCategory === cat.name ? '#1a1a2e' : cat.is_micro ? '#ff9800' : '#4ecca3'}
+                  color={selectedCategory === cat.name ? '#1a1a2e' : '#4ecca3'}
                 />
                 <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
                   {cat.name}
                 </Text>
-                {cat.is_micro && (
-                  <Ionicons
-                    name="flash"
-                    size={12}
-                    color={selectedCategory === cat.name ? '#1a1a2e' : '#ff9800'}
-                  />
-                )}
               </TouchableOpacity>
             ))}
           </ScrollView>
