@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [legalAccepted, setLegalAccepted] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const saveToken = async (newToken: string) => {
     await AsyncStorage.setItem('token', newToken);
