@@ -18,171 +18,197 @@
 
 **what currently exists?**
 A full-stack application with an Expo (React Native) frontend and a FastAPI backend.
-- **Backend**: Logic for users, favors, chat, currency (Granelli), social debt, notifications, user/content moderation, a reviewer account flag, Stripe subscription, Google/Apple auth, and endpoints for profile picture uploads and QR code image generation.
-- **Frontend**: Screens for login, home, profile, creating/viewing favors, chat, and supporter subscription. It includes UI for skills management, profile completion, reporting, skeleton loading, offline notices, a promotional banner, and profile picture selection. The project is configured for EAS Build.
+- **Backend**: Implements logic for users, favors, chat, currency (Granelli), notifications, user/content moderation, Stripe subscriptions, Google/Apple auth, profile picture uploads, and QR code image generation. The code has been hardened for production deployment by correcting how environment variables are loaded.
+- **Frontend**: Features screens for login, home, profile, creating/viewing favors, chat, notifications, and supporter subscriptions. It integrates UI for supporter badges (home, chat, map), skeleton loaders (home, map), and a notification center. The project is configured for EAS Build.
 
 **Last working item**:
-- **Last item agent was working**: Guiding the user on how to create a standalone build for the iOS simulator on their local Mac using Xcode. The user was encountering errors because they were running commands in the wrong directory or trying to use an Android APK on the iOS simulator. The agent was providing step-by-step CLI instructions.
-- **Status**: IN PROGRESS
-- **Agent Testing Done**: N/A (This is a user guidance task)
-- **Which testing method agent to use?**: N/A. The agent's role is to provide clear, step-by-step instructions for the user to follow on their local machine.
-- **User Testing Done**: N (User is in the process of attempting the build)
+- **Last item agent was working**: The agent was attempting to resolve multiple user-reported issues simultaneously: login failures (network error), deployment authentication errors (), and guiding the user to create a working build for their iOS simulator. The core problem is that the user is completely blocked from testing the app.
+- **Status**: BLOCKED
+- **Agent Testing Done**: N
+- **Which testing method agent to use?**: N/A. The immediate priority is user guidance to get a working build.
+- **User Testing Done**: N (User is unable to get the app running to test anything).
 
 **All Pending/In progress Issue list**:
-- **Issue 1**: User is Blocked on Local Build Process (P0)
-- **Issue 2**: Frontend Environment Instability in Preview (P1)
+- **Issue 1**: User is Blocked From Testing the Application (P0)
+- **Issue 2**: Legal Consent Modal Gets Stuck (P1)
+- **Issue 3**: Photo Upload from Library is Broken (P2)
+- **Issue 4**: User Request for Offline Notice Update (P2)
 
 **Issues Detail**:
-- **Issue 1**:
-    - **Description**: The user is unable to build the app on their local Mac. They have encountered a series of issues, including  errors, trying to run commands in the wrong directory, and misunderstanding build artifacts (e.g., trying to use an APK for the iOS simulator). The user requires significant hand-holding for CLI operations.
-    - **Attempted fixes**: The agent provided detailed, step-by-step instructions for installing dependencies (Homebrew, Node, Yarn, EAS CLI), navigating directories, setting environment variables, and running the correct An Expo user account is required to proceed.
+- **Issue 1**: User is Blocked From Testing the Application
+    - **Description**: The user cannot test the app on their iPhone or Mac simulator. The Expo Go QR code method fails with a network error due to an unstable  tunnel in the preview environment. The user is also struggling to follow the command-line instructions to create and run a local build on their Mac with Xcode, getting confused between different build types (development vs. standalone). This is a complete blocker.
+    - **Attempted fixes**: The agent correctly identified the  issue and shifted focus to a local simulator build. They provided step-by-step instructions for env: load .env and An Expo user account is required to proceed.
 
 Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username and  commands. The agent also fixed multiple build errors in the codebase (missing files, incorrect package versions, required config flags) and provided an updated, downloadable ZIP of the project.
+Input is required, but stdin is not readable. Failed to display prompt: Email or username. However, the user remains unable to complete the process.
     - **Next debug checklist**:
-        1.  Re-confirm with the user which build they want to create (iOS Simulator vs. Android APK).
-        2.  Ask the user to open a new terminal.
-        3.  Provide the  command to ensure they are in the correct directory.
-        4.  Provide the env: load .env command again to attempt a local run on the simulator.
-        5.  If that fails, guide them again through the An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username command to create a simulator build on Expo's servers.
-        6.  Be prepared to interpret screenshots of the user's terminal to diagnose the exact error.
-    - **Why fix this issue and what will be achieved with the fix?**: The user cannot test the application on a mobile device or simulator until a build is successfully created. This is a hard blocker for user acceptance testing.
+        1.  Reassure the user and focus on a single, simple path: the local simulator build.
+        2.  Instruct the user to download the latest frontend code ZIP.
+        3.  Provide clear, one-at-a-time commands: , yarn install v1.22.22
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+success Saved lockfile.
+Done in 4.15s., and env: load .env.
+        4.  Tell the user that the QR code method will not work and should be ignored for now.
+        5.  If an error occurs, ask the user for a screenshot of the entire terminal window to diagnose the exact problem.
+    - **Why fix this issue and what will be achieved with the fix?**: The user cannot verify any new features or bug fixes until they can run the app. Resolving this will unblock all other progress.
     - **Status**: IN PROGRESS
     - **Is recurring issue?**: Y
     - **Should Test frontend/backend/both after fix?**: N/A
-    - **Blocked on other issue**: None.
+    - **Blocked on other issue**: This is the primary blocker for all other issues.
 
-- **Issue 2**:
-    - **Description**: The preview environment's  tunnel for the Expo frontend is extremely unstable, frequently failing with  errors and causing the Expo service to restart in a loop. This makes testing via the QR code on a physical device unreliable.
-    - **Attempted fixes**: The agent successfully used  and  as temporary workarounds to provide a stable URL for the user to test with Expo Go. However, this doesn't fix the underlying environment issue.
-    - **Next debug checklist**: This is a platform/environment issue. The workaround is to use the local build process (Issue 1) or the web preview. The agent should continue to favor providing instructions for a local build.
-    - **Why fix this issue and what will be achieved with the fix?**: A stable tunnel would allow for rapid testing with Expo Go without requiring a full native build.
-    - **Status**: NOT STARTED (Workarounds were used)
+- **Issue 2**: Legal Consent Modal Gets Stuck
+    - **Description**: The user reported that after accepting the legal terms and conditions upon first login, the modal does not disappear, freezing the app.
+    - **Attempted fixes**: The agent implemented a fix in  and  by adding a 10-second API call timeout and more robust error handling to ensure the modal always closes, even if the backend call fails.
+    - **Next debug checklist**: Once the user can run the app (Issue 1), they need to test the registration/login flow to confirm the fix.
+    - **Status**: USER VERIFICATION PENDING
     - **Is recurring issue?**: Y
     - **Should Test frontend/backend/both after fix?**: Frontend
-    - **Blocked on other issue**: None.
+    - **Blocked on other issue**: Issue 1
+
+- **Issue 3**: Photo Upload from Library is Broken
+    - **Description**: The user reported in a previous session that the profile photo upload feature doesn't provide the option to select an image from the device's library. This is a regression that has not been addressed.
+    - **Attempted fixes**: None.
+    - **Next debug checklist**:
+        1.  Inspect .
+        2.  Review the  handler for the profile picture and the  implementation.
+        3.  Check for issues with permissions requests or the  function.
+        4.  Reproduce and fix the issue on the simulator.
+    - **Status**: NOT STARTED
+    - **Is recurring issue?**: Y
+    - **Should Test frontend/backend/both after fix?**: Frontend
+    - **Blocked on other issue**: Issue 1
+
+- **Issue 4**: User Request for Offline Notice Update
+    - **Description**: The user's last request was mi aggiorni all offline (update me on the offline). The previous agent asked for clarification on what changes are desired for the  component but did not receive a reply before the session ended.
+    - **Attempted fixes**: None.
+    - **Next debug checklist**: Follow up with the user in Italian: Riguardo alla tua richiesta sul componente offline, cosa vorresti modificare? Il testo, il design, o la funzionalità? (Regarding your request for the 'offline' component, what would you like to change? The text, the design, or the functionality?).
+    - **Status**: NOT STARTED
+    - **Is recurring issue?**: N
+    - **Should Test frontend/backend/both after fix?**: Frontend
+    - **Blocked on other issue**: None
 
 **In progress Task List**:
-- **Task 1**: Guide User to Create a Standalone iOS Simulator Build (P0)
-    - **Where to resume**: The user has Xcode installed and has downloaded the corrected frontend code. The next step is to guide them to run env: load .env from the correct directory ().
-    - **What will be achieved with this?**: The user will have a running version of the app on their local iOS Simulator, allowing them to test all implemented features.
+- **Task 1**: Guide User to Create and Run an iOS Simulator Build (P0)
+    - **Where to resume**: The user has the latest code ZIP. The next step is to provide simple, clear CLI commands to unzip the code, install dependencies, and run env: load .env.
+    - **What will be achieved with this?**: The user will have a working version of the app on their local simulator, allowing them to test all implemented features and fixes.
     - **Status**: IN PROGRESS
     - **Should Test frontend/backend/both after fix?**: N/A
-    - **Blocked on something**: User's ability to follow CLI instructions.
+    - **Blocked on something**: User's difficulty with command-line tools.
 
 **Upcoming and Future Tasks**
-- **P1: Integrate Supporter Recognition UI (Remaining Areas)**: The  has been added to the home screen, but still needs to be integrated in other key areas.
-    - **Task**: Add the badge next to the user's name in chat ().
-    - **Task**: Add the badge to user markers/pop-ups on the map view ().
-- **P2: Integrate  Component in Map View**: The  component was integrated on the home screen but not on the map.
-    - **Task**: Wrap the map in  with the  component while location/favor data is being fetched.
-- **P3: Implement Frontend for Notifications**: The backend generates notifications, but there is no UI for users to view them.
-    - **Task**: Create a new notifications screen.
-    - **Task**: Add a bell icon to the app header that navigates to the new screen and indicates when there are unread notifications by polling .
+- **Upcoming Tasks**:
+    - **(P0)** Follow up on the user's request to update the offline notice component ().
+    - **(P1)** Implement the fix for the broken photo upload feature ().
 
 **Completed work in this session**
-- **Supporter Features**:
-    - Integrated ,  loader, and a promotional banner on the home screen ().
-    - Added  flag to the  backend endpoint and corresponding frontend types.
-    - Implemented a colored border for supporter profile pictures ().
-- **Reviewer Mode**:
-    - Implemented a Mock QR Scan button on the favor details page (), visible only to the reviewer account.
-- **Profile Picture Upload**:
-    - Added a backend endpoint  to handle image uploads ().
-    - Mounted a static directory to serve uploaded images.
-    - Integrated  into the profile screen () to allow users to select and upload a new avatar.
-- **Authentication**:
-    - Implemented the full Apple Sign-In flow (backend endpoint  and frontend UI using ).
-    - Debugged and verified the Google Auth flow.
-- **QR Code Generation**:
-    - Upgraded QR code generation to create and serve a styled PNG image via a new endpoint  instead of just a token.
-    - Updated the frontend modal to display the generated QR image.
-- **UX Improvements**:
-    - Changed favor acceptance to use  so the chat screen opens in the foreground ().
-    - Redesigned all major app icons (tab bar, favor categories) to use a consistent heart and family theme.
-    - Integrated  into the root layout ().
-- **Deployment & Build Fixes**:
-    - Resolved multiple EAS Build failures by removing , creating a missing , correcting package versions, and enabling the New Architecture () in .
-    - Created a downloadable ZIP of the corrected frontend code for the user.
+- **Supporter Recognition UI**:
+    - Integrated  next to names in the chat header and messages ().
+    - Added supporter indicators to favor markers on the map ().
+- **Notifications Feature**:
+    - Created a new screen to display notifications ().
+    - Added a bell icon to the home screen header with a badge for unread notifications, which polls the  endpoint ().
+- **Map UX**:
+    - Integrated a skeleton loader () while map data is being fetched ().
+- **Deployment Readiness**:
+    - Fixed  errors in production by setting  in  to prioritize Kubernetes environment variables ().
+    - Added fallbacks for  and  to allow local development without a  file ().
+- **Bug Fix (Attempted)**:
+    - Implemented a timeout and improved error handling to prevent the legal consent modal from freezing the app ().
+
+**Earlier issues found/mentioned but not fixed**
+- **Issue 1**: Photo upload from library is broken.
+    - **Debug checklist**:
+        1. Inspect .
+        2. Review the  implementation and permissions.
+        3. Reproduce and fix on the simulator.
+    - **Why to solve this issue and what will be achieved with this?**: This is a core profile customization feature that is currently not working for the user.
+    - **Should Test frontend/backend/both after fix**: Frontend
+    - **Is recurring issue?**: Y
+
+**Known issue recurrence from previous fork**
+- **Issue recurrence in previous fork**: User is blocked by local build/testing difficulties and environment instability ( tunnel).
+- **Recurrence count**: 2+
+- **Status**: IN PROGRESS. This remains the primary blocker for the entire project.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Frontend**: Expo (SDK 50+), React Native, Expo Router, , , EAS Build CLI
-- **Backend**: FastAPI, Pydantic, Motor, ,  library
-- **Database**: MongoDB
-- **Deployment**: EAS (Expo Application Services) for standalone builds.
+- **Frontend**: Expo (SDK 50+), React Native, Expo Router, EAS Build ( vs  profiles)
+- **Backend**: FastAPI, Pydantic, Motor
+- **Deployment**: Understanding the difference between Kubernetes injected environment variables and local  files.
+- **Local Builds**: Using env: load .env to create a local build for the iOS simulator.
 
 **key DB schema**
-- **users**: added  to store the path to the user's profile picture.
+- No changes in this session.
 
 **All files of reference**
-- : Added endpoints for avatar upload, QR image generation, and Apple auth.
-- : Integrated image picker and supporter border.
-- : Integrated promotional banner, supporter badge, and skeleton loader.
-- : Added mock QR scan button and fixed chat navigation.
-- : Implemented full Apple Sign-In functionality.
-- : Added functions for new endpoints.
-- : Created to enable New Architecture.
--  & : Configured for EAS Build.
-- : A snapshot of the frontend provided to the user.
+- : Fixed environment variable loading for deployment.
+- : Added supporter badge to chat.
+- : Added supporter badge and skeleton loader to the map.
+- : New screen for viewing notifications.
+- : Added notification bell to the home screen header.
+- : Attempted fix for the legal modal bug.
+- : UI part of the legal modal bug fix.
+- : Added  profile to enable standalone simulator builds.
+- : Snapshot of the frontend provided to the user.
 
 **key api endpoints**
-- : Uploads a new profile picture for the current user.
-- : Generates and returns a PNG image of the completion QR code.
-- : Handles authentication via Sign in with Apple.
-- : Handles authentication via Google (Emergent Auth).
-- : Serves the frontend code as a downloadable ZIP file.
+- The agent primarily interacted with existing endpoints: , , , and auth endpoints. No new endpoints were created.
 
 **Critical Info for New Agent**
-- **User requires significant guidance for CLI tasks.** The immediate priority is to help the user successfully build the app on their local Mac. Be prepared to give very simple, one-command-at-a-time instructions and interpret screenshots of their terminal.
-- **The user's goal is to test on an iOS Simulator.** They have Xcode installed. Your focus should be on getting env: load .env to work or, failing that, guiding them through an An Expo user account is required to proceed.
-
-Log in to EAS with email or username (exit and run eas login --help to see other login options)
-Input is required, but stdin is not readable. Failed to display prompt: Email or username for the simulator profile. Do not get sidetracked by Android/APK issues unless the user specifically asks.
-- **The preview environment's  tunnel is unreliable.** Do not depend on it for testing with Expo Go. The local build process is the more stable path forward.
+- **The user is completely blocked and requires patient, simple guidance.** Your absolute first priority is to help them get a working build on their local iOS simulator.
+- **Abandon the QR code (Expo Go) method.** The preview environment's tunnel is unstable. Focus exclusively on the env: load .env command on the user's Mac.
+- **Provide one command at a time.** The user has difficulty with the CLI. Be prepared to ask for screenshots of their terminal to diagnose errors.
+- The Legal Consent Modal bug has a fix implemented, but it needs to be tested by the user once they are unblocked.
+- A regression with the Photo Upload feature exists and has not been addressed yet.
+- The user's last request was about the offline notice, which needs to be followed up on.
 
 **documents and test reports created in this job**
 -  (updated)
--  (created)
-- Multiple test reports from the testing agent verifying backend functionality.
+-  (created and updated multiple times)
+-  (testing agent report)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User**: I have Xcode and downloaded the build. **Status**: User is ready but confused about file types.
-2.  **User**: It's an APK but I need it for the iPhone simulator. **Status**: User misunderstands build artifacts. Agent needs to clarify and guide them to create an iOS build.
-3.  **User**: There's no version for the iPhone simulator, only APK. **Status**: Correct. Agent needs to instruct user on how to create the iOS build.
-4.  **User**: How long does  take? **Status**: User is attempting local build commands.
-5.  **User**: The profile photo doesn't give the option to upload from the library. **Status**: This seems to be a new bug report, but the agent did not address it and continued with the build guidance. This is a PENDING issue.
-6.  **User**: Error running env: load .env ( not found). **Status**: User was in the wrong directory.
-7.  **User**: Error running env: load .env ( executable not working). **Status**: A misleading error, agent correctly redirected to focus on iOS.
-8.  **User**: How do I use Xcode? **Status**: User is asking for guidance on using the tools they've installed.
-9.  **User**: Build failed again ( not found). **Status**: User was using the old, unfixed ZIP file.
-10. **User**: The QR gives me error 3200. **Status**: The recurring  instability issue.
+1.  **User**: (Shares image of EAS dashboard) How do I make it work without ngrok? **Status**: User wants a standalone app.
+2.  **User**: 1 but without apple login. **Status**: User chooses to create a standalone build and thinks they need an Apple Dev account.
+3.  **User**: (Shares deployment error logs again) **Status**: User is still facing deployment issues.
+4.  **User**: But why do I get a network error when I try to log in? **Status**: User is experiencing login failures, likely due to the app pointing to the wrong backend URL.
+5.  **User**: (Shares another set of deployment logs) **Status**: User is trying to deploy again, still hitting auth issues.
+6.  **User**: (Shares another set of deployment logs) **Status**: Persistent deployment failures.
+7.  **User**: Can you update the offline [component]? **Status**: New feature/update request. **PENDING CLARIFICATION**.
+8.  **User**: (Shares two more deployment health check requests) **Status**: User is trying to get the app ready for deployment.
+9.  **User**: I have problems with login, both Google and Apple. **Status**: User reporting login failures on the deployed/built app.
+10. **User**: The app seems stuck, when you accept the terms the slide should disappear. **Status**: User confirms the legal modal bug is still happening on their end.
 
 **Project Health Check:**
-- **Broken**: The user's local build/run process is blocked. The preview environment's frontend tunnel () is broken and unreliable.
+- **Broken**:
+    - The user's ability to test the application is completely broken.
+    - The Expo Go preview tunnel is unreliable, causing network errors.
+    - User login (Google, Apple, registration) is failing for the user.
 - **Mocked**: Reviewer mode () is implemented.
 
 **3rd Party Integrations**
 - : Payments (via ).
-- : For selecting photos from the device library.
+- : For selecting photos from the device library (currently broken).
 - : For native Apple Sign In.
 - : For generating styled QR code images.
 - : For building standalone application packages.
--  / : Used as temporary workarounds for ngrok instability.
+- : Attempted as a temporary workaround for ngrok instability.
 
 **Testing status**
-- **Testing agent used after significant changes**: YES, multiple times for backend features. All tests passed.
+- **Testing agent used after significant changes**: YES, once. Backend tests passed, but frontend tests failed due to environment instability (ngrok 520 error), not code issues.
 - **Troubleshoot agent used after agent stuck in loop**: NO.
-- **Test files created**: Yes, by the testing agent.
-- **Known regressions**: The user reported that the upload photo feature is not working as expected on their end. This was reported *after* the agent implemented it and needs investigation.
+- **Test files created**: None in this session.
+- **Known regressions**: The photo upload feature does not allow selection from the library.
+
+**Credentials to test flow:**
+- **Email**: 
+- **Password**: 
 
 **What agent forgot to execute**
-- The agent did not integrate the  into the chat () or map () screens.
-- The agent did not integrate the  component into the map view.
-- The agent did not implement the notifications UI.
-- The agent did not investigate the user's report that the upload photo feature was not working on their end (). This is a critical pending issue.</analysis>
+- Did not investigate or fix the known regression with the photo upload feature from the previous session.
+- Did not resolve the user's request to update the offline component, only asked for clarification.</analysis>

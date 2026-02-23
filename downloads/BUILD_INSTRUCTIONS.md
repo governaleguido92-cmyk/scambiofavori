@@ -54,7 +54,7 @@ eas build --platform ios --profile preview
 ## 🔗 Backend URL
 L'app è configurata per usare:
 ```
-https://granelli-hub.preview.emergentagent.com
+https://hyperlocal-hub-8.preview.emergentagent.com
 ```
 
 ## 📧 Supporto
