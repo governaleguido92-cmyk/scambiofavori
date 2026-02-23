@@ -112,10 +112,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) return;
     try {
       await api.acceptLegalTerms(token);
+      // Force immediate state update
       setLegalAccepted(true);
       setShowLegalModal(false);
+      console.log('Legal terms accepted, modal should close');
     } catch (error) {
-      console.log('Error accepting legal terms:', error);
+      console.error('Error accepting legal terms:', error);
       throw error;
     }
   };
