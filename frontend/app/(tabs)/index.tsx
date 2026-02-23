@@ -266,12 +266,6 @@ export default function HomeScreen() {
             <Text style={styles.emergencyText}>Urgente</Text>
           </View>
         )}
-        {item.is_micro && (
-          <View style={styles.microBadge}>
-            <Ionicons name="flash" size={12} color={colors.accent} />
-            <Text style={styles.microText}>Micro</Text>
-          </View>
-        )}
       </View>
 
       {/* Footer with Granelli and Distance */}
