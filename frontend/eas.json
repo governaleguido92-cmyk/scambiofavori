@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 3.0.0"
+    "version": ">= 3.0.0",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -13,20 +14,25 @@
         "buildType": "apk"
       }
     },
-    "simulator": {
-      "developmentClient": false,
+    "preview": {
       "distribution": "internal",
+      "developmentClient": false,
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
       },
       "env": {
         "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-hub-8.preview.emergentagent.com"
       }
     },
-    "preview": {
+    "preview-device": {
       "distribution": "internal",
+      "developmentClient": false,
       "ios": {
-        "simulator": true
+        "simulator": false
       },
       "android": {
         "buildType": "apk"
@@ -46,5 +52,8 @@
         "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-hub-8.preview.emergentagent.com"
       }
     }
+  },
+  "submit": {
+    "production": {}
   }
 }
