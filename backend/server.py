@@ -1588,12 +1588,6 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     
     granelli_cost = max(1, int(favor_data.duration_hours * GRANELLI_PER_HOUR))
     
-    category_info = next((c for c in FAVOR_CATEGORIES if c["name"] == favor_data.category), None)
-    is_micro = favor_data.is_micro or (category_info and category_info.get("is_micro", False))
-    
-    if is_micro:
-        granelli_cost = 1
-    
     # ========================
     # SOCIAL DEBT LIMIT CHECK
     # ========================
@@ -1648,7 +1642,6 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         "exact_latitude": favor_data.latitude,
         "exact_longitude": favor_data.longitude,
         "address": favor_data.address,
-        "is_micro": is_micro,
         "is_emergency": favor_data.is_emergency,
         "creator_in_debt": creator_in_debt,  # For priority highlighting
         "qr_code": qr_code,
