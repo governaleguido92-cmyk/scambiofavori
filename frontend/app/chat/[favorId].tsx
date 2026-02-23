@@ -248,9 +248,11 @@ export default function ChatScreen() {
             {favor?.title || 'Chat'}
           </Text>
           <View style={styles.headerSubRow}>
-            <Text style={styles.headerSubtitle}>
-              con {otherParticipant?.name || 'Utente'}
-            </Text>
+            <UserNameWithBadge 
+              name={`con ${otherParticipant?.name || 'Utente'}`}
+              isSupporter={otherParticipant?.isSupporter || false}
+              nameStyle={styles.headerSubtitle}
+            />
             <View style={styles.granelliBadge}>
               <Text style={styles.granelliText}>{CURRENCY_SYMBOL} {favor?.granelli_cost || 0}</Text>
             </View>
