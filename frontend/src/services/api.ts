@@ -316,6 +316,7 @@ const handleResponse = async (response: Response) => {
 const getHeaders = (token?: string) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    'Bypass-Tunnel-Reminder': 'true', // Required for localtunnel
   };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
