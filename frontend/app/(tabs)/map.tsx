@@ -52,6 +52,7 @@ const MapPlaceholder = ({
               style={[
                 styles.favorCircle,
                 favor.type === 'offer' ? styles.offerCircle : styles.requestCircle,
+                favor.creator_is_supporter && styles.supporterCircle,
                 { 
                   left: `${15 + (index % 3) * 30}%`,
                   top: `${20 + Math.floor(index / 3) * 35}%`
@@ -60,6 +61,12 @@ const MapPlaceholder = ({
               onPress={() => onFavorPress(favor)}
               data-testid={`map-favor-${favor.favor_id}`}
             >
+              {/* Supporter badge in top-right corner */}
+              {favor.creator_is_supporter && (
+                <View style={styles.mapSupporterBadge}>
+                  <SupporterBadge size="small" />
+                </View>
+              )}
               <View style={styles.circleInner}>
                 <Ionicons 
                   name={favor.type === 'offer' ? 'gift' : 'hand-left'} 
@@ -73,6 +80,9 @@ const MapPlaceholder = ({
               <View style={styles.circleLabel}>
                 <Text style={styles.circleLabelText} numberOfLines={1}>
                   {favor.title}
+                </Text>
+                <Text style={styles.circleCreatorText} numberOfLines={1}>
+                  {favor.creator_name}
                 </Text>
               </View>
             </TouchableOpacity>
