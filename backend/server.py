@@ -1667,7 +1667,6 @@ async def get_favors(
     type: Optional[str] = None,
     category: Optional[str] = None,
     status: str = "active",
-    is_micro: Optional[bool] = None,
     is_emergency: Optional[bool] = None,
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
@@ -1689,8 +1688,6 @@ async def get_favors(
         query["type"] = type
     if category:
         query["category"] = category
-    if is_micro is not None:
-        query["is_micro"] = is_micro
     if is_emergency is not None:
         query["is_emergency"] = is_emergency
     
