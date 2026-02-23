@@ -17,6 +17,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, ChatMessage, Favor, CURRENCY_SYMBOL } from '../../src/services/api';
+import { SupporterBadge, SupporterProfileBorder, UserNameWithBadge } from '../../src/components/SupporterBadge';
 
 // Theme colors
 const colors = {
@@ -152,9 +153,28 @@ export default function ChatScreen() {
   const getOtherParticipant = () => {
     if (!favor || !user) return null;
     if (favor.creator_id === user.user_id) {
-      return { name: favor.accepted_by_name, id: favor.accepted_by };
+      // Current user is creator, other is acceptor
+      return { 
+        name: favor.accepted_by_name, 
+        id: favor.accepted_by,
+        isSupporter: false // accepted_by supporter status not available
+      };
     }
-    return { name: favor.creator_name, id: favor.creator_id };
+    // Current user is acceptor, other is creator
+    return { 
+      name: favor.creator_name, 
+      id: favor.creator_id,
+      isSupporter: favor.creator_is_supporter
+    };
+  };
+
+  // Get supporter status for a message sender
+  const getSenderIsSupporter = (senderId: string): boolean => {
+    if (!favor) return false;
+    if (senderId === favor.creator_id) {
+      return favor.creator_is_supporter;
+    }
+    return false; // accepted_by supporter status not available from favor
   };
 
   const renderMessage = ({ item }: { item: ChatMessage }) => {
