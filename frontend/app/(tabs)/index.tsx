@@ -51,9 +51,21 @@ export default function HomeScreen() {
   const [wallPosts, setWallPosts] = useState<WallPost[]>([]);
   const [activeTab, setActiveTab] = useState<'favors' | 'wall'>('favors');
   const [networkError, setNetworkError] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   // Report modal state
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportTarget, setReportTarget] = useState<{ id: string; name: string } | null>(null);
+
+  // Load unread notifications count
+  const loadUnreadCount = useCallback(async () => {
+    if (!token) return;
+    try {
+      const data = await api.getUnreadNotificationCount(token);
+      setUnreadNotifications(data.count);
+    } catch (error) {
+      console.log('Error loading notification count:', error);
+    }
+  }, [token]);
 
   const handleReportFavor = (favorId: string, favorTitle: string) => {
     setReportTarget({ id: favorId, name: favorTitle });
