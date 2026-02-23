@@ -1999,14 +1999,7 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
             }}
         )
     
-    # Update micro favors and emergency counts
-    if favor.is_micro:
-        helper_id = favor.accepted_by if favor.type == "request" else favor.creator_id
-        await db.users.update_one(
-            {"user_id": helper_id},
-            {"$inc": {"micro_favors_completed": 1}}
-        )
-    
+    # Update emergency counts
     if favor.is_emergency:
         helper_id = favor.accepted_by if favor.type == "request" else favor.creator_id
         await db.users.update_one(
