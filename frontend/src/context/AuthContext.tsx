@@ -192,6 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         legalAccepted,
         showLegalModal,
+        showOnboarding,
         login,
         register,
         exchangeSessionId,
@@ -199,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         refreshUser,
         acceptLegal,
+        completeOnboarding,
         deleteAccount,
       }}
     >
