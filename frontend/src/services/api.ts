@@ -257,6 +257,17 @@ export interface LeaderboardUser {
   total_favors_given: number;
 }
 
+export interface Notification {
+  notification_id: string;
+  user_id: string;
+  type: string; // "skill_match", "favor_update", "system"
+  title: string;
+  message: string;
+  favor_id?: string;
+  read: boolean;
+  created_at: string;
+}
+
 export interface PattoContent {
   title: string;
   subtitle: string;
