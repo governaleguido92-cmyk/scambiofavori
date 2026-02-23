@@ -50,8 +50,9 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType="slide"
       statusBarTranslucent
+      onRequestClose={() => {}} // Prevent back button closing without consent
     >
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
