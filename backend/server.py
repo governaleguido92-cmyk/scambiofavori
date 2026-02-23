@@ -3617,6 +3617,11 @@ UPLOAD_PATH = Path("/app/uploads")
 UPLOAD_PATH.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_PATH)), name="uploads")
 
+# Mount static files for downloads
+DOWNLOAD_PATH = Path("/app/backend/static")
+DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(DOWNLOAD_PATH)), name="static")
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
