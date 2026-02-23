@@ -54,7 +54,7 @@ eas build --platform ios --profile preview
 ## 🔗 Backend URL
 L'app è configurata per usare:
 ```
-https://community-trades-2.preview.emergentagent.com
+https://granelli-hub.preview.emergentagent.com
 ```
 
 ## 📧 Supporto
