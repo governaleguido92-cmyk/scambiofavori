@@ -381,7 +381,6 @@ class User(BaseModel):
 class FavorCategory(BaseModel):
     name: str
     icon: str
-    is_micro: bool = False
 
 FAVOR_CATEGORIES = [
     {"name": "Trasporto", "icon": "car"},
@@ -419,7 +418,6 @@ class FavorCreate(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     address: Optional[str] = None
-    is_micro: bool = False
     is_emergency: bool = False  # Emergenza Gentilezza
 
 class Favor(BaseModel):
