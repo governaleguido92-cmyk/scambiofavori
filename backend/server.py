@@ -3608,6 +3608,20 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
+from fastapi.responses import FileResponse
+
+@api_router.get("/download/frontend")
+async def download_frontend():
+    """Download the latest frontend ZIP file"""
+    file_path = Path("/app/backend/static/scambio-di-favori-frontend.zip")
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(
+        path=str(file_path),
+        filename="scambio-di-favori-frontend.zip",
+        media_type="application/zip"
+    )
+
 # Include router
 app.include_router(api_router)
 
