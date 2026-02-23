@@ -144,7 +144,11 @@ export default function HomeScreen() {
     getLocation();
     loadCategories();
     loadThanksBoard();
-  }, []);
+    loadUnreadCount();
+    // Poll notifications every 30 seconds
+    const notifInterval = setInterval(loadUnreadCount, 30000);
+    return () => clearInterval(notifInterval);
+  }, [loadUnreadCount]);
 
   useEffect(() => {
     if (location) {
