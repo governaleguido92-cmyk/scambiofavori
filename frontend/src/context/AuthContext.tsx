@@ -8,6 +8,7 @@ interface AuthContextType {
   loading: boolean;
   legalAccepted: boolean;
   showLegalModal: boolean;
+  showOnboarding: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, referralCode?: string) => Promise<void>;
   exchangeSessionId: (sessionId: string) => Promise<void>;
@@ -15,6 +16,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   acceptLegal: () => Promise<void>;
+  completeOnboarding: () => Promise<void>;
   deleteAccount: (confirmEmail: string, reason?: string) => Promise<void>;
 }
 
