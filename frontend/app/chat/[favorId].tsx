@@ -179,13 +179,16 @@ export default function ChatScreen() {
 
   const renderMessage = ({ item }: { item: ChatMessage }) => {
     const isMe = item.sender_id === user?.user_id;
+    const senderIsSupporter = getSenderIsSupporter(item.sender_id);
     
     return (
       <View style={[styles.messageContainer, isMe ? styles.myMessage : styles.otherMessage]}>
         {!isMe && (
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>{item.sender_name?.charAt(0).toUpperCase()}</Text>
-          </View>
+          <SupporterProfileBorder isSupporter={senderIsSupporter} size={32}>
+            <View style={styles.avatarContainer}>
+              <Text style={styles.avatarText}>{item.sender_name?.charAt(0).toUpperCase()}</Text>
+            </View>
+          </SupporterProfileBorder>
         )}
         <View style={[
           styles.messageBubble,
@@ -196,6 +199,16 @@ export default function ChatScreen() {
             <View style={styles.blockedBadge}>
               <Ionicons name="warning" size={12} color={colors.error} />
               <Text style={styles.blockedBadgeText}>Bloccato</Text>
+            </View>
+          )}
+          {/* Show sender name with badge for other's messages */}
+          {!isMe && (
+            <View style={styles.senderNameRow}>
+              <UserNameWithBadge 
+                name={item.sender_name || 'Utente'} 
+                isSupporter={senderIsSupporter}
+                nameStyle={styles.senderNameText}
+              />
             </View>
           )}
           <Text style={[styles.messageText, item.blocked && styles.blockedText]}>
