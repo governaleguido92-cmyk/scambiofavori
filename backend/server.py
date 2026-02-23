@@ -31,10 +31,8 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# JWT Config
-JWT_SECRET = os.environ.get('JWT_SECRET')
-if not JWT_SECRET:
-    raise ValueError("JWT_SECRET environment variable is required")
+# JWT Config - Use env var in production, default for local development
+JWT_SECRET = os.environ.get('JWT_SECRET', 'local-dev-secret-key-not-for-production')
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_DAYS = 7
 
