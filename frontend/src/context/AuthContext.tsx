@@ -109,16 +109,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const acceptLegal = async () => {
-    if (!token) return;
+    if (!token) {
+      // Nessun token - chiudi comunque il modal
+      setShowLegalModal(false);
+      return;
+    }
+    
     try {
-      await api.acceptLegalTerms(token);
-      // Force immediate state update
+      // Timeout di 10 secondi per evitare blocchi infiniti
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 10000)
+      );
+      
+      await Promise.race([
+        api.acceptLegalTerms(token),
+        timeoutPromise
+      ]);
+      
+      // Successo - chiudi il modal
       setLegalAccepted(true);
       setShowLegalModal(false);
-      console.log('Legal terms accepted, modal should close');
     } catch (error) {
       console.error('Error accepting legal terms:', error);
-      throw error;
+      // Anche in caso di errore, chiudi il modal per non bloccare l'utente
+      // L'utente vedrà di nuovo il modal al prossimo login se non è stato salvato
+      setLegalAccepted(true);
+      setShowLegalModal(false);
     }
   };
 
