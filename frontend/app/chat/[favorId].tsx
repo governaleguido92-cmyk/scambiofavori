@@ -184,11 +184,13 @@ export default function ChatScreen() {
     return (
       <View style={[styles.messageContainer, isMe ? styles.myMessage : styles.otherMessage]}>
         {!isMe && (
-          <SupporterProfileBorder isSupporter={senderIsSupporter} size={32}>
-            <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>{item.sender_name?.charAt(0).toUpperCase()}</Text>
-            </View>
-          </SupporterProfileBorder>
+          <View style={{ marginRight: 8 }}>
+            <SupporterProfileBorder isSupporter={senderIsSupporter} size={32}>
+              <View style={styles.avatarContainer}>
+                <Text style={styles.avatarText}>{item.sender_name?.charAt(0).toUpperCase()}</Text>
+              </View>
+            </SupporterProfileBorder>
+          </View>
         )}
         <View style={[
           styles.messageBubble,
