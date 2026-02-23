@@ -346,7 +346,7 @@ export default function HomeScreen() {
           {/* Notifications Bell */}
           <TouchableOpacity 
             style={styles.notificationButton}
-            onPress={() => router.push('/notifications')}
+            onPress={() => router.push('/notifications' as any)}
             data-testid="notifications-button"
           >
             <Ionicons name="notifications" size={22} color={colors.textPrimary} />
