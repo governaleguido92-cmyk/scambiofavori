@@ -58,8 +58,16 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
-    // Use the deployed web URL for OAuth redirect (required for web-based OAuth flows)
-    const redirectUrl = process.env.EXPO_PUBLIC_BACKEND_URL || Linking.createURL('/');
+    // Platform-specific redirect URL handling for OAuth
+    let redirectUrl: string;
+    if (Platform.OS === 'web') {
+      // On web, use the current origin for proper OAuth callback
+      redirectUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    } else {
+      // On native (iOS/Android), use deep linking
+      redirectUrl = Linking.createURL('/');
+    }
+    
     const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
     
     try {
