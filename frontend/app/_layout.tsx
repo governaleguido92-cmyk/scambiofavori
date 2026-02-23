@@ -4,10 +4,11 @@ import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import LegalConsentModal from '../src/components/LegalConsentModal';
+import OnboardingSlides from '../src/components/OnboardingSlides';
 import { OfflineNotice } from '../src/components/OfflineNotice';
 
 function RootLayoutNav() {
-  const { showLegalModal, acceptLegal, user } = useAuth();
+  const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user } = useAuth();
 
   return (
     <>
@@ -35,6 +36,14 @@ function RootLayoutNav() {
         <LegalConsentModal
           visible={showLegalModal}
           onAccept={acceptLegal}
+        />
+      )}
+      
+      {/* Onboarding Slides - shows after accepting legal terms for new users */}
+      {user && (
+        <OnboardingSlides
+          visible={showOnboarding}
+          onComplete={completeOnboarding}
         />
       )}
     </>
