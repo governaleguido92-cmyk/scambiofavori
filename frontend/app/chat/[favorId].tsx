@@ -524,12 +524,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
   },
   avatarText: {
     color: colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  senderNameRow: {
+    marginBottom: 4,
+  },
+  senderNameText: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '600',
   },
   messageBubble: {
     maxWidth: '75%',
