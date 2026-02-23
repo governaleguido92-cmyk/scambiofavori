@@ -113,6 +113,7 @@ export default function LoginScreen() {
 
   const handleAppleLogin = async () => {
     try {
+      console.log('Apple Login - Starting...');
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -120,6 +121,7 @@ export default function LoginScreen() {
         ],
       });
       
+      console.log('Apple Login - Credential received, user:', credential.user);
       setIsLoading(true);
       
       // Build full name from Apple credential
@@ -129,6 +131,7 @@ export default function LoginScreen() {
         fullName = parts.length > 0 ? parts.join(' ') : undefined;
       }
       
+      console.log('Apple Login - Sending to backend...');
       // Send to backend
       const response = await api.appleAuth(
         credential.identityToken!,
@@ -137,16 +140,19 @@ export default function LoginScreen() {
         fullName
       );
       
+      console.log('Apple Login - Backend response received');
       // Use login with the received token directly
       await loginWithToken(response.token, response.user);
       router.replace('/(tabs)');
       
     } catch (error: any) {
-      if (error.code === 'ERR_REQUEST_CANCELED') {
+      console.error('Apple Login Error:', error);
+      if (error.code === 'ERR_REQUEST_CANCELED' || error.code === 'ERR_CANCELED') {
         // User cancelled - don't show error
+        console.log('Apple Login - Cancelled by user');
         return;
       }
-      Alert.alert('Errore', 'Errore durante il login con Apple');
+      Alert.alert('Errore', error.message || 'Errore durante il login con Apple');
     } finally {
       setIsLoading(false);
     }
