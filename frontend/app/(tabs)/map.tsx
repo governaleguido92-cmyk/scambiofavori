@@ -235,9 +235,8 @@ export default function MapScreen() {
 
       {/* Map View */}
       {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Caricamento mappa...</Text>
+        <View style={styles.skeletonContainer}>
+          <MapMarkersSkeleton />
         </View>
       ) : (
         <MapPlaceholder 
