@@ -1,5 +1,5 @@
 // Production backend URL - fallback to deployed URL if env var is empty
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://hungry-rats-ask.loca.lt';
+const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://granelli-hub.preview.emergentagent.com';
 
 // Helper to get full URL for uploaded images
 export const getImageUrl = (path: string | undefined | null): string | undefined => {
