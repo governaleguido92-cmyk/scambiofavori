@@ -182,7 +182,7 @@ export default function CreateFavorScreen() {
     }
   };
 
-  const soliPreview = isMicro ? 1 : Math.max(1, Math.round(parseFloat(durationHours) || 1));
+  const granelliPreview = Math.max(1, Math.round(parseFloat(durationHours) || 1));
 
   return (
     <SafeAreaView style={styles.container}>
