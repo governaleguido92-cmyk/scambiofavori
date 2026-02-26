@@ -43,8 +43,11 @@ export default function FavorDetailScreen() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showScannerModal, setShowScannerModal] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [isReviewer, setIsReviewer] = useState(false);
+  const [scanningComplete, setScanningComplete] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
   
   // Review form state
   const [rating, setRating] = useState(5);
