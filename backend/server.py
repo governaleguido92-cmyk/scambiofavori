@@ -45,6 +45,11 @@ OAUTH_SESSION_URL = os.environ.get('OAUTH_SESSION_URL', 'https://demobackend.eme
 # Create the main app
 app = FastAPI()
 
+# Root endpoint for health checks (Kubernetes probes)
+@app.get("/")
+async def root():
+    return {"status": "healthy", "app": "Scambio di Favori API"}
+
 # Create router with /api prefix
 api_router = APIRouter(prefix="/api")
 
