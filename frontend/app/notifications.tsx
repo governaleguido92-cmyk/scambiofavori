@@ -69,7 +69,14 @@ export default function NotificationsScreen() {
     }
     
     // Navigate to related content if available
-    if (notification.favor_id) {
+    if (notification.related_id) {
+      // If it's a message notification, navigate to chat
+      if (notification.type === 'new_message') {
+        router.push(`/chat/${notification.related_id}`);
+      } else {
+        router.push(`/favor/${notification.related_id}`);
+      }
+    } else if (notification.favor_id) {
       router.push(`/favor/${notification.favor_id}`);
     }
   };
