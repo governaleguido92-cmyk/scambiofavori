@@ -2476,6 +2476,24 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     # Update last activity for debt system
     await update_last_activity(current_user.user_id)
     
+    # ========================
+    # NOTIFICATION FOR NEW MESSAGE
+    # ========================
+    # Determine recipient (the other participant)
+    recipient_id = favor["accepted_by"] if current_user.user_id == favor["creator_id"] else favor["creator_id"]
+    
+    # Create notification for the recipient
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": recipient_id,
+        "type": "new_message",
+        "title": "Nuovo messaggio 💬",
+        "message": f"{current_user.name}: {content[:50]}{'...' if len(content) > 50 else ''}",
+        "related_id": msg.favor_id,
+        "read": False,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
     # Prepare response (remove _id added by MongoDB)
     response_dict = {k: v for k, v in message_doc.items() if k != '_id'}
     response_dict["created_at"] = response_dict["created_at"].isoformat()
