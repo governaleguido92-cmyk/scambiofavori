@@ -885,6 +885,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  scanQRButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E07B39',
+    padding: 16,
+    borderRadius: 12,
+    gap: 10,
+    marginTop: 12,
+  },
+  scanQRButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   content: {
     padding: 20,
   },
