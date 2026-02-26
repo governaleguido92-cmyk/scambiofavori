@@ -142,42 +142,78 @@ export default function CreateFavorScreen() {
 
     setIsLoading(true);
     try {
-      await api.createFavor(
-        {
-          type,
-          title: title.trim(),
-          description: description.trim(),
-          category,
-          duration_hours: duration,
-          validity_days: validityDays,
-          latitude: location?.latitude,
-          longitude: location?.longitude,
-          address: address || undefined,
-        },
-        token
-      );
-
-      await refreshUser();
-      
-      Alert.alert(
-        'Successo',
-        type === 'offer' 
-          ? 'La tua offerta è stata pubblicata!' 
-          : 'La tua richiesta è stata pubblicata!',
-        [
+      if (publishToWall) {
+        // Pubblica solo sul Muro del Quartiere (non come annuncio)
+        await api.createWallPost(
           {
-            text: 'OK',
-            onPress: () => {
-              setTitle('');
-              setDescription('');
-              setDurationHours('1');
-              setValidityDays(3);
-              setAddress('');
-              setLocation(null);
-              router.push('/(tabs)');
-            },
+            title: title.trim(),
+            description: description.trim(),
+            category,
+            latitude: location?.latitude,
+            longitude: location?.longitude,
           },
-        ]
+          token
+        );
+        
+        await refreshUser();
+        
+        Alert.alert(
+          'Pubblicato sul Muro!',
+          'Il tuo post è stato condiviso sul muro del quartiere.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setTitle('');
+                setDescription('');
+                setDurationHours('1');
+                setValidityDays(3);
+                setAddress('');
+                setLocation(null);
+                setPublishToWall(false);
+                router.push('/(tabs)');
+              },
+            },
+          ]
+        );
+      } else {
+        // Pubblica come annuncio normale
+        await api.createFavor(
+          {
+            type,
+            title: title.trim(),
+            description: description.trim(),
+            category,
+            duration_hours: duration,
+            validity_days: validityDays,
+            latitude: location?.latitude,
+            longitude: location?.longitude,
+            address: address || undefined,
+          },
+          token
+        );
+
+        await refreshUser();
+        
+        Alert.alert(
+          'Successo',
+          type === 'offer' 
+            ? 'La tua offerta è stata pubblicata!' 
+            : 'La tua richiesta è stata pubblicata!',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setTitle('');
+                setDescription('');
+                setDurationHours('1');
+                setValidityDays(3);
+                setAddress('');
+                setLocation(null);
+                router.push('/(tabs)');
+              },
+            },
+          ]
       );
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Impossibile creare il favore');
