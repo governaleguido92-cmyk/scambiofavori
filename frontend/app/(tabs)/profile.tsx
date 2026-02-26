@@ -58,6 +58,9 @@ export default function ProfileScreen() {
   // Profile picture state
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  // Reviews state
+  const [receivedReviews, setReceivedReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
 
   const showImagePickerOptions = () => {
     Alert.alert(
