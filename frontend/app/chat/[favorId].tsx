@@ -51,6 +51,7 @@ export default function ChatScreen() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [showPrivacyAlert, setShowPrivacyAlert] = useState(false);
+  const [sendingLocation, setSendingLocation] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   const loadData = useCallback(async () => {
