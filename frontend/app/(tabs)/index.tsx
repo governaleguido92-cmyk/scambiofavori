@@ -145,8 +145,8 @@ export default function HomeScreen() {
     loadCategories();
     loadThanksBoard();
     loadUnreadCount();
-    // Poll notifications every 10 seconds for real-time updates
-    const notifInterval = setInterval(loadUnreadCount, 10000);
+    // Poll notifications every 15 seconds for real-time updates
+    const notifInterval = setInterval(loadUnreadCount, 15000);
     return () => clearInterval(notifInterval);
   }, [loadUnreadCount]);
 
@@ -158,8 +158,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadFavors();
-    // Poll favors every 15 seconds for real-time updates
-    const favorsInterval = setInterval(loadFavors, 15000);
+    // Poll favors every 20 seconds for real-time updates
+    const favorsInterval = setInterval(loadFavors, 20000);
     return () => clearInterval(favorsInterval);
   }, [loadFavors]);
 
