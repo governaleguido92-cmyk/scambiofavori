@@ -748,6 +748,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  granelliPreviewSymbol: {
+    fontSize: 24,
+  },
+  granelliPreviewNumber: {
+    color: '#ffd700',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  granelliPreviewUnit: {
+    color: '#888',
+    fontSize: 14,
+  },
+  // Alias for old styles
+  soliPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#16213e',
+    padding: 16,
+    borderRadius: 12,
+    gap: 8,
+    marginBottom: 16,
+  },
+  soliPreviewLabel: {
+    color: '#888',
+    fontSize: 14,
+  },
+  soliPreviewValue: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
   soliPreviewSymbol: {
     fontSize: 24,
   },
@@ -759,6 +791,30 @@ const styles = StyleSheet.create({
   soliPreviewUnit: {
     color: '#888',
     fontSize: 14,
+  },
+  wallToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#16213e',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  wallToggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  wallToggleLabel: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  wallToggleHint: {
+    color: '#888',
+    fontSize: 12,
+    marginTop: 2,
   },
   locationButton: {
     flexDirection: 'row',
