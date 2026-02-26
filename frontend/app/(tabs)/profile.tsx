@@ -59,17 +59,35 @@ export default function ProfileScreen() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const pickImage = async () => {
-    // Richiedi permessi
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const showImagePickerOptions = () => {
+    Alert.alert(
+      'Foto Profilo',
+      'Come vuoi aggiungere la foto?',
+      [
+        {
+          text: 'Scatta Foto',
+          onPress: () => pickImageFromCamera(),
+        },
+        {
+          text: 'Scegli dalla Libreria',
+          onPress: () => pickImageFromLibrary(),
+        },
+        {
+          text: 'Annulla',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const pickImageFromCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permesso negato', 'È necessario il permesso per accedere alla libreria foto.');
+      Alert.alert('Permesso negato', 'È necessario il permesso per usare la fotocamera.');
       return;
     }
 
-    // Apri la libreria foto
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -78,9 +96,33 @@ export default function ProfileScreen() {
     if (!result.canceled && result.assets[0]) {
       const imageUri = result.assets[0].uri;
       setProfileImage(imageUri);
-      // Upload dell'immagine al server
       await uploadProfileImage(imageUri);
     }
+  };
+
+  const pickImageFromLibrary = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permesso negato', 'È necessario il permesso per accedere alla libreria foto.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const imageUri = result.assets[0].uri;
+      setProfileImage(imageUri);
+      await uploadProfileImage(imageUri);
+    }
+  };
+
+  const pickImage = async () => {
+    showImagePickerOptions();
   };
 
   const uploadProfileImage = async (uri: string) => {
