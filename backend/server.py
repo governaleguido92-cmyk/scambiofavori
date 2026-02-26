@@ -2743,44 +2743,67 @@ async def get_profile_completion(current_user: User = Depends(get_current_user))
     """Get profile completion percentage and missing items"""
     
     completion_items = []
-    total_items = 4
+    total_items = 6
     completed_items = 0
     
-    # 1. Name (25%)
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    
+    # 1. Name (15%)
     has_name = bool(current_user.name and len(current_user.name) > 1)
     completion_items.append({
         "id": "name",
         "label": "Nome profilo",
         "completed": has_name,
-        "points": 25
+        "points": 15
     })
     if has_name:
         completed_items += 1
     
-    # 2. Profile photo (25%) - Check if user has avatar_url
-    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
-    has_photo = bool(user_doc.get("avatar_url"))
+    # 2. Profile photo (20%)
+    has_photo = bool(user_doc.get("avatar_url") or user_doc.get("picture"))
     completion_items.append({
         "id": "photo",
         "label": "Foto profilo",
         "completed": has_photo,
-        "points": 25
+        "points": 20
     })
     if has_photo:
         completed_items += 1
     
-    # 3. Skills/Competenze (25%)
+    # 3. Bio/Description (15%)
+    has_bio = bool(user_doc.get("bio") and len(user_doc.get("bio", "")) > 10)
+    completion_items.append({
+        "id": "bio",
+        "label": "Biografia",
+        "completed": has_bio,
+        "points": 15
+    })
+    if has_bio:
+        completed_items += 1
+    
+    # 4. Skills/Competenze (20%)
     has_skills = bool(current_user.skills and len(current_user.skills) > 0)
     completion_items.append({
         "id": "skills",
         "label": "Competenze",
         "completed": has_skills,
-        "points": 25
+        "points": 20
     })
     if has_skills:
         completed_items += 1
     
-    # 4. First completed favor (25%)
+    # 5. Location/Quartiere (15%)
+    has_location = bool(user_doc.get("neighborhood") or user_doc.get("address"))
+    completion_items.append({
+        "id": "location",
+        "label": "Quartiere",
+        "completed": has_location,
+        "points": 15
+    })
+    if has_location:
+        completed_items += 1
+    
+    # 6. First completed favor (15%)
     completed_favors = await db.favors.count_documents({
         "$or": [
             {"creator_id": current_user.user_id, "status": "completed"},
@@ -2792,7 +2815,7 @@ async def get_profile_completion(current_user: User = Depends(get_current_user))
         "id": "first_favor",
         "label": "Primo favore completato",
         "completed": has_completed_favor,
-        "points": 25
+        "points": 15
     })
     if has_completed_favor:
         completed_items += 1
