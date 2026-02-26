@@ -125,6 +125,10 @@ export default function CreateFavorScreen() {
       Alert.alert('Errore', 'Seleziona una categoria');
       return;
     }
+    if (!location) {
+      Alert.alert('Posizione Obbligatoria', 'Devi indicare la tua posizione per pubblicare un favore. Questo aiuta gli altri utenti a trovarti!');
+      return;
+    }
 
     const duration = parseFloat(durationHours) || 1;
     const granelliNeeded = Math.max(1, Math.round(duration));
