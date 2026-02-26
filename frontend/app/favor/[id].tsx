@@ -109,6 +109,23 @@ export default function FavorDetailScreen() {
       if (data.status === 'completed') {
         const reviewsData = await api.getFavorReviews(id);
         setReviews(reviewsData);
+        
+        // Se il favore è completato e l'utente non ha ancora lasciato una recensione,
+        // mostra automaticamente il form recensione
+        if (user && !reviewsData.some((r: any) => r.reviewer_id === user.user_id)) {
+          // Verifica se l'utente è coinvolto nel favore
+          if (user.user_id === data.creator_id || user.user_id === data.accepted_by) {
+            setTimeout(() => {
+              Alert.alert(
+                'Recensione Richiesta',
+                'Hai completato questo favore ma non hai ancora lasciato una recensione. La recensione è importante per la community!',
+                [
+                  { text: 'Lascia Recensione', onPress: () => setShowReviewForm(true) },
+                ]
+              );
+            }, 500);
+          }
+        }
       }
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Impossibile caricare il favore');
