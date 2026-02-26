@@ -1751,4 +1751,87 @@ const styles = StyleSheet.create({
   modalConfirmButtonDisabled: {
     opacity: 0.6,
   },
+  // Reviews styles
+  reviewsCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  reviewsCountText: {
+    color: '#FFD700',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  reviewsList: {
+    gap: 12,
+  },
+  reviewCard: {
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FFD700',
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  reviewStars: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  reviewDate: {
+    color: '#666',
+    fontSize: 12,
+  },
+  reviewerName: {
+    color: '#888',
+    fontSize: 13,
+    marginBottom: 6,
+  },
+  reviewComment: {
+    color: '#e0e0e0',
+    fontSize: 14,
+    fontStyle: 'italic',
+    lineHeight: 20,
+  },
+  publicThanksContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    padding: 8,
+    borderRadius: 8,
+  },
+  publicThanksText: {
+    color: '#ff6b6b',
+    fontSize: 13,
+    flex: 1,
+  },
+  moreReviewsText: {
+    color: '#4ecca3',
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  noReviewsCard: {
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+  },
+  noReviewsText: {
+    color: '#888',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 });
