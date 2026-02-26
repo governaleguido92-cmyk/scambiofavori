@@ -2071,6 +2071,141 @@ async def cancel_favor(favor_id: str, current_user: User = Depends(get_current_u
     
     return {"message": "Favore cancellato"}
 
+class QRVerifyRequest(BaseModel):
+    qr_code: str
+
+@api_router.post("/favors/{favor_id}/verify-qr")
+async def verify_and_complete_qr(
+    favor_id: str, 
+    data: QRVerifyRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Verify QR code scanned and complete the favor"""
+    favor_doc = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
+    if not favor_doc:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    
+    favor = Favor(**favor_doc)
+    
+    if favor.status != "accepted":
+        raise HTTPException(status_code=400, detail="Il favore deve essere in stato 'accepted'")
+    
+    # Verifica che l'utente sia coinvolto nel favore
+    if current_user.user_id != favor.creator_id and current_user.user_id != favor.accepted_by:
+        raise HTTPException(status_code=403, detail="Non sei autorizzato a completare questo favore")
+    
+    # Verifica che il QR code sia corretto
+    if data.qr_code != favor.qr_code:
+        raise HTTPException(status_code=400, detail="QR code non valido")
+    
+    # ========================
+    # ANTI-FRAUD: Daily Hours Limit Check
+    # ========================
+    for user_id in [favor.creator_id, favor.accepted_by]:
+        daily_check = await check_daily_hours_limit(user_id)
+        if daily_check["limit_exceeded"]:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Limite giornaliero di {MAX_DAILY_HOURS} ore raggiunto. Riprova domani."
+            )
+    
+    # Transfer Granelli
+    if favor.type == "offer":
+        await db.users.update_one(
+            {"user_id": favor.creator_id},
+            {"$inc": {
+                "granelli": favor.granelli_cost,
+                "total_favors_given": 1,
+                "total_hours_helped": favor.duration_hours
+            }}
+        )
+        await db.users.update_one(
+            {"user_id": favor.accepted_by},
+            {"$inc": {"granelli": -favor.granelli_cost, "total_favors_received": 1}}
+        )
+        helper_id = favor.creator_id
+        receiver_id = favor.accepted_by
+    else:
+        await db.users.update_one(
+            {"user_id": favor.creator_id},
+            {"$inc": {"granelli": -favor.granelli_cost, "total_favors_received": 1}}
+        )
+        await db.users.update_one(
+            {"user_id": favor.accepted_by},
+            {"$inc": {
+                "granelli": favor.granelli_cost,
+                "total_favors_given": 1,
+                "total_hours_helped": favor.duration_hours
+            }}
+        )
+        helper_id = favor.accepted_by
+        receiver_id = favor.creator_id
+    
+    # Update emergency counts
+    if favor.is_emergency:
+        await db.users.update_one(
+            {"user_id": helper_id},
+            {"$inc": {"emergencies_helped": 1}}
+        )
+    
+    # Update favor status
+    await db.favors.update_one(
+        {"favor_id": favor_id},
+        {"$set": {
+            "status": "completed",
+            "checkin_completed": True,
+            "completed_at": datetime.now(timezone.utc)
+        }}
+    )
+    
+    # Create transaction record
+    await create_secure_transaction(
+        favor_id=favor.favor_id,
+        creator_id=favor.creator_id,
+        acceptor_id=favor.accepted_by,
+        granelli=favor.granelli_cost,
+        duration_hours=favor.duration_hours
+    )
+    
+    # ========================
+    # NOTIFICATIONS TO BOTH USERS
+    # ========================
+    # Notification to helper
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": helper_id,
+        "type": "favor_completed",
+        "title": "Favore Completato! 🎉",
+        "message": f"Hai completato \"{favor.title}\" e guadagnato {favor.granelli_cost} {CURRENCY_NAME}!",
+        "related_id": favor_id,
+        "read": False,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Notification to receiver
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": receiver_id,
+        "type": "favor_completed",
+        "title": "Favore Completato! 🎉",
+        "message": f"Il favore \"{favor.title}\" è stato completato. Grazie per aver usato Scambio di Favori!",
+        "related_id": favor_id,
+        "read": False,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Check badges
+    await check_and_award_badges(favor.creator_id)
+    await check_and_award_badges(favor.accepted_by)
+    await update_community_score(favor.creator_id)
+    await update_community_score(favor.accepted_by)
+    
+    return {
+        "message": "Favore completato con successo!",
+        "favor_id": favor_id,
+        "granelli_earned": favor.granelli_cost
+    }
+
 # ========================
 # REVIEWS & BACHECA DEI GRAZIE
 # ========================
