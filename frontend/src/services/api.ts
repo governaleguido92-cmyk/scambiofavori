@@ -261,10 +261,11 @@ export interface LeaderboardUser {
 export interface Notification {
   notification_id: string;
   user_id: string;
-  type: string; // "skill_match", "favor_update", "system"
+  type: string; // "skill_match", "favor_update", "system", "new_message", "favor_completed"
   title: string;
   message: string;
   favor_id?: string;
+  related_id?: string;
   read: boolean;
   created_at: string;
 }
