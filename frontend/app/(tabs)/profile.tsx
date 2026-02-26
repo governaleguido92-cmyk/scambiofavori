@@ -541,6 +541,63 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        {/* Received Reviews Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recensioni Ricevute</Text>
+            <View style={styles.reviewsCount}>
+              <Ionicons name="star" size={16} color="#FFD700" />
+              <Text style={styles.reviewsCountText}>{receivedReviews.length}</Text>
+            </View>
+          </View>
+          
+          {receivedReviews.length > 0 ? (
+            <View style={styles.reviewsList}>
+              {receivedReviews.slice(0, 5).map((review) => (
+                <View key={review.review_id} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <View style={styles.reviewStars}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Ionicons
+                          key={star}
+                          name={star <= review.rating ? 'star' : 'star-outline'}
+                          size={16}
+                          color="#FFD700"
+                        />
+                      ))}
+                    </View>
+                    <Text style={styles.reviewDate}>
+                      {new Date(review.created_at).toLocaleDateString('it-IT')}
+                    </Text>
+                  </View>
+                  <Text style={styles.reviewerName}>da {review.reviewer_name}</Text>
+                  {review.comment && (
+                    <Text style={styles.reviewComment}>"{review.comment}"</Text>
+                  )}
+                  {review.public_thanks && (
+                    <View style={styles.publicThanksContainer}>
+                      <Ionicons name="heart" size={14} color="#ff6b6b" />
+                      <Text style={styles.publicThanksText}>{review.public_thanks}</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+              {receivedReviews.length > 5 && (
+                <Text style={styles.moreReviewsText}>
+                  +{receivedReviews.length - 5} altre recensioni
+                </Text>
+              )}
+            </View>
+          ) : (
+            <View style={styles.noReviewsCard}>
+              <Ionicons name="chatbubble-ellipses-outline" size={40} color="#666" />
+              <Text style={styles.noReviewsText}>
+                Nessuna recensione ricevuta ancora. Completa dei favori per ricevere feedback!
+              </Text>
+            </View>
+          )}
+        </View>
+
         {/* Solidarity Fund */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Fondo Solidarietà</Text>
