@@ -149,7 +149,6 @@ export default function CreateFavorScreen() {
           latitude: location?.latitude,
           longitude: location?.longitude,
           address: address || undefined,
-          is_micro: isMicro,
         },
         token
       );
@@ -171,7 +170,6 @@ export default function CreateFavorScreen() {
               setValidityDays(3);
               setAddress('');
               setLocation(null);
-              setIsMicro(false);
               router.push('/(tabs)');
             },
           },
