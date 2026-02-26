@@ -1182,7 +1182,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
