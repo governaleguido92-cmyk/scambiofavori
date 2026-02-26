@@ -257,20 +257,20 @@ export default function CreateFavorScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Micro Favor Toggle */}
-          <View style={styles.microToggle}>
-            <View style={styles.microToggleLeft}>
-              <Ionicons name="flash" size={20} color="#ff9800" />
+          {/* Wall Publishing Toggle */}
+          <View style={styles.wallToggle}>
+            <View style={styles.wallToggleLeft}>
+              <Ionicons name="megaphone" size={20} color="#4ecca3" />
               <View>
-                <Text style={styles.microToggleLabel}>Micro-Favore</Text>
-                <Text style={styles.microToggleHint}>Consiglio o info rapida (1 Sole)</Text>
+                <Text style={styles.wallToggleLabel}>Pubblica sul Muro</Text>
+                <Text style={styles.wallToggleHint}>Condividi sul muro del quartiere</Text>
               </View>
             </View>
             <Switch
-              value={isMicro}
-              onValueChange={setIsMicro}
-              trackColor={{ false: '#333', true: '#ff9800' }}
-              thumbColor={isMicro ? '#fff' : '#888'}
+              value={publishToWall}
+              onValueChange={setPublishToWall}
+              trackColor={{ false: '#333', true: '#4ecca3' }}
+              thumbColor={publishToWall ? '#fff' : '#888'}
             />
           </View>
 
@@ -279,7 +279,7 @@ export default function CreateFavorScreen() {
             <Text style={styles.label}>Titolo</Text>
             <TextInput
               style={styles.input}
-              placeholder={isMicro ? "Es: Consiglio su ristorante" : "Es: Aiuto con la spesa"}
+              placeholder="Es: Aiuto con la spesa"
               placeholderTextColor="#666"
               value={title}
               onChangeText={setTitle}
