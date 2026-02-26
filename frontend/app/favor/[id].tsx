@@ -706,6 +706,46 @@ export default function FavorDetailScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* QR Scanner Modal */}
+      <Modal visible={showScannerModal} animationType="slide">
+        <SafeAreaView style={styles.scannerContainer}>
+          <View style={styles.scannerHeader}>
+            <TouchableOpacity onPress={() => setShowScannerModal(false)}>
+              <Ionicons name="close" size={28} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.scannerTitle}>Scansiona QR</Text>
+            <View style={{ width: 28 }} />
+          </View>
+          
+          <View style={styles.scannerContent}>
+            <CameraView
+              style={styles.camera}
+              barcodeScannerSettings={{
+                barcodeTypes: ['qr'],
+              }}
+              onBarcodeScanned={scanningComplete ? undefined : handleBarCodeScanned}
+            />
+            
+            {/* Scanner Overlay */}
+            <View style={styles.scannerOverlay}>
+              <View style={styles.scannerFrame}>
+                <View style={[styles.scannerCorner, styles.topLeft]} />
+                <View style={[styles.scannerCorner, styles.topRight]} />
+                <View style={[styles.scannerCorner, styles.bottomLeft]} />
+                <View style={[styles.scannerCorner, styles.bottomRight]} />
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.scannerFooter}>
+            <Ionicons name="qr-code-outline" size={24} color="#4ecca3" />
+            <Text style={styles.scannerHint}>
+              Inquadra il codice QR mostrato dall'altro utente per completare il favore
+            </Text>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
