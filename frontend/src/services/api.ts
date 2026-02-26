@@ -748,6 +748,19 @@ export const api = {
     return handleResponse(response);
   },
 
+  verifyAndCompleteQR: async (favorId: string, scannedCode: string, token: string): Promise<{
+    message: string;
+    favor_id: string;
+    granelli_earned: number;
+  }> => {
+    const response = await fetch(`${API_URL}/api/favors/${favorId}/verify-qr`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ qr_code: scannedCode }),
+    });
+    return handleResponse(response);
+  },
+
   // ========================
   // LEGAL & GDPR
   // ========================
