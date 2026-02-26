@@ -164,10 +164,20 @@ export default function ProfileScreen() {
       setUserSkills(skillsData.skills || []);
       setSelectedSkills(skillsData.skills || []);
       setCategories(categoriesData);
+      
+      // Load received reviews
+      if (user?.user_id) {
+        try {
+          const reviewsData = await api.getUserReviews(user.user_id);
+          setReceivedReviews(reviewsData);
+        } catch (err) {
+          console.log('Error loading reviews:', err);
+        }
+      }
     } catch (error) {
       console.log('Error loading profile data:', error);
     }
-  }, [token]);
+  }, [token, user?.user_id]);
 
   useFocusEffect(
     useCallback(() => {
