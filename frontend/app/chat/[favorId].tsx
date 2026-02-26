@@ -109,6 +109,43 @@ export default function ChatScreen() {
     }
   };
 
+  const handleSendLocation = async () => {
+    if (!token || !favorId || chatStatus?.read_only) return;
+    
+    setSendingLocation(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permesso Negato', 'È necessario il permesso per condividere la posizione.');
+        return;
+      }
+      
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+      
+      // Crea un link Google Maps
+      const mapsUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+      const locationMessage = `📍 La mia posizione attuale:\n${mapsUrl}`;
+      
+      await api.sendMessage(favorId, locationMessage, token);
+      await loadData();
+      
+      Alert.alert('Posizione Inviata', 'La tua posizione è stata condivisa con l\'altro utente.');
+    } catch (error: any) {
+      Alert.alert('Errore', error.message || 'Impossibile inviare la posizione');
+    } finally {
+      setSendingLocation(false);
+    }
+  };
+
+  const openLocationInMaps = (message: string) => {
+    // Estrai URL dalle mappe
+    const urlMatch = message.match(/https:\/\/maps\.google\.com\/\?q=[\d.-]+,[\d.-]+/);
+    if (urlMatch) {
+      Linking.openURL(urlMatch[0]);
+    }
+  };
+
   const handleReport = async () => {
     if (!token || !favorId || !reportReason) return;
     
