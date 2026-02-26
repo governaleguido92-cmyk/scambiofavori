@@ -386,6 +386,11 @@ export default function FavorDetailScreen() {
               <Ionicons name="qr-code" size={24} color="#4ecca3" />
             </TouchableOpacity>
           )}
+          {canScanQR() && (
+            <TouchableOpacity style={styles.scanButton} onPress={openScanner}>
+              <Ionicons name="scan" size={24} color="#E07B39" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
