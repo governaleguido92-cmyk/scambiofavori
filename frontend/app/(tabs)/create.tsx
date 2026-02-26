@@ -62,8 +62,16 @@ export default function CreateFavorScreen() {
   useEffect(() => {
     loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await api.getCategories();
+      setCategories(data);
+      if (data.length > 0) setCategory(data[0].name);
+    } catch (error) {
+      console.log('Error loading categories:', error);
     }
-  }, [category, categories]);
+  };
 
   const getLocation = async () => {
     setGettingLocation(true);
