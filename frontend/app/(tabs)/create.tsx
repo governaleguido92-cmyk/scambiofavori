@@ -317,14 +317,13 @@ export default function CreateFavorScreen() {
                   style={[
                     styles.categoryChip,
                     category === cat.name && styles.categoryChipActive,
-                    cat.is_micro && styles.categoryChipMicro,
                   ]}
                   onPress={() => setCategory(cat.name)}
                 >
                   <Ionicons
                     name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
                     size={18}
-                    color={category === cat.name ? '#1a1a2e' : cat.is_micro ? '#ff9800' : '#4ecca3'}
+                    color={category === cat.name ? '#1a1a2e' : '#4ecca3'}
                   />
                   <Text style={[
                     styles.categoryChipText,
@@ -332,58 +331,53 @@ export default function CreateFavorScreen() {
                   ]}>
                     {cat.name}
                   </Text>
-                  {cat.is_micro && (
-                    <Ionicons name="flash" size={12} color={category === cat.name ? '#1a1a2e' : '#ff9800'} />
-                  )}
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
 
-          {/* Duration Input (not for micro favors) */}
-          {!isMicro && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Durata Stimata</Text>
-              <View style={styles.durationContainer}>
-                <TouchableOpacity
-                  style={styles.durationButton}
-                  onPress={() => setDurationHours(String(Math.max(0.5, parseFloat(durationHours) - 0.5)))}
-                >
-                  <Ionicons name="remove" size={24} color="#fff" />
-                </TouchableOpacity>
-                <View style={styles.durationDisplay}>
-                  <TextInput
-                    style={styles.durationValue}
-                    value={durationHours}
-                    onChangeText={setDurationHours}
-                    keyboardType="decimal-pad"
-                    maxLength={4}
-                  />
-                  <Text style={styles.durationUnit}>ore</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.durationButton}
-                  onPress={() => setDurationHours(String(parseFloat(durationHours) + 0.5))}
-                >
-                  <Ionicons name="add" size={24} color="#fff" />
-                </TouchableOpacity>
+          {/* Duration Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Durata Stimata</Text>
+            <View style={styles.durationContainer}>
+              <TouchableOpacity
+                style={styles.durationButton}
+                onPress={() => setDurationHours(String(Math.max(0.5, parseFloat(durationHours) - 0.5)))}
+              >
+                <Ionicons name="remove" size={24} color="#fff" />
+              </TouchableOpacity>
+              <View style={styles.durationDisplay}>
+                <TextInput
+                  style={styles.durationValue}
+                  value={durationHours}
+                  onChangeText={setDurationHours}
+                  keyboardType="decimal-pad"
+                  maxLength={4}
+                />
+                <Text style={styles.durationUnit}>ore</Text>
               </View>
-              <View style={styles.parityInfo}>
-                <Ionicons name="information-circle" size={16} color="#4ecca3" />
-                <Text style={styles.parityText}>1 ora = 1 Sole (Parità di Valore)</Text>
-              </View>
+              <TouchableOpacity
+                style={styles.durationButton}
+                onPress={() => setDurationHours(String(parseFloat(durationHours) + 0.5))}
+              >
+                <Ionicons name="add" size={24} color="#fff" />
+              </TouchableOpacity>
             </View>
-          )}
+            <View style={styles.parityInfo}>
+              <Ionicons name="information-circle" size={16} color="#4ecca3" />
+              <Text style={styles.parityText}>1 ora = 1 {CURRENCY_NAME} (Parità di Valore)</Text>
+            </View>
+          </View>
 
-          {/* Soli Preview */}
-          <View style={styles.soliPreview}>
-            <Text style={styles.soliPreviewLabel}>
+          {/* Granelli Preview */}
+          <View style={styles.granelliPreview}>
+            <Text style={styles.granelliPreviewLabel}>
               {type === 'offer' ? 'Guadagnerai:' : 'Spenderai:'}
             </Text>
-            <View style={styles.soliPreviewValue}>
-              <Text style={styles.soliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
-              <Text style={styles.soliPreviewNumber}>{soliPreview}</Text>
-              <Text style={styles.soliPreviewUnit}>{CURRENCY_NAME}</Text>
+            <View style={styles.granelliPreviewValue}>
+              <Text style={styles.granelliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
+              <Text style={styles.granelliPreviewNumber}>{granelliPreview}</Text>
+              <Text style={styles.granelliPreviewUnit}>{CURRENCY_NAME}</Text>
             </View>
           </View>
 
