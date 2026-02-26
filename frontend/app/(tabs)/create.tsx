@@ -840,7 +840,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#16213e',
     padding: 16,
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 20,
+    marginTop: 4,
   },
   wallToggleLeft: {
     flexDirection: 'row',
