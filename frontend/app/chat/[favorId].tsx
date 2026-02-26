@@ -75,8 +75,8 @@ export default function ChatScreen() {
 
   useEffect(() => {
     loadData();
-    // Real-time polling every 3 seconds
-    const interval = setInterval(loadData, 3000);
+    // Real-time polling every 5 seconds
+    const interval = setInterval(loadData, 5000);
     return () => clearInterval(interval);
   }, [loadData]);
 
