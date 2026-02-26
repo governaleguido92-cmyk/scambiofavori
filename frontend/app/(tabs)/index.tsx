@@ -127,7 +127,7 @@ export default function HomeScreen() {
       if (location) {
         params.latitude = location.latitude;
         params.longitude = location.longitude;
-        params.max_distance_km = 50;
+        params.max_distance_km = 10;
       }
       const data = await api.getFavors(params);
       setFavors(data);
