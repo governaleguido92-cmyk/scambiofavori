@@ -163,10 +163,15 @@ export default function FavorDetailScreen() {
       await refreshUser();
       await loadFavor();
       
+      // Apri automaticamente il form recensione (obbligatorio)
       Alert.alert(
         '🎉 Favore Completato!',
-        `Grazie per aver aiutato! Hai guadagnato ${favor.granelli_cost} ${CURRENCY_NAME}.`,
-        [{ text: 'Fantastico!', style: 'default' }]
+        `Grazie! Hai ${favor.type === 'request' ? 'speso' : 'guadagnato'} ${favor.granelli_cost} ${CURRENCY_NAME}.\n\nOra lascia una recensione per completare!`,
+        [{ 
+          text: 'Lascia Recensione', 
+          style: 'default',
+          onPress: () => setShowReviewForm(true)
+        }]
       );
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'QR code non valido');
