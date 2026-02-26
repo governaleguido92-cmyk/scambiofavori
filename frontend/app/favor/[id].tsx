@@ -134,6 +134,58 @@ export default function FavorDetailScreen() {
     }
   };
 
+  const openScanner = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert(
+          'Permesso negato',
+          'È necessario il permesso per usare la fotocamera per scansionare il QR.'
+        );
+        return;
+      }
+    }
+    setScanningComplete(false);
+    setShowScannerModal(true);
+  };
+
+  const handleBarCodeScanned = async ({ data }: { data: string }) => {
+    if (scanningComplete || !token || !favor) return;
+    
+    setScanningComplete(true);
+    Vibration.vibrate(100);
+    
+    try {
+      // Verifica che il QR code corrisponda al favore
+      const response = await api.verifyAndCompleteQR(favor.favor_id, data, token);
+      
+      setShowScannerModal(false);
+      await refreshUser();
+      await loadFavor();
+      
+      Alert.alert(
+        '🎉 Favore Completato!',
+        `Grazie per aver aiutato! Hai guadagnato ${favor.granelli_cost} ${CURRENCY_NAME}.`,
+        [{ text: 'Fantastico!', style: 'default' }]
+      );
+    } catch (error: any) {
+      Alert.alert('Errore', error.message || 'QR code non valido');
+      setScanningComplete(false);
+    }
+  };
+
+  const canScanQR = () => {
+    if (!favor || !user) return false;
+    // Solo chi ha accettato il favore può scansionare
+    if (favor.status !== 'accepted') return false;
+    // Chi offre scansiona il QR di chi richiede e viceversa
+    if (favor.type === 'request') {
+      return favor.accepted_by === user.user_id;
+    } else {
+      return favor.creator_id !== user.user_id && favor.accepted_by === user.user_id;
+    }
+  };
+
   const handleAccept = async () => {
     if (!token || !favor) return;
     
