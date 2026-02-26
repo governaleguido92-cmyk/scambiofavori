@@ -347,13 +347,18 @@ export default function ChatScreen() {
         {/* Input Area */}
         {!isReadOnly && (
           <View style={styles.inputContainer}>
-            {/* Meeting Point Button */}
+            {/* Send Location Button */}
             <TouchableOpacity 
               style={styles.meetingButton} 
-              onPress={handleSendMeetingPoint}
-              data-testid="meeting-point-button"
+              onPress={handleSendLocation}
+              disabled={sendingLocation}
+              data-testid="send-location-button"
             >
-              <Ionicons name="location" size={22} color={colors.accent} />
+              {sendingLocation ? (
+                <ActivityIndicator size="small" color={colors.accent} />
+              ) : (
+                <Ionicons name="location" size={22} color={colors.accent} />
+              )}
             </TouchableOpacity>
             
             <TextInput
