@@ -127,10 +127,10 @@ export default function CreateFavorScreen() {
     }
 
     const duration = parseFloat(durationHours) || 1;
-    const soliNeeded = isMicro ? 1 : Math.max(1, Math.round(duration));
+    const granelliNeeded = Math.max(1, Math.round(duration));
 
-    if (type === 'request' && (user?.granelli || 0) < soliNeeded) {
-      Alert.alert(`${CURRENCY_NAME} insufficienti`, `Hai solo ${user?.granelli} ${CURRENCY_NAME} disponibili. Servono ${soliNeeded} ${CURRENCY_NAME}.`);
+    if (type === 'request' && (user?.granelli || 0) < granelliNeeded) {
+      Alert.alert(`${CURRENCY_NAME} insufficienti`, `Hai solo ${user?.granelli} ${CURRENCY_NAME} disponibili. Servono ${granelliNeeded} ${CURRENCY_NAME}.`);
       return;
     }
 
