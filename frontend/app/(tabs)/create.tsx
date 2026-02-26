@@ -214,9 +214,10 @@ export default function CreateFavorScreen() {
               },
             },
           ]
-      );
+        );
+      }
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile creare il favore');
+      Alert.alert('Errore', error.message || 'Impossibile creare il post');
     } finally {
       setIsLoading(false);
     }
