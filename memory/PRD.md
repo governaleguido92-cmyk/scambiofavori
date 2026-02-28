@@ -34,29 +34,39 @@ Mobile app "Scambio di Favori" - hyperlocal community platform for exchanging fa
 - [x] 4-color palette applied
 - [x] Onboarding slides for new users
 - [x] Push Notifications (Expo Push)
+- [x] Notification Preferences (profile toggle switches)
 
-## Push Notifications - Trigger Points
+## Push Notification System
+**Trigger Points:**
 - Favor accepted → notify creator
-- Favor completed → notify both helper & receiver
+- Favor completed → notify helper & receiver
 - New review → notify reviewed user
 - New message → notify recipient
 - Skill match → notify matching users
 
-## Completed (Feb 28, 2026)
-- Optimized favor card layout (compact, single-line title/description)
-- Updated 4-color theme palette across entire app
-- Integrated Resend email service for real email verification
-- Fixed ReportModal import in favor detail page
-- Fixed useFocusEffect navigation error on web
-- Implemented Expo Push Notifications (frontend hook + backend API + Expo Push API)
-- Push token endpoints: POST/DELETE /api/push-token
-- Backend: 17/17 tests passed
-- Frontend: 100% features working
+**User Preferences (5 toggles in Profile):**
+- Favore accettato
+- Favore completato
+- Nuovi messaggi
+- Nuove recensioni
+- Match competenze
 
-## Known Limitations
-- Resend API in TEST MODE - emails only sent to owner address
-- Push notifications require physical device (skip on web)
-- expo-camera limited on web platform
+**API Endpoints:**
+- POST /api/push-token - Register device token
+- DELETE /api/push-token - Remove token (logout)
+- GET /api/notification-preferences - Get user preferences
+- PUT /api/notification-preferences - Update preferences
+
+## Completed (Feb 28, 2026)
+- Optimized favor card layout (compact)
+- Updated 4-color theme palette
+- Integrated Resend email for verification
+- Fixed ReportModal import in favor detail
+- Fixed useFocusEffect navigation error
+- Expo Push Notifications (hook + backend + Expo Push API)
+- Notification preferences with Switch toggles in profile
+- Backend respects user preferences before sending push
+- All tests passing (backend 17+/17)
 
 ## Credentials
 - Test: reviewer@test.com / review123
@@ -64,10 +74,10 @@ Mobile app "Scambio di Favori" - hyperlocal community platform for exchanging fa
 
 ## Upcoming Tasks (P1)
 - Verify Resend domain for production emails
-- Onboarding slides verification with new user
-- GDPR hard-delete account feature
+- Onboarding slides verification
+- GDPR hard-delete account
 
 ## Future Tasks (P2)
 - Map view for nearby favors
-- Offline notices
 - Anti-fraud limits
+- Offline notices
