@@ -797,6 +797,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
   },
+  locationInfoBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(78, 204, 163, 0.1)',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(78, 204, 163, 0.2)',
+  },
+  locationInfoText: {
+    flex: 1,
+  },
+  locationInfoTitle: {
+    color: '#4ecca3',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  locationInfoDescription: {
+    color: '#888',
+    fontSize: 12,
+    lineHeight: 18,
+  },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
