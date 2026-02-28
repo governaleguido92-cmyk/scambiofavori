@@ -6,9 +6,13 @@ import { StatusBar } from 'expo-status-bar';
 import LegalConsentModal from '../src/components/LegalConsentModal';
 import OnboardingSlides from '../src/components/OnboardingSlides';
 import { OfflineNotice } from '../src/components/OfflineNotice';
+import { usePushNotifications } from '../src/hooks/usePushNotifications';
 
 function RootLayoutNav() {
-  const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user } = useAuth();
+  const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user, token } = useAuth();
+  
+  // Register for push notifications when authenticated
+  usePushNotifications(token);
 
   return (
     <>
