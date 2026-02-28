@@ -341,111 +341,78 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {/* Tab Selector */}
-      <View style={styles.tabSelector}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'favors' && styles.tabActive]}
-          onPress={() => setActiveTab('favors')}
-        >
-          <Ionicons
-            name="hand-left"
-            size={18}
-            color={activeTab === 'favors' ? '#1a1a2e' : '#888'}
-          />
-          <Text style={[styles.tabText, activeTab === 'favors' && styles.tabTextActive]}>
-            Favori
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'wall' && styles.tabActive]}
-          onPress={() => setActiveTab('wall')}
-        >
-          <Ionicons
-            name="newspaper"
-            size={18}
-            color={activeTab === 'wall' ? '#1a1a2e' : '#888'}
-          />
-          <Text style={[styles.tabText, activeTab === 'wall' && styles.tabTextActive]}>
-            Muro del Quartiere
-          </Text>
-        </TouchableOpacity>
+      {/* Type Filter */}
+      <View style={styles.typeFilter}>
+        {['all', 'offer', 'request'].map((type) => (
+          <TouchableOpacity
+            key={type}
+            style={[styles.typeButton, selectedType === type && styles.typeButtonActive]}
+            onPress={() => setSelectedType(type)}
+          >
+            <Text style={[styles.typeButtonText, selectedType === type && styles.typeButtonTextActive]}>
+              {type === 'all' ? 'Tutti' : type === 'offer' ? 'Offerte' : 'Richieste'}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      {activeTab === 'favors' ? (
-        <>
-          {/* Type Filter */}
-          <View style={styles.typeFilter}>
-            {['all', 'offer', 'request'].map((type) => (
-              <TouchableOpacity
-                key={type}
-                style={[styles.typeButton, selectedType === type && styles.typeButtonActive]}
-                onPress={() => setSelectedType(type)}
-              >
-                <Text style={[styles.typeButtonText, selectedType === type && styles.typeButtonTextActive]}>
-                  {type === 'all' ? 'Tutti' : type === 'offer' ? 'Offerte' : 'Richieste'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Categories */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesContainer}
-            contentContainerStyle={styles.categoriesContent}
+      {/* Categories */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoriesContainer}
+        contentContainerStyle={styles.categoriesContent}
+      >
+        <TouchableOpacity
+          style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
+          onPress={() => setSelectedCategory(null)}
+        >
+          <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
+            Tutti
+          </Text>
+        </TouchableOpacity>
+        {categories.map((cat) => (
+          <TouchableOpacity
+            key={cat.name}
+            style={[
+              styles.categoryChip,
+              selectedCategory === cat.name && styles.categoryChipActive,
+            ]}
+            onPress={() => setSelectedCategory(cat.name)}
           >
-            <TouchableOpacity
-              style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-              onPress={() => setSelectedCategory(null)}
-            >
-              <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-                Tutti
-              </Text>
-            </TouchableOpacity>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.name}
-                style={[
-                  styles.categoryChip,
-                  selectedCategory === cat.name && styles.categoryChipActive,
-                ]}
-                onPress={() => setSelectedCategory(cat.name)}
-              >
-                <Ionicons
-                  name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-                  size={16}
-                  color={selectedCategory === cat.name ? '#1a1a2e' : '#4ecca3'}
-                />
-                <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
-                  {cat.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          {loading ? (
-            <View style={styles.skeletonContainer}>
-              <FavorsListSkeleton count={4} />
-            </View>
-          ) : favors.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="search" size={60} color="#333" />
-              <Text style={styles.emptyText}>Nessun favore trovato</Text>
-              <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={favors}
-              renderItem={renderFavorCard}
-              keyExtractor={(item) => item.favor_id}
-              contentContainerStyle={styles.listContent}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
-              }
+            <Ionicons
+              name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
+              size={16}
+              color={selectedCategory === cat.name ? '#1a1a2e' : '#4ecca3'}
             />
-          )}
-        </>
+            <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
+              {cat.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {loading ? (
+        <View style={styles.skeletonContainer}>
+          <FavorsListSkeleton count={4} />
+        </View>
+      ) : favors.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="search" size={60} color="#333" />
+          <Text style={styles.emptyText}>Nessun favore trovato</Text>
+          <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={favors}
+          renderItem={renderFavorCard}
+          keyExtractor={(item) => item.favor_id}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
+          }
+        />
+      )}
 
       {/* Emergency Button */}
       <TouchableOpacity
