@@ -254,9 +254,22 @@ export default function ChatScreen() {
               />
             </View>
           )}
-          <Text style={[styles.messageText, item.blocked && styles.blockedText]}>
-            {item.content}
-          </Text>
+          {/* Check if message contains a location link */}
+          {item.content.includes('maps.google.com') ? (
+            <TouchableOpacity onPress={() => openLocationInMaps(item.content)}>
+              <View style={styles.locationMessage}>
+                <Ionicons name="location" size={20} color={colors.accent} />
+                <View>
+                  <Text style={styles.locationTitle}>📍 Posizione condivisa</Text>
+                  <Text style={styles.locationLink}>Tocca per aprire in Google Maps</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <Text style={[styles.messageText, item.blocked && styles.blockedText]}>
+              {item.content}
+            </Text>
+          )}
           <Text style={styles.messageTime}>
             {new Date(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
           </Text>
