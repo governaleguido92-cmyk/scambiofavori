@@ -730,31 +730,57 @@ export default function FavorDetailScreen() {
       <Modal visible={showScannerModal} animationType="slide">
         <SafeAreaView style={styles.scannerContainer}>
           <View style={styles.scannerHeader}>
-            <TouchableOpacity onPress={() => setShowScannerModal(false)}>
-              <Ionicons name="close" size={28} color="#fff" />
+            <TouchableOpacity 
+              onPress={() => {
+                setScanningComplete(false);
+                setShowScannerModal(false);
+              }}
+              style={styles.scannerCloseButton}
+            >
+              <Ionicons name="close-circle" size={32} color="#ff6b6b" />
             </TouchableOpacity>
             <Text style={styles.scannerTitle}>Scansiona QR</Text>
-            <View style={{ width: 28 }} />
+            <View style={{ width: 32 }} />
           </View>
           
           <View style={styles.scannerContent}>
-            <CameraView
-              style={styles.camera}
-              barcodeScannerSettings={{
-                barcodeTypes: ['qr'],
-              }}
-              onBarcodeScanned={scanningComplete ? undefined : handleBarCodeScanned}
-            />
+            {permission?.granted ? (
+              <CameraView
+                style={styles.camera}
+                barcodeScannerSettings={{
+                  barcodeTypes: ['qr'],
+                }}
+                onBarcodeScanned={scanningComplete ? undefined : handleBarCodeScanned}
+              />
+            ) : (
+              <View style={styles.cameraPlaceholder}>
+                <Ionicons name="camera-outline" size={64} color="#666" />
+                <Text style={styles.cameraPlaceholderText}>Permesso fotocamera non concesso</Text>
+                <TouchableOpacity 
+                  style={styles.retryPermissionButton}
+                  onPress={async () => {
+                    const result = await requestPermission();
+                    if (!result.granted) {
+                      Alert.alert('Errore', 'È necessario il permesso per la fotocamera');
+                    }
+                  }}
+                >
+                  <Text style={styles.retryPermissionText}>Riprova</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             
             {/* Scanner Overlay */}
-            <View style={styles.scannerOverlay}>
-              <View style={styles.scannerFrame}>
-                <View style={[styles.scannerCorner, styles.topLeft]} />
-                <View style={[styles.scannerCorner, styles.topRight]} />
-                <View style={[styles.scannerCorner, styles.bottomLeft]} />
-                <View style={[styles.scannerCorner, styles.bottomRight]} />
+            {permission?.granted && (
+              <View style={styles.scannerOverlay}>
+                <View style={styles.scannerFrame}>
+                  <View style={[styles.scannerCorner, styles.topLeft]} />
+                  <View style={[styles.scannerCorner, styles.topRight]} />
+                  <View style={[styles.scannerCorner, styles.bottomLeft]} />
+                  <View style={[styles.scannerCorner, styles.bottomRight]} />
+                </View>
               </View>
-            </View>
+            )}
           </View>
           
           <View style={styles.scannerFooter}>
@@ -763,6 +789,17 @@ export default function FavorDetailScreen() {
               Inquadra il codice QR mostrato dall'altro utente per completare il favore
             </Text>
           </View>
+          
+          {/* Cancel Button */}
+          <TouchableOpacity 
+            style={styles.scannerCancelButton}
+            onPress={() => {
+              setScanningComplete(false);
+              setShowScannerModal(false);
+            }}
+          >
+            <Text style={styles.scannerCancelText}>Annulla</Text>
+          </TouchableOpacity>
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
