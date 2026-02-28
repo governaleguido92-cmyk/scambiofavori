@@ -973,6 +973,43 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+      {/* Badge Info Modal */}
+      <Modal visible={showBadgeModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.badgeModalContent}>
+            {selectedBadge && (
+              <>
+                <View style={[styles.badgeModalIcon, { backgroundColor: selectedBadge.earned ? selectedBadge.color : '#333' }]}>
+                  <Ionicons
+                    name={(BADGE_ICONS[selectedBadge.icon] || 'ribbon') as any}
+                    size={48}
+                    color={selectedBadge.earned ? '#fff' : '#666'}
+                  />
+                </View>
+                <Text style={styles.badgeModalTitle}>{selectedBadge.name}</Text>
+                <View style={[styles.badgeModalStatus, selectedBadge.earned ? styles.badgeEarned : styles.badgeLocked]}>
+                  <Ionicons name={selectedBadge.earned ? 'checkmark-circle' : 'lock-closed'} size={16} color={selectedBadge.earned ? '#4ecca3' : '#666'} />
+                  <Text style={[styles.badgeStatusText, selectedBadge.earned && styles.badgeStatusEarned]}>
+                    {selectedBadge.earned ? 'Ottenuto!' : 'Non ancora ottenuto'}
+                  </Text>
+                </View>
+                <Text style={styles.badgeModalDescription}>
+                  {BADGE_INFO[selectedBadge.name]?.description || selectedBadge.description || 'Badge della community.'}
+                </Text>
+                <View style={styles.badgeHowToGet}>
+                  <Ionicons name="bulb" size={18} color="#FFD700" />
+                  <Text style={styles.badgeHowToGetText}>
+                    {BADGE_INFO[selectedBadge.name]?.howToGet || 'Partecipa attivamente alla community.'}
+                  </Text>
+                </View>
+                <TouchableOpacity style={styles.badgeModalClose} onPress={() => setShowBadgeModal(false)}>
+                  <Text style={styles.badgeModalCloseText}>Chiudi</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
