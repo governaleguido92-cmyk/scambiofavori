@@ -446,25 +446,6 @@ export default function HomeScreen() {
             />
           )}
         </>
-      ) : (
-        /* Neighborhood Wall */
-        <FlatList
-          data={wallPosts}
-          renderItem={renderWallPost}
-          keyExtractor={(item) => item.post_id}
-          contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="newspaper-outline" size={60} color="#333" />
-              <Text style={styles.emptyText}>Nessun post nel quartiere</Text>
-              <Text style={styles.emptySubtext}>Sii il primo a condividere qualcosa!</Text>
-            </View>
-          }
-        />
-      )}
 
       {/* Emergency Button */}
       <TouchableOpacity
