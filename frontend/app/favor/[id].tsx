@@ -11,23 +11,13 @@ import {
   Modal,
   Image,
   Vibration,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
-
-// Only import Camera on native platforms
-let CameraView: any = null;
-let useCameraPermissionsHook: any = null;
-
-if (Platform.OS !== 'web') {
-  const CameraModule = require('expo-camera');
-  CameraView = CameraModule.CameraView;
-  useCameraPermissionsHook = CameraModule.useCameraPermissions;
-}
+import { QRScanner, useQRPermissions, isCameraAvailable } from '../../src/components/QRScanner';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
