@@ -65,13 +65,65 @@ export default function FavorDetailScreen() {
   const [publicThanks, setPublicThanks] = useState('');
 
   useEffect(() => {
-    if (id) {
-      loadFavor();
-    }
+    let mounted = true;
+    
+    const init = async () => {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      
+      try {
+        console.log('Loading favor:', id);
+        const data = await api.getFavor(id, token || undefined);
+        
+        if (!mounted) return;
+        
+        console.log('Favor loaded:', data?.favor_id);
+        setFavor(data);
+        
+        if (data.status === 'completed') {
+          try {
+            const reviewsData = await api.getFavorReviews(id);
+            if (mounted) {
+              setReviews(reviewsData);
+            }
+          } catch (reviewError) {
+            console.log('Error loading reviews:', reviewError);
+          }
+        }
+      } catch (error: any) {
+        console.log('LoadFavor error:', error);
+        if (mounted) {
+          Alert.alert('Errore', error.message || 'Impossibile caricare il favore');
+          router.back();
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+    
+    init();
+    
+    // Check reviewer status separately
     if (token) {
-      checkReviewerStatus();
+      api.checkReviewerStatus(token)
+        .then(status => {
+          if (mounted) setIsReviewer(status.debug_features_enabled || false);
+        })
+        .catch(() => {
+          if (mounted) setIsReviewer(false);
+        });
     }
-  }, [id, token]);
+    
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   const checkReviewerStatus = async () => {
     if (!token) return;
