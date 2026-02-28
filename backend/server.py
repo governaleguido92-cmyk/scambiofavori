@@ -2715,6 +2715,14 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
         "created_at": datetime.now(timezone.utc)
     })
     
+    # Push notification for new message
+    await send_push_notification(
+        recipient_id,
+        f"Messaggio da {current_user.name}",
+        content[:80] + ('...' if len(content) > 80 else ''),
+        {"favor_id": msg.favor_id, "type": "new_message"}
+    )
+    
     # Prepare response (remove _id added by MongoDB)
     response_dict = {k: v for k, v in message_doc.items() if k != '_id'}
     response_dict["created_at"] = response_dict["created_at"].isoformat()
