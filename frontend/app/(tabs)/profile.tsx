@@ -218,6 +218,13 @@ export default function ProfileScreen() {
           console.log('Error loading reviews:', err);
         }
       }
+      // Load notification preferences
+      try {
+        const prefs = await api.getNotificationPreferences(token);
+        setNotifPrefs(prefs);
+      } catch (err) {
+        console.log('Error loading notification prefs:', err);
+      }
     } catch (error) {
       console.log('Error loading profile data:', error);
     }
