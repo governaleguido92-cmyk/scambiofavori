@@ -220,6 +220,7 @@ export default function ProfileScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      refreshUser();
       loadData();
     }, [loadData])
   );
