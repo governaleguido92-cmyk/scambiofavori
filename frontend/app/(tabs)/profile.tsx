@@ -496,13 +496,15 @@ export default function ProfileScreen() {
         {/* Badges Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Badge Comunitari</Text>
+          <Text style={styles.badgeHint}>Tocca un badge per scoprire come ottenerlo</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {allBadges.map((badge) => {
               const earned = badges.some(b => b.id === badge.id);
               return (
-                <View
+                <TouchableOpacity
                   key={badge.id}
                   style={[styles.badgeCard, !earned && styles.badgeCardLocked]}
+                  onPress={() => handleBadgePress({ ...badge, earned })}
                 >
                   <View style={[styles.badgeIcon, { backgroundColor: earned ? badge.color : '#333' }]}>
                     <Ionicons
@@ -515,7 +517,7 @@ export default function ProfileScreen() {
                     {badge.name}
                   </Text>
                   {!earned && <Ionicons name="lock-closed" size={12} color="#666" />}
-                </View>
+                </TouchableOpacity>
               );
             })}
           </ScrollView>
