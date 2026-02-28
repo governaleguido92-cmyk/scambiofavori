@@ -556,7 +556,11 @@ export default function FavorDetailScreen() {
         </View>
 
         {/* Creator Info */}
-        <View style={styles.userCard}>
+        <TouchableOpacity 
+          style={styles.userCard}
+          onPress={() => handleViewProfile(favor.creator_id, favor.creator_name || 'Utente')}
+          activeOpacity={0.7}
+        >
           <View style={styles.userAvatar}>
             <Text style={styles.userAvatarText}>
               {favor.creator_name?.charAt(0).toUpperCase() || 'U'}
@@ -566,16 +570,23 @@ export default function FavorDetailScreen() {
             <Text style={styles.userLabel}>
               {favor.type === 'offer' ? 'Donatore' : 'Richiedente'}
             </Text>
-            <Text style={styles.userName}>{favor.creator_name}</Text>
+            <View style={styles.userNameRow}>
+              <Text style={styles.userName}>{favor.creator_name}</Text>
+              <Ionicons name="chevron-forward" size={16} color="#888" />
+            </View>
             {favor.creator_title && (
               <Text style={styles.userTitle}>{favor.creator_title}</Text>
             )}
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Accepted By */}
-        {favor.accepted_by_name && (
-          <View style={styles.userCard}>
+        {favor.accepted_by_name && favor.accepted_by && (
+          <TouchableOpacity 
+            style={styles.userCard}
+            onPress={() => handleViewProfile(favor.accepted_by!, favor.accepted_by_name || 'Utente')}
+            activeOpacity={0.7}
+          >
             <View style={[styles.userAvatar, { backgroundColor: '#4ecca3' }]}>
               <Text style={[styles.userAvatarText, { color: '#1a1a2e' }]}>
                 {favor.accepted_by_name.charAt(0).toUpperCase()}
@@ -585,9 +596,12 @@ export default function FavorDetailScreen() {
               <Text style={styles.userLabel}>
                 {favor.type === 'offer' ? 'Ricevente' : 'Donatore'}
               </Text>
-              <Text style={styles.userName}>{favor.accepted_by_name}</Text>
+              <View style={styles.userNameRow}>
+                <Text style={styles.userName}>{favor.accepted_by_name}</Text>
+                <Ionicons name="chevron-forward" size={16} color="#888" />
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
 
         {/* Location - Hidden for privacy, only visible on map */}
