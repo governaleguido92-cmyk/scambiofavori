@@ -47,11 +47,6 @@ OAUTH_SESSION_URL = os.environ.get('OAUTH_SESSION_URL', 'https://demobackend.eme
 # Resend Email Config
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL', 'onboarding@resend.dev')
-if RESEND_API_KEY:
-    resend.api_key = RESEND_API_KEY
-    logger.info("Resend email service configured")
-else:
-    logger.warning("RESEND_API_KEY not set - email verification will log codes only")
 
 # Create the main app
 app = FastAPI()
