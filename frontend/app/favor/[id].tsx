@@ -941,15 +941,15 @@ export default function FavorDetailScreen() {
         </SafeAreaView>
       </Modal>
 
-      {/* Report Favor Modal */}
-      <ReportModal
+      {/* Report Favor Modal - temporarily disabled for debugging */}
+      {/* <ReportModal
         visible={showReportModal}
         onClose={() => setShowReportModal(false)}
         targetId={favor?.favor_id || ''}
         reportType="favor"
         targetName={favor?.title || 'Favore'}
         token={token || ''}
-      />
+      /> */}
 
       {/* User Profile Modal */}
       <Modal
