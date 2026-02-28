@@ -177,7 +177,7 @@ export default function FavorDetailScreen() {
             try {
               await api.mockQRScan(favor.favor_id, token);
               await refreshUser();
-              await loadFavor();
+              await reloadFavor();
               Alert.alert('✅ Debug', 'QR scan simulato con successo! Favore completato.');
             } catch (error: any) {
               Alert.alert('Errore', error.message || 'Impossibile simulare QR scan');
@@ -347,7 +347,7 @@ export default function FavorDetailScreen() {
             try {
               await api.completeFavor(favor.favor_id, token);
               await refreshUser();
-              await loadFavor();
+              await reloadFavor();
               Alert.alert('Successo', `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
             } catch (error: any) {
               Alert.alert('Errore', error.message || 'Impossibile completare il favore');
