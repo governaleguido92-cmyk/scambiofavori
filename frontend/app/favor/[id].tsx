@@ -866,21 +866,18 @@ export default function FavorDetailScreen() {
           </View>
           
           <View style={styles.scannerContent}>
-            {permission?.granted && CameraView ? (
-              <CameraView
-                style={styles.camera}
-                barcodeScannerSettings={{
-                  barcodeTypes: ['qr'],
-                }}
-                onBarcodeScanned={scanningComplete ? undefined : handleBarCodeScanned}
+            {permission?.granted && isCameraAvailable() ? (
+              <QRScanner 
+                onBarcodeScanned={handleBarCodeScanned}
+                scanningComplete={scanningComplete}
               />
             ) : (
               <View style={styles.cameraPlaceholder}>
                 <Ionicons name="camera-outline" size={64} color="#666" />
                 <Text style={styles.cameraPlaceholderText}>
-                  {CameraView ? 'Permesso fotocamera non concesso' : 'Fotocamera non disponibile'}
+                  {isCameraAvailable() ? 'Permesso fotocamera non concesso' : 'Fotocamera non disponibile'}
                 </Text>
-                {CameraView && (
+                {isCameraAvailable() && (
                   <TouchableOpacity 
                     style={styles.retryPermissionButton}
                     onPress={async () => {
