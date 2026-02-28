@@ -80,6 +80,32 @@ export default function FavorDetailScreen() {
     }
   };
 
+  const handleViewProfile = async (userId: string, userName: string) => {
+    setSelectedUserId(userId);
+    setSelectedUserName(userName);
+    setShowProfileModal(true);
+    setLoadingProfile(true);
+    
+    try {
+      const profile = await api.getUserPublicProfile(userId, token || undefined);
+      setUserProfile(profile);
+      const reviews = await api.getUserReviews(userId);
+      setUserReviews(reviews);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoadingProfile(false);
+    }
+  };
+
+  const handleReportFavor = () => {
+    if (!user) {
+      Alert.alert('Errore', 'Devi essere loggato per segnalare');
+      return;
+    }
+    setShowReportModal(true);
+  };
+
   const handleMockQRScan = async () => {
     if (!token || !favor) return;
     
