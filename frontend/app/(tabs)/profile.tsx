@@ -780,7 +780,7 @@ export default function ProfileScreen() {
             ].map((item) => (
               <View key={item.key} style={styles.notifPrefRow}>
                 <View style={styles.notifPrefIcon}>
-                  <Ionicons name={item.icon as any} size={18} color={colors.accent} />
+                  <Ionicons name={item.icon as any} size={18} color={themeColors.accent} />
                 </View>
                 <View style={styles.notifPrefText}>
                   <Text style={styles.notifPrefLabel}>{item.label}</Text>
@@ -789,8 +789,8 @@ export default function ProfileScreen() {
                 <Switch
                   value={notifPrefs[item.key as keyof typeof notifPrefs]}
                   onValueChange={() => handleToggleNotifPref(item.key)}
-                  trackColor={{ false: colors.backgroundLight, true: colors.primaryLight }}
-                  thumbColor={notifPrefs[item.key as keyof typeof notifPrefs] ? colors.accent : '#ccc'}
+                  trackColor={{ false: themeColors.backgroundLight, true: themeColors.primaryLight }}
+                  thumbColor={notifPrefs[item.key as keyof typeof notifPrefs] ? themeColors.accent : '#ccc'}
                   data-testid={`notif-toggle-${item.key}`}
                 />
               </View>
@@ -1539,13 +1539,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: themeColors.border,
   },
   notifPrefIcon: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: colors.accentMuted,
+    backgroundColor: themeColors.accentMuted,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
