@@ -15,6 +15,7 @@ import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
+import { api } from '../../src/services/api';
 import RegistrationOnboarding from '../../src/components/RegistrationOnboarding';
 import colors from '../../src/theme/colors';
 
