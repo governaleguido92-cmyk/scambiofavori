@@ -67,9 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedToken = await AsyncStorage.getItem('token');
         if (storedToken) {
           setToken(storedToken);
-          const userData = await api.getMe(storedToken);
-          setUser(userData);
-          await checkLegalStatus(storedToken);
+          try {
+            const userData = await api.getMe(storedToken);
+            setUser(userData);
+            await checkLegalStatus(storedToken);
+          } catch (apiError) {
+            console.log('API error during auth check:', apiError);
+            // Token might be invalid, clear it
+            await clearToken();
+          }
         }
       } catch (error) {
         console.log('Auth check error:', error);
@@ -80,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     checkAuth();
-  }, [checkLegalStatus]);
+  }, []);
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
