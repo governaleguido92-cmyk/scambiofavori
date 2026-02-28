@@ -192,10 +192,33 @@ export default function FavorDetailScreen() {
       );
     } catch (error: any) {
       setShowScannerModal(false);
-      setTimeout(() => {
-        Alert.alert('Errore', error.message || 'QR code non valido');
-      }, 300);
       setScanningComplete(false);
+      
+      // Messaggio di errore più chiaro
+      let errorMessage = 'QR code non valido';
+      if (error.message) {
+        if (error.message.includes('network') || error.message.includes('Network') || error.message.includes('fetch')) {
+          errorMessage = 'Errore di connessione. Verifica la tua connessione internet e riprova.';
+        } else if (error.message.includes('QR')) {
+          errorMessage = error.message;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setTimeout(() => {
+        Alert.alert(
+          'Errore Scansione',
+          errorMessage,
+          [
+            { text: 'Riprova', onPress: () => {
+              setScanningComplete(false);
+              setShowScannerModal(true);
+            }},
+            { text: 'Chiudi', style: 'cancel' }
+          ]
+        );
+      }, 300);
     }
   };
 
