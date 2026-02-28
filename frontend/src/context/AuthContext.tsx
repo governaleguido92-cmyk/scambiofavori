@@ -102,13 +102,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await checkLegalStatus(response.token);
   };
 
-  const register = async (email: string, password: string, name: string, referralCode?: string): Promise<void> => {
+  const register = async (email: string, password: string, name: string, referralCode?: string): Promise<{ requiresVerification?: boolean; userId?: string }> => {
     const response = await api.register(email, password, name, referralCode);
-    await saveToken(response.token!);
-    setUser(response.user!);
-    // New users always need to accept legal terms
-    setLegalAccepted(false);
-    setShowLegalModal(true);
+    
+    if (response.requiresVerification) {
+      return { requiresVerification: true, userId: response.userId };
+    }
+    
+    // Fallback: direct login if no verification needed
+    if (response.token && response.user) {
+      await saveToken(response.token);
+      setUser(response.user);
+      setLegalAccepted(false);
+      setShowLegalModal(true);
+    }
+    return {};
   };
 
   const exchangeSessionId = async (sessionId: string) => {
