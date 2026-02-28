@@ -65,9 +65,13 @@ export default function FavorDetailScreen() {
   const [publicThanks, setPublicThanks] = useState('');
 
   useEffect(() => {
-    loadFavor();
-    checkReviewerStatus();
-  }, [id]);
+    if (id) {
+      loadFavor();
+    }
+    if (token) {
+      checkReviewerStatus();
+    }
+  }, [id, token]);
 
   const checkReviewerStatus = async () => {
     if (!token) return;
