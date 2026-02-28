@@ -2894,40 +2894,18 @@ async def get_profile_completion(current_user: User = Depends(get_current_user))
     if has_photo:
         completed_items += 1
     
-    # 3. Bio/Description (15%)
-    has_bio = bool(user_doc.get("bio") and len(user_doc.get("bio", "")) > 10)
-    completion_items.append({
-        "id": "bio",
-        "label": "Biografia",
-        "completed": has_bio,
-        "points": 15
-    })
-    if has_bio:
-        completed_items += 1
-    
-    # 4. Skills/Competenze (20%) - almeno 3 competenze
+    # 3. Skills/Competenze (35%) - almeno 3 competenze (increased from 20%)
     has_skills = bool(current_user.skills and len(current_user.skills) >= 3)
     completion_items.append({
         "id": "skills",
         "label": "Competenze (min. 3)",
         "completed": has_skills,
-        "points": 20
+        "points": 35
     })
     if has_skills:
         completed_items += 1
     
-    # 5. Location/Quartiere (15%)
-    has_location = bool(user_doc.get("neighborhood") or user_doc.get("address"))
-    completion_items.append({
-        "id": "location",
-        "label": "Quartiere",
-        "completed": has_location,
-        "points": 15
-    })
-    if has_location:
-        completed_items += 1
-    
-    # 6. First completed favor (15%)
+    # 4. First completed favor (30%) - increased from 15%
     completed_favors = await db.favors.count_documents({
         "$or": [
             {"creator_id": current_user.user_id, "status": "completed"},
