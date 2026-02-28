@@ -4076,6 +4076,14 @@ async def create_skill_match_notifications(favor_doc: dict):
     
     if notifications:
         await db.notifications.insert_many(notifications)
+        # Send push notifications for skill matches
+        for notif in notifications:
+            await send_push_notification(
+                notif["user_id"],
+                "Nuovo favore per te!",
+                notif["message"],
+                {"favor_id": notif["favor_id"], "type": "skill_match"}
+            )
     
     return len(notifications)
 
