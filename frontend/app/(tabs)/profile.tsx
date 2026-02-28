@@ -22,6 +22,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, Badge, LeaderboardUser, Category, CURRENCY_NAME, CURRENCY_SYMBOL, getImageUrl } from '../../src/services/api';
 import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar';
 import { SupporterProfileBorder, SupporterBadge } from '../../src/components/SupporterBadge';
+import themeColors from '../../src/theme/colors';
 
 const BADGE_ICONS: Record<string, string> = {
   'heart': 'heart',
