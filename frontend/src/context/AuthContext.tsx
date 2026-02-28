@@ -10,7 +10,7 @@ interface AuthContextType {
   showLegalModal: boolean;
   showOnboarding: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, referralCode?: string) => Promise<void>;
+  register: (email: string, password: string, name: string, referralCode?: string) => Promise<{ requiresVerification?: boolean; userId?: string }>;
   exchangeSessionId: (sessionId: string) => Promise<void>;
   loginWithToken: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
