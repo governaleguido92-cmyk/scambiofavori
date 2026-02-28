@@ -1096,10 +1096,13 @@ async def register(user_data: UserCreate):
     # Send verification email
     email_sent = await send_verification_email(user_data.email, verification_code, user_data.name)
     
+    if not email_sent:
+        logger.info(f"[VERIFICATION] Code for {user_data.email}: {verification_code} (email not sent - Resend test mode)")
+    
     return {
         "requiresVerification": True,
         "userId": user_id,
-        "message": "Codice di verifica inviato alla tua email" if email_sent else "Registrazione completata. Controlla la tua email.",
+        "message": "Codice di verifica inviato alla tua email" if email_sent else "Registrazione completata. Verifica la tua email.",
     }
 
 class EmailVerifyRequest(BaseModel):
