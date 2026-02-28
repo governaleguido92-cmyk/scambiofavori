@@ -8,62 +8,56 @@ Build a mobile application "Scambio di Favori" (Favor Exchange), a hyperlocal co
 - **Currency System**: "Granelli" with social debt mechanism, 3 starting credits
 - **Gamification**: Badges, leaderboard, social impact bars
 - **Security**: User reporting, blocking, content filtering
-- **Authentication**: JWT, Google OAuth, Apple Sign In
+- **Authentication**: JWT with email verification, Google OAuth, Apple Sign In
 - **Monetization**: Stripe subscription (€1/month) for "Sostenitori"
-
-## Technical Stack
-- **Frontend**: Expo (SDK 54+), React Native, Expo Router
-- **Backend**: FastAPI, Pydantic, Motor (MongoDB)
-- **Database**: MongoDB
-- **Payments**: Stripe
 
 ## Recent Changes (Feb 28, 2026)
 
-### Privacy & UI Updates
-1. **Profilo**: Rimosso "Micro-Favori" dalla sezione "Come funzionano i Granelli"
-2. **Creazione Favori**: L'indirizzo non viene più mostrato nella UI, solo salvato per la mappa
-3. **Dettaglio Favori**: Rimossa la card location - l'indirizzo è visibile solo sulla mappa
-4. **Home Feed**: Rimossa la distanza dalle card favori per privacy
+### 1. Zero Granelli Control
+- Users with 0 Granelli can only OFFER favors, not REQUEST them
+- Clear alert message when trying to request with zero balance
 
-### QR Scanner Fix
-- Corretto errore `NameError: create_secure_transaction` nel backend
-- Migliorata gestione errori di rete nel frontend con messaggi più chiari
-- Aggiunto pulsante "Riprova" in caso di errore scansione
+### 2. Registration with Email Verification
+- New 3-slide onboarding during registration explaining:
+  - Ethical values of the community
+  - How Granelli currency works
+  - How to use the app
+- Email verification with 6-digit code (MOCKED - code shown in console)
+- Each email can only be used once
 
-### Notifiche Recensioni (NEW)
-- Notifica quando ricevi una recensione: "⭐ Nuova Recensione!"
-- Notifica quando entrambi hanno recensito: "🎉 Ciclo Completato!"
+### 3. Privacy Updates
+- Removed "Micro-Favori" from "Come funzionano i Granelli" section
+- Address only visible on map, not in favor cards or details
+- Location can be shared only via chat
 
-### Code Changes
-- `backend/server.py`: Fix chiamata a `log_security_transaction`
-- `frontend/app/(tabs)/profile.tsx`: Rimossa sezione micro-favori
-- `frontend/app/(tabs)/create.tsx`: Nuova UI privacy location
-- `frontend/app/(tabs)/index.tsx`: Rimossa distanza dalle card
-- `frontend/app/favor/[id].tsx`: Rimossa location card, migliorato error handling QR
+### 4. QR Scanner Improvements
+- Fixed backend error (`create_secure_transaction`)
+- Better error handling for network issues
+- Auto-opens review form after successful scan
 
-## Key API Endpoints
-- `POST /api/auth/login` - User login
-- `POST /api/favors` - Create favor
-- `POST /api/favors/{id}/verify-qr` - Complete favor via QR scan
-- `GET /api/download/frontend` - Download frontend ZIP
+### 5. Review Notifications
+- "Nuova Recensione!" notification when someone reviews you
+- "Ciclo Completato!" notification when both parties reviewed
+
+## API Endpoints (New)
+- `POST /api/auth/register` - Returns `requiresVerification: true` + `userId`
+- `POST /api/auth/verify-email` - Verify email with 6-digit code
+- `POST /api/auth/resend-code` - Resend verification code
+
+## Key Files Changed
+- `frontend/app/(auth)/register.tsx` - New onboarding + verification UI
+- `frontend/src/components/RegistrationOnboarding.tsx` - NEW: 3 slides
+- `frontend/app/(tabs)/create.tsx` - Zero granelli check
+- `backend/server.py` - Email verification endpoints
 
 ## Build Instructions
 1. Download: `https://granelli-app-1.preview.emergentagent.com/api/download/frontend`
-2. Extract and run:
-   ```bash
-   cd ~/Downloads
-   unzip scambio-di-favori-frontend.zip -d scambio-frontend
-   cd scambio-frontend/frontend
-   yarn install
-   npx expo prebuild --platform ios --clean
-   cd ios && pod install --repo-update && cd ..
-   open ios/scambiodifavori.xcworkspace
-   ```
+2. Extract and run standard Expo build commands
 
 ## Test Credentials
 - Email: `reviewer@test.com`
 - Password: `review123`
 
-## Pending Items
-- User verification of all recent changes on device
-- Offline Notice update (needs user clarification)
+## Pending
+- Remove bio and neighborhood from profile (user request)
+- Real email sending integration (currently mocked)
