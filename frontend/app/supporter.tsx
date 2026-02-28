@@ -99,7 +99,12 @@ export default function SupporterScreen() {
 
     setLoading(true);
     try {
-      const originUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://granelli-app-1.preview.emergentagent.com';
+      const originUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+      if (!originUrl) {
+        Alert.alert('Errore', 'Configurazione URL mancante');
+        setLoading(false);
+        return;
+      }
       const result = await api.createSubscriptionCheckout(originUrl, token);
       
       // Open Stripe checkout in browser
