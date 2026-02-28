@@ -266,43 +266,6 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  const renderWallPost = ({ item }: { item: WallPost }) => (
-    <View style={styles.wallPostCard}>
-      <View style={styles.wallPostHeader}>
-        <View style={styles.wallPostAuthor}>
-          <View style={styles.wallPostAvatar}>
-            <Text style={styles.wallPostAvatarText}>
-              {item.author_name?.charAt(0).toUpperCase() || 'U'}
-            </Text>
-          </View>
-          <View>
-            <Text style={styles.wallPostAuthorName}>{item.author_name}</Text>
-            <Text style={styles.wallPostAuthorTitle}>{item.author_title}</Text>
-          </View>
-        </View>
-        {item.post_type === 'thanks' && (
-          <View style={styles.thanksTypeBadge}>
-            <Ionicons name="heart" size={12} color="#ff6b6b" />
-            <Text style={styles.thanksTypeText}>Grazie</Text>
-          </View>
-        )}
-      </View>
-      <Text style={styles.wallPostContent}>{item.content}</Text>
-      <View style={styles.wallPostFooter}>
-        <View style={styles.wallPostLikes}>
-          <Ionicons name="heart-outline" size={18} color="#888" />
-          <Text style={styles.wallPostLikesText}>{item.likes}</Text>
-        </View>
-        {item.distance_km !== undefined && (
-          <View style={styles.wallPostDistance}>
-            <Ionicons name="location-outline" size={14} color="#888" />
-            <Text style={styles.wallPostDistanceText}>{item.distance_km} km</Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Network Error Banner */}
