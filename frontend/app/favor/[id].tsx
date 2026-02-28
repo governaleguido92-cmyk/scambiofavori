@@ -473,6 +473,16 @@ export default function FavorDetailScreen() {
               <Ionicons name="scan" size={24} color="#E07B39" />
             </TouchableOpacity>
           )}
+          {/* Report Favor Button */}
+          {user && favor.creator_id !== user.user_id && (
+            <TouchableOpacity 
+              style={styles.reportButton} 
+              onPress={handleReportFavor}
+              data-testid="report-favor-button"
+            >
+              <Ionicons name="flag" size={22} color="#ff6b6b" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
