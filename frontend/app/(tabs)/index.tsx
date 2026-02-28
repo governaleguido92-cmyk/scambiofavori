@@ -143,8 +143,18 @@ export default function HomeScreen() {
     return () => clearInterval(favorsInterval);
   }, [loadFavors]);
 
+  // Refresh user data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refreshUser();
+      loadFavors();
+      loadUnreadCount();
+    }, [])
+  );
+
   const onRefresh = () => {
     setRefreshing(true);
+    refreshUser();
     loadFavors();
     loadThanksBoard();
   };
