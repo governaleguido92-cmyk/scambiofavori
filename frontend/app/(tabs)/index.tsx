@@ -708,6 +708,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 20,
     paddingTop: 16,
+    paddingBottom: 100,  // Extra space for emergency button
   },
   favorCard: {
     backgroundColor: colors.backgroundCard,
