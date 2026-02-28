@@ -1031,7 +1031,6 @@ async def register(user_data: UserCreate):
         "in_debt_recovery": False,
         "approximate_latitude": None,
         "approximate_longitude": None,
-        "neighborhood": None,
         "created_at": datetime.now(timezone.utc)
     }
     
@@ -1216,7 +1215,6 @@ async def exchange_session(request: Request, response: Response):
             "can_access_solidarity_fund": False,
             "approximate_latitude": None,
             "approximate_longitude": None,
-            "neighborhood": None,
             "created_at": datetime.now(timezone.utc)
         }
         await db.users.insert_one(user_doc)
