@@ -103,19 +103,6 @@ export default function HomeScreen() {
     }
   };
 
-  const loadWallPosts = async () => {
-    try {
-      const data = await api.getWallPosts(
-        location?.latitude,
-        location?.longitude,
-        2.0 // 2km radius
-      );
-      setWallPosts(data);
-    } catch (error) {
-      console.log('Error loading wall posts:', error);
-    }
-  };
-
   const loadFavors = useCallback(async () => {
     try {
       setNetworkError(false);
