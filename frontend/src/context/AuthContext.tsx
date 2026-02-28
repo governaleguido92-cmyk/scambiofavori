@@ -63,6 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Set a maximum timeout for auth check
+      const authTimeout = setTimeout(() => {
+        console.log('Auth check timeout - forcing loading to false');
+        setLoading(false);
+      }, 10000);
+      
       try {
         const storedToken = await AsyncStorage.getItem('token');
         if (storedToken) {
@@ -81,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Auth check error:', error);
         await clearToken();
       } finally {
+        clearTimeout(authTimeout);
         setLoading(false);
       }
     };
