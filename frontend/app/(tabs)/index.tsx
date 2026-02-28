@@ -48,8 +48,6 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [thanksBoard, setThanksBoard] = useState<ThanksEntry[]>([]);
-  const [wallPosts, setWallPosts] = useState<WallPost[]>([]);
-  const [activeTab, setActiveTab] = useState<'favors' | 'wall'>('favors');
   const [networkError, setNetworkError] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   // Report modal state
