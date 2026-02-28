@@ -217,6 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         showOnboarding,
         login,
         register,
+        verifyEmail,
         exchangeSessionId,
         loginWithToken,
         logout,
