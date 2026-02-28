@@ -380,7 +380,6 @@ class User(BaseModel):
     # Privacy: approximate location for public display
     approximate_latitude: Optional[float] = None
     approximate_longitude: Optional[float] = None
-    neighborhood: Optional[str] = None
     created_at: Optional[datetime] = None
 
 class FavorCategory(BaseModel):
