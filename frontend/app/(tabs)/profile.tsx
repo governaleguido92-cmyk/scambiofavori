@@ -1054,6 +1054,17 @@ export default function ProfileScreen() {
   );
 }
 
+// Color constants for notification preferences section
+const colors = {
+  accent: '#4ecca3',
+  accentMuted: '#4ecca320',
+  primaryLight: '#4ecca360',
+  backgroundLight: '#333',
+  border: '#333',
+  textPrimary: '#fff',
+  textMuted: '#888',
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
