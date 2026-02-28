@@ -2781,11 +2781,11 @@ async def get_profile_completion(current_user: User = Depends(get_current_user))
     if has_bio:
         completed_items += 1
     
-    # 4. Skills/Competenze (20%)
-    has_skills = bool(current_user.skills and len(current_user.skills) > 0)
+    # 4. Skills/Competenze (20%) - almeno 3 competenze
+    has_skills = bool(current_user.skills and len(current_user.skills) >= 3)
     completion_items.append({
         "id": "skills",
-        "label": "Competenze",
+        "label": "Competenze (min. 3)",
         "completed": has_skills,
         "points": 20
     })
