@@ -1554,12 +1554,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   notifPrefLabel: {
-    color: colors.textPrimary,
+    color: themeColors.textPrimary,
     fontSize: 13,
     fontWeight: '600',
   },
   notifPrefDesc: {
-    color: colors.textMuted,
+    color: themeColors.textMuted,
     fontSize: 11,
     marginTop: 1,
   },
