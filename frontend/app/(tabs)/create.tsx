@@ -405,9 +405,17 @@ export default function CreateFavorScreen() {
             </Text>
           </View>
 
-          {/* Location */}
+          {/* Location - Hidden from UI, automatically added */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Posizione (opzionale)</Text>
+            <View style={styles.locationInfoBox}>
+              <Ionicons name="shield-checkmark" size={20} color="#4ecca3" />
+              <View style={styles.locationInfoText}>
+                <Text style={styles.locationInfoTitle}>Privacy Protetta</Text>
+                <Text style={styles.locationInfoDescription}>
+                  La tua posizione sarà visibile solo sulla mappa. Potrai condividere l'indirizzo esatto via chat.
+                </Text>
+              </View>
+            </View>
             <TouchableOpacity
               style={styles.locationButton}
               onPress={getLocation}
@@ -419,15 +427,15 @@ export default function CreateFavorScreen() {
                 <>
                   <Ionicons name="location" size={20} color="#4ecca3" />
                   <Text style={styles.locationButtonText}>
-                    {location ? 'Cambia posizione' : 'Aggiungi posizione'}
+                    {location ? 'Posizione aggiunta' : 'Aggiungi posizione'}
                   </Text>
                 </>
               )}
             </TouchableOpacity>
-            {address && (
+            {location && (
               <View style={styles.addressContainer}>
                 <Ionicons name="checkmark-circle" size={16} color="#4ecca3" />
-                <Text style={styles.addressText}>{address}</Text>
+                <Text style={styles.addressText}>Posizione salvata (visibile solo sulla mappa)</Text>
               </View>
             )}
           </View>

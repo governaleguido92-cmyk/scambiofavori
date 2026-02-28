@@ -249,19 +249,13 @@ export default function HomeScreen() {
         )}
       </View>
 
-      {/* Footer with Granelli and Distance */}
+      {/* Footer with Granelli */}
       <View style={styles.favorFooter}>
         <View style={styles.soliContainer}>
           <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
           <Text style={styles.soliText}>{item.granelli_cost}</Text>
           <Text style={styles.soliLabel}>{CURRENCY_NAME}</Text>
         </View>
-        {item.distance_km !== null && item.distance_km !== undefined && (
-          <View style={styles.distanceContainer}>
-            <Ionicons name="location" size={14} color={colors.accent} />
-            <Text style={styles.distanceText}>{item.distance_km} km</Text>
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );

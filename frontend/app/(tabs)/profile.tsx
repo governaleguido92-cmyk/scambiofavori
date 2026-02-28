@@ -726,18 +726,6 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: '#ff9800' + '20' }]}>
-                <Ionicons name="flash" size={20} color="#ff9800" />
-              </View>
-              <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>Micro-Favori</Text>
-                <Text style={styles.infoDescription}>
-                  Consigli e info rapide per uso quotidiano
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.infoItem}>
               <View style={[styles.infoIcon, { backgroundColor: '#2196f3' + '20' }]}>
                 <Ionicons name="qr-code" size={20} color="#2196f3" />
               </View>

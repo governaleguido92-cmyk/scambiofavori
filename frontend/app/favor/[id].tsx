@@ -509,18 +509,7 @@ export default function FavorDetailScreen() {
           </View>
         )}
 
-        {/* Location */}
-        {(favor.address || favor.approximate_latitude) && (
-          <View style={styles.locationCard}>
-            <Ionicons name="location" size={20} color="#4ecca3" />
-            <Text style={styles.locationText}>
-              {favor.address || 'Zona approssimativa disponibile'}
-            </Text>
-            {favor.distance_km !== undefined && (
-              <Text style={styles.distanceText}>{favor.distance_km} km</Text>
-            )}
-          </View>
-        )}
+        {/* Location - Hidden for privacy, only visible on map */}
 
         {/* Reviews */}
         {reviews.length > 0 && (
