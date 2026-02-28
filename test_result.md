@@ -143,7 +143,7 @@ All screens implemented:
 
 
 ### Frontend Testing Status: ❌ COMPLETELY BLOCKED
-**URL:** https://granelli-app-1.preview.emergentagent.com  
+**URL:** https://hyperlocal-exchange.preview.emergentagent.com  
 **Error:** Cloudflare 520 - Web server returning unknown error  
 **Cloudflare Ray ID:** 9d1c5fdc0757dade  
 
@@ -244,7 +244,7 @@ Application completely inaccessible due to server infrastructure failure. Backen
 - All core UI components accessible locally
 
 **INFRASTRUCTURE ISSUE:** ❌ NGROK TUNNEL FAILURE
-- Public URL (https://granelli-app-1.preview.emergentagent.com) returns Cloudflare 520 error
+- Public URL (https://hyperlocal-exchange.preview.emergentagent.com) returns Cloudflare 520 error
 - Ngrok tunnel repeatedly timing out: "CommandError: ngrok tunnel took too long to connect"
 - Common 2026 issue with ngrok reliability and rate limits
 

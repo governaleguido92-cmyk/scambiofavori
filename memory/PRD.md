@@ -24,7 +24,7 @@ if expires.tzinfo is None:
 3. ✅ Login works for existing users
 
 ## Download
-`https://granelli-app-1.preview.emergentagent.com/api/download/frontend`
+`https://hyperlocal-exchange.preview.emergentagent.com/api/download/frontend`
 
 ## Test Credentials
 - Email: `reviewer@test.com`

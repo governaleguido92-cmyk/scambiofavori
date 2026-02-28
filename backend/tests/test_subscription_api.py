@@ -13,7 +13,7 @@ import requests
 import os
 
 # Use public URL for testing - same as user sees
-BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://granelli-app-1.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://hyperlocal-exchange.preview.emergentagent.com').rstrip('/')
 
 # Test credentials
 TEST_USER_EMAIL = "skills_test@test.com"
@@ -87,7 +87,7 @@ class TestSubscriptionEndpoints:
         response = requests.post(
             f"{BASE_URL}/api/subscription/create-checkout",
             headers=auth_headers,
-            json={"origin_url": "https://granelli-app-1.preview.emergentagent.com"}
+            json={"origin_url": "https://hyperlocal-exchange.preview.emergentagent.com"}
         )
         
         # Could be 200 (checkout created) or 400 (already supporter)
@@ -218,7 +218,7 @@ class TestSubscriptionFlow:
             checkout_resp = requests.post(
                 f"{BASE_URL}/api/subscription/create-checkout",
                 headers=headers,
-                json={"origin_url": "https://granelli-app-1.preview.emergentagent.com"}
+                json={"origin_url": "https://hyperlocal-exchange.preview.emergentagent.com"}
             )
             assert checkout_resp.status_code == 200
             checkout_data = checkout_resp.json()

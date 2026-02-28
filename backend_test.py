@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Get the backend URL from environment  
-BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://granelli-app-1.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('EXPO_PUBLIC_BACKEND_URL', 'https://hyperlocal-exchange.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
 class NewFeaturesAPITester:
