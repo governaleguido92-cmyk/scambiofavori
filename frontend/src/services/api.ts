@@ -110,7 +110,6 @@ export interface Favor {
   exact_longitude?: number;
   address?: string;
   distance_km?: number;
-  is_micro: boolean;
   is_emergency: boolean;
   creator_in_debt: boolean;  // For priority highlighting
   validity_days: number;  // Durata annuncio (1-10 giorni)
