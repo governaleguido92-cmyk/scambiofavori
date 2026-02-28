@@ -1674,12 +1674,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   // Skills Section Styles
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
   editSkillsButton: {
     flexDirection: 'row',
     alignItems: 'center',
