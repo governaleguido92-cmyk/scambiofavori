@@ -1153,7 +1153,7 @@ class ResendCodeRequest(BaseModel):
 
 @api_router.post("/auth/resend-code")
 async def resend_verification_code(data: ResendCodeRequest):
-    """Resend verification code"""
+    """Resend verification code via Resend email"""
     user_doc = await db.users.find_one({"user_id": data.user_id})
     if not user_doc:
         raise HTTPException(status_code=404, detail="Utente non trovato")
@@ -1174,9 +1174,10 @@ async def resend_verification_code(data: ResendCodeRequest):
         }
     )
     
-    print(f"[EMAIL VERIFICATION] Resend to {user_doc['email']} - Code: {new_code}")
+    # Send email
+    email_sent = await send_verification_email(user_doc['email'], new_code, user_doc['name'])
     
-    return {"message": "Nuovo codice inviato", "demo_code": new_code}
+    return {"message": "Nuovo codice inviato" if email_sent else "Codice generato"}
 
 @api_router.post("/auth/login", response_model=AuthResponse)
 async def login(credentials: UserLogin, response: Response):
