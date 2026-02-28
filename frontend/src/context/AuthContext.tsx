@@ -10,8 +10,7 @@ interface AuthContextType {
   showLegalModal: boolean;
   showOnboarding: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, referralCode?: string) => Promise<{ requiresVerification: boolean; userId?: string }>;
-  verifyEmail: (userId: string, code: string) => Promise<void>;
+  register: (email: string, password: string, name: string, referralCode?: string) => Promise<void>;
   exchangeSessionId: (sessionId: string) => Promise<void>;
   loginWithToken: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
@@ -202,7 +201,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         showOnboarding,
         login,
         register,
-        verifyEmail,
         exchangeSessionId,
         loginWithToken,
         logout,
