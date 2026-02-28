@@ -61,6 +61,45 @@ export default function ProfileScreen() {
   // Reviews state
   const [receivedReviews, setReceivedReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  // Badge info modal state
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<any>(null);
+
+  const BADGE_INFO: Record<string, { description: string; howToGet: string }> = {
+    'Vicino Gentile': {
+      description: 'Hai completato il tuo primo favore nella community.',
+      howToGet: 'Completa 1 favore (offerta o richiesta).'
+    },
+    'Aiutante Locale': {
+      description: 'Hai aiutato 5 persone nel tuo quartiere.',
+      howToGet: 'Completa 5 favori come offerente.'
+    },
+    'Pilastro del Quartiere': {
+      description: 'Sei un punto di riferimento per la tua comunità.',
+      howToGet: 'Completa 20 favori nella community.'
+    },
+    'Cuore d\'Oro': {
+      description: 'Hai donato al Fondo Solidarietà per aiutare chi è in difficoltà.',
+      howToGet: 'Fai una donazione al Fondo Solidarietà.'
+    },
+    'Eroe Silenzioso': {
+      description: 'Hai risposto a richieste urgenti quando serviva di più.',
+      howToGet: 'Completa 3 favori di emergenza.'
+    },
+    'Micro-Eroe': {
+      description: 'Hai dato consigli e info rapide a tanti vicini.',
+      howToGet: 'Completa 10 micro-favori.'
+    },
+    'Sostenitore': {
+      description: 'Supporti lo sviluppo di Scambio di Favori con un abbonamento.',
+      howToGet: 'Attiva l\'abbonamento Sostenitore (€1/mese).'
+    },
+  };
+
+  const handleBadgePress = (badge: any) => {
+    setSelectedBadge(badge);
+    setShowBadgeModal(true);
+  };
 
   const showImagePickerOptions = () => {
     Alert.alert(
