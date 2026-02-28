@@ -48,9 +48,8 @@ export default function FavorDetailScreen() {
   const [isReviewer, setIsReviewer] = useState(false);
   const [scanningComplete, setScanningComplete] = useState(false);
   
-  // Camera permissions - only on native
-  const cameraPermissions = useCameraPermissionsHook ? useCameraPermissionsHook() : [{ granted: false }, async () => ({ granted: false })];
-  const [permission, requestPermission] = cameraPermissions;
+  // Camera permissions
+  const [permission, requestPermission] = useQRPermissions();
   
   const [showReportModal, setShowReportModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
