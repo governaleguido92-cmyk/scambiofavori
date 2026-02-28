@@ -206,10 +206,12 @@ export interface Donation {
 }
 
 export interface AuthResponse {
-  user: User;
-  token: string;
+  user?: User;
+  token?: string;
   requiresVerification?: boolean;
   userId?: string;
+  message?: string;
+  demo_code?: string;  // Only in development
 }
 
 export interface FavorCreateData {
