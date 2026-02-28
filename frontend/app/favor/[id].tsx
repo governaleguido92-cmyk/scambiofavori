@@ -928,7 +928,7 @@ export default function FavorDetailScreen() {
         visible={showReportModal}
         onClose={() => setShowReportModal(false)}
         targetId={favor?.favor_id || ''}
-        targetType="favor"
+        reportType="favor"
         targetName={favor?.title || 'Favore'}
         token={token || ''}
       />
