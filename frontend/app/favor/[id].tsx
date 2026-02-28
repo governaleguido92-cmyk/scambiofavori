@@ -49,6 +49,13 @@ export default function FavorDetailScreen() {
   const [isReviewer, setIsReviewer] = useState(false);
   const [scanningComplete, setScanningComplete] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [loadingProfile, setLoadingProfile] = useState(false);
   
   // Review form state
   const [rating, setRating] = useState(5);
