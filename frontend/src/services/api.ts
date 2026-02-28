@@ -208,6 +208,8 @@ export interface Donation {
 export interface AuthResponse {
   user: User;
   token: string;
+  requiresVerification?: boolean;
+  userId?: string;
 }
 
 export interface FavorCreateData {
@@ -333,6 +335,24 @@ export const api = {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({ email, password, name, referral_code: referralCode }),
+    });
+    return handleResponse(response);
+  },
+
+  verifyEmailCode: async (userId: string, code: string): Promise<AuthResponse> => {
+    const response = await fetch(`${API_URL}/api/auth/verify-email`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ user_id: userId, code }),
+    });
+    return handleResponse(response);
+  },
+
+  resendVerificationCode: async (userId: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/auth/resend-code`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ user_id: userId }),
     });
     return handleResponse(response);
   },
