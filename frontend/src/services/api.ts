@@ -371,6 +371,22 @@ export const api = {
     return handleResponse(response);
   },
 
+  getNotificationPreferences: async (token: string): Promise<Record<string, boolean>> => {
+    const response = await fetch(`${API_URL}/api/notification-preferences`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  updateNotificationPreferences: async (prefs: Record<string, boolean>, token: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/api/notification-preferences`, {
+      method: 'PUT',
+      headers: getHeaders(token),
+      body: JSON.stringify(prefs),
+    });
+    return handleResponse(response);
+  },
+
   exchangeSession: async (sessionId: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/api/auth/session`, {
       method: 'POST',
