@@ -714,6 +714,14 @@ export const api = {
     return handleResponse(response);
   },
 
+  // Get user public profile (visible to all users)
+  getUserPublicProfile: async (userId: string, token?: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/api/users/${userId}/public`, {
+      headers: token ? getHeaders(token) : { 'Content-Type': 'application/json' },
+    });
+    return handleResponse(response);
+  },
+
   // Donations
   createDonation: async (amount: number, recipientId?: string, message?: string, token?: string): Promise<Donation> => {
     const response = await fetch(`${API_URL}/api/donations`, {
