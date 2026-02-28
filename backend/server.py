@@ -976,9 +976,9 @@ async def check_return_to_positive(user_id: str, old_balance: int, new_balance: 
 # AUTH ENDPOINTS
 # ========================
 
-@api_router.post("/auth/register", response_model=AuthResponse)
+@api_router.post("/auth/register")
 async def register(user_data: UserCreate):
-    """Register a new user"""
+    """Register a new user with email verification"""
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email già registrata")
@@ -992,6 +992,9 @@ async def register(user_data: UserCreate):
         referrer = await db.users.find_one({"referral_code": user_data.referral_code})
         if referrer:
             referred_by = referrer["user_id"]
+    
+    # Generate verification code (6 digits)
+    verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
     
     user_doc = {
         "user_id": user_id,
@@ -1017,15 +1020,16 @@ async def register(user_data: UserCreate):
         "title": "Nuovo Vicino",
         "is_vulnerable": False,
         "identity_verified": False,
+        "email_verified": False,  # NEW: Email verification status
+        "verification_code": verification_code,  # NEW: Verification code
+        "verification_code_expires": datetime.now(timezone.utc) + timedelta(hours=1),
         "community_score": 0,
         "social_impact_score": 0,
         "can_access_solidarity_fund": False,
-        # Social Debt Limit fields
         "reliability_score": 5.0,
         "debt_start_date": None,
         "last_activity_date": datetime.now(timezone.utc),
         "in_debt_recovery": False,
-        # Privacy
         "approximate_latitude": None,
         "approximate_longitude": None,
         "neighborhood": None,
@@ -1034,10 +1038,87 @@ async def register(user_data: UserCreate):
     
     await db.users.insert_one(user_doc)
     
-    token = create_jwt_token(user_id)
+    # For demo: Return verification code in console (in production, send via email)
+    print(f"[EMAIL VERIFICATION] User {user_data.email} - Code: {verification_code}")
+    
+    # Return that verification is required
+    return {
+        "requiresVerification": True,
+        "userId": user_id,
+        "message": f"Codice di verifica inviato a {user_data.email}",
+        # For demo purposes, include the code (remove in production)
+        "demo_code": verification_code
+    }
+
+class EmailVerifyRequest(BaseModel):
+    user_id: str
+    code: str
+
+@api_router.post("/auth/verify-email", response_model=AuthResponse)
+async def verify_email(data: EmailVerifyRequest):
+    """Verify email with code"""
+    user_doc = await db.users.find_one({"user_id": data.user_id}, {"_id": 0})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    if user_doc.get("email_verified"):
+        raise HTTPException(status_code=400, detail="Email già verificata")
+    
+    stored_code = user_doc.get("verification_code")
+    expires = user_doc.get("verification_code_expires")
+    
+    if not stored_code or stored_code != data.code:
+        raise HTTPException(status_code=400, detail="Codice non valido")
+    
+    if expires and datetime.now(timezone.utc) > expires:
+        raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice.")
+    
+    # Mark email as verified
+    await db.users.update_one(
+        {"user_id": data.user_id},
+        {
+            "$set": {"email_verified": True},
+            "$unset": {"verification_code": "", "verification_code_expires": ""}
+        }
+    )
+    
+    token = create_jwt_token(data.user_id)
     user_doc.pop("password_hash", None)
+    user_doc.pop("verification_code", None)
+    user_doc.pop("verification_code_expires", None)
+    user_doc["email_verified"] = True
     
     return AuthResponse(user=User(**user_doc), token=token)
+
+class ResendCodeRequest(BaseModel):
+    user_id: str
+
+@api_router.post("/auth/resend-code")
+async def resend_verification_code(data: ResendCodeRequest):
+    """Resend verification code"""
+    user_doc = await db.users.find_one({"user_id": data.user_id})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    if user_doc.get("email_verified"):
+        raise HTTPException(status_code=400, detail="Email già verificata")
+    
+    # Generate new code
+    new_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    await db.users.update_one(
+        {"user_id": data.user_id},
+        {
+            "$set": {
+                "verification_code": new_code,
+                "verification_code_expires": datetime.now(timezone.utc) + timedelta(hours=1)
+            }
+        }
+    )
+    
+    print(f"[EMAIL VERIFICATION] Resend to {user_doc['email']} - Code: {new_code}")
+    
+    return {"message": "Nuovo codice inviato", "demo_code": new_code}
 
 @api_router.post("/auth/login", response_model=AuthResponse)
 async def login(credentials: UserLogin, response: Response):
