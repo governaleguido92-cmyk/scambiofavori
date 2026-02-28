@@ -27,7 +27,11 @@ export default function RegisterScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
-  const { register } = useAuth();
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [resending, setResending] = useState(false);
+  const { register, loginWithToken } = useAuth();
   const router = useRouter();
 
   const handleOnboardingComplete = () => {
@@ -59,12 +63,49 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
-      await register(email, password, name, referralCode || undefined);
-      router.replace('/(tabs)');
+      const result = await register(email, password, name, referralCode || undefined);
+      if (result.requiresVerification && result.userId) {
+        setUserId(result.userId);
+        setVerificationStep(true);
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Registrazione fallita');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode || verificationCode.length !== 6 || !userId) {
+      Alert.alert('Errore', 'Inserisci il codice a 6 cifre');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await api.verifyEmailCode(userId, verificationCode);
+      if (response.token && response.user) {
+        await loginWithToken(response.token, response.user);
+        router.replace('/(tabs)');
+      }
+    } catch (error: any) {
+      Alert.alert('Errore', error.message || 'Codice non valido');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!userId) return;
+    setResending(true);
+    try {
+      await api.resendVerificationCode(userId);
+      Alert.alert('Fatto', 'Nuovo codice inviato alla tua email');
+    } catch (error: any) {
+      Alert.alert('Errore', error.message || 'Impossibile reinviare il codice');
+    } finally {
+      setResending(false);
     }
   };
 
