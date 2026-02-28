@@ -4024,16 +4024,31 @@ async def update_notification_preferences(prefs: NotificationPreferences, curren
     return {"message": "Preferenze aggiornate", "preferences": prefs.dict()}
 
 async def send_push_notification(user_id: str, title: str, body: str, data: dict = None):
-    """Send push notification via Expo Push API"""
+    """Send push notification via Expo Push API, respecting user preferences"""
     user_doc = await db.users.find_one(
         {"user_id": user_id, "push_token": {"$exists": True, "$ne": None}},
-        {"_id": 0, "push_token": 1, "notifications_enabled": 1}
+        {"_id": 0, "push_token": 1, "notifications_enabled": 1, "notification_preferences": 1}
     )
     
     if not user_doc or not user_doc.get("push_token"):
         return False
     
     if user_doc.get("notifications_enabled") is False:
+        return False
+    
+    # Check specific notification type preference
+    notif_type = (data or {}).get("type", "")
+    prefs = user_doc.get("notification_preferences", {})
+    pref_map = {
+        "favor_accepted": "favor_accepted",
+        "favor_completed": "favor_completed",
+        "new_message": "new_message",
+        "review_received": "new_review",
+        "skill_match": "skill_match",
+    }
+    pref_key = pref_map.get(notif_type)
+    if pref_key and prefs.get(pref_key) is False:
+        logger.info(f"Push skipped for {user_id}: preference '{pref_key}' is disabled")
         return False
     
     push_token = user_doc["push_token"]
