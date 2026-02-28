@@ -58,6 +58,11 @@ export default function ProfileScreen() {
   // Profile picture state
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  // Notification preferences state
+  const [notifPrefs, setNotifPrefs] = useState({
+    favor_accepted: true, favor_completed: true, new_message: true, new_review: true, skill_match: true,
+  });
+  const [loadingPrefs, setLoadingPrefs] = useState(false);
   // Reviews state
   const [receivedReviews, setReceivedReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
