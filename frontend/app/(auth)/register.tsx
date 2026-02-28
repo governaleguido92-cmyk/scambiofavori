@@ -310,7 +310,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -339,6 +339,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
     marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 24,
   },
   form: {
     width: '100%',
@@ -346,7 +348,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: colors.card,
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
@@ -361,7 +363,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   registerButton: {
-    backgroundColor: '#4ecca3',
+    backgroundColor: colors.accent,
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   registerButtonText: {
-    color: '#1a1a2e',
+    color: colors.background,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -384,7 +386,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   bonusText: {
-    color: '#4ecca3',
+    color: colors.accent,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -398,7 +400,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginLink: {
-    color: '#4ecca3',
+    color: colors.accent,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -414,5 +416,43 @@ const styles = StyleSheet.create({
   handRight: {
     transform: [{ rotate: '-45deg' }, { scaleX: -1 }],
     marginLeft: -8,
+  },
+  // Verification styles
+  verifyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.accent + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emailHighlight: {
+    color: colors.accent,
+    fontWeight: '600',
+  },
+  codeInputContainer: {
+    marginBottom: 24,
+  },
+  codeInput: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    height: 70,
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    letterSpacing: 12,
+    paddingHorizontal: 20,
+  },
+  resendButton: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  resendText: {
+    color: '#888',
+    fontSize: 14,
+  },
+  resendLink: {
+    color: colors.accent,
+    fontWeight: '600',
   },
 });
