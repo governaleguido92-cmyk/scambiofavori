@@ -2313,6 +2313,36 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
     await check_and_award_badges(reviewed_id)
     await update_community_score(reviewed_id)
     
+    # ========================
+    # NOTIFICATION: Review received
+    # ========================
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": reviewed_id,
+        "type": "review_received",
+        "title": "Nuova Recensione! ⭐",
+        "message": f"{current_user.name} ti ha lasciato una recensione per \"{favor_doc['title']}\"",
+        "related_id": review_data.favor_id,
+        "read": False,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Check if both parties have reviewed - notify cycle complete
+    all_reviews = await db.reviews.find({"favor_id": review_data.favor_id}).to_list(10)
+    if len(all_reviews) >= 2:
+        # Both reviews are in - notify both users that the cycle is complete
+        for user_id in [favor_doc["creator_id"], favor_doc["accepted_by"]]:
+            await db.notifications.insert_one({
+                "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+                "user_id": user_id,
+                "type": "favor_cycle_complete",
+                "title": "Ciclo Completato! 🎉",
+                "message": f"Entrambe le recensioni per \"{favor_doc['title']}\" sono state inviate. Grazie per aver partecipato!",
+                "related_id": review_data.favor_id,
+                "read": False,
+                "created_at": datetime.now(timezone.utc)
+            })
+    
     return Review(**review_doc)
 
 @api_router.get("/thanks", response_model=List[ThanksEntry])
