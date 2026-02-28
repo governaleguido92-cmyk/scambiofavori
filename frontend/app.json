@@ -58,6 +58,13 @@
         {
           "locationWhenInUsePermission": "Per mostrare favori vicini."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/app-image.png",
+          "color": "#2D5A3D"
+        }
       ]
     ],
     "experiments": {
