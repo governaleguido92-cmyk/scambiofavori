@@ -2823,6 +2823,57 @@ async def get_blocked_users(current_user: User = Depends(get_current_user)):
     
     return {"blocked_users": blocked_users}
 
+@api_router.get("/users/{user_id}/public")
+async def get_user_public_profile(user_id: str):
+    """Get public profile of any user - visible to all"""
+    
+    user_doc = await db.users.find_one(
+        {"user_id": user_id}, 
+        {
+            "_id": 0, 
+            "password_hash": 0, 
+            "email": 0,  # Privacy: no email
+            "verification_code": 0,
+            "verification_code_expires": 0,
+            "approximate_latitude": 0,  # Privacy: no location
+            "approximate_longitude": 0
+        }
+    )
+    
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    # Get user stats
+    completed_given = await db.favors.count_documents({
+        "accepted_by": user_id,
+        "status": "completed"
+    })
+    completed_received = await db.favors.count_documents({
+        "creator_id": user_id,
+        "type": "request",
+        "status": "completed"
+    })
+    
+    # Get reviews received by this user
+    reviews_count = await db.reviews.count_documents({"reviewed_id": user_id})
+    
+    return {
+        "user_id": user_doc["user_id"],
+        "name": user_doc.get("name", "Utente"),
+        "picture": user_doc.get("picture"),
+        "title": user_doc.get("title", "Nuovo Vicino"),
+        "badges": user_doc.get("badges", []),
+        "skills": user_doc.get("skills", []),
+        "average_rating": user_doc.get("average_rating", 0),
+        "average_kindness": user_doc.get("average_kindness", 0),
+        "average_impact": user_doc.get("average_impact", 0),
+        "total_favors_given": completed_given,
+        "total_favors_received": completed_received,
+        "reviews_count": reviews_count,
+        "created_at": user_doc.get("created_at"),
+        "is_supporter": user_doc.get("is_supporter", False)
+    }
+
 @api_router.get("/users/{user_id}/is-blocked")
 async def check_if_blocked(user_id: str, current_user: User = Depends(get_current_user)):
     """Check if a user is blocked"""
