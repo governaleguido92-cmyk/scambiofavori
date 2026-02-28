@@ -15,6 +15,8 @@ import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
+import RegistrationOnboarding from '../../src/components/RegistrationOnboarding';
+import colors from '../../src/theme/colors';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -22,10 +24,19 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [step, setStep] = useState<'onboarding' | 'form' | 'verify'>('onboarding');
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const { register, verifyEmail } = useAuth();
   const router = useRouter();
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    setStep('form');
+  };
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
@@ -43,16 +54,130 @@ export default function RegisterScreen() {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Errore', 'Inserisci un indirizzo email valido');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await register(email, password, name, referralCode || undefined);
-      router.replace('/(tabs)');
+      const result = await register(email, password, name, referralCode || undefined);
+      if (result.requiresVerification) {
+        setPendingUserId(result.userId);
+        setStep('verify');
+        Alert.alert(
+          'Verifica Email',
+          'Ti abbiamo inviato un codice di verifica. Controlla la tua email (anche spam).',
+          [{ text: 'OK' }]
+        );
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Registrazione fallita');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      Alert.alert('Errore', 'Inserisci il codice a 6 cifre');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await verifyEmail(pendingUserId!, verificationCode);
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      Alert.alert('Errore', error.message || 'Codice non valido');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    Alert.alert('Codice inviato', 'Un nuovo codice è stato inviato alla tua email');
+  };
+
+  // Show onboarding slides first
+  if (step === 'onboarding') {
+    return <RegistrationOnboarding onComplete={handleOnboardingComplete} />;
+  }
+
+  // Show verification step
+  if (step === 'verify') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => setStep('form')}
+            >
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            <View style={styles.header}>
+              <View style={styles.verifyIconContainer}>
+                <Ionicons name="mail" size={50} color={colors.accent} />
+              </View>
+              <Text style={styles.title}>Verifica Email</Text>
+              <Text style={styles.subtitle}>
+                Inserisci il codice a 6 cifre inviato a{'\n'}
+                <Text style={styles.emailHighlight}>{email}</Text>
+              </Text>
+            </View>
+
+            <View style={styles.form}>
+              <View style={styles.codeInputContainer}>
+                <TextInput
+                  style={styles.codeInput}
+                  placeholder="000000"
+                  placeholderTextColor="#555"
+                  value={verificationCode}
+                  onChangeText={setVerificationCode}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  textAlign="center"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={handleVerifyCode}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={colors.background} />
+                ) : (
+                  <Text style={styles.registerButtonText}>Verifica</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.resendButton}
+                onPress={handleResendCode}
+              >
+                <Text style={styles.resendText}>
+                  Non hai ricevuto il codice? <Text style={styles.resendLink}>Invia di nuovo</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
