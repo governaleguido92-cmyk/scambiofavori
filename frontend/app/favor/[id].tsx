@@ -1436,17 +1436,20 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   ratingsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    gap: 12,
     marginBottom: 12,
   },
   ratingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 4,
   },
   ratingLabel: {
     color: '#888',
-    fontSize: 11,
-    marginBottom: 4,
+    fontSize: 13,
+    flex: 1,
   },
   starsContainer: {
     alignItems: 'center',
