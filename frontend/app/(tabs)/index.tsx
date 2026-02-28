@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Category, ThanksEntry, WallPost, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Favor, Category, ThanksEntry, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { ReportModal } from '../../src/components/ReportModal';
 import { FavorsListSkeleton } from '../../src/components/Skeleton';
