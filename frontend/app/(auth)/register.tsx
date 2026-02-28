@@ -115,6 +115,83 @@ export default function RegisterScreen() {
     return <RegistrationOnboarding onComplete={handleOnboardingComplete} />;
   }
 
+  // Verification step
+  if (verificationStep) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => setVerificationStep(false)}
+            >
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            <View style={styles.header}>
+              <View style={styles.verifyIconContainer}>
+                <Ionicons name="mail" size={40} color={colors.accent} />
+              </View>
+              <Text style={styles.title}>Verifica Email</Text>
+              <Text style={styles.subtitle}>
+                Abbiamo inviato un codice a{'\n'}
+                <Text style={styles.emailHighlight}>{email}</Text>
+              </Text>
+            </View>
+
+            <View style={styles.form}>
+              <View style={styles.codeInputContainer}>
+                <TextInput
+                  style={styles.codeInput}
+                  placeholder="000000"
+                  placeholderTextColor="#666"
+                  value={verificationCode}
+                  onChangeText={setVerificationCode}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  textAlign="center"
+                  data-testid="verification-code-input"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={handleVerifyCode}
+                disabled={isLoading}
+                data-testid="verify-code-button"
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={colors.background} />
+                ) : (
+                  <Text style={styles.registerButtonText}>Verifica</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.resendButton}
+                onPress={handleResendCode}
+                disabled={resending}
+              >
+                <Text style={styles.resendText}>
+                  Non hai ricevuto il codice?{' '}
+                  <Text style={styles.resendLink}>
+                    {resending ? 'Invio...' : 'Reinvia'}
+                  </Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
