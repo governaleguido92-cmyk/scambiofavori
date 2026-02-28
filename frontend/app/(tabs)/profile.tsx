@@ -766,6 +766,37 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Notification Preferences Section */}
+        <View style={styles.section} data-testid="notification-preferences-section">
+          <Text style={styles.sectionTitle}>Preferenze Notifiche</Text>
+          <View style={styles.notifPrefsContainer}>
+            {[
+              { key: 'favor_accepted', label: 'Favore accettato', icon: 'checkmark-circle', desc: 'Quando qualcuno accetta il tuo favore' },
+              { key: 'favor_completed', label: 'Favore completato', icon: 'trophy', desc: 'Al completamento di un favore' },
+              { key: 'new_message', label: 'Nuovi messaggi', icon: 'chatbubble', desc: 'Messaggi nella chat' },
+              { key: 'new_review', label: 'Nuove recensioni', icon: 'star', desc: 'Quando ricevi una recensione' },
+              { key: 'skill_match', label: 'Match competenze', icon: 'flash', desc: 'Favori che corrispondono alle tue competenze' },
+            ].map((item) => (
+              <View key={item.key} style={styles.notifPrefRow}>
+                <View style={styles.notifPrefIcon}>
+                  <Ionicons name={item.icon as any} size={18} color={colors.accent} />
+                </View>
+                <View style={styles.notifPrefText}>
+                  <Text style={styles.notifPrefLabel}>{item.label}</Text>
+                  <Text style={styles.notifPrefDesc}>{item.desc}</Text>
+                </View>
+                <Switch
+                  value={notifPrefs[item.key as keyof typeof notifPrefs]}
+                  onValueChange={() => handleToggleNotifPref(item.key)}
+                  trackColor={{ false: colors.backgroundLight, true: colors.primaryLight }}
+                  thumbColor={notifPrefs[item.key as keyof typeof notifPrefs] ? colors.accent : '#ccc'}
+                  data-testid={`notif-toggle-${item.key}`}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out" size={20} color="#ff6b6b" />
