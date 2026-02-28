@@ -362,6 +362,15 @@ export const api = {
     return handleResponse(response);
   },
 
+  registerPushToken: async (pushToken: string, token: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/api/push-token`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ push_token: pushToken }),
+    });
+    return handleResponse(response);
+  },
+
   exchangeSession: async (sessionId: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/api/auth/session`, {
       method: 'POST',
