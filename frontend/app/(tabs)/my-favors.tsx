@@ -152,11 +152,6 @@ export default function MyFavorsScreen() {
                 <Ionicons name="alert-circle" size={12} color="#ff6b6b" />
               </View>
             )}
-            {item.is_micro && (
-              <View style={styles.microBadge}>
-                <Ionicons name="flash" size={12} color="#ff9800" />
-              </View>
-            )}
             <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
               <Text style={styles.typeText}>
                 {item.type === 'offer' ? 'Offerta' : 'Richiesta'}

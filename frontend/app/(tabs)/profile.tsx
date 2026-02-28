@@ -915,12 +915,6 @@ export default function ProfileScreen() {
                       <Text style={[styles.skillSelectName, isSelected && styles.skillSelectNameActive]}>
                         {category.name}
                       </Text>
-                      {category.is_micro && (
-                        <View style={styles.microBadge}>
-                          <Ionicons name="flash" size={10} color="#ff9800" />
-                          <Text style={styles.microBadgeText}>Micro</Text>
-                        </View>
-                      )}
                     </View>
                     <View style={[styles.skillCheckbox, isSelected && styles.skillCheckboxActive]}>
                       {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
