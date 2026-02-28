@@ -139,7 +139,12 @@ export default function FavorDetailScreen() {
   };
 
   const loadFavor = async () => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
     try {
       const data = await api.getFavor(id, token || undefined);
       setFavor(data);
