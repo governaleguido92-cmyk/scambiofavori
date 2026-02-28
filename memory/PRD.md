@@ -8,7 +8,8 @@ Mobile app "Scambio di Favori" - hyperlocal community platform for exchanging fa
 - **Backend**: FastAPI + MongoDB
 - **Auth**: JWT + Google/Apple OAuth
 - **Email**: Resend (transactional email for verification)
-- **Payments**: Stripe (Sostenitori subscription €1/month)
+- **Payments**: Stripe (Sostenitori subscription)
+- **Push**: Expo Push Notifications (via Expo Push API)
 
 ## Color Theme (4 Colors)
 - Verde Bosco (#2D5A3D) - Primary
@@ -32,6 +33,14 @@ Mobile app "Scambio di Favori" - hyperlocal community platform for exchanging fa
 - [x] Compact favor cards (optimized spacing)
 - [x] 4-color palette applied
 - [x] Onboarding slides for new users
+- [x] Push Notifications (Expo Push)
+
+## Push Notifications - Trigger Points
+- Favor accepted → notify creator
+- Favor completed → notify both helper & receiver
+- New review → notify reviewed user
+- New message → notify recipient
+- Skill match → notify matching users
 
 ## Completed (Feb 28, 2026)
 - Optimized favor card layout (compact, single-line title/description)
@@ -39,11 +48,14 @@ Mobile app "Scambio di Favori" - hyperlocal community platform for exchanging fa
 - Integrated Resend email service for real email verification
 - Fixed ReportModal import in favor detail page
 - Fixed useFocusEffect navigation error on web
-- Backend: 14/14 tests passed
+- Implemented Expo Push Notifications (frontend hook + backend API + Expo Push API)
+- Push token endpoints: POST/DELETE /api/push-token
+- Backend: 17/17 tests passed
 - Frontend: 100% features working
 
 ## Known Limitations
 - Resend API in TEST MODE - emails only sent to owner address
+- Push notifications require physical device (skip on web)
 - expo-camera limited on web platform
 
 ## Credentials
@@ -58,5 +70,4 @@ Mobile app "Scambio di Favori" - hyperlocal community platform for exchanging fa
 ## Future Tasks (P2)
 - Map view for nearby favors
 - Offline notices
-- Push notifications
 - Anti-fraud limits
