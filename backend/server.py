@@ -2100,7 +2100,20 @@ async def verify_and_complete_qr(
         raise HTTPException(status_code=403, detail="Non sei autorizzato a completare questo favore")
     
     # Verifica che il QR code sia corretto
-    if data.qr_code != favor.qr_code:
+    # Il QR code scansionato può essere il JSON payload o direttamente il codice
+    scanned_code = data.qr_code
+    
+    # Prova a parsare come JSON (formato payload QR)
+    try:
+        import ast
+        # Il QR potrebbe essere un dict come stringa
+        if scanned_code.startswith('{') or scanned_code.startswith("{'"):
+            payload = ast.literal_eval(scanned_code)
+            scanned_code = payload.get('code', scanned_code)
+    except:
+        pass  # Se non è JSON, usa il codice così com'è
+    
+    if scanned_code != favor.qr_code:
         raise HTTPException(status_code=400, detail="QR code non valido")
     
     # ========================
