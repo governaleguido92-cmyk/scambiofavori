@@ -2004,6 +2004,15 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     
     # Return with exact location now revealed
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
+    
+    # Push notification to the favor creator
+    await send_push_notification(
+        favor.creator_id,
+        "Favore Accettato!",
+        f"{current_user.name} ha accettato il tuo favore \"{favor.title}\"",
+        {"favor_id": data.favor_id, "type": "favor_accepted"}
+    )
+    
     return Favor(**favor_doc)
 
 # ========================
