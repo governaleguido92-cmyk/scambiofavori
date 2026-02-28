@@ -3925,7 +3925,81 @@ async def get_unread_count(current_user: User = Depends(get_current_user)):
     })
     return {"unread_count": count}
 
-@api_router.get("/download/frontend-zip")
+# ========================
+# PUSH NOTIFICATIONS
+# ========================
+
+class PushTokenRequest(BaseModel):
+    push_token: str
+
+@api_router.post("/push-token")
+async def register_push_token(data: PushTokenRequest, current_user: User = Depends(get_current_user)):
+    """Register or update user's Expo push token"""
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"push_token": data.push_token, "push_token_updated": datetime.now(timezone.utc)}}
+    )
+    logger.info(f"Push token registered for user {current_user.user_id}")
+    return {"message": "Push token registrato"}
+
+@api_router.delete("/push-token")
+async def remove_push_token(current_user: User = Depends(get_current_user)):
+    """Remove user's push token (on logout)"""
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$unset": {"push_token": "", "push_token_updated": ""}}
+    )
+    return {"message": "Push token rimosso"}
+
+async def send_push_notification(user_id: str, title: str, body: str, data: dict = None):
+    """Send push notification via Expo Push API"""
+    user_doc = await db.users.find_one(
+        {"user_id": user_id, "push_token": {"$exists": True, "$ne": None}},
+        {"_id": 0, "push_token": 1, "notifications_enabled": 1}
+    )
+    
+    if not user_doc or not user_doc.get("push_token"):
+        return False
+    
+    if user_doc.get("notifications_enabled") is False:
+        return False
+    
+    push_token = user_doc["push_token"]
+    
+    message = {
+        "to": push_token,
+        "sound": "default",
+        "title": title,
+        "body": body,
+        "data": data or {},
+    }
+    
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://exp.host/--/api/v2/push/send",
+                json=message,
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                timeout=10.0,
+            )
+            result = response.json()
+            if response.status_code == 200:
+                logger.info(f"Push notification sent to {user_id}: {title}")
+                return True
+            else:
+                logger.error(f"Push notification failed for {user_id}: {result}")
+                return False
+    except Exception as e:
+        logger.error(f"Push notification error for {user_id}: {str(e)}")
+        return False
+
+async def send_push_to_multiple(user_ids: list, title: str, body: str, data: dict = None):
+    """Send push notification to multiple users"""
+    tasks = [send_push_notification(uid, title, body, data) for uid in user_ids]
+    await asyncio.gather(*tasks, return_exceptions=True)
 async def download_frontend_zip():
     """Download frontend ZIP file for build"""
     from fastapi.responses import FileResponse
