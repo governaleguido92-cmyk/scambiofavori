@@ -479,6 +479,20 @@ export default function FavorDetailScreen() {
           <Text style={styles.categoryText}>{favor.category}</Text>
         </View>
 
+        {/* Creation Date/Time */}
+        <View style={styles.dateTimeContainer}>
+          <Ionicons name="calendar-outline" size={16} color="#888" />
+          <Text style={styles.dateTimeText}>
+            Creato il {new Date(favor.created_at || Date.now()).toLocaleDateString('it-IT', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </Text>
+        </View>
+
         {/* Title and Description */}
         <Text style={styles.title}>{favor.title}</Text>
         <Text style={styles.description}>{favor.description}</Text>
