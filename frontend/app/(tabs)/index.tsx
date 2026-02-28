@@ -324,8 +324,8 @@ export default function HomeScreen() {
           >
             <Ionicons
               name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-              size={16}
-              color={selectedCategory === cat.name ? '#1a1a2e' : '#4ecca3'}
+              size={14}
+              color={selectedCategory === cat.name ? colors.textPrimary : colors.primaryLight}
             />
             <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
               {cat.name}
