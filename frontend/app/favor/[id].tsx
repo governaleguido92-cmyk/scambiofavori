@@ -191,7 +191,10 @@ export default function FavorDetailScreen() {
         }]
       );
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'QR code non valido');
+      setShowScannerModal(false);
+      setTimeout(() => {
+        Alert.alert('Errore', error.message || 'QR code non valido');
+      }, 300);
       setScanningComplete(false);
     }
   };
