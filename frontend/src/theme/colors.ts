@@ -1,12 +1,12 @@
 // Scambio di Favori - Theme Colors
-// Verde Bosco + Arancio Caldo palette
+// 4 colori principali: Verde Bosco, Arancio Caldo, Oro, Bianco
 
 export const colors = {
   // Primary - Verde Bosco
   primary: '#2D5A3D',
   primaryLight: '#3D7A52',
   primaryDark: '#1E3D2A',
-  primaryMuted: 'rgba(45, 90, 61, 0.15)',
+  primaryMuted: 'rgba(45, 90, 61, 0.2)',
 
   // Accent - Arancio Caldo
   accent: '#E07B39',
@@ -21,21 +21,22 @@ export const colors = {
   
   // Text
   textPrimary: '#FFFFFF',
-  textSecondary: '#A8C4B0',
-  textMuted: '#6B8F75',
+  textSecondary: '#B8D4C0',
+  textMuted: '#7A9F85',
   
-  // Status
-  success: '#4CAF50',
-  warning: '#FF9800',
-  error: '#FF5252',
-  info: '#64B5F6',
+  // Status - derived from main 4 colors
+  success: '#3D7A52',
+  warning: '#E07B39',
+  error: '#D94F4F',
+  info: '#2D5A3D',
   
-  // Granelli (currency)
+  // Granelli (currency) - Oro
   granelli: '#FFD700',
+  granelliMuted: 'rgba(255, 215, 0, 0.15)',
   
   // Debt
-  debt: '#FF6B6B',
-  debtMuted: 'rgba(255, 107, 107, 0.15)',
+  debt: '#D94F4F',
+  debtMuted: 'rgba(217, 79, 79, 0.15)',
   
   // Borders
   border: '#2A4A35',
