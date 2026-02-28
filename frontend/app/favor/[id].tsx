@@ -18,7 +18,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
-import { ReportModal } from '../../src/components/ReportModal';
+// import { ReportModal } from '../../src/components/ReportModal';  // Temporarily disabled
 
 // Lazy import for Camera (not available on web)
 let CameraView: any = null;
