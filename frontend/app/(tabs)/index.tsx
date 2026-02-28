@@ -260,44 +260,9 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Network Error Banner */}
-      <NetworkErrorBanner 
-        visible={networkError} 
-        onRetry={onRefresh}
-      />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
-          <Text style={styles.subtitle}>Trova favori nelle vicinanze</Text>
-        </View>
-        <View style={styles.headerRight}>
-          {/* Notifications Bell */}
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={() => router.push('/notifications' as any)}
-            data-testid="notifications-button"
-          >
-            <Ionicons name="notifications" size={22} color={colors.textPrimary} />
-            {unreadNotifications > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>
-                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          {/* Granelli Display */}
-          <View style={styles.soliDisplay}>
-            <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.soliDisplayValue}>{user?.granelli || 0}</Text>
-          </View>
-        </View>
-      </View>
-
+  // Header component for FlatList
+  const ListHeader = () => (
+    <>
       {/* Supporter Promo Banner OR Thanks Board */}
       {user && !user.is_supporter ? (
         <TouchableOpacity 
@@ -385,16 +350,50 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+    </>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Network Error Banner */}
+      <NetworkErrorBanner 
+        visible={networkError} 
+        onRetry={onRefresh}
+      />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
+          <Text style={styles.subtitle}>Trova favori nelle vicinanze</Text>
+        </View>
+        <View style={styles.headerRight}>
+          {/* Notifications Bell */}
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={() => router.push('/notifications' as any)}
+            data-testid="notifications-button"
+          >
+            <Ionicons name="notifications" size={22} color={colors.textPrimary} />
+            {unreadNotifications > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          {/* Granelli Display */}
+          <View style={styles.soliDisplay}>
+            <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
+            <Text style={styles.soliDisplayValue}>{user?.granelli || 0}</Text>
+          </View>
+        </View>
+      </View>
 
       {loading ? (
         <View style={styles.skeletonContainer}>
           <FavorsListSkeleton count={4} />
-        </View>
-      ) : favors.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="search" size={60} color="#333" />
-          <Text style={styles.emptyText}>Nessun favore trovato</Text>
-          <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
         </View>
       ) : (
         <FlatList
@@ -402,6 +401,14 @@ export default function HomeScreen() {
           renderItem={renderFavorCard}
           keyExtractor={(item) => item.favor_id}
           contentContainerStyle={styles.listContent}
+          ListHeaderComponent={ListHeader}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="search" size={60} color="#333" />
+              <Text style={styles.emptyText}>Nessun favore trovato</Text>
+              <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
+            </View>
+          }
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
           }
