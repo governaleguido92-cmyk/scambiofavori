@@ -1692,4 +1692,199 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
+  // New styles for date/time, report button, user profile modal
+  dateTimeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  dateTimeText: {
+    color: '#888',
+    fontSize: 13,
+  },
+  reportButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  // Profile Modal styles
+  profileModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    justifyContent: 'flex-end',
+  },
+  profileModalContent: {
+    backgroundColor: '#1a1a2e',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '85%',
+    paddingBottom: 30,
+  },
+  profileModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  profileModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  profileModalScroll: {
+    padding: 20,
+  },
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  profileAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#E07B39',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  profileAvatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  profileAvatarText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  profileName: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  profileTitle: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 8,
+  },
+  supporterBadgeSmall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  supporterBadgeText: {
+    color: '#ff6b6b',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  profileStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#16213e',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  profileStatItem: {
+    alignItems: 'center',
+  },
+  profileStatValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#4ecca3',
+  },
+  profileStatLabel: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 4,
+  },
+  profileRatings: {
+    backgroundColor: '#16213e',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  profileRatingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  profileRatingLabel: {
+    color: '#aaa',
+    fontSize: 14,
+  },
+  profileRatingStars: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  profileSection: {
+    marginBottom: 20,
+  },
+  profileSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  profileSkills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  profileSkillTag: {
+    backgroundColor: '#4ecca3' + '30',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  profileSkillText: {
+    color: '#4ecca3',
+    fontSize: 13,
+  },
+  profileReviewCard: {
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+  },
+  profileReviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  profileReviewerName: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  profileReviewStars: {
+    flexDirection: 'row',
+    gap: 2,
+  },
+  profileReviewComment: {
+    color: '#aaa',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  profileError: {
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 40,
+  },
 });
