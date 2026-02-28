@@ -30,6 +30,10 @@ Build a mobile application "Scambio di Favori" (Favor Exchange), a hyperlocal co
 - Migliorata gestione errori di rete nel frontend con messaggi più chiari
 - Aggiunto pulsante "Riprova" in caso di errore scansione
 
+### Notifiche Recensioni (NEW)
+- Notifica quando ricevi una recensione: "⭐ Nuova Recensione!"
+- Notifica quando entrambi hanno recensito: "🎉 Ciclo Completato!"
+
 ### Code Changes
 - `backend/server.py`: Fix chiamata a `log_security_transaction`
 - `frontend/app/(tabs)/profile.tsx`: Rimossa sezione micro-favori
