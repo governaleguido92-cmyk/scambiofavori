@@ -2492,6 +2492,14 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
         "created_at": datetime.now(timezone.utc)
     })
     
+    # Push notification for review
+    await send_push_notification(
+        reviewed_id,
+        "Nuova Recensione!",
+        f"{current_user.name} ti ha lasciato una recensione per \"{favor_doc['title']}\"",
+        {"favor_id": review_data.favor_id, "type": "review_received"}
+    )
+    
     # Check if both parties have reviewed - notify cycle complete
     all_reviews = await db.reviews.find({"favor_id": review_data.favor_id}).to_list(10)
     if len(all_reviews) >= 2:
