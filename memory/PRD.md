@@ -1,117 +1,65 @@
 # Scambio di Favori - Product Requirements Document
 
-## Last Update: February 2026
-
----
-
 ## Original Problem Statement
-Mobile application "Scambio di Favori" (Favor Exchange) - a hyperlocal community platform for exchanging favors using in-app currency ("Granelli").
+Build a mobile application "Scambio di Favori" (Favor Exchange), a hyperlocal community platform for exchanging favors using in-app currency ("Granelli").
 
----
+## Core Features
+- **Favor Lifecycle**: Posting, accepting, completing favors with QR code confirmation
+- **Currency System**: "Granelli" with social debt mechanism, 3 starting credits
+- **Gamification**: Badges, leaderboard, social impact bars
+- **Security**: User reporting, blocking, content filtering
+- **Authentication**: JWT, Google OAuth, Apple Sign In
+- **Monetization**: Stripe subscription (€1/month) for "Sostenitori"
 
-## Recent Changes (February 2026)
-
-### Session Updates:
-1. **Onboarding Slides**: Added 3 intro slides after accepting legal terms
-2. **Micro Favori Removed**: Eliminated micro favor categories and logic
-3. **Photo Upload Fix**: Added ActionSheet with Camera/Library options
-4. **Categories Updated**: New categories (Babysitting, Animali, Ripetizioni) with better icons
-5. **Download Endpoint**: `/api/download/frontend` for ZIP distribution
-
----
-
-## Core Features Implemented
-
-### Authentication
-- ✅ Email/Password login
-- ✅ Google OAuth
-- ✅ Apple Sign In
-- ✅ JWT tokens
-- ✅ Legal consent modal
-- ✅ Onboarding slides (NEW)
-
-### Favor System
-- ✅ Create offers/requests
-- ✅ Accept favors
-- ✅ QR code confirmation
-- ✅ Expiration system (1-10 days)
-- ✅ Emergency favors
-- ❌ Micro favors (REMOVED)
-
-### Currency (Granelli)
-- ✅ Earn by helping
-- ✅ Spend on requests
-- ✅ Social debt limit (-5)
-- ✅ Solidarity fund donations
-
-### Gamification
-- ✅ Badges system
-- ✅ Leaderboard
-- ✅ User levels/titles
-- ✅ Skills matching
-
-### Monetization
-- ✅ Stripe subscription (€1/month)
-- ✅ Supporter badges
-- ✅ Profile highlights
-
-### Profile
-- ✅ Photo upload (Camera + Library)
-- ✅ Profile completion bar
-- ✅ Referral codes
-- ✅ Account deletion (GDPR)
-
----
-
-## Categories (Updated)
-| Category | Icon |
-|----------|------|
-| Trasporto | car |
-| Spesa | cart |
-| Tecnologia | laptop |
-| Pulizie | home |
-| Compagnia | people |
-| Cucina | restaurant |
-| Giardinaggio | leaf |
-| Babysitting | happy |
-| Animali | paw |
-| Ripetizioni | school |
-| Altro | ellipsis-horizontal |
-
----
-
-## Current Priority Tasks
-
-### P0 (Blockers)
-- [ ] Fix CocoaPods issue on user's Mac
-
-### P1 (High Priority)
-- [ ] Clarify "Offline Notice" update request
-- [ ] Test onboarding flow
-- [ ] Test photo upload fix
-
-### P2 (Medium Priority)
-- [ ] Build for TestFlight
-- [ ] Build APK for Android
-
----
-
-## Tech Stack
-- **Frontend**: Expo SDK 54, React Native, TypeScript
-- **Backend**: FastAPI, Motor (MongoDB async)
+## Technical Stack
+- **Frontend**: Expo (SDK 54+), React Native, Expo Router
+- **Backend**: FastAPI, Pydantic, Motor (MongoDB)
 - **Database**: MongoDB
-- **Payments**: Stripe (emergentintegrations)
-- **Auth**: JWT + Google/Apple OAuth
+- **Payments**: Stripe
 
----
+## Key API Endpoints
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/favors` - List favors
+- `POST /api/favors` - Create favor
+- `POST /api/favors/{id}/verify-qr` - Complete favor via QR
+- `GET /api/download/frontend` - Download frontend ZIP
 
-## Test Account
-- **Email**: reviewer@test.com
-- **Password**: review123
+## Current Status (Feb 28, 2026)
 
----
+### Completed
+- Full CRUD for favors
+- QR code scanning for favor completion
+- Chat with location sharing
+- Onboarding slides after legal consent
+- Profile completion tracking
+- Supporter subscription flow
+- Real-time notifications
+- 10km search radius limit
 
-## API Endpoints
-- Backend: `https://granelli-app-1.preview.emergentagent.com`
-- Health: `/api/health`
-- Download ZIP: `/api/download/frontend`
+### Recent Changes
+- Fixed navigation issue in `app/index.tsx` with `hasNavigated` ref
+- Added better error handling for deep links
+- Improved loading state display
+
+### Pending Verification (User Testing)
+- Photo upload from library (ActionSheet fix)
+- Chat keyboard offset fix
+- QR code scanner functionality
+
+### Known Issues
+- User reports "black screen" on app start - potentially build environment issue
+- User struggles with local iOS build process
+
+## Build Instructions for User
+1. Download code from `/api/download/frontend`
+2. Extract to `~/Downloads/scambio-frontend`
+3. Run: `cd ~/Downloads/scambio-frontend && yarn install`
+4. Run: `npx expo prebuild --platform ios --clean`
+5. Run: `cd ios && pod install --repo-update && cd ..`
+6. Open: `open ios/scambiodifavori.xcworkspace`
+7. In Xcode: Select simulator, press Play button
+
+## Test Credentials
+- Email: `reviewer@test.com`
+- Password: `review123`
