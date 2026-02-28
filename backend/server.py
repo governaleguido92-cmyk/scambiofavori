@@ -975,9 +975,9 @@ async def check_return_to_positive(user_id: str, old_balance: int, new_balance: 
 # AUTH ENDPOINTS
 # ========================
 
-@api_router.post("/auth/register")
+@api_router.post("/auth/register", response_model=AuthResponse)
 async def register(user_data: UserCreate):
-    """Register a new user with email verification"""
+    """Register a new user - direct registration without email verification"""
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email già registrata")
@@ -991,9 +991,6 @@ async def register(user_data: UserCreate):
         referrer = await db.users.find_one({"referral_code": user_data.referral_code})
         if referrer:
             referred_by = referrer["user_id"]
-    
-    # Generate verification code (6 digits)
-    verification_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
     
     user_doc = {
         "user_id": user_id,
@@ -1019,9 +1016,7 @@ async def register(user_data: UserCreate):
         "title": "Nuovo Vicino",
         "is_vulnerable": False,
         "identity_verified": False,
-        "email_verified": False,  # NEW: Email verification status
-        "verification_code": verification_code,  # NEW: Verification code
-        "verification_code_expires": datetime.now(timezone.utc) + timedelta(hours=1),
+        "email_verified": True,  # Auto-verified for now
         "community_score": 0,
         "social_impact_score": 0,
         "can_access_solidarity_fund": False,
@@ -1036,17 +1031,11 @@ async def register(user_data: UserCreate):
     
     await db.users.insert_one(user_doc)
     
-    # For demo: Return verification code in console (in production, send via email)
-    print(f"[EMAIL VERIFICATION] User {user_data.email} - Code: {verification_code}")
+    # Direct login - no verification required
+    token = create_jwt_token(user_id)
+    user_doc.pop("password_hash", None)
     
-    # Return that verification is required
-    return {
-        "requiresVerification": True,
-        "userId": user_id,
-        "message": f"Codice di verifica inviato a {user_data.email}",
-        # For demo purposes, include the code (remove in production)
-        "demo_code": verification_code
-    }
+    return AuthResponse(user=User(**user_doc), token=token)
 
 class EmailVerifyRequest(BaseModel):
     user_id: str
