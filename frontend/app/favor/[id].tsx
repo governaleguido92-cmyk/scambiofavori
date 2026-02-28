@@ -11,28 +11,13 @@ import {
   Modal,
   Image,
   Vibration,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
-// import { ReportModal } from '../../src/components/ReportModal';  // Temporarily disabled
-
-// Lazy import for Camera (not available on web)
-let CameraView: any = null;
-let useCameraPermissions: any = () => [{ granted: false }, () => Promise.resolve({ granted: false })];
-
-if (Platform.OS !== 'web') {
-  try {
-    const Camera = require('expo-camera');
-    CameraView = Camera.CameraView;
-    useCameraPermissions = Camera.useCameraPermissions;
-  } catch (e) {
-    console.log('Camera not available');
-  }
-}
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
