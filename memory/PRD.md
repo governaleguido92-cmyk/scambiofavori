@@ -17,49 +17,49 @@ Build a mobile application "Scambio di Favori" (Favor Exchange), a hyperlocal co
 - **Database**: MongoDB
 - **Payments**: Stripe
 
+## Recent Changes (Feb 28, 2026)
+
+### Privacy & UI Updates
+1. **Profilo**: Rimosso "Micro-Favori" dalla sezione "Come funzionano i Granelli"
+2. **Creazione Favori**: L'indirizzo non viene più mostrato nella UI, solo salvato per la mappa
+3. **Dettaglio Favori**: Rimossa la card location - l'indirizzo è visibile solo sulla mappa
+4. **Home Feed**: Rimossa la distanza dalle card favori per privacy
+
+### QR Scanner Fix
+- Corretto errore `NameError: create_secure_transaction` nel backend
+- Migliorata gestione errori di rete nel frontend con messaggi più chiari
+- Aggiunto pulsante "Riprova" in caso di errore scansione
+
+### Code Changes
+- `backend/server.py`: Fix chiamata a `log_security_transaction`
+- `frontend/app/(tabs)/profile.tsx`: Rimossa sezione micro-favori
+- `frontend/app/(tabs)/create.tsx`: Nuova UI privacy location
+- `frontend/app/(tabs)/index.tsx`: Rimossa distanza dalle card
+- `frontend/app/favor/[id].tsx`: Rimossa location card, migliorato error handling QR
+
 ## Key API Endpoints
 - `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/favors` - List favors
 - `POST /api/favors` - Create favor
-- `POST /api/favors/{id}/verify-qr` - Complete favor via QR
+- `POST /api/favors/{id}/verify-qr` - Complete favor via QR scan
 - `GET /api/download/frontend` - Download frontend ZIP
 
-## Current Status (Feb 28, 2026)
-
-### Completed
-- Full CRUD for favors
-- QR code scanning for favor completion
-- Chat with location sharing
-- Onboarding slides after legal consent
-- Profile completion tracking
-- Supporter subscription flow
-- Real-time notifications
-- 10km search radius limit
-
-### Recent Changes
-- Fixed navigation issue in `app/index.tsx` with `hasNavigated` ref
-- Added better error handling for deep links
-- Improved loading state display
-
-### Pending Verification (User Testing)
-- Photo upload from library (ActionSheet fix)
-- Chat keyboard offset fix
-- QR code scanner functionality
-
-### Known Issues
-- User reports "black screen" on app start - potentially build environment issue
-- User struggles with local iOS build process
-
-## Build Instructions for User
-1. Download code from `/api/download/frontend`
-2. Extract to `~/Downloads/scambio-frontend`
-3. Run: `cd ~/Downloads/scambio-frontend && yarn install`
-4. Run: `npx expo prebuild --platform ios --clean`
-5. Run: `cd ios && pod install --repo-update && cd ..`
-6. Open: `open ios/scambiodifavori.xcworkspace`
-7. In Xcode: Select simulator, press Play button
+## Build Instructions
+1. Download: `https://granelli-app-1.preview.emergentagent.com/api/download/frontend`
+2. Extract and run:
+   ```bash
+   cd ~/Downloads
+   unzip scambio-di-favori-frontend.zip -d scambio-frontend
+   cd scambio-frontend/frontend
+   yarn install
+   npx expo prebuild --platform ios --clean
+   cd ios && pod install --repo-update && cd ..
+   open ios/scambiodifavori.xcworkspace
+   ```
 
 ## Test Credentials
 - Email: `reviewer@test.com`
 - Password: `review123`
+
+## Pending Items
+- User verification of all recent changes on device
+- Offline Notice update (needs user clarification)
