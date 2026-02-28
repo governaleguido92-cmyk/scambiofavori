@@ -51,7 +51,6 @@ export default function CreateFavorScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [showDebtModal, setShowDebtModal] = useState(false);
-  const [publishToWall, setPublishToWall] = useState(false);
 
   // Check if user is in social debt
   const isInDebt = (user?.granelli || 0) <= DEBT_LIMIT;
