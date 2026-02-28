@@ -947,6 +947,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  scannerCloseButton: {
+    padding: 4,
+  },
+  cameraPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0a0a0a',
+  },
+  cameraPlaceholderText: {
+    color: '#666',
+    fontSize: 16,
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  retryPermissionButton: {
+    backgroundColor: '#4ecca3',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  retryPermissionText: {
+    color: '#1a1a2e',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  scannerCancelButton: {
+    backgroundColor: '#333',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  scannerCancelText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   scanQRButton: {
     flexDirection: 'row',
     alignItems: 'center',
