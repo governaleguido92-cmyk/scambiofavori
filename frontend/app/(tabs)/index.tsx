@@ -603,17 +603,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1E3A2F',
   },
   typeButtonActive: {
     backgroundColor: '#4ecca3',
   },
   typeButtonText: {
-    color: '#888',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   typeButtonTextActive: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
   },
   categoriesContainer: {
     marginTop: 16,
