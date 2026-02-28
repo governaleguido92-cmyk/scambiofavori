@@ -260,23 +260,6 @@ export default function CreateFavorScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Wall Publishing Toggle */}
-          <View style={styles.wallToggle}>
-            <View style={styles.wallToggleLeft}>
-              <Ionicons name="megaphone" size={20} color="#4ecca3" />
-              <View>
-                <Text style={styles.wallToggleLabel}>Pubblica sul Muro</Text>
-                <Text style={styles.wallToggleHint}>Condividi sul muro del quartiere</Text>
-              </View>
-            </View>
-            <Switch
-              value={publishToWall}
-              onValueChange={setPublishToWall}
-              trackColor={{ false: '#333', true: '#4ecca3' }}
-              thumbColor={publishToWall ? '#fff' : '#888'}
-            />
-          </View>
-
           {/* Title Input */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Titolo</Text>
