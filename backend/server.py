@@ -3990,6 +3990,39 @@ async def remove_push_token(current_user: User = Depends(get_current_user)):
     )
     return {"message": "Push token rimosso"}
 
+class NotificationPreferences(BaseModel):
+    favor_accepted: bool = True
+    favor_completed: bool = True
+    new_message: bool = True
+    new_review: bool = True
+    skill_match: bool = True
+
+@api_router.get("/notification-preferences")
+async def get_notification_preferences(current_user: User = Depends(get_current_user)):
+    """Get user's notification preferences"""
+    user_doc = await db.users.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0, "notification_preferences": 1}
+    )
+    defaults = {
+        "favor_accepted": True,
+        "favor_completed": True,
+        "new_message": True,
+        "new_review": True,
+        "skill_match": True,
+    }
+    prefs = user_doc.get("notification_preferences", defaults) if user_doc else defaults
+    return {**defaults, **prefs}
+
+@api_router.put("/notification-preferences")
+async def update_notification_preferences(prefs: NotificationPreferences, current_user: User = Depends(get_current_user)):
+    """Update user's notification preferences"""
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"notification_preferences": prefs.dict()}}
+    )
+    return {"message": "Preferenze aggiornate", "preferences": prefs.dict()}
+
 async def send_push_notification(user_id: str, title: str, body: str, data: dict = None):
     """Send push notification via Expo Push API"""
     user_doc = await db.users.find_one(
