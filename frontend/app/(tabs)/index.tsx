@@ -39,7 +39,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 export default function HomeScreen() {
-  const { user, token } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const [favors, setFavors] = useState<Favor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
