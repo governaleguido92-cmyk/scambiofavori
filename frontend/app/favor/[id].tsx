@@ -878,7 +878,7 @@ export default function FavorDetailScreen() {
           </View>
           
           <View style={styles.scannerContent}>
-            {permission?.granted ? (
+            {permission?.granted && CameraView ? (
               <CameraView
                 style={styles.camera}
                 barcodeScannerSettings={{
@@ -889,18 +889,22 @@ export default function FavorDetailScreen() {
             ) : (
               <View style={styles.cameraPlaceholder}>
                 <Ionicons name="camera-outline" size={64} color="#666" />
-                <Text style={styles.cameraPlaceholderText}>Permesso fotocamera non concesso</Text>
-                <TouchableOpacity 
-                  style={styles.retryPermissionButton}
-                  onPress={async () => {
-                    const result = await requestPermission();
-                    if (!result.granted) {
-                      Alert.alert('Errore', 'È necessario il permesso per la fotocamera');
-                    }
-                  }}
-                >
-                  <Text style={styles.retryPermissionText}>Riprova</Text>
-                </TouchableOpacity>
+                <Text style={styles.cameraPlaceholderText}>
+                  {CameraView ? 'Permesso fotocamera non concesso' : 'Fotocamera non disponibile'}
+                </Text>
+                {CameraView && (
+                  <TouchableOpacity 
+                    style={styles.retryPermissionButton}
+                    onPress={async () => {
+                      const result = await requestPermission();
+                      if (!result.granted) {
+                        Alert.alert('Errore', 'È necessario il permesso per la fotocamera');
+                      }
+                    }}
+                  >
+                    <Text style={styles.retryPermissionText}>Riprova</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
             
