@@ -262,6 +262,19 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleToggleNotifPref = async (key: string) => {
+    if (!token) return;
+    const updated = { ...notifPrefs, [key]: !notifPrefs[key as keyof typeof notifPrefs] };
+    setNotifPrefs(updated);
+    try {
+      await api.updateNotificationPreferences(updated, token);
+    } catch (err) {
+      // Revert on error
+      setNotifPrefs(notifPrefs);
+      Alert.alert('Errore', 'Impossibile aggiornare le preferenze');
+    }
+  };
+
   const handleDonate = async () => {
     if (!token) return;
     const amount = parseInt(donationAmount);
