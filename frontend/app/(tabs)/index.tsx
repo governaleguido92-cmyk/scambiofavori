@@ -136,12 +136,6 @@ export default function HomeScreen() {
   }, [loadUnreadCount]);
 
   useEffect(() => {
-    if (location) {
-      loadWallPosts();
-    }
-  }, [location]);
-
-  useEffect(() => {
     loadFavors();
     // Poll favors every 20 seconds for real-time updates
     const favorsInterval = setInterval(loadFavors, 20000);
@@ -152,7 +146,6 @@ export default function HomeScreen() {
     setRefreshing(true);
     loadFavors();
     loadThanksBoard();
-    loadWallPosts();
   };
 
   const renderThanksCard = ({ item }: { item: ThanksEntry }) => (
