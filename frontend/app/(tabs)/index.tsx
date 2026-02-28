@@ -630,7 +630,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1E3A2F',
     gap: 8,
     minHeight: 40,
   },
@@ -642,12 +642,12 @@ const styles = StyleSheet.create({
     borderColor: '#ff9800',
   },
   categoryChipText: {
-    color: '#aaa',
+    color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '500',
   },
   categoryChipTextActive: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontWeight: '600',
   },
   loadingContainer: {
