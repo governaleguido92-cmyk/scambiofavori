@@ -725,6 +725,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  granelliPreview: {
+    backgroundColor: '#16213e',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  granelliPreviewLabel: {
+    color: '#888',
+    fontSize: 14,
+  },
+  granelliPreviewValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   soliPreviewLabel: {
     color: '#888',
     fontSize: 14,
