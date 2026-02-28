@@ -886,6 +886,153 @@ export default function FavorDetailScreen() {
           </TouchableOpacity>
         </SafeAreaView>
       </Modal>
+
+      {/* Report Favor Modal */}
+      <ReportModal
+        visible={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetId={favor?.favor_id || ''}
+        targetType="favor"
+        targetName={favor?.title || 'Favore'}
+        token={token || ''}
+      />
+
+      {/* User Profile Modal */}
+      <Modal
+        visible={showProfileModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowProfileModal(false)}
+      >
+        <View style={styles.profileModalOverlay}>
+          <View style={styles.profileModalContent}>
+            <View style={styles.profileModalHeader}>
+              <Text style={styles.profileModalTitle}>Profilo Utente</Text>
+              <TouchableOpacity onPress={() => setShowProfileModal(false)}>
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            
+            {loadingProfile ? (
+              <ActivityIndicator size="large" color="#4ecca3" style={{ marginTop: 40 }} />
+            ) : userProfile ? (
+              <ScrollView style={styles.profileModalScroll}>
+                {/* Profile Header */}
+                <View style={styles.profileHeader}>
+                  <View style={styles.profileAvatar}>
+                    {userProfile.picture ? (
+                      <Image source={{ uri: userProfile.picture }} style={styles.profileAvatarImage} />
+                    ) : (
+                      <Text style={styles.profileAvatarText}>
+                        {userProfile.name?.charAt(0).toUpperCase() || 'U'}
+                      </Text>
+                    )}
+                  </View>
+                  <Text style={styles.profileName}>{userProfile.name}</Text>
+                  <Text style={styles.profileTitle}>{userProfile.title}</Text>
+                  {userProfile.is_supporter && (
+                    <View style={styles.supporterBadgeSmall}>
+                      <Ionicons name="heart" size={12} color="#ff6b6b" />
+                      <Text style={styles.supporterBadgeText}>Sostenitore</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Stats */}
+                <View style={styles.profileStats}>
+                  <View style={styles.profileStatItem}>
+                    <Text style={styles.profileStatValue}>{userProfile.total_favors_given}</Text>
+                    <Text style={styles.profileStatLabel}>Favori dati</Text>
+                  </View>
+                  <View style={styles.profileStatItem}>
+                    <Text style={styles.profileStatValue}>{userProfile.total_favors_received}</Text>
+                    <Text style={styles.profileStatLabel}>Favori ricevuti</Text>
+                  </View>
+                  <View style={styles.profileStatItem}>
+                    <Text style={styles.profileStatValue}>{userProfile.reviews_count}</Text>
+                    <Text style={styles.profileStatLabel}>Recensioni</Text>
+                  </View>
+                </View>
+
+                {/* Ratings */}
+                {(userProfile.average_rating > 0 || userProfile.average_kindness > 0) && (
+                  <View style={styles.profileRatings}>
+                    <View style={styles.profileRatingItem}>
+                      <Text style={styles.profileRatingLabel}>Efficienza</Text>
+                      <View style={styles.profileRatingStars}>
+                        {[1,2,3,4,5].map(i => (
+                          <Ionicons 
+                            key={i} 
+                            name={i <= Math.round(userProfile.average_rating) ? 'star' : 'star-outline'} 
+                            size={16} 
+                            color="#ffd700" 
+                          />
+                        ))}
+                      </View>
+                    </View>
+                    <View style={styles.profileRatingItem}>
+                      <Text style={styles.profileRatingLabel}>Gentilezza</Text>
+                      <View style={styles.profileRatingStars}>
+                        {[1,2,3,4,5].map(i => (
+                          <Ionicons 
+                            key={i} 
+                            name={i <= Math.round(userProfile.average_kindness) ? 'star' : 'star-outline'} 
+                            size={16} 
+                            color="#ffd700" 
+                          />
+                        ))}
+                      </View>
+                    </View>
+                  </View>
+                )}
+
+                {/* Skills */}
+                {userProfile.skills && userProfile.skills.length > 0 && (
+                  <View style={styles.profileSection}>
+                    <Text style={styles.profileSectionTitle}>Competenze</Text>
+                    <View style={styles.profileSkills}>
+                      {userProfile.skills.map((skill: string, idx: number) => (
+                        <View key={idx} style={styles.profileSkillTag}>
+                          <Text style={styles.profileSkillText}>{skill}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Reviews */}
+                {userReviews.length > 0 && (
+                  <View style={styles.profileSection}>
+                    <Text style={styles.profileSectionTitle}>Recensioni ricevute</Text>
+                    {userReviews.slice(0, 5).map((review) => (
+                      <View key={review.review_id} style={styles.profileReviewCard}>
+                        <View style={styles.profileReviewHeader}>
+                          <Text style={styles.profileReviewerName}>{review.reviewer_name}</Text>
+                          <View style={styles.profileReviewStars}>
+                            {[1,2,3,4,5].map(i => (
+                              <Ionicons 
+                                key={i} 
+                                name={i <= review.rating ? 'star' : 'star-outline'} 
+                                size={12} 
+                                color="#ffd700" 
+                              />
+                            ))}
+                          </View>
+                        </View>
+                        {review.comment && (
+                          <Text style={styles.profileReviewComment}>{review.comment}</Text>
+                        )}
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </ScrollView>
+            ) : (
+              <Text style={styles.profileError}>Impossibile caricare il profilo</Text>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
