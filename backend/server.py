@@ -4087,10 +4087,12 @@ async def send_push_to_multiple(user_ids: list, title: str, body: str, data: dic
     """Send push notification to multiple users"""
     tasks = [send_push_notification(uid, title, body, data) for uid in user_ids]
     await asyncio.gather(*tasks, return_exceptions=True)
+
+@api_router.get("/download/frontend-zip")
 async def download_frontend_zip():
     """Download frontend ZIP file for build"""
     from fastapi.responses import FileResponse
-    zip_path = Path("/app/uploads/scambio-di-favori-frontend.zip")
+    zip_path = Path("/app/downloads/scambio-di-favori-frontend.zip")
     if not zip_path.exists():
         raise HTTPException(status_code=404, detail="File non trovato")
     return FileResponse(
