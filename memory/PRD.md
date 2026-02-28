@@ -112,6 +112,6 @@ Mobile application "Scambio di Favori" (Favor Exchange) - a hyperlocal community
 ---
 
 ## API Endpoints
-- Backend: `https://hyperlocal-hub-8.preview.emergentagent.com`
+- Backend: `https://granelli-app-1.preview.emergentagent.com`
 - Health: `/api/health`
 - Download ZIP: `/api/download/frontend`

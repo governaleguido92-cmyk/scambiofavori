@@ -25,7 +25,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-hub-8.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://granelli-app-1.preview.emergentagent.com"
       }
     },
     "preview-device": {
@@ -38,7 +38,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-hub-8.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://granelli-app-1.preview.emergentagent.com"
       }
     },
     "production": {
@@ -49,7 +49,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-hub-8.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://granelli-app-1.preview.emergentagent.com"
       }
     }
   },

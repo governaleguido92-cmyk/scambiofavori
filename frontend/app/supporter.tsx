@@ -99,7 +99,7 @@ export default function SupporterScreen() {
 
     setLoading(true);
     try {
-      const originUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://hyperlocal-hub-8.preview.emergentagent.com';
+      const originUrl = process.env.EXPO_PUBLIC_BACKEND_URL || 'https://granelli-app-1.preview.emergentagent.com';
       const result = await api.createSubscriptionCheckout(originUrl, token);
       
       // Open Stripe checkout in browser

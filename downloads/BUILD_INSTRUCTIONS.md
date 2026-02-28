@@ -46,7 +46,7 @@ npx eas-cli build --profile simulator --platform ios --local
 ## Configurazione Backend
 L'app è già configurata per connettersi al backend:
 ```
-https://hyperlocal-hub-8.preview.emergentagent.com
+https://granelli-app-1.preview.emergentagent.com
 ```
 
 ## Troubleshooting
