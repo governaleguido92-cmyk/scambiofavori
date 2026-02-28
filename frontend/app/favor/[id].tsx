@@ -190,58 +190,18 @@ export default function FavorDetailScreen() {
     );
   };
 
-  const loadFavor = async () => {
-    if (!id) {
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    
-    // Add timeout for slow connections
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout: connessione lenta')), 15000)
-    );
-    
+  // Reload favor data (for after actions like accepting, completing, etc.)
+  const reloadFavor = async () => {
+    if (!id) return;
     try {
-      const data = await Promise.race([
-        api.getFavor(id, token || undefined),
-        timeoutPromise
-      ]) as any;
-      
+      const data = await api.getFavor(id, token || undefined);
       setFavor(data);
-      
       if (data.status === 'completed') {
-        try {
-          const reviewsData = await api.getFavorReviews(id);
-          setReviews(reviewsData);
-          
-          // Se il favore è completato e l'utente non ha ancora lasciato una recensione,
-          // mostra automaticamente il form recensione
-          if (user && !reviewsData.some((r: any) => r.reviewer_id === user.user_id)) {
-            // Verifica se l'utente è coinvolto nel favore
-            if (user.user_id === data.creator_id || user.user_id === data.accepted_by) {
-              setTimeout(() => {
-                Alert.alert(
-                  'Recensione Richiesta',
-                  'Hai completato questo favore ma non hai ancora lasciato una recensione. La recensione è importante per la community!',
-                  [
-                    { text: 'Lascia Recensione', onPress: () => setShowReviewForm(true) },
-                  ]
-                );
-              }, 500);
-            }
-          }
-        } catch (reviewError) {
-          console.log('Error loading reviews:', reviewError);
-        }
+        const reviewsData = await api.getFavorReviews(id);
+        setReviews(reviewsData);
       }
-    } catch (error: any) {
-      console.log('LoadFavor error:', error);
-      Alert.alert('Errore', error.message || 'Impossibile caricare il favore. Verifica la connessione.');
-      router.back();
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.log('Reload error:', error);
     }
   };
 
