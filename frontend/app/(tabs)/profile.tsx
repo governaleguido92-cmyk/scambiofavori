@@ -1529,6 +1529,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  notifPrefsContainer: {
+    gap: 2,
+  },
+  notifPrefRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  notifPrefIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: colors.accentMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  notifPrefText: {
+    flex: 1,
+  },
+  notifPrefLabel: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  notifPrefDesc: {
+    color: colors.textMuted,
+    fontSize: 11,
+    marginTop: 1,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
