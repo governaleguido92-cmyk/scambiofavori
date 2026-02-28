@@ -1,31 +1,62 @@
-# Scambio di Favori - Product Requirements Document
+# Scambio di Favori - PRD
 
-## Bug Fix (Feb 28, 2026)
+## Original Problem Statement
+Mobile app "Scambio di Favori" - hyperlocal community platform for exchanging favors using in-app currency ("Granelli").
 
-### Registration/Login Bug Fixed ✅
+## Architecture
+- **Frontend**: Expo/React Native (web + mobile)
+- **Backend**: FastAPI + MongoDB
+- **Auth**: JWT + Google/Apple OAuth
+- **Email**: Resend (transactional email for verification)
+- **Payments**: Stripe (Sostenitori subscription €1/month)
 
-**Problem**: Internal Server Error (500) when verifying email code during registration
+## Color Theme (4 Colors)
+- Verde Bosco (#2D5A3D) - Primary
+- Arancio Caldo (#E07B39) - Accent
+- Oro (#FFD700) - Granelli currency
+- Bianco (#FFFFFF) - Text
 
-**Root Cause**: TypeError in backend - comparing timezone-naive datetime from MongoDB with timezone-aware datetime (`datetime.now(timezone.utc)`)
+## Implemented Features
+- [x] User registration with email verification (Resend)
+- [x] JWT + Google/Apple login
+- [x] Favor posting, accepting, completing
+- [x] Granelli currency system (3 starting)
+- [x] Social debt mechanism
+- [x] QR code confirmation
+- [x] User profiles with reviews
+- [x] Public profile view
+- [x] Reporting system (favors/users)
+- [x] Category filtering
+- [x] Thanks board
+- [x] Sostenitori subscription (Stripe)
+- [x] Compact favor cards (optimized spacing)
+- [x] 4-color palette applied
+- [x] Onboarding slides for new users
 
-**Solution**: Added timezone handling in `/api/auth/verify-email` endpoint:
-```python
-if expires.tzinfo is None:
-    expires = expires.replace(tzinfo=timezone.utc)
-```
+## Completed (Feb 28, 2026)
+- Optimized favor card layout (compact, single-line title/description)
+- Updated 4-color theme palette across entire app
+- Integrated Resend email service for real email verification
+- Fixed ReportModal import in favor detail page
+- Fixed useFocusEffect navigation error on web
+- Backend: 14/14 tests passed
+- Frontend: 100% features working
 
-**Files Changed**:
-- `backend/server.py`: Fixed datetime comparison in `verify_email` function
-- `frontend/src/services/api.ts`: Updated `AuthResponse` interface to handle optional fields
+## Known Limitations
+- Resend API in TEST MODE - emails only sent to owner address
+- expo-camera limited on web platform
 
-### Tested Flow
-1. ✅ Registration creates user and returns `requiresVerification: true` + `userId` + `demo_code`
-2. ✅ Email verification validates code and returns user + token
-3. ✅ Login works for existing users
+## Credentials
+- Test: reviewer@test.com / review123
+- Resend: re_QKEG5Z5s_NQMuz2AnQEbAaKUZANsHi4Fj (test mode)
 
-## Download
-`https://hyperlocal-exchange.preview.emergentagent.com/api/download/frontend`
+## Upcoming Tasks (P1)
+- Verify Resend domain for production emails
+- Onboarding slides verification with new user
+- GDPR hard-delete account feature
 
-## Test Credentials
-- Email: `reviewer@test.com`
-- Password: `review123`
+## Future Tasks (P2)
+- Map view for nearby favors
+- Offline notices
+- Push notifications
+- Anti-fraud limits
