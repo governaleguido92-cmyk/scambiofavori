@@ -1,51 +1,31 @@
 # Scambio di Favori - Product Requirements Document
 
-## Original Problem Statement
-Build a mobile application "Scambio di Favori" (Favor Exchange), a hyperlocal community platform for exchanging favors using in-app currency ("Granelli").
+## Bug Fix (Feb 28, 2026)
 
-## Recent Changes (Feb 28, 2026)
+### Registration/Login Bug Fixed ✅
 
-### Session Summary
+**Problem**: Internal Server Error (500) when verifying email code during registration
 
-#### 1. User Profile Visibility ✅
-- All users can view other users' public profiles
-- Profile shows: name, title, badges, skills, stats, reviews received
-- Privacy: no email, no location shared in public profile
+**Root Cause**: TypeError in backend - comparing timezone-naive datetime from MongoDB with timezone-aware datetime (`datetime.now(timezone.utc)`)
 
-#### 2. Favor Date/Time Display ✅
-- Creation date and time visible on favor detail page
-- Format: "Creato il 28 febbraio 2026, 14:30"
+**Solution**: Added timezone handling in `/api/auth/verify-email` endpoint:
+```python
+if expires.tzinfo is None:
+    expires = expires.replace(tzinfo=timezone.utc)
+```
 
-#### 3. Report Favor Button ✅
-- Flag icon in header to report favors
-- Uses existing ReportModal component
-- Allows users to report inappropriate content
+**Files Changed**:
+- `backend/server.py`: Fixed datetime comparison in `verify_email` function
+- `frontend/src/services/api.ts`: Updated `AuthResponse` interface to handle optional fields
 
-#### 4. Offensive Language Filter ✅
-- Already implemented in backend (`contains_offensive_language`)
-- Filters chat messages automatically
-- Blocks money references and inappropriate content
+### Tested Flow
+1. ✅ Registration creates user and returns `requiresVerification: true` + `userId` + `demo_code`
+2. ✅ Email verification validates code and returns user + token
+3. ✅ Login works for existing users
 
-#### 5. Stars Layout Fixed ✅
-- Changed from horizontal (cramped) to vertical layout
-- Each rating on its own row with label on left, stars on right
-- Better readability and spacing
-
-## API Endpoints (New)
-- `GET /api/users/{user_id}/public` - Get public profile of any user
-
-## Technical Changes
-- `frontend/app/favor/[id].tsx`: Added profile modal, report button, date display, improved styles
-- `frontend/src/services/api.ts`: Added `getUserPublicProfile` function
-- `backend/server.py`: Added `/users/{user_id}/public` endpoint
-
-## Build Instructions
-Download: `https://granelli-app-1.preview.emergentagent.com/api/download/frontend`
+## Download
+`https://granelli-app-1.preview.emergentagent.com/api/download/frontend`
 
 ## Test Credentials
 - Email: `reviewer@test.com`
 - Password: `review123`
-
-## Backlog
-- Real email verification integration
-- Offline Notice update (needs user clarification)
