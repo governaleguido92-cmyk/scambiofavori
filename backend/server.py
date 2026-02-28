@@ -2176,13 +2176,13 @@ async def verify_and_complete_qr(
         }}
     )
     
-    # Create transaction record
-    await create_secure_transaction(
+    # Create transaction record for security/legal purposes
+    await log_security_transaction(
         favor_id=favor.favor_id,
         creator_id=favor.creator_id,
-        acceptor_id=favor.accepted_by,
-        granelli=favor.granelli_cost,
-        duration_hours=favor.duration_hours
+        accepted_by=favor.accepted_by,
+        duration_hours=favor.duration_hours,
+        granelli_cost=favor.granelli_cost
     )
     
     # ========================
