@@ -779,4 +779,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  locationMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(78, 204, 163, 0.15)',
+    padding: 12,
+    borderRadius: 12,
+    gap: 12,
+  },
+  locationTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  locationLink: {
+    color: colors.accent,
+    fontSize: 12,
+    marginTop: 2,
+  },
 });
