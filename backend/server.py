@@ -2363,6 +2363,20 @@ async def verify_and_complete_qr(
         "created_at": datetime.now(timezone.utc)
     })
     
+    # Push notifications for completion
+    await send_push_notification(
+        helper_id,
+        "Favore Completato!",
+        f"Hai completato \"{favor.title}\" e guadagnato {favor.granelli_cost} {CURRENCY_NAME}!",
+        {"favor_id": favor_id, "type": "favor_completed"}
+    )
+    await send_push_notification(
+        receiver_id,
+        "Favore Completato!",
+        f"Il favore \"{favor.title}\" è stato completato!",
+        {"favor_id": favor_id, "type": "favor_completed"}
+    )
+    
     # Check badges
     await check_and_award_badges(favor.creator_id)
     await check_and_award_badges(favor.accepted_by)
