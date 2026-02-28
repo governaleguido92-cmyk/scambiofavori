@@ -617,21 +617,22 @@ const styles = StyleSheet.create({
   },
   categoriesContainer: {
     marginTop: 16,
-    maxHeight: 50,
+    marginBottom: 8,
   },
   categoriesContent: {
     paddingHorizontal: 20,
     gap: 10,
+    paddingVertical: 4,
   },
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: '#16213e',
-    gap: 6,
-    marginRight: 8,
+    gap: 8,
+    minHeight: 40,
   },
   categoryChipActive: {
     backgroundColor: '#4ecca3',
@@ -641,8 +642,9 @@ const styles = StyleSheet.create({
     borderColor: '#ff9800',
   },
   categoryChipText: {
-    color: '#888',
+    color: '#aaa',
     fontSize: 14,
+    fontWeight: '500',
   },
   categoryChipTextActive: {
     color: '#1a1a2e',
