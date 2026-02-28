@@ -613,7 +613,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   typeButtonTextActive: {
-    color: '#0F1A14',
+    color: '#E07B39',
+    fontWeight: '700',
   },
   categoriesContainer: {
     marginTop: 16,
@@ -647,8 +648,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   categoryChipTextActive: {
-    color: '#0F1A14',
-    fontWeight: '600',
+    color: '#E07B39',
+    fontWeight: '700',
   },
   loadingContainer: {
     flex: 1,
