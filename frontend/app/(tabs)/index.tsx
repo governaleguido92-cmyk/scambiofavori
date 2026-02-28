@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
@@ -142,15 +141,6 @@ export default function HomeScreen() {
     const favorsInterval = setInterval(loadFavors, 20000);
     return () => clearInterval(favorsInterval);
   }, [loadFavors]);
-
-  // Refresh user data when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      refreshUser();
-      loadFavors();
-      loadUnreadCount();
-    }, [])
-  );
 
   const onRefresh = () => {
     setRefreshing(true);
