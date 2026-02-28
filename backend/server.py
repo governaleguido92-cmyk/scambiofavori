@@ -231,6 +231,50 @@ def moderate_content(text: str) -> dict:
         "warnings": warnings
     }
 
+# ========================
+# EMAIL SENDING HELPER
+# ========================
+
+async def send_verification_email(to_email: str, code: str, user_name: str):
+    """Send verification email via Resend"""
+    if not RESEND_API_KEY:
+        logger.info(f"[EMAIL MOCK] Verification code for {to_email}: {code}")
+        return False
+    
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background-color: #0F1A14; color: #FFFFFF; padding: 32px; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="color: #2D5A3D; margin: 0;">Scambio di Favori</h1>
+            <p style="color: #B8D4C0; margin-top: 8px;">Verifica il tuo account</p>
+        </div>
+        <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+            <p style="color: #FFFFFF; margin: 0 0 8px 0;">Ciao <strong>{user_name}</strong>,</p>
+            <p style="color: #B8D4C0; margin: 0 0 20px 0;">Usa questo codice per verificare il tuo indirizzo email:</p>
+            <div style="text-align: center; background-color: #0F1A14; padding: 16px; border-radius: 8px; border: 2px solid #2D5A3D;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #FFD700;">{code}</span>
+            </div>
+            <p style="color: #7A9F85; font-size: 12px; margin-top: 16px; text-align: center;">Il codice scade tra 1 ora</p>
+        </div>
+        <p style="color: #7A9F85; font-size: 12px; text-align: center;">Se non hai richiesto questa verifica, ignora questa email.</p>
+    </div>
+    """
+    
+    params = {
+        "from": SENDER_EMAIL,
+        "to": [to_email],
+        "subject": "Scambio di Favori - Codice di Verifica",
+        "html": html_content,
+    }
+    
+    try:
+        email = await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Verification email sent to {to_email}, id: {email.get('id', 'unknown')}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {to_email}: {str(e)}")
+        return False
+
+
 # Badge definitions
 BADGES = {
     "cuore_oro": {
