@@ -52,6 +52,9 @@ export default function CreateFavorScreen() {
   const [gettingLocation, setGettingLocation] = useState(false);
   const [showDebtModal, setShowDebtModal] = useState(false);
 
+  // Check if user has zero granelli (can only offer, not request)
+  const hasZeroGranelli = (user?.granelli || 0) === 0;
+  
   // Check if user is in social debt
   const isInDebt = (user?.granelli || 0) <= DEBT_LIMIT;
 
@@ -106,6 +109,16 @@ export default function CreateFavorScreen() {
   };
 
   const handleCreate = async () => {
+    // Check zero granelli - can only offer, not request
+    if (type === 'request' && hasZeroGranelli) {
+      Alert.alert(
+        'Granelli Insufficienti',
+        'Hai 0 Granelli! Non puoi chiedere favori. Inizia offrendo aiuto agli altri per guadagnare Granelli.',
+        [{ text: 'Ho capito' }]
+      );
+      return;
+    }
+    
     // Check social debt before allowing request
     if (type === 'request' && isInDebt) {
       setShowDebtModal(true);
