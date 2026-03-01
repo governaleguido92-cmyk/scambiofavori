@@ -1267,8 +1267,11 @@ async def reset_password(data: ResetPasswordRequest):
     if not stored_code or stored_code != data.code:
         raise HTTPException(status_code=400, detail="Codice non valido")
     
-    if expires and isinstance(expires, datetime) and expires < datetime.now(timezone.utc):
-        raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice")
+    if expires and isinstance(expires, datetime):
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        if expires < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice")
     
     if len(data.new_password) < 6:
         raise HTTPException(status_code=400, detail="La password deve essere di almeno 6 caratteri")
@@ -1356,8 +1359,11 @@ async def verify_username_recovery(data: VerifyUsernameRecoveryRequest):
     if not stored_code or stored_code != data.code:
         raise HTTPException(status_code=400, detail="Codice non valido")
     
-    if expires and isinstance(expires, datetime) and expires < datetime.now(timezone.utc):
-        raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice")
+    if expires and isinstance(expires, datetime):
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        if expires < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice")
     
     # Clean up
     await db.users.update_one(
