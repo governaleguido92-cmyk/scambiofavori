@@ -222,6 +222,12 @@ export default function LoginScreen() {
               )}
             </TouchableOpacity>
 
+            <Link href="/(auth)/recovery" asChild>
+              <TouchableOpacity style={styles.forgotContainer} data-testid="forgot-link">
+                <Text style={styles.forgotText}>Hai dimenticato la password o il nome utente?</Text>
+              </TouchableOpacity>
+            </Link>
+
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>oppure</Text>
