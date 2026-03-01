@@ -387,6 +387,42 @@ export const api = {
     return handleResponse(response);
   },
 
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ email }),
+    });
+    return handleResponse(response);
+  },
+
+  resetPassword: async (email: string, code: string, new_password: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ email, code, new_password }),
+    });
+    return handleResponse(response);
+  },
+
+  recoverUsername: async (email: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/auth/recover-username`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ email }),
+    });
+    return handleResponse(response);
+  },
+
+  verifyUsernameRecovery: async (email: string, code: string): Promise<{ username: string; message: string }> => {
+    const response = await fetch(`${API_URL}/api/auth/verify-username-recovery`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ email, code }),
+    });
+    return handleResponse(response);
+  },
+
   exchangeSession: async (sessionId: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/api/auth/session`, {
       method: 'POST',
