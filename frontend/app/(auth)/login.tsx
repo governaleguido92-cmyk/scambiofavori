@@ -405,6 +405,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  forgotContainer: {
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  forgotText: {
+    color: '#E07B39',
+    fontSize: 13,
+    fontWeight: '500',
+  },
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
