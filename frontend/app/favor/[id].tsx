@@ -251,7 +251,7 @@ export default function FavorDetailScreen() {
       
       setShowScannerModal(false);
       await refreshUser();
-      await loadFavor();
+      await reloadFavor();
       
       // Apri automaticamente il form recensione (obbligatorio)
       Alert.alert(
@@ -378,7 +378,7 @@ export default function FavorDetailScreen() {
         token
       );
       setShowReviewForm(false);
-      await loadFavor();
+      await reloadFavor();
       Alert.alert('Grazie!', 'La tua recensione è stata pubblicata.');
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Impossibile pubblicare la recensione');
