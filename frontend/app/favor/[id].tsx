@@ -296,14 +296,15 @@ export default function FavorDetailScreen() {
   };
 
   const canScanQR = () => {
+    // Solo chi ESEGUE il favore può scansionare il QR
     if (!favor || !user) return false;
-    // Solo chi ha accettato il favore può scansionare
     if (favor.status !== 'accepted') return false;
-    // Chi offre scansiona il QR di chi richiede e viceversa
     if (favor.type === 'request') {
+      // Richiesta: chi accetta esegue → scansiona QR
       return favor.accepted_by === user.user_id;
     } else {
-      return favor.creator_id !== user.user_id && favor.accepted_by === user.user_id;
+      // Offerta: il creatore esegue → scansiona QR
+      return favor.creator_id === user.user_id;
     }
   };
 
@@ -409,9 +410,16 @@ export default function FavorDetailScreen() {
   };
 
   const canViewQR = () => {
+    // Solo chi RICEVE il favore può mostrare il QR
     if (!user || !favor) return false;
     if (favor.status !== 'accepted') return false;
-    return favor.creator_id === user.user_id || favor.accepted_by === user.user_id;
+    if (favor.type === 'request') {
+      // Richiesta: il creatore riceve → mostra QR
+      return favor.creator_id === user.user_id;
+    } else {
+      // Offerta: chi accetta riceve → mostra QR
+      return favor.accepted_by === user.user_id;
+    }
   };
 
   const canChat = () => {
