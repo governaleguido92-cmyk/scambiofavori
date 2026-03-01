@@ -1182,6 +1182,191 @@ async def resend_verification_code(data: ResendCodeRequest):
     
     return {"message": "Nuovo codice inviato" if email_sent else "Codice generato"}
 
+# ========================
+# PASSWORD & USERNAME RECOVERY
+# ========================
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+    code: str
+    new_password: str
+
+class RecoverUsernameRequest(BaseModel):
+    email: str
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: ForgotPasswordRequest):
+    """Send password reset code via email"""
+    user_doc = await db.users.find_one({"email": data.email})
+    if not user_doc:
+        # Don't reveal if email exists
+        return {"message": "Se l'email esiste, riceverai un codice di reset"}
+    
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    await db.users.update_one(
+        {"email": data.email},
+        {"$set": {
+            "reset_code": code,
+            "reset_code_expires": datetime.now(timezone.utc) + timedelta(hours=1)
+        }}
+    )
+    
+    # Send email
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background-color: #0F1A14; color: #FFFFFF; padding: 32px; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="color: #2D5A3D; margin: 0;">Scambio di Favori</h1>
+            <p style="color: #B8D4C0; margin-top: 8px;">Reset Password</p>
+        </div>
+        <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+            <p style="color: #FFFFFF; margin: 0 0 8px 0;">Ciao <strong>{user_doc['name']}</strong>,</p>
+            <p style="color: #B8D4C0; margin: 0 0 20px 0;">Hai richiesto il reset della password. Usa questo codice:</p>
+            <div style="text-align: center; background-color: #0F1A14; padding: 16px; border-radius: 8px; border: 2px solid #E07B39;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #FFD700;">{code}</span>
+            </div>
+            <p style="color: #7A9F85; font-size: 12px; margin-top: 16px; text-align: center;">Il codice scade tra 1 ora</p>
+        </div>
+        <p style="color: #7A9F85; font-size: 12px; text-align: center;">Se non hai richiesto il reset, ignora questa email.</p>
+    </div>
+    """
+    
+    email_sent = False
+    if RESEND_API_KEY:
+        try:
+            params = {
+                "from": SENDER_EMAIL,
+                "to": [data.email],
+                "subject": "Scambio di Favori - Reset Password",
+                "html": html_content,
+            }
+            await asyncio.to_thread(resend.Emails.send, params)
+            email_sent = True
+            logger.info(f"Password reset email sent to {data.email}")
+        except Exception as e:
+            logger.error(f"Failed to send reset email: {str(e)}")
+    
+    if not email_sent:
+        logger.info(f"[RESET] Code for {data.email}: {code}")
+    
+    return {"message": "Se l'email esiste, riceverai un codice di reset"}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: ResetPasswordRequest):
+    """Reset password with verification code"""
+    user_doc = await db.users.find_one({"email": data.email})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    stored_code = user_doc.get("reset_code")
+    expires = user_doc.get("reset_code_expires")
+    
+    if not stored_code or stored_code != data.code:
+        raise HTTPException(status_code=400, detail="Codice non valido")
+    
+    if expires and isinstance(expires, datetime) and expires < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice")
+    
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La password deve essere di almeno 6 caratteri")
+    
+    hashed = hash_password(data.new_password)
+    
+    await db.users.update_one(
+        {"email": data.email},
+        {
+            "$set": {"password_hash": hashed},
+            "$unset": {"reset_code": "", "reset_code_expires": ""}
+        }
+    )
+    
+    logger.info(f"Password reset successful for {data.email}")
+    return {"message": "Password aggiornata con successo"}
+
+@api_router.post("/auth/recover-username")
+async def recover_username(data: RecoverUsernameRequest):
+    """Send username reminder via email"""
+    user_doc = await db.users.find_one({"email": data.email})
+    if not user_doc:
+        return {"message": "Se l'email esiste, riceverai il tuo nome utente"}
+    
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    
+    await db.users.update_one(
+        {"email": data.email},
+        {"$set": {
+            "username_recovery_code": code,
+            "username_recovery_expires": datetime.now(timezone.utc) + timedelta(hours=1)
+        }}
+    )
+    
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background-color: #0F1A14; color: #FFFFFF; padding: 32px; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="color: #2D5A3D; margin: 0;">Scambio di Favori</h1>
+            <p style="color: #B8D4C0; margin-top: 8px;">Recupero Nome Utente</p>
+        </div>
+        <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+            <p style="color: #B8D4C0; margin: 0 0 16px 0;">Per verificare la tua identità, inserisci questo codice nell'app:</p>
+            <div style="text-align: center; background-color: #0F1A14; padding: 16px; border-radius: 8px; border: 2px solid #2D5A3D;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #FFD700;">{code}</span>
+            </div>
+            <p style="color: #7A9F85; font-size: 12px; margin-top: 16px; text-align: center;">Il codice scade tra 1 ora</p>
+        </div>
+    </div>
+    """
+    
+    email_sent = False
+    if RESEND_API_KEY:
+        try:
+            params = {
+                "from": SENDER_EMAIL,
+                "to": [data.email],
+                "subject": "Scambio di Favori - Recupero Nome Utente",
+                "html": html_content,
+            }
+            await asyncio.to_thread(resend.Emails.send, params)
+            email_sent = True
+            logger.info(f"Username recovery email sent to {data.email}")
+        except Exception as e:
+            logger.error(f"Failed to send username recovery email: {str(e)}")
+    
+    if not email_sent:
+        logger.info(f"[USERNAME RECOVERY] Code for {data.email}: {code}, username: {user_doc['name']}")
+    
+    return {"message": "Se l'email esiste, riceverai un codice di verifica"}
+
+class VerifyUsernameRecoveryRequest(BaseModel):
+    email: str
+    code: str
+
+@api_router.post("/auth/verify-username-recovery")
+async def verify_username_recovery(data: VerifyUsernameRecoveryRequest):
+    """Verify code and return username"""
+    user_doc = await db.users.find_one({"email": data.email})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+    
+    stored_code = user_doc.get("username_recovery_code")
+    expires = user_doc.get("username_recovery_expires")
+    
+    if not stored_code or stored_code != data.code:
+        raise HTTPException(status_code=400, detail="Codice non valido")
+    
+    if expires and isinstance(expires, datetime) and expires < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice")
+    
+    # Clean up
+    await db.users.update_one(
+        {"email": data.email},
+        {"$unset": {"username_recovery_code": "", "username_recovery_expires": ""}}
+    )
+    
+    return {"username": user_doc["name"], "message": f"Il tuo nome utente è: {user_doc['name']}"}
+
 @api_router.post("/auth/login", response_model=AuthResponse)
 async def login(credentials: UserLogin, response: Response):
     """Login with email/password"""
