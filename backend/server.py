@@ -3015,48 +3015,48 @@ async def get_blocked_user_ids(user_id: str) -> set:
 
 @api_router.get("/users/me/profile-completion")
 async def get_profile_completion(current_user: User = Depends(get_current_user)):
-    """Get profile completion percentage and missing items"""
+    """Get profile completion percentage and missing items - 4 steps, 25% each"""
     
     completion_items = []
-    total_items = 6
+    total_items = 4
     completed_items = 0
     
     user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
     
-    # 1. Name (15%)
+    # 1. Nome profilo (25%)
     has_name = bool(current_user.name and len(current_user.name) > 1)
     completion_items.append({
         "id": "name",
         "label": "Nome profilo",
         "completed": has_name,
-        "points": 15
+        "points": 25
     })
     if has_name:
         completed_items += 1
     
-    # 2. Profile photo (20%)
+    # 2. Foto profilo (25%)
     has_photo = bool(user_doc.get("avatar_url") or user_doc.get("picture"))
     completion_items.append({
         "id": "photo",
         "label": "Foto profilo",
         "completed": has_photo,
-        "points": 20
+        "points": 25
     })
     if has_photo:
         completed_items += 1
     
-    # 3. Skills/Competenze (35%) - almeno 3 competenze (increased from 20%)
+    # 3. Competenze - almeno 3 (25%)
     has_skills = bool(current_user.skills and len(current_user.skills) >= 3)
     completion_items.append({
         "id": "skills",
         "label": "Competenze (min. 3)",
         "completed": has_skills,
-        "points": 35
+        "points": 25
     })
     if has_skills:
         completed_items += 1
     
-    # 4. First completed favor (30%) - increased from 15%
+    # 4. Primo favore completato (25%)
     completed_favors = await db.favors.count_documents({
         "$or": [
             {"creator_id": current_user.user_id, "status": "completed"},
@@ -3068,12 +3068,12 @@ async def get_profile_completion(current_user: User = Depends(get_current_user))
         "id": "first_favor",
         "label": "Primo favore completato",
         "completed": has_completed_favor,
-        "points": 15
+        "points": 25
     })
     if has_completed_favor:
         completed_items += 1
     
-    percentage = (completed_items / total_items) * 100
+    percentage = int((completed_items / total_items) * 100)
     
     # Check if eligible for completion badge
     badge_earned = False
