@@ -49,6 +49,14 @@ export default function Index() {
     }
   }, [user, loading, processingAuth, router]);
 
+  // Reset navigation flag on logout so we redirect to login
+  useEffect(() => {
+    if (!loading && !user && hasNavigated.current) {
+      hasNavigated.current = false;
+      router.replace('/(auth)/login');
+    }
+  }, [user, loading]);
+
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#4ecca3" />
