@@ -1,7 +1,8 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, View, StyleSheet } from 'react-native';
+import { useAuth } from '../../src/context/AuthContext';
 
 // Theme colors
 const colors = {
@@ -13,6 +14,19 @@ const colors = {
 };
 
 export default function TabsLayout() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login when user logs out
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/(auth)/login');
+    }
+  }, [user, loading]);
+
+  // Don't render tabs if no user
+  if (!user) return null;
+
   return (
     <Tabs
       screenOptions={{
