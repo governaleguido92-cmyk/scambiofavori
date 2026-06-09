@@ -22,7 +22,7 @@ from io import BytesIO
 import resend
 
 # Stripe integration
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+import stripe as _stripe
 
 ROOT_DIR = Path(__file__).parent
 # override=False ensures Kubernetes env vars are NOT overwritten by .env file
@@ -3463,35 +3463,38 @@ async def create_subscription_checkout(
     success_url = f"{checkout_req.origin_url}/supporter/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{checkout_req.origin_url}/supporter"
     
-    # Initialize Stripe checkout
-    host_url = str(request.base_url)
-    webhook_url = f"{host_url}api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
-    # Create checkout session with metadata
+    # Initialize Stripe
+    _stripe.api_key = STRIPE_API_KEY
+
     metadata = {
         "user_id": current_user.user_id,
         "user_email": current_user.email,
         "plan_id": SUPPORTER_PLAN["id"],
         "subscription_type": "supporter_monthly"
     }
-    
-    checkout_request = CheckoutSessionRequest(
-        amount=SUPPORTER_PLAN["amount"],
-        currency=SUPPORTER_PLAN["currency"],
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata=metadata
-    )
-    
+
     try:
-        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
-        
+        session = _stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": SUPPORTER_PLAN["currency"],
+                    "unit_amount": SUPPORTER_PLAN["amount"],
+                    "product_data": {"name": "Scambio di Favori — Sostenitore"},
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+        )
+
         # Create payment transaction record
         transaction_id = f"txn_{uuid.uuid4().hex[:12]}"
         transaction_doc = {
             "transaction_id": transaction_id,
-            "session_id": session.session_id,
+            "session_id": session.id,
             "user_id": current_user.user_id,
             "user_email": current_user.email,
             "amount": SUPPORTER_PLAN["amount"],
@@ -3501,10 +3504,10 @@ async def create_subscription_checkout(
             "created_at": datetime.now(timezone.utc)
         }
         await db.payment_transactions.insert_one(transaction_doc)
-        
+
         return {
             "checkout_url": session.url,
-            "session_id": session.session_id
+            "session_id": session.id
         }
     except Exception as e:
         logger.error(f"Stripe checkout error: {e}")
@@ -3536,25 +3539,25 @@ async def get_checkout_status(
         }
     
     # Poll Stripe for status
-    host_url = str(request.base_url)
-    webhook_url = f"{host_url}api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    
+    _stripe.api_key = STRIPE_API_KEY
+
     try:
-        status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
-        
+        session_obj = _stripe.checkout.Session.retrieve(session_id)
+        payment_status = session_obj.payment_status  # "paid", "unpaid", "no_payment_required"
+        status_val = session_obj.status  # "open", "complete", "expired"
+
         # Update transaction record
         await db.payment_transactions.update_one(
             {"session_id": session_id},
             {"$set": {
-                "payment_status": status.payment_status,
-                "status": status.status,
+                "payment_status": payment_status,
+                "status": status_val,
                 "updated_at": datetime.now(timezone.utc)
             }}
         )
-        
+
         # If payment successful, update user as supporter
-        if status.payment_status == "paid":
+        if payment_status == "paid":
             await db.users.update_one(
                 {"user_id": current_user.user_id},
                 {"$set": {
@@ -3564,26 +3567,26 @@ async def get_checkout_status(
                     "supporter_since": datetime.now(timezone.utc)
                 }}
             )
-            
+
             # Add supporter badge
             await db.users.update_one(
                 {"user_id": current_user.user_id},
                 {"$addToSet": {"badges": "supporter"}}
             )
-            
+
             return {
-                "status": status.status,
-                "payment_status": status.payment_status,
+                "status": status_val,
+                "payment_status": payment_status,
                 "message": "Grazie! Sei ufficialmente un Sostenitore. Da oggi il tuo profilo brillerà sulla mappa!",
                 "is_supporter": True
             }
-        
+
         return {
-            "status": status.status,
-            "payment_status": status.payment_status,
-            "message": "Pagamento in elaborazione..." if status.status != "expired" else "Sessione scaduta"
+            "status": status_val,
+            "payment_status": payment_status,
+            "message": "Pagamento in elaborazione..." if status_val != "expired" else "Sessione scaduta"
         }
-        
+
     except Exception as e:
         logger.error(f"Stripe status check error: {e}")
         raise HTTPException(status_code=500, detail="Errore nel controllo dello stato del pagamento")
@@ -3624,27 +3627,32 @@ async def handle_stripe_webhook(request: Request):
     body = await request.body()
     signature = request.headers.get("Stripe-Signature")
     
+    STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
     try:
-        host_url = str(request.base_url)
-        webhook_url = f"{host_url}api/webhook/stripe"
-        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-        
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        
-        # Log the event
-        logger.info(f"Stripe webhook: {webhook_response.event_type} - {webhook_response.session_id}")
-        
-        # Handle different event types
-        if webhook_response.event_type == "checkout.session.completed":
-            # Payment successful
-            user_id = webhook_response.metadata.get("user_id")
+        _stripe.api_key = STRIPE_API_KEY
+        if STRIPE_WEBHOOK_SECRET and signature:
+            event = _stripe.Webhook.construct_event(body, signature, STRIPE_WEBHOOK_SECRET)
+        else:
+            import json as _json
+            event = _stripe.Event.construct_from(_json.loads(body), _stripe.api_key)
+
+        event_type = event["type"]
+        session_obj = event["data"]["object"]
+        session_id = session_obj.get("id", "")
+        metadata = session_obj.get("metadata", {})
+        payment_status = session_obj.get("payment_status", "")
+
+        logger.info(f"Stripe webhook: {event_type} - {session_id}")
+
+        if event_type == "checkout.session.completed":
+            user_id = metadata.get("user_id")
             if user_id:
                 await db.users.update_one(
                     {"user_id": user_id},
                     {"$set": {
                         "is_supporter": True,
                         "subscription_status": "active",
-                        "subscription_id": webhook_response.session_id,
+                        "subscription_id": session_id,
                         "supporter_since": datetime.now(timezone.utc)
                     }}
                 )
@@ -3652,10 +3660,9 @@ async def handle_stripe_webhook(request: Request):
                     {"user_id": user_id},
                     {"$addToSet": {"badges": "supporter"}}
                 )
-                
-        elif webhook_response.event_type in ["customer.subscription.deleted", "invoice.payment_failed"]:
-            # Subscription cancelled or payment failed
-            user_id = webhook_response.metadata.get("user_id")
+
+        elif event_type in ["customer.subscription.deleted", "invoice.payment_failed"]:
+            user_id = metadata.get("user_id")
             if user_id:
                 await db.users.update_one(
                     {"user_id": user_id},
@@ -3664,24 +3671,23 @@ async def handle_stripe_webhook(request: Request):
                         "subscription_status": "cancelled"
                     }}
                 )
-                # Remove supporter badge
                 await db.users.update_one(
                     {"user_id": user_id},
                     {"$pull": {"badges": "supporter"}}
                 )
-        
+
         # Update payment transaction
         await db.payment_transactions.update_one(
-            {"session_id": webhook_response.session_id},
+            {"session_id": session_id},
             {"$set": {
-                "payment_status": webhook_response.payment_status,
-                "event_type": webhook_response.event_type,
+                "payment_status": payment_status,
+                "event_type": event_type,
                 "updated_at": datetime.now(timezone.utc)
             }}
         )
-        
+
         return {"status": "success"}
-        
+
     except Exception as e:
         logger.error(f"Stripe webhook error: {e}")
         return {"status": "error", "message": str(e)}
