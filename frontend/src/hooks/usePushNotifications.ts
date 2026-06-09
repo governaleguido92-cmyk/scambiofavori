@@ -95,12 +95,8 @@ export function usePushNotifications(authToken: string | null) {
 
     return () => {
       cancelled = true;
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
     };
   }, [authToken]);
 

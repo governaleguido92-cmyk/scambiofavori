@@ -21,11 +21,13 @@ interface QRScannerProps {
   scanningComplete: boolean;
 }
 
+// Hook sempre chiamato incondizionatamente — regola React Hooks
+const _noop = () => [{ granted: false }, async () => ({ granted: false })] as const;
+const _activeHook = useCameraPermissionsHook ?? _noop;
+
 export function useQRPermissions() {
-  if (useCameraPermissionsHook && Platform.OS !== 'web') {
-    return useCameraPermissionsHook();
-  }
-  return [{ granted: false }, async () => ({ granted: false })] as const;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return _activeHook();
 }
 
 export function QRScanner({ onBarcodeScanned, scanningComplete }: QRScannerProps) {
