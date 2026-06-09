@@ -2172,29 +2172,31 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
-    
+
     favor = Favor(**favor_doc)
-    
-    if favor.status != "active":
-        raise HTTPException(status_code=400, detail="Il favore non è più disponibile")
-    
+
     if favor.creator_id == current_user.user_id:
         raise HTTPException(status_code=400, detail="Non puoi accettare il tuo stesso favore")
-    
+
     if favor.type == "offer" and current_user.granelli < favor.granelli_cost:
         raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti per accettare questo favore")
-    
-    await db.favors.update_one(
-        {"favor_id": data.favor_id},
+
+    # Atomic check-and-set: filter su status="active" previene double-accept concorrente
+    updated = await db.favors.find_one_and_update(
+        {"favor_id": data.favor_id, "status": "active"},
         {"$set": {
             "status": "accepted",
             "accepted_by": current_user.user_id,
             "accepted_by_name": current_user.name
-        }}
+        }},
+        return_document=True,
+        projection={"_id": 0}
     )
-    
-    # Return with exact location now revealed
-    favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
+
+    if not updated:
+        raise HTTPException(status_code=400, detail="Il favore non è più disponibile")
+
+    favor_doc = updated
     
     # Push notification to the favor creator
     await send_push_notification(
@@ -2318,7 +2320,17 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
                     detail=f"Siete troppo lontani per confermare lo scambio ({int(distance_m)}m). Avvicinatevi entro {MAX_EXCHANGE_DISTANCE_METERS}m."
                 )
     
-    # Transfer Soli
+    # Atomic status transition: accepted -> completed (previene double-complete concorrente)
+    locked = await db.favors.find_one_and_update(
+        {"favor_id": data.favor_id, "status": "accepted"},
+        {"$set": {"status": "completed", "completed_at": datetime.now(timezone.utc)}},
+        return_document=False,
+        projection={"_id": 0}
+    )
+    if not locked:
+        raise HTTPException(status_code=409, detail="Favore già completato o stato non valido")
+
+    # Transfer Granelli (dopo che lo stato è già "completed" — safe da double-spend)
     if favor.type == "offer":
         await db.users.update_one(
             {"user_id": favor.creator_id},
@@ -2345,7 +2357,7 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
                 "total_hours_helped": favor.duration_hours
             }}
         )
-    
+
     # Update emergency counts
     if favor.is_emergency:
         helper_id = favor.accepted_by if favor.type == "request" else favor.creator_id
@@ -2353,14 +2365,6 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
             {"user_id": helper_id},
             {"$inc": {"emergencies_helped": 1}}
         )
-    
-    await db.favors.update_one(
-        {"favor_id": data.favor_id},
-        {"$set": {
-            "status": "completed",
-            "completed_at": datetime.now(timezone.utc)
-        }}
-    )
     
     # ========================
     # SECURITY LOG: Record transaction for legal purposes
@@ -4373,11 +4377,17 @@ DOWNLOAD_PATH = Path("/app/backend/static")
 DOWNLOAD_PATH.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(DOWNLOAD_PATH)), name="static")
 
-# CORS middleware
+# CORS middleware — allow_origins="*" non compatibile con allow_credentials=True (RFC 6454)
+_CORS_ORIGINS_ENV = os.environ.get("ALLOWED_ORIGINS", "")
+ALLOWED_ORIGINS = [o.strip() for o in _CORS_ORIGINS_ENV.split(",") if o.strip()] or [
+    "http://localhost:8081",
+    "http://localhost:19006",
+    "exp://localhost:8081",
+]
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

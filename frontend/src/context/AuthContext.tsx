@@ -161,15 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error accepting legal terms:', error);
-      // Anche in caso di errore, chiudi il modal per non bloccare l'utente
-      setLegalAccepted(true);
-      setShowLegalModal(false);
-      
-      // Mostra comunque l'onboarding se non l'ha mai visto
-      const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
-      if (!hasSeenOnboarding) {
-        setShowOnboarding(true);
-      }
+      // NON impostare legalAccepted=true su errore API — l'utente deve riprovare
+      // Il modal rimane visibile per garantire che l'accettazione venga registrata
     }
   };
 

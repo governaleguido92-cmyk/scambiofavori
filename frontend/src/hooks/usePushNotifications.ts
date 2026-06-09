@@ -67,17 +67,17 @@ export function usePushNotifications(authToken: string | null) {
   useEffect(() => {
     if (!authToken) return;
 
+    let cancelled = false;
+
     // Register for push notifications
     registerForPushNotificationsAsync().then(async (token) => {
-      if (token) {
-        setExpoPushToken(token);
-        // Send token to backend
-        try {
-          await api.registerPushToken(token, authToken);
-          console.log('[Push] Token registered:', token.substring(0, 30) + '...');
-        } catch (err) {
-          console.log('[Push] Failed to register token:', err);
-        }
+      if (cancelled || !token) return;
+      setExpoPushToken(token);
+      try {
+        await api.registerPushToken(token, authToken);
+        console.log('[Push] Token registered:', token.substring(0, 30) + '...');
+      } catch (err) {
+        console.log('[Push] Failed to register token:', err);
       }
     });
 
@@ -94,6 +94,7 @@ export function usePushNotifications(authToken: string | null) {
     });
 
     return () => {
+      cancelled = true;
       if (notificationListener.current) {
         Notifications.removeNotificationSubscription(notificationListener.current);
       }
