@@ -19,6 +19,7 @@ export function useNetworkStatus() {
     return unsubscribe;
   }, []);
 
-  const isOffline = !isConnected || !isInternetReachable;
+  // isInternetReachable can be null on cellular — treat null as reachable
+  const isOffline = isConnected === false;
   return { isConnected, isInternetReachable, isOffline };
 }
