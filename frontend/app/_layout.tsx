@@ -7,8 +7,9 @@ import LegalConsentModal from '../src/components/LegalConsentModal';
 import OnboardingSlides from '../src/components/OnboardingSlides';
 import { OfflineNotice } from '../src/components/OfflineNotice';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
+import { I18nextProvider } from 'react-i18next';
 import { initI18n } from '../src/i18n';
-import '../src/i18n'; // ensure i18n module loaded
+import i18n from '../src/i18n';
 
 function RootLayoutNav() {
   const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user, token } = useAuth();
@@ -65,10 +66,12 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <I18nextProvider i18n={i18n}>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </SafeAreaProvider>
+    </I18nextProvider>
   );
 }
