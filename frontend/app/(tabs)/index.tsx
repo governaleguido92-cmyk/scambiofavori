@@ -21,6 +21,7 @@ import colors from '../../src/theme/colors';
 import { ReportModal } from '../../src/components/ReportModal';
 import { FavorsListSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
+import { offlineCache } from '../../src/utils/offlineCache';
 import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -116,9 +117,12 @@ export default function HomeScreen() {
       }
       const data = await api.getFavors(params);
       setFavors(data);
+      await offlineCache.saveFavors(data);
     } catch (error) {
       console.log('Error loading favors:', error);
       setNetworkError(true);
+      const cached = await offlineCache.loadFavors();
+      if (cached) { setFavors(cached); setNetworkError(false); }
     } finally {
       setLoading(false);
       setRefreshing(false);

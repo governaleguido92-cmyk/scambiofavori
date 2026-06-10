@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
+import { useNetworkStatus } from '../../src/hooks/useNetworkStatus';
 import { api, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const DEBT_LIMIT = -3; // Social debt threshold
@@ -38,6 +39,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default function CreateFavorScreen() {
   const { user, token, refreshUser } = useAuth();
+  const { isOffline } = useNetworkStatus();
   const router = useRouter();
   const [type, setType] = useState<'offer' | 'request'>('offer');
   const [title, setTitle] = useState('');
@@ -109,6 +111,10 @@ export default function CreateFavorScreen() {
   };
 
   const handleCreate = async () => {
+    if (isOffline) {
+      Alert.alert('Sei offline', 'Connettiti a internet per pubblicare un favore.');
+      return;
+    }
     // Check zero granelli - can only offer, not request
     if (type === 'request' && hasZeroGranelli) {
       Alert.alert(

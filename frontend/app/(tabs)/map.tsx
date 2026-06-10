@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, CURRENCY_SYMBOL } from '../../src/services/api';
+import { offlineCache } from '../../src/utils/offlineCache';
 import colors from '../../src/theme/colors';
 import { SupporterBadge } from '../../src/components/SupporterBadge';
 import { MapMarkersSkeleton } from '../../src/components/Skeleton';
@@ -147,8 +148,11 @@ export default function MapScreen() {
       
       const data = await api.getFavors(params);
       setFavors(data);
+      await offlineCache.saveFavors(data);
     } catch (error) {
       console.error('Error loading favors:', error);
+      const cached = await offlineCache.loadFavors();
+      if (cached) setFavors(cached);
     } finally {
       setLoading(false);
     }
