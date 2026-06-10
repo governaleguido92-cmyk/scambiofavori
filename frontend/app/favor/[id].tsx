@@ -19,6 +19,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { QRScanner, useQRPermissions, isCameraAvailable } from '../../src/components/QRScanner';
 import { ReportModal } from '../../src/components/ReportModal';
+import { useTranslation } from 'react-i18next';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -37,6 +38,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 export default function FavorDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, token, refreshUser } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const [favor, setFavor] = useState<Favor | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -317,9 +319,9 @@ export default function FavorDetailScreen() {
         ? `Accettando questa offerta, pagherai ${favor.granelli_cost} ${CURRENCY_NAME} al completamento.`
         : `Accettando questa richiesta, riceverai ${favor.granelli_cost} ${CURRENCY_NAME} al completamento.`,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Accetta',
+          text: t('favor.accept'),
           onPress: async () => {
             setActionLoading(true);
             try {
@@ -327,7 +329,7 @@ export default function FavorDetailScreen() {
               // Naviga direttamente alla chat sostituendo la pagina corrente
               router.replace(`/chat/${favor.favor_id}` as any);
             } catch (error: any) {
-              Alert.alert('Errore', error.message || 'Impossibile accettare il favore');
+              Alert.alert(t('common.error'), error.message || t('favor.errorAccept'));
               setActionLoading(false);
             }
           },
@@ -343,9 +345,9 @@ export default function FavorDetailScreen() {
       'Conferma Completamento',
       `I ${CURRENCY_NAME} verranno trasferiti. Sei sicuro?`,
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Completa',
+          text: t('favor.complete'),
           onPress: async () => {
             setActionLoading(true);
             try {
@@ -354,7 +356,7 @@ export default function FavorDetailScreen() {
               await reloadFavor();
               Alert.alert('Successo', `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
             } catch (error: any) {
-              Alert.alert('Errore', error.message || 'Impossibile completare il favore');
+              Alert.alert(t('common.error'), error.message || t('favor.errorComplete'));
             } finally {
               setActionLoading(false);
             }
@@ -549,7 +551,7 @@ export default function FavorDetailScreen() {
               color="#fff"
             />
             <Text style={styles.typeText}>
-              {favor.type === 'offer' ? 'Offerta' : 'Richiesta'}
+              {favor.type === 'offer' ? t('favor.offer') : t('favor.request')}
             </Text>
           </View>
           {favor.is_emergency && (

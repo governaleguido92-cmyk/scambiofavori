@@ -20,6 +20,7 @@ import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, ChatMessage, Favor, CURRENCY_SYMBOL } from '../../src/services/api';
 import { SupporterBadge, SupporterProfileBorder, UserNameWithBadge } from '../../src/components/SupporterBadge';
+import { useTranslation } from 'react-i18next';
 
 // Theme colors
 const colors = {
@@ -42,6 +43,7 @@ export default function ChatScreen() {
   const { favorId } = useLocalSearchParams<{ favorId: string }>();
   const { user, token } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [favor, setFavor] = useState<Favor | null>(null);
   const [newMessage, setNewMessage] = useState('');
@@ -67,7 +69,7 @@ export default function ChatScreen() {
       setChatStatus(statusData);
     } catch (error: any) {
       console.log('Error loading chat:', error);
-      Alert.alert('Errore', error.message || 'Impossibile caricare la chat');
+      Alert.alert(t('common.error'), error.message || t('chat.title'));
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,7 @@ export default function ChatScreen() {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error: any) {
-      Alert.alert('Messaggio Bloccato', error.message || 'Errore invio messaggio');
+      Alert.alert(t('chat.blocked'), error.message || t('chat.errorSend'));
     } finally {
       setSending(false);
     }
@@ -116,7 +118,7 @@ export default function ChatScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permesso Negato', 'È necessario il permesso per condividere la posizione.');
+        Alert.alert(t('chat.permissionDenied'), t('chat.locationPermissionMsg'));
         return;
       }
       
@@ -130,9 +132,9 @@ export default function ChatScreen() {
       await api.sendMessage(favorId, locationMessage, token);
       await loadData();
       
-      Alert.alert('Posizione Inviata', 'La tua posizione è stata condivisa con l\'altro utente.');
+      Alert.alert(t('chat.locationSent'), t('chat.locationSentMsg'));
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile inviare la posizione');
+      Alert.alert(t('common.error'), error.message || t('chat.errorLocation'));
     } finally {
       setSendingLocation(false);
     }
@@ -378,7 +380,7 @@ export default function ChatScreen() {
               style={styles.input}
               value={newMessage}
               onChangeText={setNewMessage}
-              placeholder="Scrivi un messaggio..."
+              placeholder={t('chat.placeholder')}
               placeholderTextColor={colors.textMuted}
               multiline
               maxLength={500}

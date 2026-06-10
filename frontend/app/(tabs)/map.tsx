@@ -18,6 +18,7 @@ import { offlineCache } from '../../src/utils/offlineCache';
 import colors from '../../src/theme/colors';
 import { SupporterBadge } from '../../src/components/SupporterBadge';
 import { MapMarkersSkeleton } from '../../src/components/Skeleton';
+import { useTranslation } from 'react-i18next';
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.02;
@@ -105,6 +106,7 @@ const MapPlaceholder = ({
 export default function MapScreen() {
   const { user, token } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [favors, setFavors] = useState<Favor[]>([]);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -170,7 +172,7 @@ export default function MapScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
-          <Text style={styles.loginPrompt}>Accedi per vedere la mappa</Text>
+          <Text style={styles.loginPrompt}>{t('auth.login')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -181,7 +183,7 @@ export default function MapScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Mappa Favori</Text>
+          <Text style={styles.title}>{t('map.title')}</Text>
           <Text style={styles.subtitle}>
             {favors.length} favori nelle vicinanze
           </Text>
@@ -206,7 +208,7 @@ export default function MapScreen() {
             color={selectedType === 'all' ? colors.background : colors.textSecondary} 
           />
           <Text style={[styles.filterText, selectedType === 'all' && styles.filterTextActive]}>
-            Tutti
+            {t('common.all')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -219,7 +221,7 @@ export default function MapScreen() {
             color={selectedType === 'offer' ? colors.background : colors.textSecondary} 
           />
           <Text style={[styles.filterText, selectedType === 'offer' && styles.filterTextActive]}>
-            Offerte
+            {t('home.offers')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -232,7 +234,7 @@ export default function MapScreen() {
             color={selectedType === 'request' ? colors.background : colors.textSecondary} 
           />
           <Text style={[styles.filterText, selectedType === 'request' && styles.filterTextActive]}>
-            Richieste
+            {t('home.requests')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -19,6 +19,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { useNetworkStatus } from '../../src/hooks/useNetworkStatus';
+import { useTranslation } from 'react-i18next';
 import { api, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 
 const DEBT_LIMIT = -3; // Social debt threshold
@@ -40,6 +41,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 export default function CreateFavorScreen() {
   const { user, token, refreshUser } = useAuth();
   const { isOffline } = useNetworkStatus();
+  const { t } = useTranslation();
   const router = useRouter();
   const [type, setType] = useState<'offer' | 'request'>('offer');
   const [title, setTitle] = useState('');
@@ -112,7 +114,7 @@ export default function CreateFavorScreen() {
 
   const handleCreate = async () => {
     if (isOffline) {
-      Alert.alert('Sei offline', 'Connettiti a internet per pubblicare un favore.');
+      Alert.alert(t('common.offline'), t('create.offlineError'));
       return;
     }
     // Check zero granelli - can only offer, not request
@@ -132,19 +134,19 @@ export default function CreateFavorScreen() {
     }
 
     if (!title.trim()) {
-      Alert.alert('Errore', 'Inserisci un titolo');
+      Alert.alert(t('common.error'), t('create.errorTitle'));
       return;
     }
     if (!description.trim()) {
-      Alert.alert('Errore', 'Inserisci una descrizione');
+      Alert.alert(t('common.error'), t('create.errorDescription'));
       return;
     }
     if (!category) {
-      Alert.alert('Errore', 'Seleziona una categoria');
+      Alert.alert(t('common.error'), t('create.errorCategory'));
       return;
     }
     if (!location) {
-      Alert.alert('Posizione Obbligatoria', 'Devi indicare la tua posizione per pubblicare un favore. Questo aiuta gli altri utenti a trovarti!');
+      Alert.alert(t('common.error'), t('create.errorLocation'));
       return;
     }
 
@@ -198,7 +200,7 @@ export default function CreateFavorScreen() {
         ]
       );
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile creare il post');
+      Alert.alert(t('common.error'), error.message || t('create.errorTitle'));
     } finally {
       setIsLoading(false);
     }
@@ -217,7 +219,7 @@ export default function CreateFavorScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>Crea Favore</Text>
+            <Text style={styles.title}>{t('create.title')}</Text>
             <View style={styles.soliDisplay}>
               <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
               <Text style={[styles.soliValue, isInDebt && styles.soliValueDebt]}>{user?.granelli || 0}</Text>
@@ -281,7 +283,7 @@ export default function CreateFavorScreen() {
 
           {/* Title Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Titolo</Text>
+            <Text style={styles.label}>{t('create.titleLabel')}</Text>
             <TextInput
               style={styles.input}
               placeholder="Es: Aiuto con la spesa"
@@ -294,7 +296,7 @@ export default function CreateFavorScreen() {
 
           {/* Description Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Descrizione</Text>
+            <Text style={styles.label}>{t('create.descriptionLabel')}</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Descrivi il favore in dettaglio..."
@@ -310,7 +312,7 @@ export default function CreateFavorScreen() {
 
           {/* Category Selector */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Categoria</Text>
+            <Text style={styles.label}>{t('create.categoryLabel')}</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -483,7 +485,7 @@ export default function CreateFavorScreen() {
                   styles.submitButtonText,
                   type === 'request' && isInDebt && styles.submitButtonTextDisabled
                 ]}>
-                  {type === 'offer' ? 'Pubblica Offerta' : 'Pubblica Richiesta'}
+                  {t('create.publishBtn')}
                 </Text>
               </>
             )}

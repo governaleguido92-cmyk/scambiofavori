@@ -23,6 +23,7 @@ import { FavorsListSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 import { offlineCache } from '../../src/utils/offlineCache';
 import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
+import { useTranslation } from 'react-i18next';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -41,6 +42,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 export default function HomeScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [favors, setFavors] = useState<Favor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -190,7 +192,7 @@ export default function HomeScreen() {
         </View>
         <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
           <Text style={styles.typeText}>
-            {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
+            {item.type === 'offer' ? t('favor.offer') : t('favor.request')}
           </Text>
         </View>
         {item.creator_id !== user?.user_id && (
@@ -286,7 +288,7 @@ export default function HomeScreen() {
             onPress={() => setSelectedType(type)}
           >
             <Text style={[styles.typeButtonText, selectedType === type && styles.typeButtonTextActive]}>
-              {type === 'all' ? 'Tutti' : type === 'offer' ? 'Offerte' : 'Richieste'}
+              {type === 'all' ? t('common.all') : type === 'offer' ? t('home.offers') : t('home.requests')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -304,7 +306,7 @@ export default function HomeScreen() {
           onPress={() => setSelectedCategory(null)}
         >
           <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-            Tutti
+            {t('common.all')}
           </Text>
         </TouchableOpacity>
         {categories.map((cat) => (
@@ -342,7 +344,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
-          <Text style={styles.subtitle}>Trova favori nelle vicinanze</Text>
+          <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
         </View>
         <View style={styles.headerRight}>
           {/* Notifications Bell */}
@@ -382,7 +384,7 @@ export default function HomeScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="search" size={60} color="#333" />
-              <Text style={styles.emptyText}>Nessun favore trovato</Text>
+              <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
               <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
             </View>
           }

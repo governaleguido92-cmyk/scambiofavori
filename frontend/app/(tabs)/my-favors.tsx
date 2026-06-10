@@ -14,6 +14,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { useTranslation } from 'react-i18next';
 
 export default function MyFavorsScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -22,6 +23,7 @@ export default function MyFavorsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'created' | 'accepted'>('all');
+  const { t } = useTranslation();
 
   const loadMyFavors = useCallback(async () => {
     if (!token) return;
@@ -51,7 +53,7 @@ export default function MyFavorsScreen() {
   const handleComplete = async (favorId: string) => {
     if (!token) return;
     Alert.alert(
-      'Conferma Completamento',
+      t('common.confirm'),
       `Sei sicuro di voler segnare questo favore come completato? I ${CURRENCY_NAME} verranno trasferiti.`,
       [
         { text: 'Annulla', style: 'cancel' },
@@ -62,9 +64,9 @@ export default function MyFavorsScreen() {
               await api.completeFavor(favorId, token);
               await refreshUser();
               loadMyFavors();
-              Alert.alert('Successo', `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
+              Alert.alert(t('common.success'), `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
             } catch (error: any) {
-              Alert.alert('Errore', error.message || 'Impossibile completare il favore');
+              Alert.alert(t('common.error'), error.message || t('favor.errorComplete'));
             }
           },
         },
@@ -75,7 +77,7 @@ export default function MyFavorsScreen() {
   const handleCancel = async (favorId: string) => {
     if (!token) return;
     Alert.alert(
-      'Cancella Favore',
+      t('common.confirm'),
       'Sei sicuro di voler cancellare questo favore?',
       [
         { text: 'No', style: 'cancel' },
@@ -87,7 +89,7 @@ export default function MyFavorsScreen() {
               await api.cancelFavor(favorId, token);
               loadMyFavors();
             } catch (error: any) {
-              Alert.alert('Errore', error.message || 'Impossibile cancellare il favore');
+              Alert.alert(t('common.error'), error.message || t('favor.errorAccept'));
             }
           },
         },
@@ -118,16 +120,11 @@ export default function MyFavorsScreen() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'Attivo';
-      case 'accepted':
-        return 'Accettato';
-      case 'completed':
-        return 'Completato';
-      case 'cancelled':
-        return 'Cancellato';
-      default:
-        return status;
+      case 'active': return t('favor.status.active');
+      case 'accepted': return t('favor.status.accepted');
+      case 'completed': return t('favor.status.completed');
+      case 'cancelled': return t('favor.status.cancelled');
+      default: return status;
     }
   };
 
@@ -155,7 +152,7 @@ export default function MyFavorsScreen() {
             )}
             <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
               <Text style={styles.typeText}>
-                {item.type === 'offer' ? 'Offerta' : 'Richiesta'}
+                {item.type === 'offer' ? t('favor.offer') : t('favor.request')}
               </Text>
             </View>
           </View>
@@ -191,7 +188,7 @@ export default function MyFavorsScreen() {
                 onPress={() => handleComplete(item.favor_id)}
               >
                 <Ionicons name="checkmark-circle" size={18} color="#fff" />
-                <Text style={styles.completeButtonText}>Completa</Text>
+                <Text style={styles.completeButtonText}>{t('favor.complete')}</Text>
               </TouchableOpacity>
             )}
             {item.status === 'active' && isCreator && (
@@ -220,7 +217,7 @@ export default function MyFavorsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>I Miei Favori</Text>
+        <Text style={styles.title}>{t('tabs.myFavors')}</Text>
       </View>
 
       <View style={styles.filterContainer}>
@@ -231,7 +228,7 @@ export default function MyFavorsScreen() {
             onPress={() => setFilter(f)}
           >
             <Text style={[styles.filterButtonText, filter === f && styles.filterButtonTextActive]}>
-              {f === 'all' ? 'Tutti' : f === 'created' ? 'Creati' : 'Accettati'}
+              {f === 'all' ? t('common.all') : f === 'created' ? t('favor.offer') : t('favor.accept')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -244,7 +241,7 @@ export default function MyFavorsScreen() {
       ) : filteredFavors.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="folder-open" size={60} color="#333" />
-          <Text style={styles.emptyText}>Nessun favore</Text>
+          <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
           <Text style={styles.emptySubtext}>
             {filter === 'all'
               ? 'Non hai ancora creato o accettato favori'
