@@ -342,9 +342,12 @@ export default function HomeScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
-          <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+        <View style={styles.headerLeft}>
+          <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
+          <View>
+            <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
+            <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+          </View>
         </View>
         <View style={styles.headerRight}>
           {/* Notifications Bell */}
@@ -432,6 +435,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 6,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerLogo: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
   },
   headerRight: {
     flexDirection: 'row',

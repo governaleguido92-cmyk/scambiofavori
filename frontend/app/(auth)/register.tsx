@@ -14,6 +14,7 @@ import {
 import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { api } from '../../src/services/api';
 import RegistrationOnboarding from '../../src/components/RegistrationOnboarding';
@@ -211,8 +212,11 @@ export default function RegisterScreen() {
 
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Ionicons name="hand-left" size={40} color="#4ecca3" style={styles.handLeft} />
-              <Ionicons name="hand-right" size={40} color="#4ecca3" style={styles.handRight} />
+              <Image
+                source={require('../../assets/images/logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.title}>Crea Account</Text>
             <Text style={styles.subtitle}>Unisciti alla community</Text>
@@ -418,17 +422,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   logoContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
-  handLeft: {
-    transform: [{ rotate: '45deg' }],
-    marginRight: -8,
-  },
-  handRight: {
-    transform: [{ rotate: '-45deg' }, { scaleX: -1 }],
-    marginLeft: -8,
+  logoImage: {
+    width: 100,
+    height: 100,
   },
   // Verification styles
   verifyIconContainer: {
