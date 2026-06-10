@@ -20,6 +20,7 @@ interface ProfileCompletionItem {
 interface ProfileCompletionBarProps {
   token: string;
   onItemPress?: (itemId: string) => void;
+  refreshKey?: number;
 }
 
 const STEP_ICONS: Record<string, string> = {
@@ -32,6 +33,7 @@ const STEP_ICONS: Record<string, string> = {
 export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
   token,
   onItemPress,
+  refreshKey,
 }) => {
   const [percentage, setPercentage] = useState(0);
   const [items, setItems] = useState<ProfileCompletionItem[]>([]);
@@ -40,7 +42,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
 
   useEffect(() => {
     loadCompletion();
-  }, [token]);
+  }, [token, refreshKey]);
 
   const loadCompletion = async () => {
     try {

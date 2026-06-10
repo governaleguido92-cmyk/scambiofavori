@@ -3219,7 +3219,7 @@ async def get_profile_completion(current_user: User = Depends(get_current_user))
     user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
     
     # 1. Nome profilo (25%)
-    has_name = bool(current_user.name and len(current_user.name) > 1)
+    has_name = bool(user_doc.get("name") and len(user_doc.get("name", "")) > 1)
     completion_items.append({
         "id": "name",
         "label": "Nome profilo",
@@ -3241,7 +3241,8 @@ async def get_profile_completion(current_user: User = Depends(get_current_user))
         completed_items += 1
     
     # 3. Competenze - almeno 3 (25%)
-    has_skills = bool(current_user.skills and len(current_user.skills) >= 3)
+    db_skills = user_doc.get("skills", [])
+    has_skills = bool(db_skills and len(db_skills) >= 3)
     completion_items.append({
         "id": "skills",
         "label": "Competenze (min. 3)",

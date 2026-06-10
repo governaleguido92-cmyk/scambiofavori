@@ -60,6 +60,8 @@ export default function ProfileScreen() {
   // Profile picture state
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  // Profile completion refresh trigger
+  const [completionKey, setCompletionKey] = useState(0);
   // Name editing state
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
@@ -184,6 +186,7 @@ export default function ProfileScreen() {
     try {
       await api.uploadProfilePicture(uri, token);
       await refreshUser();
+      setCompletionKey(k => k + 1);
       Alert.alert('Successo', 'Foto profilo aggiornata!');
     } catch (error: any) {
       console.log('Error uploading image:', error);
@@ -345,6 +348,7 @@ export default function ProfileScreen() {
       const result = await api.updateUserSkills(selectedSkills, token);
       setUserSkills(result.skills);
       setShowSkillsModal(false);
+      setCompletionKey(k => k + 1);
       Alert.alert('Successo', 'Competenze aggiornate! Riceverai notifiche per favori in queste categorie.');
     } catch (error: any) {
       Alert.alert('Errore', error.message || 'Impossibile salvare le competenze');
@@ -558,6 +562,7 @@ export default function ProfileScreen() {
         {token && (
           <ProfileCompletionBar
             token={token}
+            refreshKey={completionKey}
             onItemPress={(itemId) => {
               if (itemId === 'skills') {
                 setShowSkillsModal(true);
