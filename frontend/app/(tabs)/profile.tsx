@@ -60,6 +60,10 @@ export default function ProfileScreen() {
   // Profile picture state
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  // Name editing state
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [savingName, setSavingName] = useState(false);
   // Notification preferences state
   const [notifPrefs, setNotifPrefs] = useState({
     favor_accepted: true, favor_completed: true, new_message: true, new_review: true, skill_match: true,
@@ -311,6 +315,21 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleSaveName = async () => {
+    if (!token || !newName.trim()) return;
+    setSavingName(true);
+    try {
+      const result = await api.updateUserName(newName.trim(), token);
+      await refreshUser();
+      setEditingName(false);
+      Alert.alert('Successo', 'Nome aggiornato!');
+    } catch (error: any) {
+      Alert.alert('Errore', error.message || 'Impossibile aggiornare il nome');
+    } finally {
+      setSavingName(false);
+    }
+  };
+
   const toggleSkill = (skillName: string) => {
     setSelectedSkills(prev => 
       prev.includes(skillName)
@@ -427,7 +446,34 @@ export default function ProfileScreen() {
             </View>
           </View>
           <View style={styles.nameContainer}>
-            <Text style={styles.userName}>{user?.name}</Text>
+            {editingName ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <TextInput
+                  style={[styles.userName, { borderBottomWidth: 1, borderBottomColor: '#2D5A3D', minWidth: 120, color: '#fff' }]}
+                  value={newName}
+                  onChangeText={setNewName}
+                  autoFocus
+                  maxLength={50}
+                  returnKeyType="done"
+                  onSubmitEditing={handleSaveName}
+                />
+                <TouchableOpacity onPress={handleSaveName} disabled={savingName}>
+                  {savingName ? (
+                    <ActivityIndicator size="small" color="#2D5A3D" />
+                  ) : (
+                    <Ionicons name="checkmark-circle" size={24} color="#2D5A3D" />
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setEditingName(false)}>
+                  <Ionicons name="close-circle" size={24} color="#666" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => { setNewName(user?.name || ''); setEditingName(true); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.userName}>{user?.name}</Text>
+                <Ionicons name="pencil" size={14} color="#666" />
+              </TouchableOpacity>
+            )}
             {user?.is_supporter && (
               <SupporterBadge size="medium" showLabel={true} style={{ marginLeft: 8 }} />
             )}

@@ -4108,6 +4108,9 @@ async def delete_account(
 class SkillsUpdate(BaseModel):
     skills: List[str]
 
+class NameUpdate(BaseModel):
+    name: str
+
 class Notification(BaseModel):
     notification_id: str
     user_id: str
@@ -4117,6 +4120,21 @@ class Notification(BaseModel):
     favor_id: Optional[str] = None
     read: bool = False
     created_at: datetime
+
+@api_router.put("/user/name")
+async def update_user_name(name_data: NameUpdate, current_user: User = Depends(get_current_user)):
+    """Update user's display name"""
+    name = name_data.name.strip()
+    if not name or len(name) < 2:
+        raise HTTPException(status_code=400, detail="Il nome deve avere almeno 2 caratteri")
+    if len(name) > 50:
+        raise HTTPException(status_code=400, detail="Il nome non può superare i 50 caratteri")
+
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"name": name}}
+    )
+    return {"message": "Nome aggiornato", "name": name}
 
 @api_router.put("/user/skills")
 async def update_user_skills(skills_data: SkillsUpdate, current_user: User = Depends(get_current_user)):

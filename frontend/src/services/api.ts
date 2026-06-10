@@ -888,6 +888,15 @@ export const api = {
   // SKILLS & NOTIFICATIONS
   // ========================
   
+  updateUserName: async (name: string, token: string): Promise<{ message: string; name: string }> => {
+    const response = await fetch(`${API_URL}/api/user/name`, {
+      method: 'PUT',
+      headers: getHeaders(token),
+      body: JSON.stringify({ name }),
+    });
+    return handleResponse(response);
+  },
+
   updateUserSkills: async (skills: string[], token: string): Promise<{ message: string; skills: string[] }> => {
     const response = await fetch(`${API_URL}/api/user/skills`, {
       method: 'PUT',
