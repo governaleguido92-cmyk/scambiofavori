@@ -70,11 +70,6 @@
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
         "track": "internal"
-      },
-      "ios": {
-        "appleId": "governaleguido92@gmail.com",
-        "ascAppId": "",
-        "appleTeamId": ""
       }
     }
   }
