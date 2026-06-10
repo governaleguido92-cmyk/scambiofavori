@@ -19,6 +19,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { SUPPORTED_LANGUAGES, changeLanguage } from '../../src/i18n';
 import { api, Badge, LeaderboardUser, Category, CURRENCY_NAME, CURRENCY_SYMBOL, getImageUrl } from '../../src/services/api';
 import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar';
 import { SupporterProfileBorder, SupporterBadge } from '../../src/components/SupporterBadge';
@@ -40,6 +42,7 @@ const BADGE_ICONS: Record<string, string> = {
 
 export default function ProfileScreen() {
   const { user, token, logout, refreshUser } = useAuth();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const [badges, setBadges] = useState<Badge[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
@@ -848,10 +851,29 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Language Selector */}
+        <View style={styles.languageSection}>
+          <View style={styles.languageLabelRow}>
+            <Ionicons name="language" size={18} color="#A8C4B0" />
+            <Text style={styles.languageLabel}>{t('settings.language')}</Text>
+          </View>
+          <View style={styles.languageButtons}>
+            {SUPPORTED_LANGUAGES.map(lang => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[styles.languageBtn, i18n.language === lang.code && styles.languageBtnActive]}
+                onPress={() => changeLanguage(lang.code)}
+              >
+                <Text style={styles.languageBtnText}>{lang.flag} {lang.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out" size={20} color="#ff6b6b" />
-          <Text style={styles.logoutText}>Esci</Text>
+          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -1579,6 +1601,46 @@ const styles = StyleSheet.create({
     color: '#ff6b6b',
     fontSize: 16,
     fontWeight: '600',
+  },
+  languageSection: {
+    backgroundColor: '#162419',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  languageLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  languageLabel: {
+    color: '#A8C4B0',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  languageButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  languageBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#2D5A3D',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  languageBtnActive: {
+    backgroundColor: '#2D5A3D',
+    borderColor: '#2D5A3D',
+  },
+  languageBtnText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '500',
   },
   notifPrefsContainer: {
     gap: 2,

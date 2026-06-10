@@ -26,6 +26,7 @@ export default function MyFavorsScreen() {
   const loadMyFavors = useCallback(async () => {
     if (!token) return;
     try {
+      setLoading(true);
       const data = await api.getMyFavors(token);
       setFavors(data);
     } catch (error) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -7,12 +7,21 @@ import LegalConsentModal from '../src/components/LegalConsentModal';
 import OnboardingSlides from '../src/components/OnboardingSlides';
 import { OfflineNotice } from '../src/components/OfflineNotice';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
+import { initI18n } from '../src/i18n';
+import '../src/i18n'; // ensure i18n module loaded
 
 function RootLayoutNav() {
   const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user, token } = useAuth();
-  
+  const [i18nReady, setI18nReady] = useState(false);
+
+  useEffect(() => {
+    initI18n().then(() => setI18nReady(true));
+  }, []);
+
   // Register for push notifications when authenticated
   usePushNotifications(token);
+
+  if (!i18nReady) return null;
 
   return (
     <>
