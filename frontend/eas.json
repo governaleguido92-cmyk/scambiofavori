@@ -18,42 +18,64 @@
       "distribution": "internal",
       "developmentClient": false,
       "ios": {
-        "simulator": true,
+        "simulator": false,
         "resourceClass": "m-medium"
       },
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-exchange.preview.emergentagent.com"
-      }
-    },
-    "preview-device": {
-      "distribution": "internal",
-      "developmentClient": false,
-      "ios": {
-        "simulator": false
-      },
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-exchange.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
       }
     },
     "production": {
+      "distribution": "store",
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "resourceClass": "m-medium",
+        "image": "latest"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "image": "latest"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://hyperlocal-exchange.preview.emergentagent.com"
+        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
+      }
+    },
+    "production-android": {
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle",
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
+      }
+    },
+    "production-ios": {
+      "distribution": "store",
+      "ios": {
+        "simulator": false,
+        "resourceClass": "m-medium",
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      },
+      "ios": {
+        "appleId": "governaleguido92@gmail.com",
+        "ascAppId": "",
+        "appleTeamId": ""
+      }
+    }
   }
 }
