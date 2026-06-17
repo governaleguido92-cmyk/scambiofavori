@@ -143,6 +143,7 @@ export default function LoginScreen() {
       
       console.log('Apple Login - Backend response received');
       // Use login with the received token directly
+      if (!response.token || !response.user) throw new Error('Invalid Apple auth response');
       await loginWithToken(response.token, response.user);
       router.replace('/(tabs)');
       

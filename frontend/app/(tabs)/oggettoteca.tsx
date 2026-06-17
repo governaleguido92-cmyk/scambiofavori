@@ -209,7 +209,7 @@ export default function OggettotecaScreen() {
           name: newObject.name.trim(),
           description: newObject.description.trim(),
           category: newObject.category,
-          deposit_soli: parseInt(newObject.deposit_soli) || 2,
+          deposit_granelli: parseInt(newObject.deposit_soli) || 2,
           latitude: location?.latitude,
           longitude: location?.longitude,
         },

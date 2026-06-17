@@ -97,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
+    if (!response.token || !response.user) throw new Error('Invalid login response');
     await saveToken(response.token);
     setUser(response.user);
     await checkLegalStatus(response.token);
@@ -121,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const exchangeSessionId = async (sessionId: string) => {
     const response = await api.exchangeSession(sessionId);
+    if (!response.token || !response.user) throw new Error('Invalid session response');
     await saveToken(response.token);
     setUser(response.user);
     await checkLegalStatus(response.token);

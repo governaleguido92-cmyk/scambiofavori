@@ -70,7 +70,7 @@ export default function ProfileScreen() {
   const [newName, setNewName] = useState('');
   const [savingName, setSavingName] = useState(false);
   // Notification preferences state
-  const [notifPrefs, setNotifPrefs] = useState({
+  const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({
     favor_accepted: true, favor_completed: true, new_message: true, new_review: true, skill_match: true,
   });
   const [loadingPrefs, setLoadingPrefs] = useState(false);

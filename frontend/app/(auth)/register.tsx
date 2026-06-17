@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: colors.backgroundCard,
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   codeInput: {
-    backgroundColor: colors.card,
+    backgroundColor: colors.backgroundCard,
     borderRadius: 12,
     height: 70,
     fontSize: 32,
