@@ -7,7 +7,6 @@
     "icon": "./assets/images/app-image.png",
     "scheme": "scambiodifavori",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.emergent.scambiodifavori",
@@ -66,20 +65,6 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "minSdkVersion": 24,
-            "newArchEnabled": false
-          },
-          "ios": {
-            "deploymentTarget": "16.0"
-          }
-        }
-      ],
       [
         "expo-splash-screen",
         {
