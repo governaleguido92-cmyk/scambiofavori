@@ -58,6 +58,11 @@ chainlit.md
 .ipynb_checkpoints/
 .ac
 
+# Project runtime dirs (not needed in build)
+test_reports/
+uploads/
+downloads/
+
 # Deployment
 .vercel
 
