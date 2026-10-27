@@ -50,8 +50,9 @@ db = _LazyDB(client[os.environ['DB_NAME']])
 # JWT Config - Use env var in production, default for local development
 JWT_SECRET = os.environ.get('JWT_SECRET')
 if not JWT_SECRET:
-    if os.environ.get('RAILWAY_ENVIRONMENT'):
-        raise RuntimeError("JWT_SECRET must be set in production")
+    # Secure by default on any host: only an explicit ENVIRONMENT=development may use the dev secret.
+    if os.environ.get('ENVIRONMENT') != 'development':
+        raise RuntimeError("JWT_SECRET must be set (or set ENVIRONMENT=development for local use)")
     JWT_SECRET = 'local-dev-secret-key-not-for-production'
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_DAYS = 7
