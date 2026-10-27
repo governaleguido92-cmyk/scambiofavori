@@ -1,0 +1,40 @@
+# Render Blueprint: backend API. Database is MongoDB Atlas (set MONGO_URL below).
+services:
+  - type: web
+    name: scambio-di-favori-api
+    runtime: python
+    region: frankfurt
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_NAME
+        value: scambiofavori
+      - key: MONGO_URL          # Atlas connection string (mongodb+srv://...)
+        sync: false
+      - key: ALLOWED_ORIGINS    # comma-separated web origins, if you serve the web build
+        sync: false
+      - key: STRIPE_API_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SENDER_EMAIL
+        sync: false
+      - key: S3_BUCKET          # optional: enables S3 profile pictures
+        sync: false
+      - key: AWS_REGION
+        value: eu-south-1
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_PUBLIC_BASE_URL
+        sync: false
