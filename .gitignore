@@ -86,3 +86,7 @@ android-sdk/ -e
 # Environment files
 *.env
 *.env.*
+
+# Keep documented env templates (contain no secrets)
+!.env.example
+!**/.env.example

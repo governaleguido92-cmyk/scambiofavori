@@ -10,6 +10,9 @@ import { usePushNotifications } from '../src/hooks/usePushNotifications';
 import { I18nextProvider } from 'react-i18next';
 import { initI18n } from '../src/i18n';
 import i18n from '../src/i18n';
+import { installWebAlert } from '../src/utils/webAlert';
+
+installWebAlert();
 
 function RootLayoutNav() {
   const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user, token } = useAuth();

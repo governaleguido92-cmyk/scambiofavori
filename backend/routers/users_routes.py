@@ -1,6 +1,7 @@
 """HTTP routes: users."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+from storage import save_profile_picture
 
 api_router = APIRouter(prefix="/api")
 
@@ -315,29 +316,8 @@ async def upload_profile_picture(
 ):
     """Upload profile picture"""
     
-    # Validate file type
-    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/jpg"]
-    if file.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Tipo file non supportato. Usa JPG, PNG o WebP.")
-    
-    # Read file content
     content = await file.read()
-    
-    # Check file size (max 5MB)
-    if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File troppo grande. Massimo 5MB.")
-    
-    # Generate unique filename
-    extension = file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'jpg'
-    filename = f"{current_user.user_id}_{uuid.uuid4().hex[:8]}.{extension}"
-    filepath = UPLOAD_DIR / filename
-    
-    # Save file
-    with open(filepath, "wb") as f:
-        f.write(content)
-    
-    # Generate URL (relative path that will be served by the app)
-    picture_url = f"/uploads/profile_pictures/{filename}"
+    picture_url = await save_profile_picture(current_user.user_id, content, UPLOAD_DIR)
     
     # Update user in database
     await db.users.update_one(
