@@ -53,7 +53,7 @@ export default function RecoveryScreen() {
 
   const handleResetPassword = async () => {
     if (!pwCode || pwCode.length !== 6) { Alert.alert('Errore', 'Inserisci il codice a 6 cifre'); return; }
-    if (!newPassword || newPassword.length < 6) { Alert.alert('Errore', 'La password deve avere almeno 6 caratteri'); return; }
+    if (!newPassword || newPassword.length < 8) { Alert.alert('Errore', 'La password deve avere almeno 8 caratteri'); return; }
     if (newPassword !== confirmPassword) { Alert.alert('Errore', 'Le password non corrispondono'); return; }
     setIsLoading(true);
     try {

@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../src/context/AuthContext';
 import { api, Notification } from '../src/services/api';
 import colors from '../src/theme/colors';
+import { logger } from '../src/utils/logger';
 
 const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   skill_match: { name: 'star', color: colors.accent },
@@ -38,7 +39,7 @@ export default function NotificationsScreen() {
       const data = await api.getNotifications(token);
       setNotifications(data);
     } catch (error) {
-      console.log('Error loading notifications:', error);
+      logger.debug('Error loading notifications:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -64,7 +65,7 @@ export default function NotificationsScreen() {
           )
         );
       } catch (error) {
-        console.log('Error marking notification as read:', error);
+        logger.debug('Error marking notification as read:', error);
       }
     }
     

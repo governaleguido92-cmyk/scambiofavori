@@ -21,6 +21,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, ChatMessage, Favor, CURRENCY_SYMBOL } from '../../src/services/api';
 import { SupporterBadge, SupporterProfileBorder, UserNameWithBadge } from '../../src/components/SupporterBadge';
 import { useTranslation } from 'react-i18next';
+import { logger } from '../../src/utils/logger';
 
 // Theme colors
 const colors = {
@@ -68,7 +69,7 @@ export default function ChatScreen() {
       setMessages(messagesData);
       setChatStatus(statusData);
     } catch (error: any) {
-      console.log('Error loading chat:', error);
+      logger.debug('Error loading chat:', error);
       Alert.alert(t('common.error'), error.message || t('chat.title'));
     } finally {
       setLoading(false);

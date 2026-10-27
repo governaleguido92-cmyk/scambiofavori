@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import colors from '../theme/colors';
+import { logger } from '../utils/logger';
 
 interface ProfileCompletionItem {
   id: string;
@@ -53,7 +54,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
         setBadgeEarned(true);
       }
     } catch (error) {
-      console.log('Error loading profile completion:', error);
+      logger.debug('Error loading profile completion:', error);
     }
   };
 

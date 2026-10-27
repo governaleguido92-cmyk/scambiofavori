@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { api } from '../services/api';
+import { logger } from '../utils/logger';
 
 // Configure foreground notification behavior
 Notifications.setNotificationHandler({
@@ -19,12 +20,12 @@ Notifications.setNotificationHandler({
 async function registerForPushNotificationsAsync(): Promise<string | null> {
   // Push notifications only work on physical devices
   if (Platform.OS === 'web') {
-    console.log('[Push] Skipping push registration on web');
+    logger.debug('[Push] Skipping push registration on web');
     return null;
   }
 
   if (!Device.isDevice) {
-    console.log('[Push] Must use physical device for Push Notifications');
+    logger.debug('[Push] Must use physical device for Push Notifications');
     return null;
   }
 
@@ -48,7 +49,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
   }
 
   if (finalStatus !== 'granted') {
-    console.log('[Push] Permission not granted');
+    logger.debug('[Push] Permission not granted');
     return null;
   }
 
@@ -77,21 +78,21 @@ export function usePushNotifications(authToken: string | null) {
       setExpoPushToken(token);
       try {
         await api.registerPushToken(token, authToken);
-        console.log('[Push] Token registered:', token.substring(0, 30) + '...');
+        logger.debug('[Push] Token registered:', token.substring(0, 30) + '...');
       } catch (err) {
-        console.log('[Push] Failed to register token:', err);
+        logger.debug('[Push] Failed to register token:', err);
       }
     });
 
     // Listen for notifications received in foreground
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      console.log('[Push] Received:', notification.request.content.title);
+      logger.debug('[Push] Received:', notification.request.content.title);
     });
 
     // Listen for notification interactions (taps)
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
-      console.log('[Push] Tapped:', data);
+      logger.debug('[Push] Tapped:', data);
       // Navigation is handled by the app's notification screen
     });
 

@@ -20,6 +20,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { api } from '../../src/services/api';
+import { logger } from '../../src/utils/logger';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -69,18 +70,18 @@ export default function LoginScreen() {
       redirectUrl = Linking.createURL('/');
     }
     
-    console.log('Google Login - Platform:', Platform.OS, 'Redirect URL:', redirectUrl);
+    logger.debug('Google Login - Platform:', Platform.OS, 'Redirect URL:', redirectUrl);
     const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
     
     try {
       setIsLoading(true);
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
-      console.log('Google Login - Result:', result.type);
+      logger.debug('Google Login - Result:', result.type);
       
       if (result.type === 'success' && result.url) {
         // Extract session_id from URL fragment
         const url = result.url;
-        console.log('Google Login - Callback URL:', url);
+        logger.debug('Google Login - Callback URL:', url);
         const hashIndex = url.indexOf('#');
         if (hashIndex !== -1) {
           const fragment = url.substring(hashIndex + 1);
@@ -88,21 +89,21 @@ export default function LoginScreen() {
           const sessionId = params.get('session_id');
           
           if (sessionId) {
-            console.log('Google Login - Session ID found, exchanging...');
+            logger.debug('Google Login - Session ID found, exchanging...');
             await exchangeSessionId(sessionId);
             router.replace('/(tabs)');
           } else {
-            console.log('Google Login - No session_id in fragment');
+            logger.debug('Google Login - No session_id in fragment');
             Alert.alert('Errore', 'Sessione non trovata nella risposta');
           }
         } else {
-          console.log('Google Login - No hash fragment in URL');
+          logger.debug('Google Login - No hash fragment in URL');
           Alert.alert('Errore', 'Risposta non valida dal server di autenticazione');
         }
       } else if (result.type === 'cancel') {
-        console.log('Google Login - Cancelled by user');
+        logger.debug('Google Login - Cancelled by user');
       } else {
-        console.log('Google Login - Unexpected result type:', result.type);
+        logger.debug('Google Login - Unexpected result type:', result.type);
       }
     } catch (error: any) {
       console.error('Google Login Error:', error);
@@ -114,7 +115,7 @@ export default function LoginScreen() {
 
   const handleAppleLogin = async () => {
     try {
-      console.log('Apple Login - Starting...');
+      logger.debug('Apple Login - Starting...');
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -122,7 +123,7 @@ export default function LoginScreen() {
         ],
       });
       
-      console.log('Apple Login - Credential received, user:', credential.user);
+      logger.debug('Apple Login - Credential received, user:', credential.user);
       setIsLoading(true);
       
       // Build full name from Apple credential
@@ -132,7 +133,7 @@ export default function LoginScreen() {
         fullName = parts.length > 0 ? parts.join(' ') : undefined;
       }
       
-      console.log('Apple Login - Sending to backend...');
+      logger.debug('Apple Login - Sending to backend...');
       // Send to backend
       const response = await api.appleAuth(
         credential.identityToken!,
@@ -141,7 +142,7 @@ export default function LoginScreen() {
         fullName
       );
       
-      console.log('Apple Login - Backend response received');
+      logger.debug('Apple Login - Backend response received');
       // Use login with the received token directly
       if (!response.token || !response.user) throw new Error('Invalid Apple auth response');
       await loginWithToken(response.token, response.user);
@@ -151,7 +152,7 @@ export default function LoginScreen() {
       console.error('Apple Login Error:', error);
       if (error.code === 'ERR_REQUEST_CANCELED' || error.code === 'ERR_CANCELED') {
         // User cancelled - don't show error
-        console.log('Apple Login - Cancelled by user');
+        logger.debug('Apple Login - Cancelled by user');
         return;
       }
       Alert.alert('Errore', error.message || 'Errore durante il login con Apple');

@@ -51,8 +51,8 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (password.length < 6) {
-      Alert.alert('Errore', 'La password deve essere di almeno 6 caratteri');
+    if (password.length < 8) {
+      Alert.alert('Errore', 'La password deve essere di almeno 8 caratteri');
       return;
     }
 
