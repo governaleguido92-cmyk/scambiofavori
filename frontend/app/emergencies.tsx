@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../src/context/AuthContext';
 import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../src/services/api';
+import { logger } from '../src/utils/logger';
 
 export default function EmergenciesScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -45,7 +46,7 @@ export default function EmergenciesScreen() {
         });
       }
     } catch (error) {
-      console.log('Error getting location:', error);
+      logger.debug('Error getting location:', error);
     }
   };
 
@@ -55,7 +56,7 @@ export default function EmergenciesScreen() {
       const data = await api.getEmergencies(location.latitude, location.longitude, token);
       setEmergencies(data);
     } catch (error) {
-      console.log('Error loading emergencies:', error);
+      logger.debug('Error loading emergencies:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);

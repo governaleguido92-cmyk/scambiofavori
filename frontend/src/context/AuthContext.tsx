@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getStoredToken, setStoredToken, clearStoredToken } from '../utils/tokenStorage';
 import { api, User, CURRENCY_NAME } from '../services/api';
+import { logger } from '../utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -31,12 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const saveToken = async (newToken: string) => {
-    await AsyncStorage.setItem('token', newToken);
+    await setStoredToken(newToken);
     setToken(newToken);
   };
 
   const clearToken = async () => {
-    await AsyncStorage.removeItem('token');
+    await clearStoredToken();
     setToken(null);
   };
 
@@ -46,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLegalAccepted(status.legal_accepted);
       setShowLegalModal(!status.legal_accepted);
     } catch (error) {
-      console.log('Error checking legal status:', error);
+      logger.debug('Error checking legal status:', error);
       setShowLegalModal(true);
     }
   }, []);
@@ -57,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await api.getMe(token);
       setUser(userData);
     } catch (error) {
-      console.log('Error refreshing user:', error);
+      logger.debug('Error refreshing user:', error);
     }
   }, [token]);
 
@@ -65,12 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = async () => {
       // Set a maximum timeout for auth check
       const authTimeout = setTimeout(() => {
-        console.log('Auth check timeout - forcing loading to false');
+        logger.debug('Auth check timeout - forcing loading to false');
         setLoading(false);
       }, 10000);
       
       try {
-        const storedToken = await AsyncStorage.getItem('token');
+        const storedToken = await getStoredToken();
         if (storedToken) {
           setToken(storedToken);
           try {
@@ -78,13 +80,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(userData);
             await checkLegalStatus(storedToken);
           } catch (apiError) {
-            console.log('API error during auth check:', apiError);
+            logger.debug('API error during auth check:', apiError);
             // Token might be invalid, clear it
             await clearToken();
           }
         }
       } catch (error) {
-        console.log('Auth check error:', error);
+        logger.debug('Auth check error:', error);
         await clearToken();
       } finally {
         clearTimeout(authTimeout);
@@ -97,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
+    if (!response.token || !response.user) throw new Error('Invalid login response');
     await saveToken(response.token);
     setUser(response.user);
     await checkLegalStatus(response.token);
@@ -121,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const exchangeSessionId = async (sessionId: string) => {
     const response = await api.exchangeSession(sessionId);
+    if (!response.token || !response.user) throw new Error('Invalid session response');
     await saveToken(response.token);
     setUser(response.user);
     await checkLegalStatus(response.token);
@@ -179,7 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setLegalAccepted(false);
     } catch (error) {
-      console.log('Error deleting account:', error);
+      logger.debug('Error deleting account:', error);
       throw error;
     }
   };
@@ -190,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await api.logout(token);
       }
     } catch (error) {
-      console.log('Logout error:', error);
+      logger.debug('Logout error:', error);
     }
     await clearToken();
     setUser(null);

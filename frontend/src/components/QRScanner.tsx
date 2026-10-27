@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { logger } from '../utils/logger';
 
 // Platform-specific camera import
 let CameraComponent: React.ComponentType<any> | null = null;
@@ -12,7 +13,7 @@ if (Platform.OS !== 'web') {
     CameraComponent = ExpoCamera.CameraView;
     useCameraPermissionsHook = ExpoCamera.useCameraPermissions;
   } catch (e) {
-    console.log('expo-camera not available');
+    logger.debug('expo-camera not available');
   }
 }
 

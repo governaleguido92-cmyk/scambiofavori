@@ -19,6 +19,7 @@ import colors from '../../src/theme/colors';
 import { SupporterBadge } from '../../src/components/SupporterBadge';
 import { MapMarkersSkeleton } from '../../src/components/Skeleton';
 import { useTranslation } from 'react-i18next';
+import { logger } from '../../src/utils/logger';
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.02;
@@ -127,7 +128,7 @@ export default function MapScreen() {
         };
       }
     } catch (error) {
-      console.log('Error getting location:', error);
+      logger.debug('Error getting location:', error);
     }
     return null;
   };

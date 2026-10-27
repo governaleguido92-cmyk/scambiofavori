@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../src/context/AuthContext';
 import { api } from '../src/services/api';
 import colors from '../src/theme/colors';
+import { logger } from '../src/utils/logger';
 
 export default function SupporterScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -43,7 +44,7 @@ export default function SupporterScreen() {
       setIsSupporter(status.is_supporter);
       setSupporterSince(status.supporter_since);
     } catch (error) {
-      console.log('Error loading supporter status:', error);
+      logger.debug('Error loading supporter status:', error);
     }
   };
 
@@ -86,7 +87,7 @@ export default function SupporterScreen() {
       // Continue polling
       setTimeout(() => pollPaymentStatus(sessionId, attempts + 1), pollInterval);
     } catch (error) {
-      console.log('Payment status check error:', error);
+      logger.debug('Payment status check error:', error);
       setTimeout(() => pollPaymentStatus(sessionId, attempts + 1), pollInterval);
     }
   };

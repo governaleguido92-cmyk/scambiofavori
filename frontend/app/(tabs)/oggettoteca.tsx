@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   RefreshControl,
@@ -17,6 +16,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, LendableObject, ObjectCategory, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { styles } from '../../src/styles/oggettoteca.styles';
+import { logger } from '../../src/utils/logger';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Utensili': 'hammer',
@@ -61,7 +62,7 @@ export default function OggettotecaScreen() {
         });
       }
     } catch (error) {
-      console.log('Error getting location:', error);
+      logger.debug('Error getting location:', error);
     }
   };
 
@@ -70,7 +71,7 @@ export default function OggettotecaScreen() {
       const data = await api.getObjectCategories();
       setCategories(data);
     } catch (error) {
-      console.log('Error loading categories:', error);
+      logger.debug('Error loading categories:', error);
     }
   };
 
@@ -86,7 +87,7 @@ export default function OggettotecaScreen() {
       const data = await api.getObjects(params);
       setObjects(data);
     } catch (error) {
-      console.log('Error loading objects:', error);
+      logger.debug('Error loading objects:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -99,7 +100,7 @@ export default function OggettotecaScreen() {
       const data = await api.getMyObjects(token);
       setMyObjects(data);
     } catch (error) {
-      console.log('Error loading my objects:', error);
+      logger.debug('Error loading my objects:', error);
     }
   }, [token]);
 
@@ -209,7 +210,7 @@ export default function OggettotecaScreen() {
           name: newObject.name.trim(),
           description: newObject.description.trim(),
           category: newObject.category,
-          deposit_soli: parseInt(newObject.deposit_soli) || 2,
+          deposit_granelli: parseInt(newObject.deposit_soli) || 2,
           latitude: location?.latitude,
           longitude: location?.longitude,
         },
@@ -534,364 +535,3 @@ export default function OggettotecaScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1a1a2e',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 2,
-  },
-  addButton: {
-    backgroundColor: '#9c27b0',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabSelector: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    marginTop: 12,
-    backgroundColor: '#16213e',
-    borderRadius: 12,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
-    gap: 6,
-  },
-  tabActive: {
-    backgroundColor: '#9c27b0',
-  },
-  tabText: {
-    color: '#888',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  tabTextActive: {
-    color: '#fff',
-  },
-  categoriesContainer: {
-    marginTop: 16,
-    maxHeight: 50,
-  },
-  categoriesContent: {
-    paddingHorizontal: 20,
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#16213e',
-    gap: 6,
-    marginRight: 8,
-  },
-  categoryChipActive: {
-    backgroundColor: '#9c27b0',
-  },
-  categoryChipText: {
-    color: '#888',
-    fontSize: 14,
-  },
-  categoryChipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 60,
-  },
-  emptyText: {
-    color: '#888',
-    fontSize: 18,
-    marginTop: 16,
-  },
-  emptySubtext: {
-    color: '#666',
-    fontSize: 14,
-    marginTop: 4,
-  },
-  listContent: {
-    padding: 20,
-    paddingTop: 16,
-  },
-  objectCard: {
-    backgroundColor: '#16213e',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-  },
-  objectHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  categoryBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  categoryText: {
-    color: '#9c27b0',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  statusAvailable: {
-    backgroundColor: 'rgba(78, 204, 163, 0.2)',
-  },
-  statusBorrowed: {
-    backgroundColor: 'rgba(255, 152, 0, 0.2)',
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  objectName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 6,
-  },
-  objectDescription: {
-    fontSize: 14,
-    color: '#888',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  objectFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  ownerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  ownerName: {
-    color: '#888',
-    fontSize: 14,
-  },
-  depositContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  depositLabel: {
-    color: '#666',
-    fontSize: 12,
-  },
-  depositSymbol: {
-    fontSize: 16,
-  },
-  depositValue: {
-    color: '#ffd700',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  distanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-  },
-  distanceText: {
-    color: '#9c27b0',
-    fontSize: 12,
-  },
-  borrowButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#9c27b0',
-    padding: 12,
-    borderRadius: 12,
-    marginTop: 12,
-    gap: 8,
-  },
-  borrowButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  returnButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#4ecca3',
-    padding: 12,
-    borderRadius: 12,
-    marginTop: 12,
-    gap: 8,
-  },
-  returnButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#16213e',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    maxHeight: '90%',
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-  },
-  modalSubtitle: {
-    color: '#888',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#1a1a2e',
-    borderRadius: 12,
-    padding: 14,
-    color: '#fff',
-    fontSize: 16,
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  categoryOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a2e',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginRight: 8,
-    gap: 6,
-  },
-  categoryOptionActive: {
-    backgroundColor: '#9c27b0',
-  },
-  categoryOptionText: {
-    color: '#888',
-    fontSize: 13,
-  },
-  categoryOptionTextActive: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  depositInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 20,
-  },
-  depositAdjust: {
-    backgroundColor: '#1a1a2e',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  depositDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  depositDisplaySymbol: {
-    fontSize: 28,
-  },
-  depositDisplayValue: {
-    color: '#ffd700',
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-  depositHint: {
-    color: '#666',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 24,
-  },
-  modalCancelButton: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#888',
-    alignItems: 'center',
-  },
-  modalCancelText: {
-    color: '#888',
-    fontWeight: '600',
-  },
-  modalConfirmButton: {
-    flex: 1,
-    flexDirection: 'row',
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: '#9c27b0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  modalConfirmText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-});

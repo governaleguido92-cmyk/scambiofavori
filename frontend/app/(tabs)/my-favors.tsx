@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { useTranslation } from 'react-i18next';
+import { logger } from '../../src/utils/logger';
 
 export default function MyFavorsScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -32,7 +33,7 @@ export default function MyFavorsScreen() {
       const data = await api.getMyFavors(token);
       setFavors(data);
     } catch (error) {
-      console.log('Error loading my favors:', error);
+      logger.debug('Error loading my favors:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -182,7 +183,8 @@ export default function MyFavorsScreen() {
 
           {/* Actions */}
           <View style={styles.actionsContainer}>
-            {item.status === 'accepted' && isCreator && (
+            {item.status === 'accepted' &&
+              (item.type === 'request' ? isCreator : item.accepted_by === user?.user_id) && (
               <TouchableOpacity
                 style={styles.completeButton}
                 onPress={() => handleComplete(item.favor_id)}

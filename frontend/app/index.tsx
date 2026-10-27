@@ -3,6 +3,7 @@ import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/context/AuthContext';
 import * as Linking from 'expo-linking';
+import { logger } from '../src/utils/logger';
 
 export default function Index() {
   const { user, loading, exchangeSessionId } = useAuth();
@@ -24,7 +25,7 @@ export default function Index() {
           }
         }
       } catch (error) {
-        console.log('Deep link error:', error);
+        logger.debug('Deep link error:', error);
       }
     };
 

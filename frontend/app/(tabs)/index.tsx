@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   RefreshControl,
@@ -24,6 +23,8 @@ import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 import { offlineCache } from '../../src/utils/offlineCache';
 import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
 import { useTranslation } from 'react-i18next';
+import { styles } from '../../src/styles/home.styles';
+import { logger } from '../../src/utils/logger';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -64,7 +65,7 @@ export default function HomeScreen() {
       const data = await api.getUnreadNotificationsCount(token);
       setUnreadNotifications(data.unread_count);
     } catch (error) {
-      console.log('Error loading notification count:', error);
+      logger.debug('Error loading notification count:', error);
     }
   }, [token]);
 
@@ -84,7 +85,7 @@ export default function HomeScreen() {
         });
       }
     } catch (error) {
-      console.log('Error getting location:', error);
+      logger.debug('Error getting location:', error);
     }
   };
 
@@ -93,7 +94,7 @@ export default function HomeScreen() {
       const data = await api.getCategories();
       setCategories(data);
     } catch (error) {
-      console.log('Error loading categories:', error);
+      logger.debug('Error loading categories:', error);
     }
   };
 
@@ -102,7 +103,7 @@ export default function HomeScreen() {
       const data = await api.getThanksBoard(5);
       setThanksBoard(data);
     } catch (error) {
-      console.log('Error loading thanks board:', error);
+      logger.debug('Error loading thanks board:', error);
     }
   };
 
@@ -121,7 +122,7 @@ export default function HomeScreen() {
       setFavors(data);
       await offlineCache.saveFavors(data);
     } catch (error) {
-      console.log('Error loading favors:', error);
+      logger.debug('Error loading favors:', error);
       setNetworkError(true);
       const cached = await offlineCache.loadFavors();
       if (cached) { setFavors(cached); setNetworkError(false); }
@@ -422,441 +423,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 6,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  headerLogo: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  notificationButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.backgroundLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: colors.accent,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 3,
-    borderWidth: 2,
-    borderColor: colors.background,
-  },
-  notificationBadgeText: {
-    color: '#fff',
-    fontSize: 9,
-    fontWeight: 'bold',
-  },
-  greeting: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  soliDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.backgroundLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  soliDisplaySymbol: {
-    fontSize: 16,
-  },
-  soliDisplayValue: {
-    color: colors.granelli,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  thanksBoardSection: {
-    marginTop: 4,
-    paddingBottom: 4,
-  },
-  thanksBoardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 4,
-    gap: 6,
-  },
-  thanksBoardTitle: {
-    color: colors.textPrimary,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  thanksBoardList: {
-    paddingHorizontal: 16,
-  },
-  thanksCard: {
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 8,
-    padding: 8,
-    marginRight: 8,
-    width: 180,
-  },
-  thanksHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 3,
-  },
-  thanksGiver: {
-    color: colors.primaryLight,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  thanksArrow: {
-    color: colors.textMuted,
-    fontSize: 10,
-  },
-  thanksReceiver: {
-    color: colors.primaryLight,
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  thanksMessage: {
-    color: colors.textSecondary,
-    fontSize: 9,
-    fontStyle: 'italic',
-  },
-  tabSelector: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginTop: 8,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 10,
-    padding: 3,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 4,
-  },
-  tabActive: {
-    backgroundColor: colors.primary,
-  },
-  tabText: {
-    color: colors.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  tabTextActive: {
-    color: colors.textPrimary,
-  },
-  typeFilter: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    gap: 8,
-    marginTop: 10,
-  },
-  typeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: colors.backgroundLight,
-  },
-  typeButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  typeButtonText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  typeButtonTextActive: {
-    color: colors.textPrimary,
-    fontWeight: '700',
-  },
-  categoriesContainer: {
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  categoriesContent: {
-    paddingHorizontal: 16,
-    gap: 6,
-    paddingVertical: 2,
-  },
-  categoryChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 16,
-    backgroundColor: colors.backgroundLight,
-    gap: 5,
-  },
-  categoryChipActive: {
-    backgroundColor: colors.accent,
-  },
-  categoryChipMicro: {
-    borderWidth: 1,
-    borderColor: colors.accent,
-  },
-  categoryChipText: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  categoryChipTextActive: {
-    color: colors.textPrimary,
-    fontWeight: '700',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  skeletonContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  promoBanner: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 4,
-    backgroundColor: colors.granelliMuted,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.25)',
-    overflow: 'hidden',
-  },
-  promoBannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    gap: 10,
-  },
-  promoBannerIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 215, 0, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  promoBannerText: {
-    flex: 1,
-  },
-  promoBannerTitle: {
-    color: colors.granelli,
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 1,
-  },
-  promoBannerSubtitle: {
-    color: colors.textSecondary,
-    fontSize: 11,
-    lineHeight: 15,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 40,
-  },
-  emptyText: {
-    color: colors.textMuted,
-    fontSize: 16,
-    marginTop: 12,
-  },
-  emptySubtext: {
-    color: colors.textMuted,
-    fontSize: 13,
-    marginTop: 4,
-  },
-  listContent: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 80,
-  },
-  favorCard: {
-    backgroundColor: colors.backgroundCard,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  favorCardDebtHighlight: {
-    borderWidth: 2,
-    borderColor: colors.debt,
-    backgroundColor: colors.backgroundLight,
-  },
-  favorHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-    gap: 6,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  authorAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.accent,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  authorInitial: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  reportButton: {
-    padding: 4,
-    borderRadius: 4,
-  },
-  categoryBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primaryMuted,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 3,
-  },
-  categoryText: {
-    color: colors.primaryLight,
-    fontSize: 9,
-    fontWeight: '600',
-  },
-  emergencyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.debtMuted,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 3,
-  },
-  emergencyText: {
-    color: colors.error,
-    fontSize: 9,
-    fontWeight: '600',
-  },
-  typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  offerBadge: {
-    backgroundColor: colors.primaryMuted,
-  },
-  requestBadge: {
-    backgroundColor: colors.accentMuted,
-  },
-  typeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  favorTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: 2,
-  },
-  favorDescription: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    lineHeight: 16,
-    marginBottom: 6,
-  },
-  favorFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  footerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flex: 1,
-  },
-  creatorName: {
-    color: colors.textPrimary,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  soliContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.granelliMuted,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    gap: 3,
-  },
-  soliSymbol: {
-    fontSize: 12,
-  },
-  soliText: {
-    color: colors.granelli,
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  emergencyButton: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.error,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: colors.error,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-});
