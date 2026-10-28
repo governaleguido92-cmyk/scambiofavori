@@ -27,6 +27,7 @@ import { DeleteAccountModal } from '../../src/components/DeleteAccountModal';
 import { SupporterProfileBorder, SupporterBadge } from '../../src/components/SupporterBadge';
 import themeColors from '../../src/theme/colors';
 import { styles } from '../../src/styles/profile.styles';
+import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { logger } from '../../src/utils/logger';
 
 const BADGE_ICONS: Record<string, string> = {
@@ -111,8 +112,10 @@ export default function ProfileScreen() {
       howToGet: 'Completa 10 micro-favori.'
     },
     'Sostenitore': {
-      description: 'Supporti lo sviluppo di Scambio di Favori con un abbonamento.',
-      howToGet: 'Attiva l\'abbonamento Sostenitore (€1/mese).'
+      description: 'Supporti lo sviluppo di Scambio di Favori con un contributo.',
+      howToGet: SUPPORTER_PURCHASE_ENABLED
+        ? 'Diventa Sostenitore da "Sostieni il Progetto" nel tuo profilo.'
+        : 'Non disponibile in questa versione dell\'app.'
     },
   };
 
@@ -768,7 +771,8 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={24} color="#888" />
         </TouchableOpacity>
 
-        {/* Supporter Section - "Sostieni il Progetto" */}
+        {/* Supporter Section - "Sostieni il Progetto" (hidden on Android: Google Play Billing policy) */}
+        {SUPPORTER_PURCHASE_ENABLED && (
         <TouchableOpacity
           style={styles.supporterCard}
           onPress={() => router.push('/supporter' as any)}
@@ -785,6 +789,7 @@ export default function ProfileScreen() {
           </View>
           <Ionicons name="chevron-forward" size={24} color="#ffd700" />
         </TouchableOpacity>
+        )}
 
         {/* Leaderboard Button */}
         <TouchableOpacity

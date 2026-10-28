@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Category, ThanksEntry, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import colors from '../../src/theme/colors';
+import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { ReportModal } from '../../src/components/ReportModal';
 import { FavorsListSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
@@ -244,7 +245,7 @@ export default function HomeScreen() {
   const ListHeader = () => (
     <>
       {/* Supporter Promo Banner OR Thanks Board */}
-      {user && !user.is_supporter ? (
+      {SUPPORTER_PURCHASE_ENABLED && user && !user.is_supporter ? (
         <TouchableOpacity 
           style={styles.promoBanner}
           onPress={() => router.push('/supporter')}
