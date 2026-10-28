@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -100,7 +101,9 @@ export default function SupporterScreen() {
 
     setLoading(true);
     try {
-      const originUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+      // On web Stripe must return to this app, not to the API server.
+      const originUrl =
+        Platform.OS === 'web' ? window.location.origin : process.env.EXPO_PUBLIC_BACKEND_URL;
       if (!originUrl) {
         Alert.alert('Errore', 'Configurazione URL mancante');
         setLoading(false);
