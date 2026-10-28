@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.emergent.scambiodifavori",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "deploymentTarget": "16.0",
       "infoPlist": {
         "NSCameraUsageDescription": "Questa app usa la fotocamera per scansionare codici QR per completare i favori.",
@@ -55,7 +55,7 @@
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.emergent.scambiodifavori",
-      "versionCode": 2,
+      "versionCode": 3,
       "permissions": [
         "CAMERA",
         "READ_MEDIA_IMAGES",
