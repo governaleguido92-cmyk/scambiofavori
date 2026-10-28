@@ -58,12 +58,14 @@
       "versionCode": 4,
       "permissions": [
         "CAMERA",
-        "READ_MEDIA_IMAGES",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "INTERNET",
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_MEDIA_IMAGES"
       ]
     },
     "web": {
