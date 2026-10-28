@@ -467,16 +467,25 @@ async def exchange_session(request: Request, response: Response):
 @limiter.limit("10/minute")
 async def apple_auth(request: Request, auth_data: AppleAuthRequest, response: Response):
     """Authenticate with Apple Sign In"""
-    import jwt as pyjwt
-    
+    import core as _core
+
     try:
-        # Decode Apple's identity token (without verification for now - in production, verify with Apple's public key)
-        # The token is a JWT signed by Apple
-        decoded = pyjwt.decode(auth_data.identity_token, options={"verify_signature": False})
-        
-        apple_user_id = decoded.get("sub")  # Apple's unique user identifier
-        email = auth_data.email or decoded.get("email")
-        
+        # The identity token must be signed by Apple, issued for this app and not expired.
+        signing_key = await asyncio.to_thread(_core.get_apple_signing_key, auth_data.identity_token)
+        decoded = jwt.decode(
+            auth_data.identity_token,
+            signing_key,
+            algorithms=["RS256"],
+            audience=APPLE_AUDIENCES,
+            issuer=APPLE_ISSUER,
+            options={"require": ["exp", "iss", "aud", "sub"]},
+        )
+
+        apple_user_id = decoded["sub"]  # Apple's unique user identifier
+        # Only the email inside the signed token is trusted, never the one sent in the request body.
+        email_is_verified = str(decoded.get("email_verified", "true")).lower() != "false"
+        email = decoded.get("email") if email_is_verified else None
+
         if not email:
             raise HTTPException(status_code=400, detail="Email richiesta per la registrazione")
         
@@ -544,6 +553,8 @@ async def apple_auth(request: Request, auth_data: AppleAuthRequest, response: Re
         
         return {"user": User(**user_doc), "token": token}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logging.error(f"Apple auth error: {str(e)}")
         raise HTTPException(status_code=401, detail="Autenticazione Apple fallita")
