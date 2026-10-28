@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 // Production backend URL from environment variable
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
@@ -1111,12 +1113,18 @@ export const api = {
     const filename = imageUri.split('/').pop() || 'photo.jpg';
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
-    
-    formData.append('file', {
-      uri: imageUri,
-      name: filename,
-      type,
-    } as any);
+
+    if (Platform.OS === 'web') {
+      // Browsers need a real Blob; the {uri, name, type} shape is React Native only.
+      const blob = await (await fetch(imageUri)).blob();
+      formData.append('file', blob, filename.includes('.') ? filename : `${filename}.jpg`);
+    } else {
+      formData.append('file', {
+        uri: imageUri,
+        name: filename,
+        type,
+      } as any);
+    }
 
     const response = await fetch(`${API_URL}/api/users/me/picture`, {
       method: 'POST',
