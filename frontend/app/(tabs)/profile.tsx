@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Image,
   Switch,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -162,10 +163,13 @@ export default function ProfileScreen() {
   };
 
   const pickImageFromLibrary = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permesso negato', 'È necessario il permesso per accedere alla libreria foto.');
-      return;
+    // On Android the system photo picker needs no permission (READ_MEDIA_IMAGES is not declared).
+    if (Platform.OS !== 'android') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permesso negato', 'È necessario il permesso per accedere alla libreria foto.');
+        return;
+      }
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
