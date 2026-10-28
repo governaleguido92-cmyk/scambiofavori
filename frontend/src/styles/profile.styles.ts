@@ -476,6 +476,16 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  deleteAccountButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 32,
+  },
+  deleteAccountText: {
+    color: '#7A9F85',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
   languageSection: {
     backgroundColor: '#162419',
     borderRadius: 12,

@@ -8,7 +8,9 @@ Environment:
     S3_PUBLIC_BASE_URL   optional public/CDN base URL (e.g. CloudFront); defaults to the bucket URL
 """
 import asyncio
+import logging
 import os
+import re
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -25,6 +27,8 @@ _IMAGE_SIGNATURES = (
     ("image/png", "png", lambda b: b.startswith(b"\x89PNG\r\n\x1a\n")),
     ("image/webp", "webp", lambda b: b[:4] == b"RIFF" and b[8:12] == b"WEBP"),
 )
+
+logger = logging.getLogger(__name__)
 
 _s3_client = None
 
@@ -91,3 +95,34 @@ async def save_profile_picture(user_id: str, content: bytes, upload_dir: Path) -
     upload_dir.mkdir(parents=True, exist_ok=True)
     await asyncio.to_thread((upload_dir / filename).write_bytes, content)
     return f"/uploads/{S3_PREFIX}/{filename}"
+
+
+def _own_picture_key(user_id: str, relative: str) -> Optional[str]:
+    """Return the storage key only if it is exactly this user's own picture (no traversal, no other users)."""
+    pattern = rf"^{S3_PREFIX}/{re.escape(user_id)}_[A-Za-z0-9]+\.(?:jpg|png|webp)$"
+    return relative if re.match(pattern, relative) else None
+
+
+def _public_base() -> str:
+    explicit = os.environ.get("S3_PUBLIC_BASE_URL", "").rstrip("/")
+    if explicit:
+        return explicit
+    region = os.environ.get("AWS_REGION", DEFAULT_REGION)
+    return f"https://{os.environ.get('S3_BUCKET', '')}.s3.{region}.amazonaws.com"
+
+
+async def delete_profile_picture(user_id: str, picture_url: Optional[str], upload_dir: Optional[Path]) -> None:
+    """Best-effort removal of the user's own profile picture; never raises so account deletion can't be blocked by storage."""
+    if not picture_url:
+        return
+    try:
+        if s3_enabled() and picture_url.startswith(_public_base() + "/"):
+            key = _own_picture_key(user_id, picture_url[len(_public_base()) + 1:])
+            if key:
+                await asyncio.to_thread(_get_s3_client().delete_object, Bucket=os.environ["S3_BUCKET"], Key=key)
+        elif picture_url.startswith("/uploads/") and upload_dir is not None:
+            key = _own_picture_key(user_id, picture_url[len("/uploads/"):])
+            if key:
+                await asyncio.to_thread((upload_dir / key.rsplit("/", 1)[1]).unlink, True)
+    except Exception:  # storage trouble must not keep a user from deleting their account
+        logger.warning("Could not delete profile picture for %s", user_id, exc_info=True)
