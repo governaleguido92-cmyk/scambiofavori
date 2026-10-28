@@ -25,7 +25,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://scambio-di-favori-api.onrender.com"
       }
     },
     "production": {
@@ -40,7 +40,7 @@
         "image": "latest"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://scambio-di-favori-api.onrender.com"
       }
     },
     "production-android": {
@@ -50,7 +50,7 @@
         "image": "latest"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://scambio-di-favori-api.onrender.com"
       }
     },
     "production-ios": {
@@ -61,7 +61,7 @@
         "image": "latest"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://backend-production-3b6d.up.railway.app"
+        "EXPO_PUBLIC_BACKEND_URL": "https://scambio-di-favori-api.onrender.com"
       }
     }
   },
