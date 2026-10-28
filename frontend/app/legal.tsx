@@ -110,7 +110,7 @@ export default function LegalScreen() {
             <Text style={styles.articleTitle}>1. Dati Raccolti</Text>
             <Text style={styles.articleText}>
               Raccogliamo i seguenti dati:{'\n'}
-              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata); con l'accesso tramite Google o Apple, nome ed email forniti dal servizio{'\n'}
+              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata); con l'accesso tramite Google o Apple, nome ed email forniti dal servizio (l'accesso con Google passa dal servizio di autenticazione di Emergent){'\n'}
               • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione del dispositivo (solo su consenso){'\n'}
               • <Text style={styles.bold}>Profilo:</Text> foto profilo (se la carichi), competenze, punteggi e badge{'\n'}
               • <Text style={styles.bold}>Dati di utilizzo:</Text> favori creati, messaggi, notifiche, recensioni{'\n'}
@@ -187,7 +187,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               Non vendiamo i tuoi dati. Usiamo fornitori che li trattano per nostro conto: Render (hosting), 
               MongoDB Atlas (database), Cloudflare R2 (foto profilo), Resend (email di verifica), Stripe 
-              (pagamenti), Expo (notifiche push) e, se li scegli, Google o Apple per l'accesso. Alcuni possono 
+              (pagamenti), Expo (notifiche push), Emergent (autenticazione per l'accesso con Google) e, se li scegli, Google o Apple per l'accesso. Alcuni possono 
               trattare dati anche fuori dall'Unione Europea, con le garanzie previste dal GDPR. L'app non 
               contiene pubblicità.
             </Text>
