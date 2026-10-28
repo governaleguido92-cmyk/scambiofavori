@@ -346,7 +346,7 @@ export default function HomeScreen() {
         <View style={styles.headerLeft}>
           <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
           <View>
-            <Text style={styles.greeting}>Ciao, {user?.name?.split(' ')[0]}!</Text>
+            <Text style={styles.greeting}>Ciao, {user?.name?.trim().split(/\s+/)[0] ?? ''}!</Text>
             <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
           </View>
         </View>

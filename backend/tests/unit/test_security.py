@@ -58,7 +58,7 @@ async def test_login_is_rate_limited(client, app_db, rate_limited):
 
 
 async def test_register_rejects_short_password(client, app_db):
-    response = await client.post("/api/auth/register", json={"email": "n@example.com", "name": "N", "password": "short"})
+    response = await client.post("/api/auth/register", json={"email": "n@example.com", "name": "Nome Valido", "password": "short"})
 
     assert response.status_code == 400
 
@@ -94,3 +94,23 @@ def test_otp_codes_are_six_digits_and_vary():
 
     assert all(len(code) == 6 and code.isdigit() for code in codes)
     assert len(codes) > 1
+
+
+async def test_register_trims_name_and_email_whitespace(client, app_db):
+    response = await client.post(
+        "/api/auth/register",
+        json={"email": " nuovo@example.com ", "name": "  Guido Rossi  ", "password": "longenough1"},
+    )
+
+    assert response.status_code == 200
+    stored = await app_db.users.find_one({"email": "nuovo@example.com"})
+    assert stored["name"] == "Guido Rossi"
+
+
+async def test_register_rejects_blank_name(client, app_db):
+    response = await client.post(
+        "/api/auth/register",
+        json={"email": "blank@example.com", "name": "   ", "password": "longenough1"},
+    )
+
+    assert response.status_code == 422

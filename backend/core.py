@@ -11,7 +11,7 @@ import tempfile
 import logging
 import asyncio
 from pathlib import Path
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -396,6 +396,19 @@ class UserCreate(BaseModel):
     name: str
     password: str
     referral_code: Optional[str] = None
+
+    @field_validator("email")
+    @classmethod
+    def strip_email(cls, value: str) -> str:
+        return value.strip()
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, value: str) -> str:
+        cleaned = " ".join(value.split())
+        if len(cleaned) < 2:
+            raise ValueError("Il nome deve avere almeno 2 caratteri")
+        return cleaned
 
 class UserLogin(BaseModel):
     email: str

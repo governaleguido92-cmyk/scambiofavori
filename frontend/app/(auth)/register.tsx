@@ -41,7 +41,7 @@ export default function RegisterScreen() {
   };
 
   const handleRegister = async () => {
-    if (!name || !email || !password) {
+    if (!name.trim() || !email.trim() || !password) {
       Alert.alert('Errore', 'Compila tutti i campi');
       return;
     }
@@ -65,7 +65,7 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
-      const result = await register(email, password, name, referralCode || undefined);
+      const result = await register(email.trim(), password, name.trim(), referralCode || undefined);
       if (result.requiresVerification && result.userId) {
         setUserId(result.userId);
         setVerificationStep(true);
