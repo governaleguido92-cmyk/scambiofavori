@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES, changeLanguage } from '../../src/i18n';
 import { api, Badge, LeaderboardUser, Category, CURRENCY_NAME, CURRENCY_SYMBOL, getImageUrl } from '../../src/services/api';
 import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar';
+import { DeleteAccountModal } from '../../src/components/DeleteAccountModal';
 import { SupporterProfileBorder, SupporterBadge } from '../../src/components/SupporterBadge';
 import themeColors from '../../src/theme/colors';
 import { styles } from '../../src/styles/profile.styles';
@@ -42,12 +43,13 @@ const BADGE_ICONS: Record<string, string> = {
 };
 
 export default function ProfileScreen() {
-  const { user, token, logout, refreshUser } = useAuth();
+  const { user, token, logout, deleteAccount, refreshUser } = useAuth();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [badges, setBadges] = useState<Badge[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [showDonateModal, setShowDonateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
@@ -876,7 +878,27 @@ export default function ProfileScreen() {
           <Ionicons name="log-out" size={20} color="#ff6b6b" />
           <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </TouchableOpacity>
+
+        {/* Delete account (GDPR right to erasure; required by Google Play) */}
+        <TouchableOpacity
+          style={styles.deleteAccountButton}
+          onPress={() => setShowDeleteModal(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Elimina il mio account"
+        >
+          <Text style={styles.deleteAccountText}>Elimina account</Text>
+        </TouchableOpacity>
       </ScrollView>
+
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        email={user?.email ?? ''}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={async (confirmEmail) => {
+          await deleteAccount(confirmEmail);
+          setShowDeleteModal(false);
+        }}
+      />
 
       {/* Donate Modal */}
       <Modal visible={showDonateModal} transparent animationType="slide">
