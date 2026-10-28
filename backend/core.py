@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import tempfile
 import logging
 import asyncio
 from pathlib import Path
@@ -1270,7 +1271,8 @@ async def get_blocked_user_ids(user_id: str) -> set:
 # PROFILE PICTURE UPLOAD
 # ========================
 
-UPLOAD_PATH = Path(os.environ.get("UPLOAD_PATH", "/app/uploads"))
+# Default to a directory every host lets us write to; set UPLOAD_PATH to a persistent volume if needed.
+UPLOAD_PATH = Path(os.environ.get("UPLOAD_PATH") or Path(tempfile.gettempdir()) / "scambiofavori-uploads")
 UPLOAD_DIR = UPLOAD_PATH / "profile_pictures"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
