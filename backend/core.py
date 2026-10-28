@@ -1106,6 +1106,21 @@ class VerifyUsernameRecoveryRequest(BaseModel):
     email: str
     code: str
 
+APPLE_ISSUER = "https://appleid.apple.com"
+APPLE_JWKS_URL = "https://appleid.apple.com/auth/keys"
+# Bundle id(s) the identity token must be issued for (comma separated override via env).
+APPLE_AUDIENCES = [a.strip() for a in os.environ.get("APPLE_CLIENT_IDS", "com.emergent.scambiodifavori").split(",") if a.strip()]
+_apple_jwks_client = None
+
+
+def get_apple_signing_key(identity_token: str):
+    """Fetch (and cache) the Apple public key that signed this token. Blocking: call it from a thread."""
+    global _apple_jwks_client
+    if _apple_jwks_client is None:
+        _apple_jwks_client = jwt.PyJWKClient(APPLE_JWKS_URL, cache_keys=True, lifespan=3600)
+    return _apple_jwks_client.get_signing_key_from_jwt(identity_token).key
+
+
 class AppleAuthRequest(BaseModel):
     identity_token: str
     user_id: str
