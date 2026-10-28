@@ -8,6 +8,7 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import tempfile
+from decimal import ROUND_HALF_UP, Decimal
 import logging
 import asyncio
 from pathlib import Path
@@ -1301,6 +1302,11 @@ SUPPORTER_PLAN = {
     "currency": "eur",
     "interval": "month"
 }
+
+def to_minor_units(amount: float) -> int:
+    """Convert a decimal currency amount (e.g. euros) to integer minor units (cents) as Stripe expects."""
+    return int((Decimal(str(amount)) * 100).to_integral_value(rounding=ROUND_HALF_UP))
+
 
 class SubscriptionCheckoutRequest(BaseModel):
     origin_url: str
