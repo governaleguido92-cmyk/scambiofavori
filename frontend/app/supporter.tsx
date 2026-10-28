@@ -11,14 +11,15 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Redirect, useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../src/context/AuthContext';
 import { api } from '../src/services/api';
 import colors from '../src/theme/colors';
 import { logger } from '../src/utils/logger';
+import { SUPPORTER_PURCHASE_ENABLED } from '../src/utils/features';
 
-export default function SupporterScreen() {
+function SupporterContent() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -549,3 +550,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+
+export default function SupporterScreen() {
+  // Reachable by deep link even when the entry points are hidden: send Android users home.
+  if (!SUPPORTER_PURCHASE_ENABLED) return <Redirect href="/(tabs)" />;
+  return <SupporterContent />;
+}
