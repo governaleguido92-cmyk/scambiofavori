@@ -90,3 +90,6 @@ android-sdk/ -e
 # Keep documented env templates (contain no secrets)
 !.env.example
 !**/.env.example
+
+# Netlify CLI local state
+.netlify/
