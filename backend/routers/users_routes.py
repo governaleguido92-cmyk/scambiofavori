@@ -1,7 +1,7 @@
 """HTTP routes: users."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
-from storage import save_profile_picture
+from storage import delete_profile_picture, save_profile_picture
 
 api_router = APIRouter(prefix="/api")
 
@@ -426,7 +426,12 @@ async def delete_account(
         {"$set": {"reviewer_name": "[Utente Eliminato]", "reviewer_id": "deleted_user"}}
     )
     
-    # 6. Elimina definitivamente l'account utente
+    # 6. Rimuovi la foto profilo dallo storage (solo il file dell'utente)
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "picture": 1, "avatar_url": 1})
+    for picture_url in {(user_doc or {}).get("picture"), (user_doc or {}).get("avatar_url")}:
+        await delete_profile_picture(user_id, picture_url, UPLOAD_DIR)
+
+    # 7. Elimina definitivamente l'account utente
     await db.users.delete_one({"user_id": user_id})
     
     return {
