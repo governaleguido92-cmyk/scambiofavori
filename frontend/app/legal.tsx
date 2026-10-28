@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -109,9 +110,13 @@ export default function LegalScreen() {
             <Text style={styles.articleTitle}>1. Dati Raccolti</Text>
             <Text style={styles.articleText}>
               Raccogliamo i seguenti dati:{'\n'}
-              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (criptata){'\n'}
-              • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione GPS (solo su consenso){'\n'}
-              • <Text style={styles.bold}>Dati di utilizzo:</Text> favori creati, messaggi, recensioni
+              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata); con l'accesso tramite Google o Apple, nome ed email forniti dal servizio{'\n'}
+              • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione del dispositivo (solo su consenso){'\n'}
+              • <Text style={styles.bold}>Profilo:</Text> foto profilo (se la carichi), competenze, punteggi e badge{'\n'}
+              • <Text style={styles.bold}>Dati di utilizzo:</Text> favori creati, messaggi, notifiche, recensioni{'\n'}
+              • <Text style={styles.bold}>Notifiche push:</Text> un identificativo del dispositivo, se le attivi{'\n'}
+              • <Text style={styles.bold}>Pagamenti:</Text> il contributo opzionale è gestito da Stripe; non conserviamo il numero della carta{'\n'}
+              • <Text style={styles.bold}>Dati tecnici:</Text> indirizzo IP e registri del server, per sicurezza
             </Text>
           </View>
 
@@ -133,9 +138,9 @@ export default function LegalScreen() {
             <Text style={styles.articleTitle}>3. Conservazione dei Dati</Text>
             <Text style={styles.articleText}>
               I tuoi dati vengono conservati:{'\n'}
-              • Per tutta la durata dell'account attivo{'\n'}
-              • Per 30 giorni dopo la cancellazione (per sicurezza){'\n'}
-              • I dati anonimi possono essere conservati per statistiche
+              • Per tutta la durata dell'account{'\n'}
+              • Dopo la cancellazione dell'account i dati personali vengono eliminati subito, come descritto qui sotto{'\n'}
+              • I dati dei pagamenti per il periodo richiesto dalla normativa fiscale e contabile
             </Text>
           </View>
 
@@ -154,14 +159,16 @@ export default function LegalScreen() {
           <View style={styles.article}>
             <Text style={styles.articleTitle}>5. Diritto all'Oblio</Text>
             <Text style={styles.articleText}>
-              Puoi richiedere la cancellazione completa del tuo account dalla sezione 
-              "Impostazioni" del tuo profilo. Verranno eliminati:{'\n'}
-              • Email e dati personali{'\n'}
-              • Messaggi inviati{'\n'}
-              • Notifiche{'\n'}
+              Puoi eliminare il tuo account in qualsiasi momento da Profilo → Elimina account. 
+              Verranno cancellati subito:{'\n'}
+              • Email, nome, password e dati del profilo{'\n'}
+              • La foto profilo{'\n'}
+              • Messaggi inviati e notifiche{'\n'}
               • Granelli accumulati{'\n\n'}
-              I tuoi favori passati saranno anonimizzati per mantenere l'integrità 
-              dello storico della piattaforma.
+              I favori e le recensioni che hai scritto restano per lo storico degli altri utenti, ma senza 
+              i tuoi dati personali (il tuo nome diventa "Utente eliminato"). I dati dei pagamenti sono 
+              conservati per gli obblighi di legge. Se non riesci ad accedere all'app, scrivi all'indirizzo 
+              indicato nei contatti.
             </Text>
           </View>
 
@@ -169,19 +176,50 @@ export default function LegalScreen() {
             <Text style={styles.articleTitle}>6. Sicurezza</Text>
             <Text style={styles.articleText}>
               Adottiamo misure di sicurezza per proteggere i tuoi dati:{'\n'}
-              • Password criptate con algoritmi sicuri{'\n'}
+              • Password conservate solo in forma cifrata{'\n'}
               • Connessioni HTTPS cifrate{'\n'}
-              • Accesso ai dati limitato al personale autorizzato{'\n'}
-              • Backup regolari e sicuri
+              • Accesso ai dati limitato a chi ne ha bisogno
             </Text>
           </View>
 
           <View style={styles.article}>
-            <Text style={styles.articleTitle}>7. Contatti</Text>
+            <Text style={styles.articleTitle}>7. Fornitori e trasferimenti</Text>
             <Text style={styles.articleText}>
-              Per qualsiasi domanda sulla privacy o per esercitare i tuoi diritti, 
-              puoi contattarci all'indirizzo:{'\n\n'}
-              <Text style={styles.emailText}>privacy@scambiodifavori.it</Text>
+              Non vendiamo i tuoi dati. Usiamo fornitori che li trattano per nostro conto: Render (hosting), 
+              MongoDB Atlas (database), Cloudflare R2 (foto profilo), Resend (email di verifica), Stripe 
+              (pagamenti), Expo (notifiche push) e, se li scegli, Google o Apple per l'accesso. Alcuni possono 
+              trattare dati anche fuori dall'Unione Europea, con le garanzie previste dal GDPR. L'app non 
+              contiene pubblicità.
+            </Text>
+          </View>
+
+          <View style={styles.article}>
+            <Text style={styles.articleTitle}>8. Minori</Text>
+            <Text style={styles.articleText}>
+              L'app è destinata a persone di almeno 18 anni.
+            </Text>
+          </View>
+
+          <View style={styles.article}>
+            <Text style={styles.articleTitle}>9. Titolare e contatti</Text>
+            <Text style={styles.articleText}>
+              Titolare del trattamento: Guido Governale.{'\n'}
+              Per qualsiasi domanda sulla privacy o per esercitare i tuoi diritti scrivi a:{'\n\n'}
+              <Text
+                style={styles.emailText}
+                onPress={() => Linking.openURL('mailto:governaleguido92@gmail.com')}
+                accessibilityRole="link"
+              >
+                governaleguido92@gmail.com
+              </Text>
+              {'\n\n'}Informativa completa:{'\n'}
+              <Text
+                style={styles.emailText}
+                onPress={() => Linking.openURL('https://scambiofavori.it/privacy')}
+                accessibilityRole="link"
+              >
+                scambiofavori.it/privacy
+              </Text>
             </Text>
           </View>
         </View>
@@ -189,10 +227,10 @@ export default function LegalScreen() {
         {/* Last Update */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Ultimo aggiornamento: Febbraio 2026
+            Ultimo aggiornamento: Ottobre 2026
           </Text>
           <Text style={styles.footerText}>
-            Versione: 1.0
+            Versione: 1.1
           </Text>
         </View>
       </ScrollView>
