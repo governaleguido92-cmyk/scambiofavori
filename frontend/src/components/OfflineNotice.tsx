@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
   },
 });

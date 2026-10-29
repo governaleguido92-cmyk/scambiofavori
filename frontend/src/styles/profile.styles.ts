@@ -200,7 +200,7 @@ export const styles = StyleSheet.create({
   },
   socialImpactHint: {
     color: '#8FA595',
-    fontSize: 10,
+    fontSize: 12,
   },
   ratingsContainer: {
     flexDirection: 'row',
@@ -233,7 +233,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statSymbol: {
-    fontSize: 28,
+    fontSize: 32,
   },
   statValue: {
     fontSize: 24,
@@ -283,7 +283,7 @@ export const styles = StyleSheet.create({
   },
   badgeName: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'center',
     fontWeight: '600',
   },
@@ -420,7 +420,7 @@ export const styles = StyleSheet.create({
   },
   oggettotecaBadgeText: {
     color: '#889848',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   infoSection: {
@@ -523,7 +523,7 @@ export const styles = StyleSheet.create({
   },
   languageBtnText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
   },
   notifPrefsContainer: {
@@ -551,12 +551,12 @@ export const styles = StyleSheet.create({
   },
   notifPrefLabel: {
     color: themeColors.textPrimary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
   notifPrefDesc: {
     color: themeColors.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 1,
   },
   modalOverlay: {
@@ -730,7 +730,7 @@ export const styles = StyleSheet.create({
   },
   leaderboardScoreLabel: {
     color: '#9DB3A4',
-    fontSize: 10,
+    fontSize: 12,
   },
   modalCloseButton: {
     padding: 14,
@@ -755,7 +755,7 @@ export const styles = StyleSheet.create({
   },
   editSkillsText: {
     color: '#B8C868',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
   skillsContainer: {
@@ -777,7 +777,7 @@ export const styles = StyleSheet.create({
   },
   skillTagText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
   },
   noSkillsCard: {
@@ -795,7 +795,7 @@ export const styles = StyleSheet.create({
   },
   noSkillsDescription: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 20,
@@ -816,7 +816,7 @@ export const styles = StyleSheet.create({
   },
   skillsHint: {
     color: '#8FA595',
-    fontSize: 11,
+    fontSize: 12,
     textAlign: 'center',
     marginTop: 8,
   },
@@ -859,7 +859,7 @@ export const styles = StyleSheet.create({
   },
   skillSelectName: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
   },
   skillSelectNameActive: {
@@ -873,7 +873,7 @@ export const styles = StyleSheet.create({
   },
   microBadgeText: {
     color: '#F87828',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '500',
   },
   skillCheckbox: {
@@ -895,7 +895,7 @@ export const styles = StyleSheet.create({
   },
   selectedCountText: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
   },
   modalConfirmButtonDisabled: {
     opacity: 0.6,
@@ -941,7 +941,7 @@ export const styles = StyleSheet.create({
   },
   reviewerName: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
     marginBottom: 6,
   },
   reviewComment: {
@@ -961,12 +961,12 @@ export const styles = StyleSheet.create({
   },
   publicThanksText: {
     color: '#ff6b6b',
-    fontSize: 13,
+    fontSize: 14,
     flex: 1,
   },
   moreReviewsText: {
     color: '#B8C868',
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
   },
@@ -1005,7 +1005,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   badgeModalTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
@@ -1026,7 +1026,7 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(102, 102, 102, 0.2)',
   },
   badgeStatusText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#8FA595',
   },
   badgeStatusEarned: {
@@ -1050,7 +1050,7 @@ export const styles = StyleSheet.create({
   },
   badgeHowToGetText: {
     color: '#FFD700',
-    fontSize: 13,
+    fontSize: 14,
     flex: 1,
     lineHeight: 18,
   },

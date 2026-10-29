@@ -571,7 +571,7 @@ class TestGetEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == "Granelli"
-        assert data["symbol"] == "💎"
+        assert data["symbol"] == "🌾"
         assert data["welcome_bonus"] == 3
         print("✓ Currency info retrieved correctly")
     

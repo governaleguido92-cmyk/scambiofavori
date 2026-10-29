@@ -261,7 +261,7 @@ export default function OggettotecaScreen() {
 
         <View style={styles.objectFooter}>
           <View style={styles.ownerInfo}>
-            <Ionicons name="person-circle" size={18} color="#9DB3A4" />
+            <Ionicons name="person-circle" size={20} color="#9DB3A4" />
             <Text style={styles.ownerName}>
               {isMine ? tt('Tu') : item.owner_name}
             </Text>
@@ -286,7 +286,7 @@ export default function OggettotecaScreen() {
             style={styles.borrowButton}
             onPress={() => handleBorrow(item.object_id, item.deposit_granelli)}
           >
-            <Ionicons name="hand-left" size={18} color="#fff" />
+            <Ionicons name="hand-left" size={20} color="#fff" />
             <Text style={styles.borrowButtonText}>{tt('Prendi in Prestito')}</Text>
           </TouchableOpacity>
         )}
@@ -296,7 +296,7 @@ export default function OggettotecaScreen() {
             style={styles.returnButton}
             onPress={() => handleReturn(item.object_id)}
           >
-            <Ionicons name="return-down-back" size={18} color="#fff" />
+            <Ionicons name="return-down-back" size={20} color="#fff" />
             <Text style={styles.returnButtonText}>{tt('Restituisci')}</Text>
           </TouchableOpacity>
         )}
@@ -327,7 +327,7 @@ export default function OggettotecaScreen() {
         >
           <Ionicons
             name="cube"
-            size={18}
+            size={20}
             color={activeTab === 'available' ? '#0F1A14' : '#9DB3A4'}
           />
           <Text style={[styles.tabText, activeTab === 'available' && styles.tabTextActive]}>{tt('Disponibili')}</Text>
@@ -338,7 +338,7 @@ export default function OggettotecaScreen() {
         >
           <Ionicons
             name="person"
-            size={18}
+            size={20}
             color={activeTab === 'mine' ? '#0F1A14' : '#9DB3A4'}
           />
           <Text style={[styles.tabText, activeTab === 'mine' && styles.tabTextActive]}>{tt('I Miei Oggetti')}</Text>
@@ -393,7 +393,7 @@ export default function OggettotecaScreen() {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="cube-outline" size={60} color="#333" />
+              <Ionicons name="cube-outline" size={64} color="#333" />
               <Text style={styles.emptyText}>
                 {activeTab === 'available' 
                   ? tt('Nessun oggetto disponibile') 
@@ -515,7 +515,7 @@ export default function OggettotecaScreen() {
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <>
-                    <Ionicons name="add-circle" size={18} color="#fff" />
+                    <Ionicons name="add-circle" size={20} color="#fff" />
                     <Text style={styles.modalConfirmText}>{tt('Aggiungi')}</Text>
                   </>
                 )}

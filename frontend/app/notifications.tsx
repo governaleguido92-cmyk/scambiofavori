@@ -113,7 +113,7 @@ export default function NotificationsScreen() {
         <View style={[styles.iconContainer, { backgroundColor: `${iconConfig.color}20` }]}>
           <Ionicons 
             name={iconConfig.name as any} 
-            size={22} 
+            size={24} 
             color={iconConfig.color} 
           />
         </View>
@@ -128,7 +128,7 @@ export default function NotificationsScreen() {
         </View>
         
         {item.favor_id && (
-          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         )}
       </TouchableOpacity>
     );
@@ -179,7 +179,7 @@ export default function NotificationsScreen() {
       {/* Notifications List */}
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="notifications-off-outline" size={60} color={colors.textMuted} />
+          <Ionicons name="notifications-off-outline" size={64} color={colors.textMuted} />
           <Text style={styles.emptyTitle}>{tt('Nessuna notifica')}</Text>
           <Text style={styles.emptySubtitle}>{tt('Qui appariranno le notifiche sui favori e le corrispondenze con le tue competenze')}</Text>
         </View>
@@ -300,13 +300,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   message: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 18,
     marginTop: 4,
   },
   time: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.textMuted,
     marginTop: 6,
   },

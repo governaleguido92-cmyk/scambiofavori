@@ -36,7 +36,7 @@ export default function TabsLayout() {
           paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: '600',
         },
       }}
@@ -65,7 +65,7 @@ export default function TabsLayout() {
           title: tt('Crea'),
           tabBarIcon: ({ color, size }) => (
             <View style={styles.createButton}>
-              <Ionicons name="heart-circle" size={28} color={colors.background} />
+              <Ionicons name="heart-circle" size={32} color={colors.background} />
             </View>
           ),
         }}

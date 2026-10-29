@@ -516,7 +516,7 @@ export default function FavorDetailScreen() {
               onPress={() => router.push(`/chat/${favor.favor_id}` as any)}
               data-testid="chat-button"
             >
-              <Ionicons name="chatbubble" size={22} color="#B8C868" />
+              <Ionicons name="chatbubble" size={24} color="#B8C868" />
             </TouchableOpacity>
           )}
           {canViewQR() && (
@@ -536,7 +536,7 @@ export default function FavorDetailScreen() {
               onPress={handleReportFavor}
               data-testid="report-favor-button"
             >
-              <Ionicons name="flag" size={22} color="#ff6b6b" />
+              <Ionicons name="flag" size={24} color="#ff6b6b" />
             </TouchableOpacity>
           )}
         </View>
@@ -999,7 +999,7 @@ export default function FavorDetailScreen() {
                   <Text style={styles.profileTitle}>{userProfile.title}</Text>
                   {userProfile.is_supporter && (
                     <View style={styles.supporterBadgeSmall}>
-                      <Ionicons name="heart" size={12} color="#ff6b6b" />
+                      <Ionicons name="heart" size={14} color="#ff6b6b" />
                       <Text style={styles.supporterBadgeText}>{tt('Sostenitore')}</Text>
                     </View>
                   )}
@@ -1080,7 +1080,7 @@ export default function FavorDetailScreen() {
                               <Ionicons 
                                 key={i} 
                                 name={i <= review.rating ? 'star' : 'star-outline'} 
-                                size={12} 
+                                size={14} 
                                 color="#ffd700" 
                               />
                             ))}

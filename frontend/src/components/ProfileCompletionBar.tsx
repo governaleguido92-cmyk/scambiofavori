@@ -75,7 +75,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
       >
         <View style={styles.headerLeft}>
           <View style={styles.iconContainer}>
-            <Ionicons name="person-circle" size={22} color={colors.accent} />
+            <Ionicons name="person-circle" size={24} color={colors.accent} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>{tt('Completa il tuo profilo')}</Text>
@@ -86,7 +86,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
         </View>
         <Ionicons
           name={expanded ? 'chevron-up' : 'chevron-down'}
-          size={18}
+          size={20}
           color={colors.textMuted}
         />
       </TouchableOpacity>
@@ -112,7 +112,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
           <View key={item.id} style={styles.stepLabel}>
             <Ionicons
               name={(item.completed ? 'checkmark-circle' : STEP_ICONS[item.id] || 'ellipse') as any}
-              size={12}
+              size={14}
               color={item.completed ? colors.accent : colors.textMuted}
             />
           </View>
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 1,
   },
   segmentedBar: {
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   itemLabel: {
     flex: 1,
     color: colors.textPrimary,
-    fontSize: 13,
+    fontSize: 14,
   },
   itemLabelCompleted: {
     textDecorationLine: 'line-through',
@@ -276,6 +276,6 @@ const styles = StyleSheet.create({
   badgeInfoText: {
     flex: 1,
     color: colors.granelli,
-    fontSize: 11,
+    fontSize: 12,
   },
 });

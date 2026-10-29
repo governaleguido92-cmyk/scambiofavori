@@ -324,7 +324,7 @@ export default function CreateFavorScreen() {
                 >
                   <Ionicons
                     name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-                    size={18}
+                    size={20}
                     color={category === cat.name ? '#0F1A14' : '#B8C868'}
                   />
                   <Text style={[
@@ -517,11 +517,11 @@ export default function CreateFavorScreen() {
             <View style={styles.modalInfoBox}>
               <Text style={styles.modalInfoTitle}>{tt('Come tornare in positivo:')}</Text>
               <View style={styles.modalInfoItem}>
-                <Ionicons name="gift-outline" size={18} color="#B8C868" />
+                <Ionicons name="gift-outline" size={20} color="#B8C868" />
                 <Text style={styles.modalInfoText}>{tt('Offri favori alla community')}</Text>
               </View>
               <View style={styles.modalInfoItem}>
-                <Ionicons name="heart-outline" size={18} color="#B8C868" />
+                <Ionicons name="heart-outline" size={20} color="#B8C868" />
                 <Text style={styles.modalInfoText}>{tt('Richiedi aiuto dal Fondo Solidarietà')}</Text>
               </View>
             </View>

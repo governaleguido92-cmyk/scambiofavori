@@ -80,7 +80,7 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
   const renderSlide = ({ item, index }: { item: typeof SLIDES[0]; index: number }) => (
     <View style={styles.slide}>
       <View style={[styles.iconContainer, { backgroundColor: item.iconColor + '20' }]}>
-        <Ionicons name={item.icon as any} size={60} color={item.iconColor} />
+        <Ionicons name={item.icon as any} size={64} color={item.iconColor} />
       </View>
       
       <Text style={styles.title}>{tt(item.title)}</Text>
@@ -90,7 +90,7 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
         {item.points.map((point, idx) => (
           <View key={idx} style={styles.pointRow}>
             <View style={styles.pointIcon}>
-              <Ionicons name={point.icon as any} size={22} color={colors.accent} />
+              <Ionicons name={point.icon as any} size={24} color={colors.accent} />
             </View>
             <Text style={styles.pointText}>{tt(point.text)}</Text>
           </View>
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   pointText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.textPrimary,
     lineHeight: 22,
   },

@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
   title: { flex: 1, color: colors.textPrimary, fontSize: 20, fontWeight: '700' },
-  warning: { color: colors.error, fontSize: 15, fontWeight: '700', marginBottom: 8 },
+  warning: { color: colors.error, fontSize: 16, fontWeight: '700', marginBottom: 8 },
   body: { color: colors.textSecondary, fontSize: 14, lineHeight: 21, marginBottom: 16 },
   label: { color: colors.textPrimary, fontSize: 14, fontWeight: '600' },
   emailHint: { color: colors.accent, fontSize: 14, marginTop: 2, marginBottom: 8 },
@@ -153,5 +153,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontSize: 16, fontWeight: '600' },
   deleteButton: { backgroundColor: colors.error },
   deleteButtonDisabled: { opacity: 0.4 },
-  deleteText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  deleteText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

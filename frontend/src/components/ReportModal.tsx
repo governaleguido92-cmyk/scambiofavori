@@ -127,7 +127,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 ]}>
                   <Ionicons
                     name={reason.icon as any}
-                    size={18}
+                    size={20}
                     color={selectedReason === reason.id ? '#fff' : '#9DB3A4'}
                   />
                 </View>
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   targetInfo: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
     marginBottom: 16,
   },
   targetName: {
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   reasonLabel: {
     flex: 1,
     color: '#fff',
-    fontSize: 15,
+    fontSize: 16,
   },
   reasonLabelSelected: {
     fontWeight: '600',

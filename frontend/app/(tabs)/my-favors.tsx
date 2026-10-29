@@ -150,7 +150,7 @@ export default function MyFavorsScreen() {
           <View style={styles.badgesRow}>
             {item.is_emergency && (
               <View style={styles.emergencyBadge}>
-                <Ionicons name="alert-circle" size={12} color="#ff6b6b" />
+                <Ionicons name="alert-circle" size={14} color="#ff6b6b" />
               </View>
             )}
             <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
@@ -191,7 +191,7 @@ export default function MyFavorsScreen() {
                 style={styles.completeButton}
                 onPress={() => handleComplete(item.favor_id)}
               >
-                <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                <Ionicons name="checkmark-circle" size={20} color="#fff" />
                 <Text style={styles.completeButtonText}>{t('favor.complete')}</Text>
               </TouchableOpacity>
             )}
@@ -200,7 +200,7 @@ export default function MyFavorsScreen() {
                 style={styles.cancelButton}
                 onPress={() => handleCancel(item.favor_id)}
               >
-                <Ionicons name="close-circle" size={18} color="#ff6b6b" />
+                <Ionicons name="close-circle" size={20} color="#ff6b6b" />
               </TouchableOpacity>
             )}
           </View>
@@ -243,7 +243,7 @@ export default function MyFavorsScreen() {
         </View>
       ) : filteredFavors.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="folder-open" size={60} color="#333" />
+          <Ionicons name="folder-open" size={64} color="#333" />
           <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
           <Text style={styles.emptySubtext}>
             {filter === 'all'

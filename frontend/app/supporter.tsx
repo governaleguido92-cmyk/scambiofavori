@@ -166,7 +166,7 @@ function SupporterContent() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <View style={styles.heartIcon}>
-            <Ionicons name="heart" size={60} color="#ffd700" />
+            <Ionicons name="heart" size={64} color="#ffd700" />
           </View>
           <Text style={styles.heroTitle}>Diventa un Pilastro{'\n'}della Community</Text>
           <Text style={styles.heroSubtitle}>
@@ -176,7 +176,7 @@ function SupporterContent() {
 
         {/* Emotional Message */}
         <View style={styles.messageCard}>
-          <Ionicons name="cafe-outline" size={28} color={colors.accent} />
+          <Ionicons name="cafe-outline" size={32} color={colors.accent} />
           <Text style={styles.messageText}>
             Con solo <Text style={styles.highlight}>1€ al mese</Text> (meno di un caffè!), 
             ci aiuti a mantenere l'app gratuita, sicura e senza pubblicità.
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   heroSubtitle: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#9DB3A4',
     textAlign: 'center',
     lineHeight: 22,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   messageSubtext: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#9DB3A4',
     textAlign: 'center',
     marginTop: 8,
@@ -400,13 +400,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   benefitTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 4,
   },
   benefitDesc: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#9DB3A4',
   },
   pricingCard: {
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   priceHint: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#9DB3A4',
     marginTop: 8,
   },
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   subscribeButtonText: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
     color: '#0F1A14',
   },
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   privacyText: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 12,
     color: '#8FA595',
   },
   loadingContainer: {

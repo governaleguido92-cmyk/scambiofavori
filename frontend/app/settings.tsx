@@ -81,7 +81,7 @@ export default function SettingsScreen() {
             {NOTIFICATION_OPTIONS.map((item) => (
               <View key={item.key} style={styles.notifPrefRow}>
                 <View style={styles.notifPrefIcon}>
-                  <Ionicons name={item.icon} size={18} color={themeColors.accent} />
+                  <Ionicons name={item.icon} size={20} color={themeColors.accent} />
                 </View>
                 <View style={styles.notifPrefText}>
                   <Text style={styles.notifPrefLabel}>{tt(item.label)}</Text>
@@ -101,7 +101,7 @@ export default function SettingsScreen() {
 
         <View style={styles.languageSection}>
           <View style={styles.languageLabelRow}>
-            <Ionicons name="language" size={18} color="#A8C4B0" />
+            <Ionicons name="language" size={20} color="#A8C4B0" />
             <Text style={styles.languageLabel}>{t('settings.language')}</Text>
           </View>
           <View style={styles.languageButtons}>

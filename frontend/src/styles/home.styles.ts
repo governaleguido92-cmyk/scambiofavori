@@ -54,7 +54,7 @@ export const styles = StyleSheet.create({
   },
   notificationBadgeText: {
     color: '#fff',
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   greeting: {
@@ -118,21 +118,21 @@ export const styles = StyleSheet.create({
   },
   thanksGiver: {
     color: colors.primaryLight,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
   },
   thanksArrow: {
     color: colors.textMuted,
-    fontSize: 10,
+    fontSize: 12,
   },
   thanksReceiver: {
     color: colors.primaryLight,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
   },
   thanksMessage: {
     color: colors.textSecondary,
-    fontSize: 9,
+    fontSize: 12,
     fontStyle: 'italic',
   },
   tabSelector: {
@@ -165,7 +165,7 @@ export const styles = StyleSheet.create({
   },
   typeFilter: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     gap: 8,
     marginTop: 10,
   },
@@ -180,7 +180,7 @@ export const styles = StyleSheet.create({
   },
   typeButtonText: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
   typeButtonTextActive: {
@@ -192,7 +192,7 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   categoriesContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     gap: 6,
     paddingVertical: 2,
   },
@@ -232,7 +232,7 @@ export const styles = StyleSheet.create({
     paddingTop: 12,
   },
   promoBanner: {
-    marginHorizontal: 16,
+    marginHorizontal: 0,
     marginTop: 8,
     marginBottom: 4,
     backgroundColor: colors.granelliMuted,
@@ -266,7 +266,7 @@ export const styles = StyleSheet.create({
   },
   promoBannerSubtitle: {
     color: colors.textSecondary,
-    fontSize: 11,
+    fontSize: 12,
     lineHeight: 15,
   },
   emptyContainer: {
@@ -282,19 +282,19 @@ export const styles = StyleSheet.create({
   },
   emptySubtext: {
     color: colors.textMuted,
-    fontSize: 13,
+    fontSize: 14,
     marginTop: 4,
   },
   listContent: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 80,
   },
   favorCard: {
     backgroundColor: colors.backgroundCard,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 8,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -306,8 +306,8 @@ export const styles = StyleSheet.create({
   favorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
-    gap: 6,
+    marginBottom: 8,
+    gap: 8,
   },
   headerContent: {
     flex: 1,
@@ -322,7 +322,7 @@ export const styles = StyleSheet.create({
   },
   authorInitial: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   reportButton: {
@@ -340,7 +340,7 @@ export const styles = StyleSheet.create({
   },
   categoryText: {
     color: colors.lime,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   emergencyBadge: {
@@ -354,7 +354,7 @@ export const styles = StyleSheet.create({
   },
   emergencyText: {
     color: colors.error,
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: '600',
   },
   typeBadge: {
@@ -369,21 +369,21 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.accentMuted,
   },
   typeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.textPrimary,
   },
   favorTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   favorDescription: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 16,
-    marginBottom: 6,
+    lineHeight: 20,
+    marginBottom: 10,
   },
   favorFooter: {
     flexDirection: 'row',
@@ -401,7 +401,7 @@ export const styles = StyleSheet.create({
   },
   creatorName: {
     color: colors.textPrimary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   soliContainer: {
@@ -414,7 +414,7 @@ export const styles = StyleSheet.create({
     gap: 3,
   },
   soliSymbol: {
-    fontSize: 12,
+    fontSize: 14,
   },
   soliText: {
     color: colors.granelli,
@@ -446,7 +446,7 @@ export const styles = StyleSheet.create({
   },
   distanceText: {
     color: colors.textMuted,
-    fontSize: 11,
+    fontSize: 12,
     marginRight: 8,
   },
   footerRight: {

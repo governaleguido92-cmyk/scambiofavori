@@ -165,9 +165,9 @@ export default function HomeScreen() {
   const renderThanksCard = ({ item }: { item: ThanksEntry }) => (
     <View style={styles.thanksCard}>
       <View style={styles.thanksHeader}>
-        <Ionicons name="heart" size={12} color="#ff6b6b" />
+        <Ionicons name="heart" size={14} color="#ff6b6b" />
         <Text style={styles.thanksGiver}>{item.giver_name}</Text>
-        <Ionicons name="arrow-forward" size={10} color="#9DB3A4" />
+        <Ionicons name="arrow-forward" size={14} color="#9DB3A4" />
         <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
       </View>
       <Text style={styles.thanksMessage} numberOfLines={1}>"{item.message}"</Text>
@@ -185,7 +185,7 @@ export default function HomeScreen() {
     >
       {/* Compact Header: Avatar + Name + Type Badge */}
       <View style={styles.favorHeader}>
-        <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={28}>
+        <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={32}>
           <View style={styles.authorAvatar}>
             <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
           </View>
@@ -218,7 +218,7 @@ export default function HomeScreen() {
 
       {/* Title */}
       <Text style={styles.favorTitle} numberOfLines={1}>{item.title}</Text>
-      <Text style={styles.favorDescription} numberOfLines={1}>{item.description}</Text>
+      <Text style={styles.favorDescription} numberOfLines={2}>{item.description}</Text>
 
       {/* Footer: Category + Emergency + Granelli */}
       <View style={styles.favorFooter}>
@@ -226,14 +226,14 @@ export default function HomeScreen() {
           <View style={styles.categoryBadge}>
             <Ionicons
               name={(CATEGORY_ICONS[item.category] || 'ellipsis-horizontal') as any}
-              size={10}
+              size={14}
               color={colors.lime}
             />
             <Text style={styles.categoryText}>{tt(item.category)}</Text>
           </View>
           {item.is_emergency && (
             <View style={styles.emergencyBadge}>
-              <Ionicons name="alert-circle" size={10} color={colors.error} />
+              <Ionicons name="alert-circle" size={14} color={colors.error} />
               <Text style={styles.emergencyText}>{tt('Urgente')}</Text>
             </View>
           )}
@@ -275,7 +275,7 @@ export default function HomeScreen() {
       ) : thanksBoard.length > 0 ? (
         <View style={styles.thanksBoardSection}>
           <View style={styles.thanksBoardHeader}>
-            <Ionicons name="heart" size={18} color="#ff6b6b" />
+            <Ionicons name="heart" size={20} color="#ff6b6b" />
             <Text style={styles.thanksBoardTitle}>{tt('Bacheca dei Grazie')}</Text>
           </View>
           <FlatList
@@ -366,7 +366,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/notifications' as any)}
             data-testid="notifications-button"
           >
-            <Ionicons name="notifications" size={22} color={colors.textPrimary} />
+            <Ionicons name="notifications" size={24} color={colors.textPrimary} />
             {unreadNotifications > 0 && (
               <View style={styles.notificationBadge}>
                 <Text style={styles.notificationBadgeText}>
@@ -396,7 +396,7 @@ export default function HomeScreen() {
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="search" size={60} color="#333" />
+              <Ionicons name="search" size={64} color="#333" />
               <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
               <Text style={styles.emptySubtext}>{tt('Prova a cambiare i filtri')}</Text>
             </View>
@@ -412,7 +412,7 @@ export default function HomeScreen() {
         style={styles.emergencyButton}
         onPress={() => router.push('/emergencies' as any)}
       >
-        <Ionicons name="alert-circle" size={22} color="#fff" />
+        <Ionicons name="alert-circle" size={24} color="#fff" />
         <Text style={styles.emergencyButtonText}>{tt('Urgenze')}</Text>
       </TouchableOpacity>
 

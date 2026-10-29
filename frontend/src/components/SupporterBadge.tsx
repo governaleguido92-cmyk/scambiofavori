@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: '#ffd700',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   nameRow: {

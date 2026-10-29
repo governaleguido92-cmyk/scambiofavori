@@ -304,7 +304,7 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             <View style={styles.bonusContainer}>
-              <Text style={styles.bonusIcon}>💎</Text>
+              <Text style={styles.bonusIcon}>🌾</Text>
               <Text style={styles.bonusText}>{tt('Riceverai 3 Granelli di benvenuto!')}</Text>
             </View>
 
