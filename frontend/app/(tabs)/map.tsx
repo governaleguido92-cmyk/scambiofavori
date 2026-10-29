@@ -95,7 +95,7 @@ const MapPlaceholder = ({
 
         {/* Privacy notice */}
         <View style={styles.privacyBanner}>
-          <Ionicons name="shield-checkmark" size={16} color={colors.primary} />
+          <Ionicons name="shield-checkmark" size={16} color={colors.lime} />
           <Text style={styles.privacyText}>{tt('Le posizioni sono approssimative per proteggere la privacy')}</Text>
         </View>
       </View>
@@ -191,7 +191,7 @@ export default function MapScreen() {
           style={styles.refreshButton}
           onPress={loadFavors}
         >
-          <Ionicons name="refresh" size={22} color={colors.primary} />
+          <Ionicons name="refresh" size={24} color={colors.lime} />
         </TouchableOpacity>
       </View>
 
@@ -254,7 +254,7 @@ export default function MapScreen() {
       {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+          <View style={[styles.legendDot, { backgroundColor: colors.lime }]} />
           <Text style={styles.legendText}>{tt('Offerte')}</Text>
         </View>
         <View style={styles.legendItem}>
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   filterText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.textSecondary,
   },
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   userLocationText: {
     marginTop: 4,
-    fontSize: 10,
+    fontSize: 12,
     color: colors.textSecondary,
     backgroundColor: colors.background,
     paddingHorizontal: 6,
@@ -399,8 +399,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   offerCircle: {
-    backgroundColor: colors.primaryMuted,
-    borderColor: colors.primary,
+    backgroundColor: colors.limeMuted,
+    borderColor: colors.lime,
   },
   requestCircle: {
     backgroundColor: colors.accentMuted,
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   circleDistance: {
-    fontSize: 10,
+    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
   },
@@ -442,11 +442,11 @@ const styles = StyleSheet.create({
     maxWidth: 80,
   },
   circleLabelText: {
-    fontSize: 9,
+    fontSize: 12,
     color: colors.textSecondary,
   },
   circleCreatorText: {
-    fontSize: 8,
+    fontSize: 12,
     color: colors.textMuted,
     marginTop: 1,
   },
@@ -465,8 +465,8 @@ const styles = StyleSheet.create({
   },
   privacyText: {
     flex: 1,
-    fontSize: 11,
-    color: colors.primary,
+    fontSize: 12,
+    color: colors.textSecondary,
   },
   legend: {
     flexDirection: 'row',
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   legendText: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
   },
 });

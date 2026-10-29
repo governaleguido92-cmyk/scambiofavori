@@ -52,7 +52,7 @@ export function ToastHost() {
         accessibilityLiveRegion="polite"
         accessibilityLabel={toast.message ? `${toast.title}. ${toast.message}` : toast.title}
       >
-        <Ionicons name={isError ? 'alert-circle' : 'checkmark-circle'} size={22} color={accent} />
+        <Ionicons name={isError ? 'alert-circle' : 'checkmark-circle'} size={24} color={accent} />
         <View style={styles.textBox}>
           <Text style={styles.title}>{toast.title}</Text>
           {!!toast.message && <Text style={styles.message}>{toast.message}</Text>}
@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   textBox: { flex: 1 },
-  title: { color: colors.textPrimary, fontSize: 15, fontWeight: '700' },
+  title: { color: colors.textPrimary, fontSize: 16, fontWeight: '700' },
   message: { color: colors.textSecondary, fontSize: 14, lineHeight: 19, marginTop: 2 },
 });

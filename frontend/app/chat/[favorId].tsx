@@ -245,7 +245,7 @@ export default function ChatScreen() {
         ]}>
           {item.blocked && (
             <View style={styles.blockedBadge}>
-              <Ionicons name="warning" size={12} color={colors.error} />
+              <Ionicons name="warning" size={14} color={colors.error} />
               <Text style={styles.blockedBadgeText}>{tt('Bloccato')}</Text>
             </View>
           )}
@@ -325,7 +325,7 @@ export default function ChatScreen() {
           onPress={() => setShowReportModal(true)}
           data-testid="report-button"
         >
-          <Ionicons name="flag" size={22} color={colors.error} />
+          <Ionicons name="flag" size={24} color={colors.error} />
         </TouchableOpacity>
       </View>
 
@@ -372,7 +372,7 @@ export default function ChatScreen() {
               {sendingLocation ? (
                 <ActivityIndicator size="small" color={colors.accent} />
               ) : (
-                <Ionicons name="location" size={22} color={colors.accent} />
+                <Ionicons name="location" size={24} color={colors.accent} />
               )}
             </TouchableOpacity>
             
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
   },
   granelliBadge: {
@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   },
   senderNameText: {
     color: colors.textSecondary,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   messageBubble: {
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   },
   blockedBadgeText: {
     color: colors.error,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
   },
   messageText: {
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     color: colors.textMuted,
-    fontSize: 10,
+    fontSize: 12,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   reportSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 20,
   },

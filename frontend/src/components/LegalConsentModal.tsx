@@ -73,19 +73,19 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
             <View style={styles.summaryBox}>
               <Text style={styles.summaryTitle}>{tt('In breve:')}</Text>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
                 <Text style={styles.summaryText}>{tt('Siamo un intermediario tra privati')}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
                 <Text style={styles.summaryText}>{tt('Scambi solo con Granelli, mai denaro reale')}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
                 <Text style={styles.summaryText}>{tt('La tua posizione esatta resta privata')}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
                 <Text style={styles.summaryText}>{tt('Puoi eliminare il tuo account quando vuoi')}</Text>
               </View>
             </View>
@@ -130,7 +130,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
 
             {/* Info Text */}
             <View style={styles.infoBox}>
-              <Ionicons name="information-circle" size={18} color={colors.textMuted} />
+              <Ionicons name="information-circle" size={20} color={colors.textMuted} />
               <Text style={styles.infoText}>{tt('Accettando, confermi di aver compreso che la piattaforma è un semplice intermediario e che ogni scambio è sotto la tua responsabilità.')}</Text>
             </View>
           </ScrollView>
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.textPrimary,
     textAlign: 'center',
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   disclaimerText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     color: colors.warning,
     lineHeight: 18,
     fontWeight: '500',
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 18,
   },
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   legalLink: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textMuted,
     textDecorationLine: 'underline',
   },

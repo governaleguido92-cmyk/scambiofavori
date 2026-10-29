@@ -280,7 +280,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 12,
@@ -304,7 +304,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoSymbol: {
-    fontSize: 28,
+    fontSize: 32,
   },
   infoValue: {
     fontSize: 24,
@@ -411,7 +411,7 @@ export const styles = StyleSheet.create({
   },
   ratingLabel: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
     flex: 1,
   },
   starsContainer: {
@@ -446,7 +446,7 @@ export const styles = StyleSheet.create({
   },
   publicThanksText: {
     color: '#D0DDD3',
-    fontSize: 13,
+    fontSize: 14,
     fontStyle: 'italic',
     flex: 1,
   },
@@ -501,7 +501,7 @@ export const styles = StyleSheet.create({
   },
   acceptHint: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 18,
     textAlign: 'center',
     marginTop: 10,
@@ -584,7 +584,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   qrModalTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
@@ -675,7 +675,7 @@ export const styles = StyleSheet.create({
   },
   dateTimeText: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
   },
   reportButton: {
     width: 40,
@@ -741,7 +741,7 @@ export const styles = StyleSheet.create({
     color: '#fff',
   },
   profileName: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
@@ -828,7 +828,7 @@ export const styles = StyleSheet.create({
   },
   profileSkillText: {
     color: '#B8C868',
-    fontSize: 13,
+    fontSize: 14,
   },
   profileReviewCard: {
     backgroundColor: '#1A2E22',
@@ -853,7 +853,7 @@ export const styles = StyleSheet.create({
   },
   profileReviewComment: {
     color: '#B3C7B9',
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 19,
   },
   profileError: {

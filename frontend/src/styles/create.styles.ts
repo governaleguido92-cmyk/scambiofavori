@@ -382,7 +382,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
@@ -414,7 +414,7 @@ export const styles = StyleSheet.create({
   },
   modalInfoText: {
     color: '#B3C7B9',
-    fontSize: 13,
+    fontSize: 14,
   },
   modalWarning: {
     color: '#B8C868',
@@ -483,7 +483,7 @@ export const styles = StyleSheet.create({
   },
   validityHint: {
     color: '#8FA595',
-    fontSize: 11,
+    fontSize: 12,
     fontStyle: 'italic',
   },
   ethicalBanner: {
@@ -500,7 +500,7 @@ export const styles = StyleSheet.create({
   },
   ethicalBannerText: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 12,
     color: '#2D5A3D',
     lineHeight: 16,
   },

@@ -64,7 +64,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               È severamente vietato richiedere, offrire o scambiare denaro reale (contanti, bonifici, 
               pagamenti elettronici) in cambio di favori.{'\n\n'}
-              Gli scambi avvengono esclusivamente tramite la valuta virtuale "Granelli" (💎).{'\n\n'}
+              Gli scambi avvengono esclusivamente tramite la valuta virtuale "Granelli" (🌾).{'\n\n'}
               <Text style={styles.warningText}>
                 La violazione di questa regola comporta il ban permanente dalla piattaforma.
               </Text>
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.primary,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   gdprBadgeText: {
     color: colors.primary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
   },

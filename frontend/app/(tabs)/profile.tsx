@@ -386,7 +386,7 @@ export default function ProfileScreen() {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             data-testid="open-settings"
           >
-            <Ionicons name="settings-outline" size={26} color="#fff" />
+            <Ionicons name="settings-outline" size={24} color="#fff" />
           </TouchableOpacity>
           {user?.identity_verified && (
             <View style={styles.verifiedBadge}>
@@ -518,17 +518,17 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>{CURRENCY_NAME}</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="gift" size={28} color="#B8C868" />
+            <Ionicons name="gift" size={32} color="#B8C868" />
             <Text style={styles.statValue}>{user?.total_favors_given || 0}</Text>
             <Text style={styles.statLabel}>{tt('Donati')}</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="hand-left" size={28} color="#ff6b6b" />
+            <Ionicons name="hand-left" size={32} color="#ff6b6b" />
             <Text style={styles.statValue}>{user?.total_favors_received || 0}</Text>
             <Text style={styles.statLabel}>{tt('Ricevuti')}</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="time" size={28} color="#F87828" />
+            <Ionicons name="time" size={32} color="#F87828" />
             <Text style={styles.statValue}>{(user?.total_hours_helped || 0).toFixed(1)}h</Text>
             <Text style={styles.statLabel}>{tt('Ore Donate')}</Text>
           </View>
@@ -570,7 +570,7 @@ export default function ProfileScreen() {
                   <Text style={[styles.badgeName, !earned && styles.badgeNameLocked]}>
                     {tt(badge.name)}
                   </Text>
-                  {!earned && <Ionicons name="lock-closed" size={12} color="#8FA595" />}
+                  {!earned && <Ionicons name="lock-closed" size={14} color="#8FA595" />}
                 </TouchableOpacity>
               );
             })}
@@ -701,7 +701,7 @@ export default function ProfileScreen() {
               style={styles.donateButton}
               onPress={() => setShowDonateModal(true)}
             >
-              <Ionicons name="gift" size={18} color="#fff" />
+              <Ionicons name="gift" size={20} color="#fff" />
               <Text style={styles.donateButtonText}>{tt('Dona')}</Text>
             </TouchableOpacity>
           </View>
@@ -714,7 +714,7 @@ export default function ProfileScreen() {
           onPress={() => setShowReferralModal(true)}
         >
           <View style={styles.referralLeft}>
-            <Ionicons name="people" size={28} color="#F87828" />
+            <Ionicons name="people" size={32} color="#F87828" />
             <View>
               <Text style={styles.referralTitle}>{tt('Invita Amici')}</Text>
               <Text style={styles.referralSubtitle}>
@@ -733,7 +733,7 @@ export default function ProfileScreen() {
         >
           <View style={styles.referralLeft}>
             <View style={styles.supporterIconWrapper}>
-              <Ionicons name="heart" size={28} color="#ffd700" />
+              <Ionicons name="heart" size={32} color="#ffd700" />
             </View>
             <View>
               <Text style={styles.supporterTitle}>{tt('Sostieni il Progetto')}</Text>
@@ -821,7 +821,7 @@ export default function ProfileScreen() {
                 <Text style={styles.modalCancelText}>{tt('Annulla')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalConfirmButton} onPress={handleDonate}>
-                <Ionicons name="heart" size={18} color="#fff" />
+                <Ionicons name="heart" size={20} color="#fff" />
                 <Text style={styles.modalConfirmText}>{tt('Dona')}</Text>
               </TouchableOpacity>
             </View>
@@ -862,7 +862,7 @@ export default function ProfileScreen() {
                 <Text style={styles.modalCancelText}>{tt('Chiudi')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalConfirmButton} onPress={handleShareReferral}>
-                <Ionicons name="share-social" size={18} color="#fff" />
+                <Ionicons name="share-social" size={20} color="#fff" />
                 <Text style={styles.modalConfirmText}>{tt('Condividi')}</Text>
               </TouchableOpacity>
             </View>
@@ -976,7 +976,7 @@ export default function ProfileScreen() {
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <>
-                    <Ionicons name="save" size={18} color="#fff" />
+                    <Ionicons name="save" size={20} color="#fff" />
                     <Text style={styles.modalConfirmText}>{tt('Salva')}</Text>
                   </>
                 )}
@@ -1009,7 +1009,7 @@ export default function ProfileScreen() {
                   {BADGE_INFO[selectedBadge.name]?.description || selectedBadge.description || tt('Badge della community.')}
                 </Text>
                 <View style={styles.badgeHowToGet}>
-                  <Ionicons name="bulb" size={18} color="#FFD700" />
+                  <Ionicons name="bulb" size={20} color="#FFD700" />
                   <Text style={styles.badgeHowToGetText}>
                     {BADGE_INFO[selectedBadge.name]?.howToGet || tt('Partecipa attivamente alla community.')}
                   </Text>

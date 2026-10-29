@@ -217,7 +217,7 @@ export default function EmergenciesScreen() {
       ) : emergencies.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="heart-outline" size={60} color="#B8C868" />
+            <Ionicons name="heart-outline" size={64} color="#B8C868" />
           </View>
           <Text style={styles.emptyText}>{tt('Nessuna emergenza nelle vicinanze')}</Text>
           <Text style={styles.emptySubtext}>{tt('Il quartiere è tranquillo! Ma se hai bisogno, puoi sempre chiedere aiuto.')}</Text>
@@ -300,7 +300,7 @@ export default function EmergenciesScreen() {
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <>
-                    <Ionicons name="alert-circle" size={18} color="#fff" />
+                    <Ionicons name="alert-circle" size={20} color="#fff" />
                     <Text style={styles.modalConfirmText}>{tt('Invia Emergenza')}</Text>
                   </>
                 )}
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   },
   urgentText: {
     color: '#ff6b6b',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   distanceBadge: {
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },

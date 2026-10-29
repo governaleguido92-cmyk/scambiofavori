@@ -53,7 +53,7 @@ export const styles = StyleSheet.create({
   },
   tabText: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
   },
   tabTextActive: {
@@ -146,7 +146,7 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 152, 0, 0.2)',
   },
   statusText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     color: '#fff',
   },
@@ -244,7 +244,7 @@ export const styles = StyleSheet.create({
     maxHeight: '90%',
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
@@ -289,7 +289,7 @@ export const styles = StyleSheet.create({
   },
   categoryOptionText: {
     color: '#9DB3A4',
-    fontSize: 13,
+    fontSize: 14,
   },
   categoryOptionTextActive: {
     color: '#fff',

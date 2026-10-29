@@ -14,9 +14,9 @@ export const getImageUrl = (path: string | undefined | null): string | undefined
   return `${API_URL}${path}`;
 };
 
-// Currency renamed to "Granelli" 💎
+// Currency renamed to "Granelli" 🌾
 export const CURRENCY_NAME = "Granelli";
-export const CURRENCY_SYMBOL = "💎";
+export const CURRENCY_SYMBOL = "🌾";
 
 // Ethical tags for reviews
 export interface EthicalTag {

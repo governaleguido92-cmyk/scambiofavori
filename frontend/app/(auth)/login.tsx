@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   },
   forgotText: {
     color: '#F87828',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
   },
   logoContainer: {

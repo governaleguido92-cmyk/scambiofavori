@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   description: {
-    fontSize: 17,
+    fontSize: 18,
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 26,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   highlight: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: colors.accent,
   },

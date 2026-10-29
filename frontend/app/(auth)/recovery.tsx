@@ -145,7 +145,7 @@ export default function RecoveryScreen() {
       <>
         <View style={styles.header}>
           <View style={styles.iconCircle}>
-            <Ionicons name="lock-open" size={36} color={colors.accent} />
+            <Ionicons name="lock-open" size={32} color={colors.accent} />
           </View>
           <Text style={styles.title}>{tt('Reset Password')}</Text>
           <Text style={styles.subtitle}>
@@ -217,7 +217,7 @@ export default function RecoveryScreen() {
       <>
         <View style={styles.header}>
           <View style={[styles.iconCircle, { backgroundColor: colors.primaryMuted }]}>
-            <Ionicons name="person" size={36} color={colors.primaryLight} />
+            <Ionicons name="person" size={32} color={colors.primaryLight} />
           </View>
           <Text style={styles.title}>{tt('Recupera Nome Utente')}</Text>
           <Text style={styles.subtitle}>
@@ -281,23 +281,23 @@ const styles = StyleSheet.create({
   backButton: { position: 'absolute', top: 0, left: 0, zIndex: 10, padding: 4 },
   header: { alignItems: 'center', marginBottom: 32 },
   iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentMuted, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: 'bold', color: colors.textPrimary, textAlign: 'center' },
-  subtitle: { fontSize: 13, color: colors.textMuted, marginTop: 6, textAlign: 'center', lineHeight: 18 },
+  title: { fontSize: 24, fontWeight: 'bold', color: colors.textPrimary, textAlign: 'center' },
+  subtitle: { fontSize: 14, color: colors.textMuted, marginTop: 6, textAlign: 'center', lineHeight: 18 },
   form: { width: '100%' },
   optionCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.backgroundLight, borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border },
   optionIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: colors.accentMuted, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   optionText: { flex: 1 },
-  optionTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
+  optionTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '600' },
   optionDesc: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
   inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.backgroundLight, borderRadius: 12, paddingHorizontal: 16, marginBottom: 14, height: 52, borderWidth: 1, borderColor: colors.border },
   inputIcon: { marginRight: 12 },
-  input: { flex: 1, color: colors.textPrimary, fontSize: 15 },
+  input: { flex: 1, color: colors.textPrimary, fontSize: 16 },
   codeInputWrapper: { marginBottom: 14 },
   codeInput: { backgroundColor: colors.backgroundLight, borderRadius: 12, height: 60, color: colors.granelli, fontSize: 28, fontWeight: 'bold', letterSpacing: 10, borderWidth: 2, borderColor: colors.accent, paddingHorizontal: 16, textAlign: 'center' },
   primaryButton: { backgroundColor: colors.accent, borderRadius: 12, height: 52, justifyContent: 'center', alignItems: 'center', marginTop: 4 },
   primaryButtonText: { color: colors.textPrimary, fontSize: 16, fontWeight: 'bold' },
   resendLink: { alignItems: 'center', marginTop: 16 },
-  resendText: { color: colors.textMuted, fontSize: 13 },
+  resendText: { color: colors.textMuted, fontSize: 14 },
   resendBold: { color: colors.accent, fontWeight: '600' },
   usernameBox: { backgroundColor: colors.backgroundLight, borderRadius: 12, padding: 20, marginTop: 16, width: '100%', alignItems: 'center', borderWidth: 2, borderColor: colors.primary },
   usernameLabel: { color: colors.textMuted, fontSize: 12, marginBottom: 6 },
