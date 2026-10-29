@@ -4,13 +4,13 @@
     "slug": "scambio-di-favori",
     "version": "1.1.0",
     "orientation": "portrait",
-    "icon": "./assets/images/app-image.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "scambiodifavori",
     "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.emergent.scambiodifavori",
-      "buildNumber": "9",
+      "buildNumber": "10",
       "deploymentTarget": "16.0",
       "infoPlist": {
         "NSCameraUsageDescription": "Questa app usa la fotocamera per scansionare codici QR per completare i favori.",
@@ -51,11 +51,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-image.png",
-        "backgroundColor": "#FFFFFF"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#0F1A14"
       },
       "package": "com.emergent.scambiodifavori",
-      "versionCode": 9,
+      "versionCode": 10,
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",
@@ -71,14 +71,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/app-image.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/app-image.png",
+          "image": "./assets/images/splash-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#0F1A14"
@@ -99,7 +99,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/app-image.png",
+          "icon": "./assets/images/icon.png",
           "color": "#2D5A3D"
         }
       ],
