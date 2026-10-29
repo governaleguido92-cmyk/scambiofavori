@@ -87,7 +87,7 @@ else:
     logger.warning("RESEND_API_KEY not set - email verification will log codes only")
 
 # ========================
-# CONSTANTS - CURRENCY "GRANELLI" 💎
+# CONSTANTS - CURRENCY "GRANELLI" 🌾
 # ========================
 
 WELCOME_GRANELLI = 3  # Granelli di Benvenuto
@@ -95,7 +95,7 @@ REFERRAL_BONUS = 2  # Bonus referral etico
 GRANELLI_PER_HOUR = 1  # 1 ora = 1 granello
 
 CURRENCY_NAME = "Granelli"  # "Ogni favore fatto è un granello di sabbia che costruisce la community"
-CURRENCY_SYMBOL = "💎"
+CURRENCY_SYMBOL = "🌾"
 
 # Privacy: approximate location radius in meters
 PRIVACY_RADIUS_METERS = 1000
