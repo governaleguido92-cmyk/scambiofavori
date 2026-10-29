@@ -58,6 +58,29 @@
     gtag('config', GA_ID, { anonymize_ip: true, allow_google_signals: false, allow_ad_personalization_signals: false });
   }
 
+  // Click events: sent only while analytics is loaded (consent granted), never queued beforehand.
+  function classifyClick(el) {
+    var link = el.closest('a, .store-btn');
+    if (!link) return null;
+    var href = link.getAttribute('href') || '';
+    if (href.indexOf('buy.stripe.com') !== -1) return { name: 'support_click', params: {} };
+    if (href.indexOf('billing.stripe.com') !== -1) return { name: 'support_manage_click', params: {} };
+    if (href.indexOf('mailto:') === 0) return { name: 'contact_click', params: {} };
+    var isDownload = link.classList.contains('store-btn') || href === '#download' ||
+      (link.classList.contains('btn-primary') && !!link.closest('#download'));
+    if (!isDownload) return null;
+    var place = link.closest('nav') ? 'nav' : link.closest('#download') ? 'download_section' : 'hero';
+    return { name: 'download_click', params: { link_location: place } };
+  }
+
+  function trackClicks() {
+    document.addEventListener('click', function (e) {
+      if (!loaded || !(e.target instanceof Element)) return;
+      var hit = classifyClick(e.target);
+      if (hit) gtag('event', hit.name, hit.params);
+    });
+  }
+
   function clearAnalyticsCookies() {
     var host = window.location.hostname;
     var domains = [host, '.' + host, '.' + host.replace(/^www\./, '')];
@@ -150,6 +173,7 @@
   }
 
   function init() {
+    trackClicks();
     var choice = readChoice();
     if (choice === 'granted') loadAnalytics();
     else if (choice !== 'denied') showBanner();
