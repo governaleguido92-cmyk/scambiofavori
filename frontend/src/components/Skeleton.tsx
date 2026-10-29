@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   favorCard: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,

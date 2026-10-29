@@ -3,7 +3,7 @@ import { StyleSheet, Modal } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
   },
   loadingContainer: {
     flex: 1,
@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
   },
   scannerContainer: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
   },
   scannerHeader: {
     flexDirection: 'row',
@@ -73,7 +73,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
   },
   scannerTitle: {
     fontSize: 18,
@@ -102,7 +102,7 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     width: 30,
     height: 30,
-    borderColor: '#4ecca3',
+    borderColor: '#B8C868',
   },
   topLeft: {
     top: 0,
@@ -133,7 +133,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     gap: 12,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
   },
   scannerHint: {
     flex: 1,
@@ -151,19 +151,19 @@ export const styles = StyleSheet.create({
     backgroundColor: '#0a0a0a',
   },
   cameraPlaceholderText: {
-    color: '#666',
+    color: '#8FA595',
     fontSize: 16,
     marginTop: 16,
     marginBottom: 24,
   },
   retryPermissionButton: {
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#B8C868',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
   },
   retryPermissionText: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -184,7 +184,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E07B39',
+    backgroundColor: '#F87828',
     padding: 16,
     borderRadius: 12,
     gap: 10,
@@ -264,7 +264,7 @@ export const styles = StyleSheet.create({
     gap: 4,
   },
   microText: {
-    color: '#ff9800',
+    color: '#F87828',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -275,7 +275,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   categoryText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -287,7 +287,7 @@ export const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
-    color: '#aaa',
+    color: '#B3C7B9',
     lineHeight: 24,
     marginBottom: 20,
   },
@@ -298,7 +298,7 @@ export const styles = StyleSheet.create({
   },
   infoCard: {
     flex: 1,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -314,13 +314,13 @@ export const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 12,
-    color: '#888',
+    color: '#9DB3A4',
     marginTop: 4,
   },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 12,
     borderRadius: 12,
     gap: 12,
@@ -330,21 +330,21 @@ export const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     justifyContent: 'center',
     alignItems: 'center',
   },
   userAvatarText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4ecca3',
+    color: '#B8C868',
   },
   userInfo: {
     flex: 1,
   },
   userLabel: {
     fontSize: 12,
-    color: '#888',
+    color: '#9DB3A4',
   },
   userName: {
     fontSize: 16,
@@ -353,25 +353,25 @@ export const styles = StyleSheet.create({
   },
   userTitle: {
     fontSize: 12,
-    color: '#4ecca3',
+    color: '#B8C868',
     marginTop: 2,
   },
   locationCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 12,
     borderRadius: 12,
     gap: 8,
     marginBottom: 16,
   },
   locationText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
     flex: 1,
   },
   distanceText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -385,7 +385,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   reviewCard: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -410,7 +410,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   ratingLabel: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 13,
     flex: 1,
   },
@@ -419,7 +419,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   starsLabel: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
     marginBottom: 8,
   },
@@ -428,7 +428,7 @@ export const styles = StyleSheet.create({
     gap: 4,
   },
   reviewComment: {
-    color: '#aaa',
+    color: '#B3C7B9',
     fontSize: 14,
     lineHeight: 20,
     borderTopWidth: 1,
@@ -445,13 +445,13 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   publicThanksText: {
-    color: '#ccc',
+    color: '#D0DDD3',
     fontSize: 13,
     fontStyle: 'italic',
     flex: 1,
   },
   reviewForm: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 16,
     borderRadius: 16,
     marginTop: 16,
@@ -460,7 +460,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   commentInput: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
@@ -477,39 +477,47 @@ export const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#888',
+    borderColor: '#9DB3A4',
     alignItems: 'center',
   },
   cancelReviewText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontWeight: '600',
   },
   submitReviewButton: {
     flex: 1,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#B8C868',
     alignItems: 'center',
   },
   submitReviewText: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontWeight: '600',
   },
   actionsContainer: {
     marginTop: 24,
     gap: 12,
   },
+  acceptHint: {
+    color: '#9DB3A4',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginTop: 10,
+    paddingHorizontal: 8,
+  },
   acceptButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#B8C868',
     padding: 18,
     borderRadius: 16,
     gap: 10,
   },
   acceptButtonText: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -523,7 +531,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   completeButtonText: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -531,12 +539,12 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#9b59b6',
+    backgroundColor: '#A8B858',
     padding: 14,
     borderRadius: 16,
     gap: 10,
     borderWidth: 2,
-    borderColor: '#8e44ad',
+    borderColor: '#A8B858',
     borderStyle: 'dashed',
   },
   debugButtonText: {
@@ -548,7 +556,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 18,
     borderRadius: 16,
     gap: 10,
@@ -568,7 +576,7 @@ export const styles = StyleSheet.create({
     padding: 20,
   },
   qrModalContent: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 20,
     padding: 24,
     width: '100%',
@@ -582,7 +590,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   qrModalDescription: {
-    color: '#888',
+    color: '#9DB3A4',
     textAlign: 'center',
     marginBottom: 24,
     fontSize: 14,
@@ -594,7 +602,7 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     marginBottom: 20,
-    shadowColor: '#4ecca3',
+    shadowColor: '#B8C868',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -606,7 +614,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   qrCodeText: {
-    color: '#666',
+    color: '#8FA595',
     fontSize: 12,
     marginTop: 12,
     fontFamily: 'monospace',
@@ -622,7 +630,7 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
   },
   qrCodeInfoText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 12,
   },
   qrModalHeader: {
@@ -642,12 +650,12 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
   checkinCompleteText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 16,
     fontWeight: '600',
   },
   qrModalClose: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 12,
@@ -666,7 +674,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   dateTimeText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 13,
   },
   reportButton: {
@@ -687,7 +695,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   profileModalContent: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '85%',
@@ -717,7 +725,7 @@ export const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E07B39',
+    backgroundColor: '#F87828',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -740,7 +748,7 @@ export const styles = StyleSheet.create({
   },
   profileTitle: {
     fontSize: 14,
-    color: '#888',
+    color: '#9DB3A4',
     marginBottom: 8,
   },
   supporterBadgeSmall: {
@@ -760,7 +768,7 @@ export const styles = StyleSheet.create({
   profileStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -771,15 +779,15 @@ export const styles = StyleSheet.create({
   profileStatValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#4ecca3',
+    color: '#B8C868',
   },
   profileStatLabel: {
     fontSize: 12,
-    color: '#888',
+    color: '#9DB3A4',
     marginTop: 4,
   },
   profileRatings: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -791,7 +799,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   profileRatingLabel: {
-    color: '#aaa',
+    color: '#B3C7B9',
     fontSize: 14,
   },
   profileRatingStars: {
@@ -813,17 +821,17 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   profileSkillTag: {
-    backgroundColor: '#4ecca3' + '30',
+    backgroundColor: '#B8C868' + '30',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   profileSkillText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 13,
   },
   profileReviewCard: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 12,
     padding: 14,
     marginBottom: 10,
@@ -844,12 +852,12 @@ export const styles = StyleSheet.create({
     gap: 2,
   },
   profileReviewComment: {
-    color: '#aaa',
+    color: '#B3C7B9',
     fontSize: 13,
     lineHeight: 19,
   },
   profileError: {
-    color: '#888',
+    color: '#9DB3A4',
     textAlign: 'center',
     marginTop: 40,
   },

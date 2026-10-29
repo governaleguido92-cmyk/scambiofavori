@@ -239,7 +239,7 @@ export default function OggettotecaScreen() {
             <Ionicons
               name={(CATEGORY_ICONS[item.category] || 'cube') as any}
               size={16}
-              color="#9c27b0"
+              color="#A8B858"
             />
             <Text style={styles.categoryText}>{item.category}</Text>
           </View>
@@ -259,7 +259,7 @@ export default function OggettotecaScreen() {
 
         <View style={styles.objectFooter}>
           <View style={styles.ownerInfo}>
-            <Ionicons name="person-circle" size={18} color="#888" />
+            <Ionicons name="person-circle" size={18} color="#9DB3A4" />
             <Text style={styles.ownerName}>
               {isMine ? 'Tu' : item.owner_name}
             </Text>
@@ -273,7 +273,7 @@ export default function OggettotecaScreen() {
 
         {item.distance_km !== null && item.distance_km !== undefined && (
           <View style={styles.distanceContainer}>
-            <Ionicons name="location" size={14} color="#9c27b0" />
+            <Ionicons name="location" size={14} color="#A8B858" />
             <Text style={styles.distanceText}>{item.distance_km} km</Text>
           </View>
         )}
@@ -326,7 +326,7 @@ export default function OggettotecaScreen() {
           <Ionicons
             name="cube"
             size={18}
-            color={activeTab === 'available' ? '#1a1a2e' : '#888'}
+            color={activeTab === 'available' ? '#0F1A14' : '#9DB3A4'}
           />
           <Text style={[styles.tabText, activeTab === 'available' && styles.tabTextActive]}>
             Disponibili
@@ -339,7 +339,7 @@ export default function OggettotecaScreen() {
           <Ionicons
             name="person"
             size={18}
-            color={activeTab === 'mine' ? '#1a1a2e' : '#888'}
+            color={activeTab === 'mine' ? '#0F1A14' : '#9DB3A4'}
           />
           <Text style={[styles.tabText, activeTab === 'mine' && styles.tabTextActive]}>
             I Miei Oggetti
@@ -372,7 +372,7 @@ export default function OggettotecaScreen() {
               <Ionicons
                 name={(CATEGORY_ICONS[cat.name] || 'cube') as any}
                 size={16}
-                color={selectedCategory === cat.name ? '#1a1a2e' : '#9c27b0'}
+                color={selectedCategory === cat.name ? '#0F1A14' : '#A8B858'}
               />
               <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
                 {cat.name}
@@ -384,7 +384,7 @@ export default function OggettotecaScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#9c27b0" />
+          <ActivityIndicator size="large" color="#A8B858" />
         </View>
       ) : (
         <FlatList
@@ -393,7 +393,7 @@ export default function OggettotecaScreen() {
           keyExtractor={(item) => item.object_id}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#9c27b0" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#A8B858" />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -427,7 +427,7 @@ export default function OggettotecaScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Es: Trapano elettrico"
-                placeholderTextColor="#666"
+                placeholderTextColor="#8FA595"
                 value={newObject.name}
                 onChangeText={(text) => setNewObject({ ...newObject, name: text })}
                 maxLength={50}
@@ -439,7 +439,7 @@ export default function OggettotecaScreen() {
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder="Descrivi l'oggetto..."
-                placeholderTextColor="#666"
+                placeholderTextColor="#8FA595"
                 value={newObject.description}
                 onChangeText={(text) => setNewObject({ ...newObject, description: text })}
                 multiline
@@ -463,7 +463,7 @@ export default function OggettotecaScreen() {
                     <Ionicons
                       name={(CATEGORY_ICONS[cat.name] || 'cube') as any}
                       size={16}
-                      color={newObject.category === cat.name ? '#1a1a2e' : '#9c27b0'}
+                      color={newObject.category === cat.name ? '#0F1A14' : '#A8B858'}
                     />
                     <Text style={[
                       styles.categoryOptionText,

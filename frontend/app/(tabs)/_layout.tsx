@@ -3,15 +3,8 @@ import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, View, StyleSheet } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
+import colors from '../../src/theme/colors';
 
-// Theme colors
-const colors = {
-  primary: '#2D5A3D',
-  accent: '#E07B39',
-  background: '#0F1A14',
-  backgroundCard: '#162419',
-  textSecondary: '#A8C4B0',
-};
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();
@@ -31,7 +24,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.lime,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
           backgroundColor: colors.backgroundCard,

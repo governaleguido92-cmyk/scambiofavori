@@ -418,14 +418,14 @@ export default function ProfileScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#B8C868" />
         }
       >
         <View style={styles.header}>
           <Text style={styles.title}>Profilo</Text>
           {user?.identity_verified && (
             <View style={styles.verifiedBadge}>
-              <Ionicons name="shield-checkmark" size={16} color="#4ecca3" />
+              <Ionicons name="shield-checkmark" size={16} color="#B8C868" />
               <Text style={styles.verifiedText}>Verificato</Text>
             </View>
           )}
@@ -482,13 +482,13 @@ export default function ProfileScreen() {
                   )}
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setEditingName(false)}>
-                  <Ionicons name="close-circle" size={24} color="#666" />
+                  <Ionicons name="close-circle" size={24} color="#8FA595" />
                 </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity onPress={() => { setNewName(user?.name || ''); setEditingName(true); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text style={styles.userName}>{user?.name}</Text>
-                <Ionicons name="pencil" size={14} color="#666" />
+                <Ionicons name="pencil" size={14} color="#8FA595" />
               </TouchableOpacity>
             )}
             {user?.is_supporter && (
@@ -555,7 +555,7 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>{CURRENCY_NAME}</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="gift" size={28} color="#4ecca3" />
+            <Ionicons name="gift" size={28} color="#B8C868" />
             <Text style={styles.statValue}>{user?.total_favors_given || 0}</Text>
             <Text style={styles.statLabel}>Donati</Text>
           </View>
@@ -565,7 +565,7 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>Ricevuti</Text>
           </View>
           <View style={styles.statCard}>
-            <Ionicons name="time" size={28} color="#2196f3" />
+            <Ionicons name="time" size={28} color="#F87828" />
             <Text style={styles.statValue}>{(user?.total_hours_helped || 0).toFixed(1)}h</Text>
             <Text style={styles.statLabel}>Ore Donate</Text>
           </View>
@@ -601,13 +601,13 @@ export default function ProfileScreen() {
                     <Ionicons
                       name={(BADGE_ICONS[badge.icon] || 'ribbon') as any}
                       size={24}
-                      color={earned ? '#fff' : '#666'}
+                      color={earned ? '#fff' : '#8FA595'}
                     />
                   </View>
                   <Text style={[styles.badgeName, !earned && styles.badgeNameLocked]}>
                     {badge.name}
                   </Text>
-                  {!earned && <Ionicons name="lock-closed" size={12} color="#666" />}
+                  {!earned && <Ionicons name="lock-closed" size={12} color="#8FA595" />}
                 </TouchableOpacity>
               );
             })}
@@ -626,7 +626,7 @@ export default function ProfileScreen() {
               }}
               data-testid="edit-skills-button"
             >
-              <Ionicons name="pencil" size={16} color="#4ecca3" />
+              <Ionicons name="pencil" size={16} color="#B8C868" />
               <Text style={styles.editSkillsText}>Modifica</Text>
             </TouchableOpacity>
           </View>
@@ -640,7 +640,7 @@ export default function ProfileScreen() {
                     <Ionicons 
                       name={getCategoryIcon(category?.icon || 'help-circle') as any} 
                       size={14} 
-                      color="#4ecca3" 
+                      color="#B8C868" 
                     />
                     <Text style={styles.skillTagText}>{skill}</Text>
                   </View>
@@ -649,7 +649,7 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <View style={styles.noSkillsCard}>
-              <Ionicons name="school-outline" size={40} color="#666" />
+              <Ionicons name="school-outline" size={40} color="#8FA595" />
               <Text style={styles.noSkillsTitle}>Nessuna competenza selezionata</Text>
               <Text style={styles.noSkillsDescription}>
                 Seleziona le tue competenze per ricevere notifiche quando qualcuno cerca aiuto nelle tue aree di esperienza!
@@ -722,7 +722,7 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <View style={styles.noReviewsCard}>
-              <Ionicons name="chatbubble-ellipses-outline" size={40} color="#666" />
+              <Ionicons name="chatbubble-ellipses-outline" size={40} color="#8FA595" />
               <Text style={styles.noReviewsText}>
                 Nessuna recensione ricevuta ancora. Completa dei favori per ricevere feedback!
               </Text>
@@ -760,7 +760,7 @@ export default function ProfileScreen() {
           onPress={() => setShowReferralModal(true)}
         >
           <View style={styles.referralLeft}>
-            <Ionicons name="people" size={28} color="#2196f3" />
+            <Ionicons name="people" size={28} color="#F87828" />
             <View>
               <Text style={styles.referralTitle}>Invita Amici</Text>
               <Text style={styles.referralSubtitle}>
@@ -768,7 +768,7 @@ export default function ProfileScreen() {
               </Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#888" />
+          <Ionicons name="chevron-forward" size={24} color="#9DB3A4" />
         </TouchableOpacity>
 
         {/* Supporter Section - "Sostieni il Progetto" (hidden on Android: Google Play Billing policy) */}
@@ -798,7 +798,7 @@ export default function ProfileScreen() {
         >
           <Ionicons name="trophy" size={24} color="#ffd700" />
           <Text style={styles.leaderboardButtonText}>Classifica Community</Text>
-          <Ionicons name="chevron-forward" size={24} color="#888" />
+          <Ionicons name="chevron-forward" size={24} color="#9DB3A4" />
         </TouchableOpacity>
 
         {/* Info Cards */}
@@ -807,20 +807,20 @@ export default function ProfileScreen() {
           
           <View style={styles.infoCard}>
             <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: '#4ecca320' }]}>
+              <View style={[styles.infoIcon, { backgroundColor: '#B8C86820' }]}>
                 <Text style={styles.infoIconText}>{CURRENCY_SYMBOL}</Text>
               </View>
               <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>1 Ora = 1 Sole</Text>
+                <Text style={styles.infoTitle}>1 Ora = 1 Granello</Text>
                 <Text style={styles.infoDescription}>
-                  Ogni favore fatto è un raggio di sole che illumina il quartiere
+                  Un'ora del tuo aiuto vale 1 Granello: lo guadagni aiutando e lo spendi quando hai bisogno
                 </Text>
               </View>
             </View>
 
             <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: '#2196f3' + '20' }]}>
-                <Ionicons name="qr-code" size={20} color="#2196f3" />
+              <View style={[styles.infoIcon, { backgroundColor: '#F87828' + '20' }]}>
+                <Ionicons name="qr-code" size={20} color="#F87828" />
               </View>
               <View style={styles.infoText}>
                 <Text style={styles.infoTitle}>Check-in QR</Text>
@@ -855,7 +855,7 @@ export default function ProfileScreen() {
                   value={notifPrefs[item.key as keyof typeof notifPrefs]}
                   onValueChange={() => handleToggleNotifPref(item.key)}
                   trackColor={{ false: themeColors.backgroundLight, true: themeColors.primaryLight }}
-                  thumbColor={notifPrefs[item.key as keyof typeof notifPrefs] ? themeColors.accent : '#ccc'}
+                  thumbColor={notifPrefs[item.key as keyof typeof notifPrefs] ? themeColors.accent : '#D0DDD3'}
                   data-testid={`notif-toggle-${item.key}`}
                 />
               </View>
@@ -1071,7 +1071,7 @@ export default function ProfileScreen() {
                       <Ionicons 
                         name={getCategoryIcon(category.icon) as any} 
                         size={20} 
-                        color={isSelected ? '#fff' : '#888'} 
+                        color={isSelected ? '#fff' : '#9DB3A4'} 
                       />
                     </View>
                     <View style={styles.skillSelectInfo}>
@@ -1128,12 +1128,12 @@ export default function ProfileScreen() {
                   <Ionicons
                     name={(BADGE_ICONS[selectedBadge.icon] || 'ribbon') as any}
                     size={48}
-                    color={selectedBadge.earned ? '#fff' : '#666'}
+                    color={selectedBadge.earned ? '#fff' : '#8FA595'}
                   />
                 </View>
                 <Text style={styles.badgeModalTitle}>{selectedBadge.name}</Text>
                 <View style={[styles.badgeModalStatus, selectedBadge.earned ? styles.badgeEarned : styles.badgeLocked]}>
-                  <Ionicons name={selectedBadge.earned ? 'checkmark-circle' : 'lock-closed'} size={16} color={selectedBadge.earned ? '#4ecca3' : '#666'} />
+                  <Ionicons name={selectedBadge.earned ? 'checkmark-circle' : 'lock-closed'} size={16} color={selectedBadge.earned ? '#B8C868' : '#8FA595'} />
                   <Text style={[styles.badgeStatusText, selectedBadge.earned && styles.badgeStatusEarned]}>
                     {selectedBadge.earned ? 'Ottenuto!' : 'Non ancora ottenuto'}
                   </Text>

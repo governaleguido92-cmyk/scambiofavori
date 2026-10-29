@@ -27,16 +27,16 @@ import { logger } from '../../src/utils/logger';
 const colors = {
   primary: '#2D5A3D',
   primaryLight: '#3D7A52',
-  accent: '#E07B39',
+  accent: '#F87828',
   background: '#0F1A14',
   backgroundLight: '#1A2E22',
-  backgroundCard: '#162419',
+  backgroundCard: '#1A2E22',
   textPrimary: '#FFFFFF',
   textSecondary: '#A8C4B0',
   textMuted: '#6B8F75',
   border: '#2A4A35',
   error: '#FF5252',
-  warning: '#FF9800',
+  warning: '#F87828',
   granelli: '#FFD700',
 };
 

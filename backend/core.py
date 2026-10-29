@@ -98,7 +98,8 @@ CURRENCY_NAME = "Granelli"  # "Ogni favore fatto è un granello di sabbia che co
 CURRENCY_SYMBOL = "💎"
 
 # Privacy: approximate location radius in meters
-PRIVACY_RADIUS_METERS = 200
+PRIVACY_RADIUS_METERS = 1000
+PRIVACY_MIN_OFFSET_RATIO = 0.3  # never show a point closer than 30% of the radius
 
 # Geofencing: max distance for QR exchange
 MAX_EXCHANGE_DISTANCE_METERS = 100
@@ -914,9 +915,10 @@ def approximate_location(lat: float, lon: float, radius_meters: int = PRIVACY_RA
     # Convert radius from meters to degrees (approximately)
     radius_deg = radius_meters / 111000  # 1 degree ≈ 111km
     
-    # Random angle and distance
+    # Random angle and distance; the minimum offset keeps the shown point
+    # from landing right on top of the real one.
     angle = random.uniform(0, 2 * math.pi)
-    distance = random.uniform(0, radius_deg)
+    distance = random.uniform(radius_deg * PRIVACY_MIN_OFFSET_RATIO, radius_deg)
     
     offset_lat = distance * math.cos(angle)
     offset_lon = distance * math.sin(angle) / math.cos(math.radians(lat))

@@ -1,5 +1,5 @@
 // Scambio di Favori - Theme Colors
-// 4 colori principali: Verde Bosco, Arancio Caldo, Oro, Bianco
+// Palette del logo: Arancio caldo, Verde lime/oliva, su fondo Verde Bosco. Oro per i Granelli.
 
 export const colors = {
   // Primary - Verde Bosco
@@ -8,36 +8,42 @@ export const colors = {
   primaryDark: '#1E3D2A',
   primaryMuted: 'rgba(45, 90, 61, 0.2)',
 
-  // Accent - Arancio Caldo
-  accent: '#E07B39',
-  accentLight: '#F59E5E',
-  accentDark: '#C56A2E',
-  accentMuted: 'rgba(224, 123, 57, 0.15)',
+  // Accent - Arancio del logo (azioni principali)
+  accent: '#F87828',
+  accentLight: '#FB9A52',
+  accentDark: '#D9611A',
+  accentMuted: 'rgba(248, 120, 40, 0.15)',
+
+  // Secondary - Verde lime del logo (elementi attivi, icone, selezioni)
+  lime: '#B8C868',
+  limeDark: '#A8B858',
+  olive: '#889848',
+  limeMuted: 'rgba(184, 200, 104, 0.15)',
 
   // Background
   background: '#0F1A14',
-  backgroundLight: '#1A2E22',
-  backgroundCard: '#162419',
-  
+  backgroundLight: '#223A2B',
+  backgroundCard: '#1A2E22',
+
   // Text
   textPrimary: '#FFFFFF',
-  textSecondary: '#B8D4C0',
-  textMuted: '#7A9F85',
-  
-  // Status - derived from main 4 colors
-  success: '#3D7A52',
-  warning: '#E07B39',
+  textSecondary: '#C4DACB',
+  textMuted: '#9DB3A4',
+
+  // Status - derived from main colors
+  success: '#B8C868',
+  warning: '#F87828',
   error: '#D94F4F',
   info: '#2D5A3D',
-  
+
   // Granelli (currency) - Oro
   granelli: '#FFD700',
   granelliMuted: 'rgba(255, 215, 0, 0.15)',
-  
+
   // Debt
   debt: '#D94F4F',
   debtMuted: 'rgba(217, 79, 79, 0.15)',
-  
+
   // Borders
   border: '#2A4A35',
   borderLight: '#3D6B4D',

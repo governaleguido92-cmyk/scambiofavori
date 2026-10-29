@@ -60,7 +60,7 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#4ecca3" />
+      <ActivityIndicator size="large" color="#B8C868" />
       <Text style={styles.loadingText}>Caricamento...</Text>
     </View>
   );

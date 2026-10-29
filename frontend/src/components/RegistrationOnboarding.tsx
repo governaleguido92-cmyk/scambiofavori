@@ -34,7 +34,7 @@ const SLIDES = [
   {
     id: '2',
     icon: 'diamond',
-    iconColor: '#4ecca3',
+    iconColor: '#B8C868',
     title: 'I Granelli',
     subtitle: 'La valuta del tempo',
     points: [
@@ -51,8 +51,8 @@ const SLIDES = [
     title: 'Come Funziona',
     subtitle: 'Semplice e trasparente',
     points: [
-      { icon: 'add-circle', text: 'Offri un favore → Guadagni Granelli' },
-      { icon: 'remove-circle', text: 'Chiedi un favore → Spendi Granelli' },
+      { icon: 'add-circle', text: 'Dona un favore → Guadagni Granelli' },
+      { icon: 'remove-circle', text: 'Ricevi un favore → Spendi Granelli' },
       { icon: 'star', text: 'Le recensioni costruiscono fiducia' },
     ],
     quote: '"Insieme siamo più forti"',

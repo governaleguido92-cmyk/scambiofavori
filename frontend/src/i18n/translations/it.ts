@@ -109,7 +109,7 @@ export default {
     errorTitle: 'Inserisci un titolo',
     errorDescription: 'Inserisci una descrizione',
     errorCategory: 'Seleziona una categoria',
-    errorLocation: 'Devi indicare la tua posizione',
+    errorLocation: 'Aggiungi la posizione del favore: serve a mostrarlo a chi è vicino. Tocca "Aggiungi posizione".',
     offlineError: 'Connettiti a internet per pubblicare un favore.',
     granelliInsufficient: 'Granelli insufficienti',
   },
