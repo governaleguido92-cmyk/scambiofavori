@@ -21,6 +21,8 @@ import { ReportModal } from '../../src/components/ReportModal';
 import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/favorDetail.styles';
 import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt, tx } from '../../src/i18n/tt';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -103,7 +105,7 @@ export default function FavorDetailScreen() {
       } catch (error: any) {
         logger.debug('LoadFavor error:', error);
         if (mounted) {
-          Alert.alert('Errore', error.message || 'Impossibile caricare il favore');
+          notify(tt('Errore'), error.message || tt('Impossibile caricare il favore'));
           router.back();
         }
       } finally {
@@ -162,7 +164,7 @@ export default function FavorDetailScreen() {
 
   const handleReportFavor = () => {
     if (!user) {
-      Alert.alert('Errore', 'Devi essere loggato per segnalare');
+      notify(tt('Errore'), tt('Devi essere loggato per segnalare'));
       return;
     }
     setShowReportModal(true);
@@ -172,21 +174,21 @@ export default function FavorDetailScreen() {
     if (!token || !favor) return;
     
     Alert.alert(
-      '🔧 Debug Mode',
-      'Simulare una scansione QR per completare questo favore?',
+      tt('🔧 Debug Mode'),
+      tt('Simulare una scansione QR per completare questo favore?'),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: tt('Annulla'), style: 'cancel' },
         {
-          text: 'Simula QR',
+          text: tt('Simula QR'),
           onPress: async () => {
             setActionLoading(true);
             try {
               await api.mockQRScan(favor.favor_id, token);
               await refreshUser();
               await reloadFavor();
-              Alert.alert('✅ Debug', 'QR scan simulato con successo! Favore completato.');
+              notify(tt('✅ Debug'), tt('QR scan simulato con successo! Favore completato.'));
             } catch (error: any) {
-              Alert.alert('Errore', error.message || 'Impossibile simulare QR scan');
+              notify(tt('Errore'), error.message || tt('Impossibile simulare QR scan'));
             } finally {
               setActionLoading(false);
             }
@@ -223,7 +225,7 @@ export default function FavorDetailScreen() {
       setQrInstructions(data.instructions);
       setShowQRModal(true);
     } catch (error: any) {
-      Alert.alert('Errore', error.message);
+      notify(tt('Errore'), error.message);
     }
   };
 
@@ -231,9 +233,9 @@ export default function FavorDetailScreen() {
     if (!permission?.granted) {
       const result = await requestPermission();
       if (!result.granted) {
-        Alert.alert(
-          'Permesso negato',
-          'È necessario il permesso per usare la fotocamera per scansionare il QR.'
+        notify(
+          tt('Permesso negato'),
+          tt('È necessario il permesso per usare la fotocamera per scansionare il QR.')
         );
         return;
       }
@@ -258,10 +260,12 @@ export default function FavorDetailScreen() {
       
       // Apri automaticamente il form recensione (obbligatorio)
       Alert.alert(
-        '🎉 Favore Completato!',
-        `Grazie! Hai ${favor.type === 'request' ? 'speso' : 'guadagnato'} ${favor.granelli_cost} ${CURRENCY_NAME}.\n\nOra lascia una recensione per completare!`,
+        tt('🎉 Favore Completato!'),
+        favor.type === 'request'
+          ? tx('Grazie! Hai speso {0} {1}.\n\nOra lascia una recensione per completare!', [favor.granelli_cost, CURRENCY_NAME])
+          : tx('Grazie! Hai guadagnato {0} {1}.\n\nOra lascia una recensione per completare!', [favor.granelli_cost, CURRENCY_NAME]),
         [{ 
-          text: 'Lascia Recensione', 
+          text: tt('Lascia Recensione'), 
           style: 'default',
           onPress: () => setShowReviewForm(true)
         }]
@@ -284,14 +288,14 @@ export default function FavorDetailScreen() {
       
       setTimeout(() => {
         Alert.alert(
-          'Errore Scansione',
+          tt('Errore Scansione'),
           errorMessage,
           [
-            { text: 'Riprova', onPress: () => {
+            { text: tt('Riprova'), onPress: () => {
               setScanningComplete(false);
               setShowScannerModal(true);
             }},
-            { text: 'Chiudi', style: 'cancel' }
+            { text: tt('Chiudi'), style: 'cancel' }
           ]
         );
       }, 300);
@@ -315,10 +319,10 @@ export default function FavorDetailScreen() {
     if (!token || !favor) return;
     
     Alert.alert(
-      'Conferma',
+      tt('Conferma'),
       favor.type === 'offer'
-        ? `Accettando questa offerta, pagherai ${favor.granelli_cost} ${CURRENCY_NAME} al completamento.`
-        : `Accettando questa richiesta, riceverai ${favor.granelli_cost} ${CURRENCY_NAME} al completamento.`,
+        ? tx('Accettando questa offerta, pagherai {0} {1} al completamento.', [favor.granelli_cost, CURRENCY_NAME])
+        : tx('Accettando questa richiesta, riceverai {0} {1} al completamento.', [favor.granelli_cost, CURRENCY_NAME]),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
@@ -330,7 +334,7 @@ export default function FavorDetailScreen() {
               // Naviga direttamente alla chat sostituendo la pagina corrente
               router.replace(`/chat/${favor.favor_id}` as any);
             } catch (error: any) {
-              Alert.alert(t('common.error'), error.message || t('favor.errorAccept'));
+              notify(t('common.error'), error.message || t('favor.errorAccept'));
               setActionLoading(false);
             }
           },
@@ -343,8 +347,8 @@ export default function FavorDetailScreen() {
     if (!token || !favor) return;
     
     Alert.alert(
-      'Conferma Completamento',
-      `I ${CURRENCY_NAME} verranno trasferiti. Sei sicuro?`,
+      tt('Conferma Completamento'),
+      tx('I {0} verranno trasferiti. Sei sicuro?', [CURRENCY_NAME]),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
@@ -355,9 +359,9 @@ export default function FavorDetailScreen() {
               await api.completeFavor(favor.favor_id, token);
               await refreshUser();
               await reloadFavor();
-              Alert.alert('Successo', `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
+              notify(tt('Successo'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
             } catch (error: any) {
-              Alert.alert(t('common.error'), error.message || t('favor.errorComplete'));
+              notify(t('common.error'), error.message || t('favor.errorComplete'));
             } finally {
               setActionLoading(false);
             }
@@ -383,9 +387,9 @@ export default function FavorDetailScreen() {
       );
       setShowReviewForm(false);
       await reloadFavor();
-      Alert.alert('Grazie!', 'La tua recensione è stata pubblicata.');
+      notify(tt('Grazie!'), tt('La tua recensione è stata pubblicata.'));
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile pubblicare la recensione');
+      notify(tt('Errore'), error.message || tt('Impossibile pubblicare la recensione'));
     } finally {
       setActionLoading(false);
     }
@@ -492,7 +496,7 @@ export default function FavorDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Favore non trovato</Text>
+          <Text style={styles.errorText}>{tt('Favore non trovato')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -504,7 +508,7 @@ export default function FavorDetailScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Dettagli Favore</Text>
+        <Text style={styles.headerTitle}>{tt('Dettagli Favore')}</Text>
         <View style={styles.headerActions}>
           {canChat() && (
             <TouchableOpacity 
@@ -560,7 +564,7 @@ export default function FavorDetailScreen() {
           {favor.is_emergency && (
             <View style={styles.emergencyBadge}>
               <Ionicons name="alert-circle" size={14} color="#ff6b6b" />
-              <Text style={styles.emergencyText}>Urgente</Text>
+              <Text style={styles.emergencyText}>{tt('Urgente')}</Text>
             </View>
           )}
         </View>
@@ -572,14 +576,13 @@ export default function FavorDetailScreen() {
             size={20}
             color="#B8C868"
           />
-          <Text style={styles.categoryText}>{favor.category}</Text>
+          <Text style={styles.categoryText}>{tt(favor.category)}</Text>
         </View>
 
         {/* Creation Date/Time */}
         <View style={styles.dateTimeContainer}>
           <Ionicons name="calendar-outline" size={16} color="#9DB3A4" />
-          <Text style={styles.dateTimeText}>
-            Creato il {new Date(favor.created_at || Date.now()).toLocaleDateString('it-IT', {
+          <Text style={styles.dateTimeText}>{tt('Creato il')}{' '}{new Date(favor.created_at || Date.now()).toLocaleDateString('it-IT', {
               day: 'numeric',
               month: 'long',
               year: 'numeric',
@@ -591,8 +594,7 @@ export default function FavorDetailScreen() {
         {favor.expires_at && favor.status === 'active' && (
           <View style={styles.dateTimeContainer}>
             <Ionicons name="hourglass-outline" size={16} color="#9DB3A4" />
-            <Text style={styles.dateTimeText}>
-              Disponibile fino al {new Date(favor.expires_at).toLocaleDateString('it-IT', {
+            <Text style={styles.dateTimeText}>{tt('Disponibile fino al')}{' '}{new Date(favor.expires_at).toLocaleDateString('it-IT', {
                 day: 'numeric',
                 month: 'long',
               })}
@@ -614,7 +616,7 @@ export default function FavorDetailScreen() {
           <View style={styles.infoCard}>
             <Ionicons name="time" size={24} color="#B8C868" />
             <Text style={styles.infoValue}>{favor.duration_hours}</Text>
-            <Text style={styles.infoLabel}>ore</Text>
+            <Text style={styles.infoLabel}>{tt('ore')}</Text>
           </View>
         </View>
 
@@ -631,14 +633,14 @@ export default function FavorDetailScreen() {
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.userLabel}>
-              {favor.type === 'offer' ? 'Donatore' : 'Richiedente'}
+              {favor.type === 'offer' ? tt('Donatore') : tt('Richiedente')}
             </Text>
             <View style={styles.userNameRow}>
               <Text style={styles.userName}>{favor.creator_name}</Text>
               <Ionicons name="chevron-forward" size={16} color="#9DB3A4" />
             </View>
             {favor.creator_title && (
-              <Text style={styles.userTitle}>{favor.creator_title}</Text>
+              <Text style={styles.userTitle}>{tt(favor.creator_title)}</Text>
             )}
           </View>
         </TouchableOpacity>
@@ -657,7 +659,7 @@ export default function FavorDetailScreen() {
             </View>
             <View style={styles.userInfo}>
               <Text style={styles.userLabel}>
-                {favor.type === 'offer' ? 'Ricevente' : 'Donatore'}
+                {favor.type === 'offer' ? tt('Ricevente') : tt('Donatore')}
               </Text>
               <View style={styles.userNameRow}>
                 <Text style={styles.userName}>{favor.accepted_by_name}</Text>
@@ -672,7 +674,7 @@ export default function FavorDetailScreen() {
         {/* Reviews */}
         {reviews.length > 0 && (
           <View style={styles.reviewsSection}>
-            <Text style={styles.sectionTitle}>Recensioni</Text>
+            <Text style={styles.sectionTitle}>{tt('Recensioni')}</Text>
             {reviews.map((review) => (
               <View key={review.review_id} style={styles.reviewCard}>
                 <View style={styles.reviewHeader}>
@@ -680,19 +682,19 @@ export default function FavorDetailScreen() {
                 </View>
                 <View style={styles.ratingsGrid}>
                   <View style={styles.ratingItem}>
-                    <Text style={styles.ratingLabel}>Efficienza</Text>
+                    <Text style={styles.ratingLabel}>{tt('Efficienza')}</Text>
                     <View style={styles.starsRow}>
                       {renderStars(review.rating)}
                     </View>
                   </View>
                   <View style={styles.ratingItem}>
-                    <Text style={styles.ratingLabel}>Gentilezza</Text>
+                    <Text style={styles.ratingLabel}>{tt('Gentilezza')}</Text>
                     <View style={styles.starsRow}>
                       {renderStars(review.kindness_rating)}
                     </View>
                   </View>
                   <View style={styles.ratingItem}>
-                    <Text style={styles.ratingLabel}>Impatto</Text>
+                    <Text style={styles.ratingLabel}>{tt('Impatto')}</Text>
                     <View style={styles.starsRow}>
                       {renderStars(review.impact_rating)}
                     </View>
@@ -715,7 +717,7 @@ export default function FavorDetailScreen() {
         {/* Review Form */}
         {showReviewForm && (
           <View style={styles.reviewForm}>
-            <Text style={styles.sectionTitle}>Lascia una Recensione</Text>
+            <Text style={styles.sectionTitle}>{tt('Lascia una Recensione')}</Text>
             
             <View style={styles.reviewRatings}>
               {renderStars(rating, setRating, 'Efficienza')}
@@ -725,7 +727,7 @@ export default function FavorDetailScreen() {
 
             <TextInput
               style={styles.commentInput}
-              placeholder="Commento (opzionale)"
+              placeholder={tt('Commento (opzionale)')}
               placeholderTextColor="#8FA595"
               value={comment}
               onChangeText={setComment}
@@ -735,7 +737,7 @@ export default function FavorDetailScreen() {
 
             <TextInput
               style={[styles.commentInput, { marginTop: 12 }]}
-              placeholder="Ringraziamento pubblico (opzionale - apparirà nella Bacheca dei Grazie)"
+              placeholder={tt('Ringraziamento pubblico (opzionale - apparirà nella Bacheca dei Grazie)')}
               placeholderTextColor="#8FA595"
               value={publicThanks}
               onChangeText={setPublicThanks}
@@ -748,7 +750,7 @@ export default function FavorDetailScreen() {
                 style={styles.cancelReviewButton}
                 onPress={() => setShowReviewForm(false)}
               >
-                <Text style={styles.cancelReviewText}>Annulla</Text>
+                <Text style={styles.cancelReviewText}>{tt('Annulla')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.submitReviewButton}
@@ -758,7 +760,7 @@ export default function FavorDetailScreen() {
                 {actionLoading ? (
                   <ActivityIndicator size="small" color="#0F1A14" />
                 ) : (
-                  <Text style={styles.submitReviewText}>Pubblica</Text>
+                  <Text style={styles.submitReviewText}>{tt('Pubblica')}</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -778,15 +780,13 @@ export default function FavorDetailScreen() {
               ) : (
                 <>
                   <Ionicons name="checkmark-circle" size={20} color="#0F1A14" />
-                  <Text style={styles.acceptButtonText}>Accetta Favore</Text>
+                  <Text style={styles.acceptButtonText}>{tt('Accetta Favore')}</Text>
                 </>
               )}
             </TouchableOpacity>
           )}
           {canAccept() && (
-            <Text style={styles.acceptHint}>
-              Dopo l'accettazione si apre la chat per accordarvi. All'incontro scansionate il codice QR per completare il favore.
-            </Text>
+            <Text style={styles.acceptHint}>{tt('Dopo l\'accettazione si apre la chat per accordarvi. All\'incontro scansionate il codice QR per completare il favore.')}</Text>
           )}
 
           {canComplete() && (
@@ -800,7 +800,7 @@ export default function FavorDetailScreen() {
               ) : (
                 <>
                   <Ionicons name="trophy" size={20} color="#0F1A14" />
-                  <Text style={styles.completeButtonText}>Segna come Completato</Text>
+                  <Text style={styles.completeButtonText}>{tt('Segna come Completato')}</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -815,7 +815,7 @@ export default function FavorDetailScreen() {
               data-testid="scan-qr-button"
             >
               <Ionicons name="scan" size={20} color="#fff" />
-              <Text style={styles.scanQRButtonText}>Scansiona QR per Completare</Text>
+              <Text style={styles.scanQRButtonText}>{tt('Scansiona QR per Completare')}</Text>
             </TouchableOpacity>
           )}
 
@@ -825,7 +825,7 @@ export default function FavorDetailScreen() {
               onPress={() => setShowReviewForm(true)}
             >
               <Ionicons name="star" size={20} color="#ffd700" />
-              <Text style={styles.reviewButtonText}>Lascia una Recensione</Text>
+              <Text style={styles.reviewButtonText}>{tt('Lascia una Recensione')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -837,11 +837,11 @@ export default function FavorDetailScreen() {
           <View style={styles.qrModalContent}>
             <View style={styles.qrModalHeader}>
               <Ionicons name="heart-circle" size={32} color="#B8C868" />
-              <Text style={styles.qrModalTitle}>Check-in QR</Text>
+              <Text style={styles.qrModalTitle}>{tt('Check-in QR')}</Text>
             </View>
             
             <Text style={styles.qrModalDescription}>
-              {qrInstructions || 'Mostra questo codice all\'altra persona per completare il favore'}
+              {qrInstructions || tt('Mostra questo codice all\'altra persona per completare il favore')}
             </Text>
             
             <View style={styles.qrCodeBox}>
@@ -858,13 +858,13 @@ export default function FavorDetailScreen() {
             
             <View style={styles.qrCodeInfo}>
               <Ionicons name="shield-checkmark" size={16} color="#B8C868" />
-              <Text style={styles.qrCodeInfoText}>Codice sicuro monouso</Text>
+              <Text style={styles.qrCodeInfoText}>{tt('Codice sicuro monouso')}</Text>
             </View>
 
             {favor?.checkin_completed && (
               <View style={styles.checkinComplete}>
                 <Ionicons name="checkmark-circle" size={24} color="#B8C868" />
-                <Text style={styles.checkinCompleteText}>Check-in completato!</Text>
+                <Text style={styles.checkinCompleteText}>{tt('Check-in completato!')}</Text>
               </View>
             )}
 
@@ -872,7 +872,7 @@ export default function FavorDetailScreen() {
               style={styles.qrModalClose}
               onPress={() => setShowQRModal(false)}
             >
-              <Text style={styles.qrModalCloseText}>Chiudi</Text>
+              <Text style={styles.qrModalCloseText}>{tt('Chiudi')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -891,7 +891,7 @@ export default function FavorDetailScreen() {
             >
               <Ionicons name="close-circle" size={32} color="#ff6b6b" />
             </TouchableOpacity>
-            <Text style={styles.scannerTitle}>Scansiona QR</Text>
+            <Text style={styles.scannerTitle}>{tt('Scansiona QR')}</Text>
             <View style={{ width: 32 }} />
           </View>
           
@@ -905,7 +905,7 @@ export default function FavorDetailScreen() {
               <View style={styles.cameraPlaceholder}>
                 <Ionicons name="camera-outline" size={64} color="#8FA595" />
                 <Text style={styles.cameraPlaceholderText}>
-                  {isCameraAvailable() ? 'Permesso fotocamera non concesso' : 'Fotocamera non disponibile'}
+                  {isCameraAvailable() ? tt('Permesso fotocamera non concesso') : tt('Fotocamera non disponibile')}
                 </Text>
                 {isCameraAvailable() && (
                   <TouchableOpacity 
@@ -913,11 +913,11 @@ export default function FavorDetailScreen() {
                     onPress={async () => {
                       const result = await requestPermission();
                       if (!result.granted) {
-                        Alert.alert('Errore', 'È necessario il permesso per la fotocamera');
+                        notify(tt('Errore'), tt('È necessario il permesso per la fotocamera'));
                       }
                     }}
                   >
-                    <Text style={styles.retryPermissionText}>Riprova</Text>
+                    <Text style={styles.retryPermissionText}>{tt('Riprova')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -938,9 +938,7 @@ export default function FavorDetailScreen() {
           
           <View style={styles.scannerFooter}>
             <Ionicons name="qr-code-outline" size={24} color="#B8C868" />
-            <Text style={styles.scannerHint}>
-              Inquadra il codice QR mostrato dall'altro utente per completare il favore
-            </Text>
+            <Text style={styles.scannerHint}>{tt('Inquadra il codice QR mostrato dall\'altro utente per completare il favore')}</Text>
           </View>
           
           {/* Cancel Button */}
@@ -951,7 +949,7 @@ export default function FavorDetailScreen() {
               setShowScannerModal(false);
             }}
           >
-            <Text style={styles.scannerCancelText}>Annulla</Text>
+            <Text style={styles.scannerCancelText}>{tt('Annulla')}</Text>
           </TouchableOpacity>
         </SafeAreaView>
       </Modal>
@@ -976,7 +974,7 @@ export default function FavorDetailScreen() {
         <View style={styles.profileModalOverlay}>
           <View style={styles.profileModalContent}>
             <View style={styles.profileModalHeader}>
-              <Text style={styles.profileModalTitle}>Profilo Utente</Text>
+              <Text style={styles.profileModalTitle}>{tt('Profilo Utente')}</Text>
               <TouchableOpacity onPress={() => setShowProfileModal(false)}>
                 <Ionicons name="close" size={24} color="#fff" />
               </TouchableOpacity>
@@ -1002,7 +1000,7 @@ export default function FavorDetailScreen() {
                   {userProfile.is_supporter && (
                     <View style={styles.supporterBadgeSmall}>
                       <Ionicons name="heart" size={12} color="#ff6b6b" />
-                      <Text style={styles.supporterBadgeText}>Sostenitore</Text>
+                      <Text style={styles.supporterBadgeText}>{tt('Sostenitore')}</Text>
                     </View>
                   )}
                 </View>
@@ -1011,15 +1009,15 @@ export default function FavorDetailScreen() {
                 <View style={styles.profileStats}>
                   <View style={styles.profileStatItem}>
                     <Text style={styles.profileStatValue}>{userProfile.total_favors_given}</Text>
-                    <Text style={styles.profileStatLabel}>Favori dati</Text>
+                    <Text style={styles.profileStatLabel}>{tt('Favori dati')}</Text>
                   </View>
                   <View style={styles.profileStatItem}>
                     <Text style={styles.profileStatValue}>{userProfile.total_favors_received}</Text>
-                    <Text style={styles.profileStatLabel}>Favori ricevuti</Text>
+                    <Text style={styles.profileStatLabel}>{tt('Favori ricevuti')}</Text>
                   </View>
                   <View style={styles.profileStatItem}>
                     <Text style={styles.profileStatValue}>{userProfile.reviews_count}</Text>
-                    <Text style={styles.profileStatLabel}>Recensioni</Text>
+                    <Text style={styles.profileStatLabel}>{tt('Recensioni')}</Text>
                   </View>
                 </View>
 
@@ -1027,7 +1025,7 @@ export default function FavorDetailScreen() {
                 {(userProfile.average_rating > 0 || userProfile.average_kindness > 0) && (
                   <View style={styles.profileRatings}>
                     <View style={styles.profileRatingItem}>
-                      <Text style={styles.profileRatingLabel}>Efficienza</Text>
+                      <Text style={styles.profileRatingLabel}>{tt('Efficienza')}</Text>
                       <View style={styles.profileRatingStars}>
                         {[1,2,3,4,5].map(i => (
                           <Ionicons 
@@ -1040,7 +1038,7 @@ export default function FavorDetailScreen() {
                       </View>
                     </View>
                     <View style={styles.profileRatingItem}>
-                      <Text style={styles.profileRatingLabel}>Gentilezza</Text>
+                      <Text style={styles.profileRatingLabel}>{tt('Gentilezza')}</Text>
                       <View style={styles.profileRatingStars}>
                         {[1,2,3,4,5].map(i => (
                           <Ionicons 
@@ -1058,7 +1056,7 @@ export default function FavorDetailScreen() {
                 {/* Skills */}
                 {userProfile.skills && userProfile.skills.length > 0 && (
                   <View style={styles.profileSection}>
-                    <Text style={styles.profileSectionTitle}>Competenze</Text>
+                    <Text style={styles.profileSectionTitle}>{tt('Competenze')}</Text>
                     <View style={styles.profileSkills}>
                       {userProfile.skills.map((skill: string, idx: number) => (
                         <View key={idx} style={styles.profileSkillTag}>
@@ -1072,7 +1070,7 @@ export default function FavorDetailScreen() {
                 {/* Reviews */}
                 {userReviews.length > 0 && (
                   <View style={styles.profileSection}>
-                    <Text style={styles.profileSectionTitle}>Recensioni ricevute</Text>
+                    <Text style={styles.profileSectionTitle}>{tt('Recensioni ricevute')}</Text>
                     {userReviews.slice(0, 5).map((review) => (
                       <View key={review.review_id} style={styles.profileReviewCard}>
                         <View style={styles.profileReviewHeader}>
@@ -1097,7 +1095,7 @@ export default function FavorDetailScreen() {
                 )}
               </ScrollView>
             ) : (
-              <Text style={styles.profileError}>Impossibile caricare il profilo</Text>
+              <Text style={styles.profileError}>{tt('Impossibile caricare il profilo')}</Text>
             )}
           </View>
         </View>

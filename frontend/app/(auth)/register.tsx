@@ -9,7 +9,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +18,8 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api } from '../../src/services/api';
 import RegistrationOnboarding from '../../src/components/RegistrationOnboarding';
 import colors from '../../src/theme/colors';
+import { notify } from '../../src/utils/notify';
+import { tt } from '../../src/i18n/tt';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -42,24 +43,24 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password) {
-      Alert.alert('Errore', 'Compila tutti i campi');
+      notify(tt('Errore'), tt('Compila tutti i campi'));
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Errore', 'Le password non corrispondono');
+      notify(tt('Errore'), tt('Le password non corrispondono'));
       return;
     }
 
     if (password.length < 8) {
-      Alert.alert('Errore', 'La password deve essere di almeno 8 caratteri');
+      notify(tt('Errore'), tt('La password deve essere di almeno 8 caratteri'));
       return;
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert('Errore', 'Inserisci un indirizzo email valido');
+      notify(tt('Errore'), tt('Inserisci un indirizzo email valido'));
       return;
     }
 
@@ -73,7 +74,7 @@ export default function RegisterScreen() {
         router.replace('/(tabs)');
       }
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Registrazione fallita');
+      notify(tt('Errore'), error.message || tt('Registrazione fallita'));
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +82,7 @@ export default function RegisterScreen() {
 
   const handleVerifyCode = async () => {
     if (!verificationCode || verificationCode.length !== 6 || !userId) {
-      Alert.alert('Errore', 'Inserisci il codice a 6 cifre');
+      notify(tt('Errore'), tt('Inserisci il codice a 6 cifre'));
       return;
     }
     setIsLoading(true);
@@ -92,7 +93,7 @@ export default function RegisterScreen() {
         router.replace('/(tabs)');
       }
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Codice non valido');
+      notify(tt('Errore'), error.message || tt('Codice non valido'));
     } finally {
       setIsLoading(false);
     }
@@ -103,9 +104,9 @@ export default function RegisterScreen() {
     setResending(true);
     try {
       await api.resendVerificationCode(userId);
-      Alert.alert('Fatto', 'Nuovo codice inviato alla tua email');
+      notify(tt('Fatto'), tt('Nuovo codice inviato alla tua email'));
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile reinviare il codice');
+      notify(tt('Errore'), error.message || tt('Impossibile reinviare il codice'));
     } finally {
       setResending(false);
     }
@@ -139,9 +140,8 @@ export default function RegisterScreen() {
               <View style={styles.verifyIconContainer}>
                 <Ionicons name="mail" size={40} color={colors.accent} />
               </View>
-              <Text style={styles.title}>Verifica Email</Text>
-              <Text style={styles.subtitle}>
-                Abbiamo inviato un codice a{'\n'}
+              <Text style={styles.title}>{tt('Verifica Email')}</Text>
+              <Text style={styles.subtitle}>{tt('Abbiamo inviato un codice a')}{'\n'}
                 <Text style={styles.emailHighlight}>{email}</Text>
               </Text>
             </View>
@@ -170,7 +170,7 @@ export default function RegisterScreen() {
                 {isLoading ? (
                   <ActivityIndicator color={colors.background} />
                 ) : (
-                  <Text style={styles.registerButtonText}>Verifica</Text>
+                  <Text style={styles.registerButtonText}>{tt('Verifica')}</Text>
                 )}
               </TouchableOpacity>
 
@@ -179,10 +179,9 @@ export default function RegisterScreen() {
                 onPress={handleResendCode}
                 disabled={resending}
               >
-                <Text style={styles.resendText}>
-                  Non hai ricevuto il codice?{' '}
+                <Text style={styles.resendText}>{tt('Non hai ricevuto il codice?')}{' '}
                   <Text style={styles.resendLink}>
-                    {resending ? 'Invio...' : 'Reinvia'}
+                    {resending ? tt('Invio...') : tt('Reinvia')}
                   </Text>
                 </Text>
               </TouchableOpacity>
@@ -218,8 +217,8 @@ export default function RegisterScreen() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.title}>Crea Account</Text>
-            <Text style={styles.subtitle}>Unisciti alla community</Text>
+            <Text style={styles.title}>{tt('Crea Account')}</Text>
+            <Text style={styles.subtitle}>{tt('Unisciti alla community')}</Text>
           </View>
 
           <View style={styles.form}>
@@ -227,7 +226,7 @@ export default function RegisterScreen() {
               <Ionicons name="person-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Nome"
+                placeholder={tt('Nome')}
                 placeholderTextColor="#9DB3A4"
                 value={name}
                 onChangeText={setName}
@@ -239,7 +238,7 @@ export default function RegisterScreen() {
               <Ionicons name="mail-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={tt('Email')}
                 placeholderTextColor="#9DB3A4"
                 value={email}
                 onChangeText={setEmail}
@@ -252,7 +251,7 @@ export default function RegisterScreen() {
               <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder={tt('Password')}
                 placeholderTextColor="#9DB3A4"
                 value={password}
                 onChangeText={setPassword}
@@ -271,7 +270,7 @@ export default function RegisterScreen() {
               <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Conferma Password"
+                placeholder={tt('Conferma Password')}
                 placeholderTextColor="#9DB3A4"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -283,7 +282,7 @@ export default function RegisterScreen() {
               <Ionicons name="gift-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Codice Referral (opzionale)"
+                placeholder={tt('Codice Referral (opzionale)')}
                 placeholderTextColor="#9DB3A4"
                 value={referralCode}
                 onChangeText={setReferralCode}
@@ -300,20 +299,20 @@ export default function RegisterScreen() {
               {isLoading ? (
                 <ActivityIndicator color="#0F1A14" />
               ) : (
-                <Text style={styles.registerButtonText}>Registrati</Text>
+                <Text style={styles.registerButtonText}>{tt('Registrati')}</Text>
               )}
             </TouchableOpacity>
 
             <View style={styles.bonusContainer}>
               <Text style={styles.bonusIcon}>💎</Text>
-              <Text style={styles.bonusText}>Riceverai 3 Granelli di benvenuto!</Text>
+              <Text style={styles.bonusText}>{tt('Riceverai 3 Granelli di benvenuto!')}</Text>
             </View>
 
             <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>Hai già un account? </Text>
+              <Text style={styles.loginText}>{tt('Hai già un account?')}{' '}</Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.loginLink}>Accedi</Text>
+                  <Text style={styles.loginLink}>{tt('Accedi')}</Text>
                 </TouchableOpacity>
               </Link>
             </View>

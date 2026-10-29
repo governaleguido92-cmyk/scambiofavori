@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import colors from '../theme/colors';
+import { tt } from '../i18n/tt';
 
 interface LegalConsentModalProps {
   visible: boolean;
@@ -56,10 +57,8 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
             <View style={styles.iconContainer}>
               <Ionicons name="shield-checkmark" size={40} color={colors.primary} />
             </View>
-            <Text style={styles.title}>Benvenuto in Scambio di Favori!</Text>
-            <Text style={styles.subtitle}>
-              Prima di iniziare, leggi e accetta i nostri termini
-            </Text>
+            <Text style={styles.title}>{tt('Benvenuto in Scambio di Favori!')}</Text>
+            <Text style={styles.subtitle}>{tt('Prima di iniziare, leggi e accetta i nostri termini')}</Text>
           </View>
 
           {/* Content */}
@@ -67,38 +66,27 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
             {/* Disclaimer Box */}
             <View style={styles.disclaimerBox}>
               <Ionicons name="information-circle" size={20} color={colors.warning} />
-              <Text style={styles.disclaimerText}>
-                L'app è un facilitatore e non risponde della condotta degli utenti. 
-                Ogni scambio avviene sotto la tua esclusiva responsabilità.
-              </Text>
+              <Text style={styles.disclaimerText}>{tt('L\'app è un facilitatore e non risponde della condotta degli utenti. Ogni scambio avviene sotto la tua esclusiva responsabilità.')}</Text>
             </View>
 
             {/* Summary Box */}
             <View style={styles.summaryBox}>
-              <Text style={styles.summaryTitle}>In breve:</Text>
+              <Text style={styles.summaryTitle}>{tt('In breve:')}</Text>
               <View style={styles.summaryItem}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                <Text style={styles.summaryText}>
-                  Siamo un intermediario tra privati
-                </Text>
+                <Text style={styles.summaryText}>{tt('Siamo un intermediario tra privati')}</Text>
               </View>
               <View style={styles.summaryItem}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                <Text style={styles.summaryText}>
-                  Scambi solo con Granelli, mai denaro reale
-                </Text>
+                <Text style={styles.summaryText}>{tt('Scambi solo con Granelli, mai denaro reale')}</Text>
               </View>
               <View style={styles.summaryItem}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                <Text style={styles.summaryText}>
-                  La tua posizione esatta resta privata
-                </Text>
+                <Text style={styles.summaryText}>{tt('La tua posizione esatta resta privata')}</Text>
               </View>
               <View style={styles.summaryItem}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                <Text style={styles.summaryText}>
-                  Puoi eliminare il tuo account quando vuoi
-                </Text>
+                <Text style={styles.summaryText}>{tt('Puoi eliminare il tuo account quando vuoi')}</Text>
               </View>
             </View>
 
@@ -112,14 +100,11 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
                 {tosAccepted && <Ionicons name="checkmark" size={16} color="#fff" />}
               </View>
               <View style={styles.checkboxTextContainer}>
-                <Text style={styles.checkboxText}>
-                  Ho letto e accetto i{' '}
+                <Text style={styles.checkboxText}>{tt('Ho letto e accetto i')}{' '}
                   <Text 
                     style={styles.linkText}
                     onPress={() => router.push('/legal')}
-                  >
-                    Termini di Servizio
-                  </Text>
+                  >{tt('Termini di Servizio')}</Text>
                 </Text>
               </View>
             </TouchableOpacity>
@@ -134,26 +119,19 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
                 {privacyAccepted && <Ionicons name="checkmark" size={16} color="#fff" />}
               </View>
               <View style={styles.checkboxTextContainer}>
-                <Text style={styles.checkboxText}>
-                  Ho letto e accetto la{' '}
+                <Text style={styles.checkboxText}>{tt('Ho letto e accetto la')}{' '}
                   <Text 
                     style={styles.linkText}
                     onPress={() => router.push('/legal')}
-                  >
-                    Privacy Policy
-                  </Text>
-                  {' '}(GDPR)
-                </Text>
+                  >{tt('Privacy Policy')}</Text>
+                  {' '}{tt('(GDPR)')}</Text>
               </View>
             </TouchableOpacity>
 
             {/* Info Text */}
             <View style={styles.infoBox}>
               <Ionicons name="information-circle" size={18} color={colors.textMuted} />
-              <Text style={styles.infoText}>
-                Accettando, confermi di aver compreso che la piattaforma è un semplice 
-                intermediario e che ogni scambio è sotto la tua responsabilità.
-              </Text>
+              <Text style={styles.infoText}>{tt('Accettando, confermi di aver compreso che la piattaforma è un semplice intermediario e che ogni scambio è sotto la tua responsabilità.')}</Text>
             </View>
           </ScrollView>
 
@@ -167,9 +145,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
               <ActivityIndicator color={colors.background} />
             ) : (
               <>
-                <Text style={[styles.acceptButtonText, !canProceed && styles.acceptButtonTextDisabled]}>
-                  Accetto e Continuo
-                </Text>
+                <Text style={[styles.acceptButtonText, !canProceed && styles.acceptButtonTextDisabled]}>{tt('Accetto e Continuo')}</Text>
                 <Ionicons 
                   name="arrow-forward" 
                   size={20} 
@@ -184,9 +160,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
             style={styles.legalLinkContainer}
             onPress={() => router.push('/legal')}
           >
-            <Text style={styles.legalLink}>
-              Leggi il testo completo
-            </Text>
+            <Text style={styles.legalLink}>{tt('Leggi il testo completo')}</Text>
           </TouchableOpacity>
         </View>
       </View>

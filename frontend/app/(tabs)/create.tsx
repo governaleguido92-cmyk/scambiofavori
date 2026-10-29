@@ -22,6 +22,8 @@ import { useTranslation } from 'react-i18next';
 import { api, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { styles } from '../../src/styles/create.styles';
 import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt, tx } from '../../src/i18n/tt';
 
 const DEBT_LIMIT = -3; // Social debt threshold
 
@@ -85,7 +87,7 @@ export default function CreateFavorScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permesso negato', 'Abilita la localizzazione per aggiungere la posizione');
+        notify(tt('Permesso negato'), tt('Abilita la localizzazione per aggiungere la posizione'));
         return;
       }
 
@@ -107,7 +109,7 @@ export default function CreateFavorScreen() {
         setAddress('Posizione attuale');
       }
     } catch (error) {
-      Alert.alert('Errore', 'Impossibile ottenere la posizione');
+      notify(tt('Errore'), tt('Impossibile ottenere la posizione'));
     } finally {
       setGettingLocation(false);
     }
@@ -115,15 +117,15 @@ export default function CreateFavorScreen() {
 
   const handleCreate = async () => {
     if (isOffline) {
-      Alert.alert(t('common.offline'), t('create.offlineError'));
+      notify(t('common.offline'), t('create.offlineError'));
       return;
     }
     // Check zero granelli - can only offer, not request
     if (type === 'request' && hasZeroGranelli) {
       Alert.alert(
-        'Granelli Insufficienti',
-        'Hai 0 Granelli! Non puoi chiedere favori. Inizia offrendo aiuto agli altri per guadagnare Granelli.',
-        [{ text: 'Ho capito' }]
+        tt('Granelli Insufficienti'),
+        tt('Hai 0 Granelli! Non puoi chiedere favori. Inizia offrendo aiuto agli altri per guadagnare Granelli.'),
+        [{ text: tt('Ho capito') }]
       );
       return;
     }
@@ -135,19 +137,19 @@ export default function CreateFavorScreen() {
     }
 
     if (!title.trim()) {
-      Alert.alert(t('common.error'), t('create.errorTitle'));
+      notify(t('common.error'), t('create.errorTitle'));
       return;
     }
     if (!description.trim()) {
-      Alert.alert(t('common.error'), t('create.errorDescription'));
+      notify(t('common.error'), t('create.errorDescription'));
       return;
     }
     if (!category) {
-      Alert.alert(t('common.error'), t('create.errorCategory'));
+      notify(t('common.error'), t('create.errorCategory'));
       return;
     }
     if (!location) {
-      Alert.alert(t('common.error'), t('create.errorLocation'));
+      notify(t('common.error'), t('create.errorLocation'));
       return;
     }
 
@@ -155,7 +157,7 @@ export default function CreateFavorScreen() {
     const granelliNeeded = Math.max(1, Math.round(duration));
 
     if (type === 'request' && (user?.granelli || 0) < granelliNeeded) {
-      Alert.alert(`${CURRENCY_NAME} insufficienti`, `Hai solo ${user?.granelli} ${CURRENCY_NAME} disponibili. Servono ${granelliNeeded} ${CURRENCY_NAME}.`);
+      notify(tx('{0} insufficienti', [CURRENCY_NAME]), tx('Hai solo {0} {1} disponibili. Servono {2} {3}.', [user?.granelli ?? 0, CURRENCY_NAME, granelliNeeded, CURRENCY_NAME]));
       return;
     }
 
@@ -181,13 +183,13 @@ export default function CreateFavorScreen() {
       await refreshUser();
       
       Alert.alert(
-        'Successo',
+        tt('Successo'),
         type === 'offer' 
-          ? 'La tua offerta è stata pubblicata!' 
-          : 'La tua richiesta è stata pubblicata!',
+          ? tt('La tua offerta è stata pubblicata!') 
+          : tt('La tua richiesta è stata pubblicata!'),
         [
           {
-            text: 'OK',
+            text: tt('OK'),
             onPress: () => {
               setTitle('');
               setDescription('');
@@ -201,7 +203,7 @@ export default function CreateFavorScreen() {
         ]
       );
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || t('create.errorTitle'));
+      notify(t('common.error'), error.message || t('create.errorTitle'));
     } finally {
       setIsLoading(false);
     }
@@ -236,10 +238,8 @@ export default function CreateFavorScreen() {
             >
               <Ionicons name="warning" size={20} color="#ff6b6b" />
               <View style={styles.debtBannerText}>
-                <Text style={styles.debtBannerTitle}>Sei in Debito Sociale</Text>
-                <Text style={styles.debtBannerSubtitle}>
-                  Non puoi fare nuove richieste. Tocca per saperne di più.
-                </Text>
+                <Text style={styles.debtBannerTitle}>{tt('Sei in Debito Sociale')}</Text>
+                <Text style={styles.debtBannerSubtitle}>{tt('Non puoi fare nuove richieste. Tocca per saperne di più.')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#ff6b6b" />
             </TouchableOpacity>
@@ -256,11 +256,8 @@ export default function CreateFavorScreen() {
                 size={24}
                 color={type === 'offer' ? '#0F1A14' : '#B8C868'}
               />
-              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>
-                Dona un favore
-              </Text>
-              <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>
-                Guadagna {CURRENCY_NAME}
+              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Dona un favore')}</Text>
+              <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>{tt('Guadagna')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
 
@@ -273,11 +270,8 @@ export default function CreateFavorScreen() {
                 size={24}
                 color={type === 'request' ? '#0F1A14' : '#ff6b6b'}
               />
-              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>
-                Ricevi un favore
-              </Text>
-              <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>
-                Spendi {CURRENCY_NAME}
+              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Ricevi un favore')}</Text>
+              <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>{tt('Spendi')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
           </View>
@@ -287,7 +281,7 @@ export default function CreateFavorScreen() {
             <Text style={styles.label}>{t('create.titleLabel')}</Text>
             <TextInput
               style={styles.input}
-              placeholder="Es: Aiuto con la spesa"
+              placeholder={tt('Es: Aiuto con la spesa')}
               placeholderTextColor="#8FA595"
               value={title}
               onChangeText={setTitle}
@@ -300,7 +294,7 @@ export default function CreateFavorScreen() {
             <Text style={styles.label}>{t('create.descriptionLabel')}</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Descrivi il favore in dettaglio..."
+              placeholder={tt('Descrivi il favore in dettaglio...')}
               placeholderTextColor="#8FA595"
               value={description}
               onChangeText={setDescription}
@@ -337,7 +331,7 @@ export default function CreateFavorScreen() {
                     styles.categoryChipText,
                     category === cat.name && styles.categoryChipTextActive,
                   ]}>
-                    {cat.name}
+                    {tt(cat.name)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -346,7 +340,7 @@ export default function CreateFavorScreen() {
 
           {/* Duration Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Durata Stimata</Text>
+            <Text style={styles.label}>{tt('Durata Stimata')}</Text>
             <View style={styles.durationContainer}>
               <TouchableOpacity
                 style={styles.durationButton}
@@ -362,7 +356,7 @@ export default function CreateFavorScreen() {
                   keyboardType="decimal-pad"
                   maxLength={4}
                 />
-                <Text style={styles.durationUnit}>ore</Text>
+                <Text style={styles.durationUnit}>{tt('ore')}</Text>
               </View>
               <TouchableOpacity
                 style={styles.durationButton}
@@ -373,14 +367,14 @@ export default function CreateFavorScreen() {
             </View>
             <View style={styles.parityInfo}>
               <Ionicons name="information-circle" size={16} color="#B8C868" />
-              <Text style={styles.parityText}>1 ora = 1 {CURRENCY_NAME} (Parità di Valore)</Text>
+              <Text style={styles.parityText}>{tt('1 ora = 1')}{' '}{CURRENCY_NAME}{' '}{tt('(Parità di Valore)')}</Text>
             </View>
           </View>
 
           {/* Granelli Preview */}
           <View style={styles.granelliPreview}>
             <Text style={styles.granelliPreviewLabel}>
-              {type === 'offer' ? 'Guadagnerai:' : 'Spenderai:'}
+              {type === 'offer' ? tt('Guadagnerai:') : tt('Spenderai:')}
             </Text>
             <View style={styles.granelliPreviewValue}>
               <Text style={styles.granelliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
@@ -389,18 +383,17 @@ export default function CreateFavorScreen() {
             </View>
           </View>
           {type === 'request' && (
-            <Text style={styles.fieldHint}>
-              Questi {CURRENCY_NAME} li paghi a chi ti aiuta, a favore completato. Ora ne hai {user?.granelli || 0}.
+            <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}.
             </Text>
           )}
 
           {/* Validity Days Selector */}
           <View style={styles.inputGroup}>
             <View style={styles.validityHeader}>
-              <Text style={styles.label}>Durata Annuncio</Text>
+              <Text style={styles.label}>{tt('Durata Annuncio')}</Text>
               <View style={styles.validityBadge}>
                 <Ionicons name="time-outline" size={14} color="#B8C868" />
-                <Text style={styles.validityBadgeText}>{validityDays} {validityDays === 1 ? 'giorno' : 'giorni'}</Text>
+                <Text style={styles.validityBadgeText}>{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}</Text>
               </View>
             </View>
             <ScrollView
@@ -422,13 +415,12 @@ export default function CreateFavorScreen() {
                     styles.validityChipText,
                     validityDays === days && styles.validityChipTextActive,
                   ]}>
-                    {days} {days === 1 ? 'g' : 'gg'}
+                    {days} {days === 1 ? tt('g') : tt('gg')}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            <Text style={styles.validityHint}>
-              L'annuncio scadrà automaticamente dopo {validityDays} {validityDays === 1 ? 'giorno' : 'giorni'}
+            <Text style={styles.validityHint}>{tt('L\'annuncio scadrà automaticamente dopo')}{' '}{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}
             </Text>
           </View>
 
@@ -437,10 +429,8 @@ export default function CreateFavorScreen() {
             <View style={styles.locationInfoBox}>
               <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
               <View style={styles.locationInfoText}>
-                <Text style={styles.locationInfoTitle}>Privacy Protetta</Text>
-                <Text style={styles.locationInfoDescription}>
-                  La tua posizione sarà visibile solo sulla mappa. Potrai condividere l'indirizzo esatto via chat.
-                </Text>
+                <Text style={styles.locationInfoTitle}>{tt('Privacy Protetta')}</Text>
+                <Text style={styles.locationInfoDescription}>{tt('La tua posizione sarà visibile solo sulla mappa. Potrai condividere l\'indirizzo esatto via chat.')}</Text>
               </View>
             </View>
             <TouchableOpacity
@@ -454,7 +444,7 @@ export default function CreateFavorScreen() {
                 <>
                   <Ionicons name="location" size={20} color="#B8C868" />
                   <Text style={styles.locationButtonText}>
-                    {location ? 'Posizione aggiunta' : 'Aggiungi posizione (obbligatoria)'}
+                    {location ? tt('Posizione aggiunta') : tt('Aggiungi posizione (obbligatoria)')}
                   </Text>
                 </>
               )}
@@ -462,7 +452,7 @@ export default function CreateFavorScreen() {
             {location && (
               <View style={styles.addressContainer}>
                 <Ionicons name="checkmark-circle" size={16} color="#B8C868" />
-                <Text style={styles.addressText}>Posizione salvata (visibile solo sulla mappa)</Text>
+                <Text style={styles.addressText}>{tt('Posizione salvata (visibile solo sulla mappa)')}</Text>
               </View>
             )}
           </View>
@@ -500,9 +490,7 @@ export default function CreateFavorScreen() {
           {/* Ethical Banner */}
           <View style={styles.ethicalBanner}>
             <Ionicons name="shield-checkmark-outline" size={16} color="#2D5A3D" />
-            <Text style={styles.ethicalBannerText}>
-              Pubblicando, confermi che il favore rispetta i nostri standard etici e di sicurezza
-            </Text>
+            <Text style={styles.ethicalBannerText}>{tt('Pubblicando, confermi che il favore rispetta i nostri standard etici e di sicurezza')}</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -520,36 +508,32 @@ export default function CreateFavorScreen() {
               <View style={styles.modalIconContainer}>
                 <Ionicons name="warning" size={40} color="#ff6b6b" />
               </View>
-              <Text style={styles.modalTitle}>Debito Sociale</Text>
+              <Text style={styles.modalTitle}>{tt('Debito Sociale')}</Text>
             </View>
             
-            <Text style={styles.modalText}>
-              Il tuo saldo di {CURRENCY_NAME} è sceso a {user?.granelli || 0} {CURRENCY_SYMBOL}, 
-              superando il limite di debito consentito ({DEBT_LIMIT}).
+            <Text style={styles.modalText}>{tt('Il tuo saldo di')}{' '}{CURRENCY_NAME}{' '}{tt('è sceso a')}{' '}{user?.granelli || 0} {CURRENCY_SYMBOL}{tt(', superando il limite di debito consentito (')}{DEBT_LIMIT}).
             </Text>
 
             <View style={styles.modalInfoBox}>
-              <Text style={styles.modalInfoTitle}>Come tornare in positivo:</Text>
+              <Text style={styles.modalInfoTitle}>{tt('Come tornare in positivo:')}</Text>
               <View style={styles.modalInfoItem}>
                 <Ionicons name="gift-outline" size={18} color="#B8C868" />
-                <Text style={styles.modalInfoText}>Offri favori alla community</Text>
+                <Text style={styles.modalInfoText}>{tt('Offri favori alla community')}</Text>
               </View>
               <View style={styles.modalInfoItem}>
                 <Ionicons name="heart-outline" size={18} color="#B8C868" />
-                <Text style={styles.modalInfoText}>Richiedi aiuto dal Fondo Solidarietà</Text>
+                <Text style={styles.modalInfoText}>{tt('Richiedi aiuto dal Fondo Solidarietà')}</Text>
               </View>
             </View>
 
-            <Text style={styles.modalWarning}>
-              Le tue offerte sono evidenziate nel feed per aiutarti a guadagnare {CURRENCY_NAME} più rapidamente.
-            </Text>
+            <Text style={styles.modalWarning}>{tt('Le tue offerte sono evidenziate nel feed per aiutarti a guadagnare')}{' '}{CURRENCY_NAME}{' '}{tt('più rapidamente.')}</Text>
 
             <TouchableOpacity 
               style={styles.modalButton}
               onPress={() => setShowDebtModal(false)}
               data-testid="close-debt-modal"
             >
-              <Text style={styles.modalButtonText}>Ho capito</Text>
+              <Text style={styles.modalButtonText}>{tt('Ho capito')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { tt } from '../i18n/tt';
 
 const { width, height } = Dimensions.get('window');
 
@@ -81,11 +82,11 @@ export default function OnboardingSlides({ visible, onComplete }: OnboardingSlid
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
+        <Text style={styles.title}>{tt(item.title)}</Text>
+        <Text style={styles.description}>{tt(item.description)}</Text>
         <View style={styles.highlightContainer}>
           <Ionicons name="sparkles" size={16} color={colors.accent} />
-          <Text style={styles.highlight}>{item.highlight}</Text>
+          <Text style={styles.highlight}>{tt(item.highlight)}</Text>
         </View>
       </View>
     </View>
@@ -143,7 +144,7 @@ export default function OnboardingSlides({ visible, onComplete }: OnboardingSlid
           onPress={handleSkip}
           testID="onboarding-skip-btn"
         >
-          <Text style={styles.skipText}>Salta</Text>
+          <Text style={styles.skipText}>{tt('Salta')}</Text>
         </TouchableOpacity>
 
         {/* Slides */}
@@ -178,7 +179,7 @@ export default function OnboardingSlides({ visible, onComplete }: OnboardingSlid
             testID="onboarding-next-btn"
           >
             <Text style={styles.nextButtonText}>
-              {currentIndex === slides.length - 1 ? 'Inizia!' : 'Avanti'}
+              {currentIndex === slides.length - 1 ? tt('Inizia!') : tt('Avanti')}
             </Text>
             <Ionicons
               name={currentIndex === slides.length - 1 ? 'checkmark-circle' : 'arrow-forward'}

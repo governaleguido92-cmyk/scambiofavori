@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
+import { tt } from '../i18n/tt';
 
 interface OfflineNoticeProps {
   onRetry?: () => void;
@@ -39,12 +40,12 @@ export const OfflineNotice: React.FC<OfflineNoticeProps> = ({ onRetry }) => {
     >
       <View style={styles.content}>
         <Ionicons name="cloud-offline" size={20} color="#fff" />
-        <Text style={styles.text}>Sei offline</Text>
+        <Text style={styles.text}>{tt('Sei offline')}</Text>
       </View>
       {onRetry && (
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
           <Ionicons name="refresh" size={16} color="#fff" />
-          <Text style={styles.retryText}>Riprova</Text>
+          <Text style={styles.retryText}>{tt('Riprova')}</Text>
         </TouchableOpacity>
       )}
     </Animated.View>
@@ -68,7 +69,7 @@ export const NetworkErrorBanner: React.FC<{
       {onRetry && (
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
           <Ionicons name="refresh" size={16} color="#fff" />
-          <Text style={styles.retryText}>Riprova</Text>
+          <Text style={styles.retryText}>{tt('Riprova')}</Text>
         </TouchableOpacity>
       )}
     </View>

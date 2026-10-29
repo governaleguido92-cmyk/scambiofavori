@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { tt } from '../i18n/tt';
 
 interface SupporterBadgeProps {
   size?: 'small' | 'medium' | 'large';
@@ -22,7 +23,7 @@ export const SupporterBadge: React.FC<SupporterBadgeProps> = ({
   return (
     <View style={[styles.container, styles[`container_${size}`], style]}>
       <Ionicons name="heart" size={iconSize} color="#ffd700" />
-      {showLabel && <Text style={styles.label}>Sostenitore</Text>}
+      {showLabel && <Text style={styles.label}>{tt('Sostenitore')}</Text>}
     </View>
   );
 };

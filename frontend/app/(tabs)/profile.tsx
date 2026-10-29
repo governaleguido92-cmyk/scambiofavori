@@ -11,7 +11,6 @@ import {
   RefreshControl,
   ActivityIndicator,
   Image,
-  Switch,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,15 +19,15 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { SUPPORTED_LANGUAGES, changeLanguage } from '../../src/i18n';
 import { api, Badge, LeaderboardUser, Category, CURRENCY_NAME, CURRENCY_SYMBOL, getImageUrl } from '../../src/services/api';
 import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar';
-import { DeleteAccountModal } from '../../src/components/DeleteAccountModal';
 import { SupporterProfileBorder, SupporterBadge } from '../../src/components/SupporterBadge';
 import themeColors from '../../src/theme/colors';
 import { styles } from '../../src/styles/profile.styles';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt, tx } from '../../src/i18n/tt';
 
 const BADGE_ICONS: Record<string, string> = {
   'heart': 'heart',
@@ -45,13 +44,12 @@ const BADGE_ICONS: Record<string, string> = {
 };
 
 export default function ProfileScreen() {
-  const { user, token, logout, deleteAccount, refreshUser } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [badges, setBadges] = useState<Badge[]>([]);
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [showDonateModal, setShowDonateModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
@@ -74,11 +72,6 @@ export default function ProfileScreen() {
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [savingName, setSavingName] = useState(false);
-  // Notification preferences state
-  const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({
-    favor_accepted: true, favor_completed: true, new_message: true, new_review: true, skill_match: true,
-  });
-  const [loadingPrefs, setLoadingPrefs] = useState(false);
   // Reviews state
   const [receivedReviews, setReceivedReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -88,31 +81,31 @@ export default function ProfileScreen() {
 
   const BADGE_INFO: Record<string, { description: string; howToGet: string }> = {
     'Vicino Gentile': {
-      description: 'Hai completato il tuo primo favore nella community.',
-      howToGet: 'Completa 1 favore (offerta o richiesta).'
+      description: tt('Hai completato il tuo primo favore nella community.'),
+      howToGet: tt('Completa 1 favore (offerta o richiesta).')
     },
     'Aiutante Locale': {
-      description: 'Hai aiutato 5 persone nel tuo quartiere.',
-      howToGet: 'Completa 5 favori come offerente.'
+      description: tt('Hai aiutato 5 persone nel tuo quartiere.'),
+      howToGet: tt('Completa 5 favori come offerente.')
     },
     'Pilastro del Quartiere': {
-      description: 'Sei un punto di riferimento per la tua comunità.',
-      howToGet: 'Completa 20 favori nella community.'
+      description: tt('Sei un punto di riferimento per la tua comunità.'),
+      howToGet: tt('Completa 20 favori nella community.')
     },
     'Cuore d\'Oro': {
-      description: 'Hai donato al Fondo Solidarietà per aiutare chi è in difficoltà.',
-      howToGet: 'Fai una donazione al Fondo Solidarietà.'
+      description: tt('Hai donato al Fondo Solidarietà per aiutare chi è in difficoltà.'),
+      howToGet: tt('Fai una donazione al Fondo Solidarietà.')
     },
     'Eroe Silenzioso': {
-      description: 'Hai risposto a richieste urgenti quando serviva di più.',
-      howToGet: 'Completa 3 favori di emergenza.'
+      description: tt('Hai risposto a richieste urgenti quando serviva di più.'),
+      howToGet: tt('Completa 3 favori di emergenza.')
     },
     'Micro-Eroe': {
-      description: 'Hai dato consigli e info rapide a tanti vicini.',
-      howToGet: 'Completa 10 micro-favori.'
+      description: tt('Hai dato consigli e info rapide a tanti vicini.'),
+      howToGet: tt('Completa 10 micro-favori.')
     },
     'Sostenitore': {
-      description: 'Supporti lo sviluppo di Scambio di Favori con un contributo.',
+      description: tt('Supporti lo sviluppo di Scambio di Favori con un contributo.'),
       howToGet: SUPPORTER_PURCHASE_ENABLED
         ? 'Diventa Sostenitore da "Sostieni il Progetto" nel tuo profilo.'
         : 'Non disponibile in questa versione dell\'app.'
@@ -126,19 +119,19 @@ export default function ProfileScreen() {
 
   const showImagePickerOptions = () => {
     Alert.alert(
-      'Foto Profilo',
-      'Come vuoi aggiungere la foto?',
+      tt('Foto Profilo'),
+      tt('Come vuoi aggiungere la foto?'),
       [
         {
-          text: 'Scatta Foto',
+          text: tt('Scatta Foto'),
           onPress: () => pickImageFromCamera(),
         },
         {
-          text: 'Scegli dalla Libreria',
+          text: tt('Scegli dalla Libreria'),
           onPress: () => pickImageFromLibrary(),
         },
         {
-          text: 'Annulla',
+          text: tt('Annulla'),
           style: 'cancel',
         },
       ]
@@ -148,7 +141,7 @@ export default function ProfileScreen() {
   const pickImageFromCamera = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permesso negato', 'È necessario il permesso per usare la fotocamera.');
+      notify(tt('Permesso negato'), tt('È necessario il permesso per usare la fotocamera.'));
       return;
     }
 
@@ -170,7 +163,7 @@ export default function ProfileScreen() {
     if (Platform.OS !== 'android') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permesso negato', 'È necessario il permesso per accedere alla libreria foto.');
+        notify(tt('Permesso negato'), tt('È necessario il permesso per accedere alla libreria foto.'));
         return;
       }
     }
@@ -200,10 +193,10 @@ export default function ProfileScreen() {
       await api.uploadProfilePicture(uri, token);
       await refreshUser();
       setCompletionKey(k => k + 1);
-      Alert.alert('Successo', 'Foto profilo aggiornata!');
+      notify(tt('Successo'), tt('Foto profilo aggiornata!'));
     } catch (error: any) {
       logger.debug('Error uploading image:', error);
-      Alert.alert('Errore', 'Impossibile caricare la foto. Riprova.');
+      notify(tt('Errore'), tt('Impossibile caricare la foto. Riprova.'));
       setProfileImage(null);
     } finally {
       setUploadingImage(false);
@@ -240,13 +233,6 @@ export default function ProfileScreen() {
           logger.debug('Error loading reviews:', err);
         }
       }
-      // Load notification preferences
-      try {
-        const prefs = await api.getNotificationPreferences(token);
-        setNotifPrefs(prefs);
-      } catch (err) {
-        logger.debug('Error loading notification prefs:', err);
-      }
     } catch (error) {
       logger.debug('Error loading profile data:', error);
     }
@@ -266,45 +252,15 @@ export default function ProfileScreen() {
     setRefreshing(false);
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Sei sicuro di voler uscire?',
-      [
-        { text: 'Annulla', style: 'cancel' },
-        {
-          text: 'Esci',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-          },
-        },
-      ]
-    );
-  };
-
-  const handleToggleNotifPref = async (key: string) => {
-    if (!token) return;
-    const updated = { ...notifPrefs, [key]: !notifPrefs[key as keyof typeof notifPrefs] };
-    setNotifPrefs(updated);
-    try {
-      await api.updateNotificationPreferences(updated, token);
-    } catch (err) {
-      // Revert on error
-      setNotifPrefs(notifPrefs);
-      Alert.alert('Errore', 'Impossibile aggiornare le preferenze');
-    }
-  };
-
   const handleDonate = async () => {
     if (!token) return;
     const amount = parseInt(donationAmount);
     if (isNaN(amount) || amount < 1) {
-      Alert.alert('Errore', 'Inserisci un importo valido');
+      notify(tt('Errore'), tt('Inserisci un importo valido'));
       return;
     }
     if (amount > (user?.granelli || 0)) {
-      Alert.alert('Errore', `${CURRENCY_NAME} insufficienti`);
+      notify(tt('Errore'), tx('{0} insufficienti', [CURRENCY_NAME]));
       return;
     }
 
@@ -314,9 +270,9 @@ export default function ProfileScreen() {
       await loadData();
       setShowDonateModal(false);
       setDonationAmount('1');
-      Alert.alert('Grazie!', `Hai donato ${amount} ${CURRENCY_NAME} al Fondo Solidarietà`);
+      notify(tt('Grazie!'), tx('Hai donato {0} {1} al Fondo Solidarietà', [amount, CURRENCY_NAME]));
     } catch (error: any) {
-      Alert.alert('Errore', error.message);
+      notify(tt('Errore'), error.message);
     }
   };
 
@@ -338,9 +294,9 @@ export default function ProfileScreen() {
       const result = await api.updateUserName(newName.trim(), token);
       await refreshUser();
       setEditingName(false);
-      Alert.alert('Successo', 'Nome aggiornato!');
+      notify(tt('Successo'), tt('Nome aggiornato!'));
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile aggiornare il nome');
+      notify(tt('Errore'), error.message || tt('Impossibile aggiornare il nome'));
     } finally {
       setSavingName(false);
     }
@@ -362,9 +318,9 @@ export default function ProfileScreen() {
       setUserSkills(result.skills);
       setShowSkillsModal(false);
       setCompletionKey(k => k + 1);
-      Alert.alert('Successo', 'Competenze aggiornate! Riceverai notifiche per favori in queste categorie.');
+      notify(tt('Successo'), tt('Competenze aggiornate! Riceverai notifiche per favori in queste categorie.'));
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile salvare le competenze');
+      notify(tt('Errore'), error.message || tt('Impossibile salvare le competenze'));
     } finally {
       setSavingSkills(false);
     }
@@ -422,11 +378,20 @@ export default function ProfileScreen() {
         }
       >
         <View style={styles.header}>
-          <Text style={styles.title}>Profilo</Text>
+          <Text style={styles.title}>{tt('Profilo')}</Text>
+          <TouchableOpacity
+            onPress={() => router.push('/settings' as any)}
+            accessibilityRole="button"
+            accessibilityLabel={tt('Impostazioni')}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            data-testid="open-settings"
+          >
+            <Ionicons name="settings-outline" size={26} color="#fff" />
+          </TouchableOpacity>
           {user?.identity_verified && (
             <View style={styles.verifiedBadge}>
               <Ionicons name="shield-checkmark" size={16} color="#B8C868" />
-              <Text style={styles.verifiedText}>Verificato</Text>
+              <Text style={styles.verifiedText}>{tt('Verificato')}</Text>
             </View>
           )}
         </View>
@@ -459,7 +424,7 @@ export default function ProfileScreen() {
               </View>
             </TouchableOpacity>
             <View style={styles.levelBadge}>
-              <Text style={styles.levelText}>Lv.{currentLevel}</Text>
+              <Text style={styles.levelText}>{tt('Lv.')}{currentLevel}</Text>
             </View>
           </View>
           <View style={styles.nameContainer}>
@@ -495,19 +460,19 @@ export default function ProfileScreen() {
               <SupporterBadge size="medium" showLabel={true} style={{ marginLeft: 8 }} />
             )}
           </View>
-          <Text style={styles.userTitle}>{user?.title || 'Nuovo Vicino'}</Text>
+          <Text style={styles.userTitle}>{tt(user?.title || 'Nuovo Vicino')}</Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
           
           {/* Community Score Progress Bar */}
           <View style={styles.progressSection}>
             <View style={styles.progressHeader}>
-              <Text style={styles.progressLabel}>Crescita Comunitaria</Text>
-              <Text style={styles.progressValue}>{communityScore} punti</Text>
+              <Text style={styles.progressLabel}>{tt('Crescita Comunitaria')}</Text>
+              <Text style={styles.progressValue}>{communityScore}{' '}{tt('punti')}</Text>
             </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${progressToNext}%` }]} />
             </View>
-            <Text style={styles.progressHint}>{100 - progressToNext} punti al prossimo livello</Text>
+            <Text style={styles.progressHint}>{100 - progressToNext}{' '}{tt('punti al prossimo livello')}</Text>
           </View>
 
           {/* Social Impact Bar - NEW */}
@@ -515,33 +480,31 @@ export default function ProfileScreen() {
             <View style={styles.socialImpactHeader}>
               <View style={styles.socialImpactTitle}>
                 <Ionicons name="heart-circle" size={20} color="#ff6b6b" />
-                <Text style={styles.socialImpactLabel}>Impatto Sociale</Text>
+                <Text style={styles.socialImpactLabel}>{tt('Impatto Sociale')}</Text>
               </View>
-              <Text style={styles.socialImpactLevel}>Lv. {socialImpactLevel}</Text>
+              <Text style={styles.socialImpactLevel}>{tt('Lv.')}{' '}{socialImpactLevel}</Text>
             </View>
             <View style={styles.socialImpactBar}>
               <View style={[styles.socialImpactFill, { width: `${socialImpactProgress}%` }]} />
             </View>
             <View style={styles.socialImpactStats}>
-              <Text style={styles.socialImpactScore}>{socialImpactScore} punti impatto</Text>
-              <Text style={styles.socialImpactHint}>
-                +20 per favore • +50 per emergenza
-              </Text>
+              <Text style={styles.socialImpactScore}>{socialImpactScore}{' '}{tt('punti impatto')}</Text>
+              <Text style={styles.socialImpactHint}>{tt('+20 per favore • +50 per emergenza')}</Text>
             </View>
           </View>
           
           {/* Ratings */}
           <View style={styles.ratingsContainer}>
             <View style={styles.ratingItem}>
-              <Text style={styles.ratingLabel}>Efficienza</Text>
+              <Text style={styles.ratingLabel}>{tt('Efficienza')}</Text>
               <View style={styles.starsRow}>{renderStars(Math.round(user?.average_rating || 0))}</View>
             </View>
             <View style={styles.ratingItem}>
-              <Text style={styles.ratingLabel}>Gentilezza</Text>
+              <Text style={styles.ratingLabel}>{tt('Gentilezza')}</Text>
               <View style={styles.starsRow}>{renderStars(Math.round(user?.average_kindness || 0))}</View>
             </View>
             <View style={styles.ratingItem}>
-              <Text style={styles.ratingLabel}>Impatto</Text>
+              <Text style={styles.ratingLabel}>{tt('Impatto')}</Text>
               <View style={styles.starsRow}>{renderStars(Math.round(user?.average_impact || 0))}</View>
             </View>
           </View>
@@ -557,17 +520,17 @@ export default function ProfileScreen() {
           <View style={styles.statCard}>
             <Ionicons name="gift" size={28} color="#B8C868" />
             <Text style={styles.statValue}>{user?.total_favors_given || 0}</Text>
-            <Text style={styles.statLabel}>Donati</Text>
+            <Text style={styles.statLabel}>{tt('Donati')}</Text>
           </View>
           <View style={styles.statCard}>
             <Ionicons name="hand-left" size={28} color="#ff6b6b" />
             <Text style={styles.statValue}>{user?.total_favors_received || 0}</Text>
-            <Text style={styles.statLabel}>Ricevuti</Text>
+            <Text style={styles.statLabel}>{tt('Ricevuti')}</Text>
           </View>
           <View style={styles.statCard}>
             <Ionicons name="time" size={28} color="#F87828" />
             <Text style={styles.statValue}>{(user?.total_hours_helped || 0).toFixed(1)}h</Text>
-            <Text style={styles.statLabel}>Ore Donate</Text>
+            <Text style={styles.statLabel}>{tt('Ore Donate')}</Text>
           </View>
         </View>
 
@@ -586,8 +549,8 @@ export default function ProfileScreen() {
 
         {/* Badges Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Badge Comunitari</Text>
-          <Text style={styles.badgeHint}>Tocca un badge per scoprire come ottenerlo</Text>
+          <Text style={styles.sectionTitle}>{tt('Badge Comunitari')}</Text>
+          <Text style={styles.badgeHint}>{tt('Tocca un badge per scoprire come ottenerlo')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {allBadges.map((badge) => {
               const earned = badges.some(b => b.id === badge.id);
@@ -605,7 +568,7 @@ export default function ProfileScreen() {
                     />
                   </View>
                   <Text style={[styles.badgeName, !earned && styles.badgeNameLocked]}>
-                    {badge.name}
+                    {tt(badge.name)}
                   </Text>
                   {!earned && <Ionicons name="lock-closed" size={12} color="#8FA595" />}
                 </TouchableOpacity>
@@ -617,7 +580,7 @@ export default function ProfileScreen() {
         {/* Skills/Competenze Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Le Tue Competenze</Text>
+            <Text style={styles.sectionTitle}>{tt('Le Tue Competenze')}</Text>
             <TouchableOpacity 
               style={styles.editSkillsButton}
               onPress={() => {
@@ -627,7 +590,7 @@ export default function ProfileScreen() {
               data-testid="edit-skills-button"
             >
               <Ionicons name="pencil" size={16} color="#B8C868" />
-              <Text style={styles.editSkillsText}>Modifica</Text>
+              <Text style={styles.editSkillsText}>{tt('Modifica')}</Text>
             </TouchableOpacity>
           </View>
           
@@ -650,10 +613,8 @@ export default function ProfileScreen() {
           ) : (
             <View style={styles.noSkillsCard}>
               <Ionicons name="school-outline" size={40} color="#8FA595" />
-              <Text style={styles.noSkillsTitle}>Nessuna competenza selezionata</Text>
-              <Text style={styles.noSkillsDescription}>
-                Seleziona le tue competenze per ricevere notifiche quando qualcuno cerca aiuto nelle tue aree di esperienza!
-              </Text>
+              <Text style={styles.noSkillsTitle}>{tt('Nessuna competenza selezionata')}</Text>
+              <Text style={styles.noSkillsDescription}>{tt('Seleziona le tue competenze per ricevere notifiche quando qualcuno cerca aiuto nelle tue aree di esperienza!')}</Text>
               <TouchableOpacity 
                 style={styles.addSkillsButton}
                 onPress={() => {
@@ -663,20 +624,18 @@ export default function ProfileScreen() {
                 data-testid="add-skills-button"
               >
                 <Ionicons name="add" size={20} color="#fff" />
-                <Text style={styles.addSkillsButtonText}>Aggiungi Competenze</Text>
+                <Text style={styles.addSkillsButtonText}>{tt('Aggiungi Competenze')}</Text>
               </TouchableOpacity>
             </View>
           )}
           
-          <Text style={styles.skillsHint}>
-            Riceverai notifiche quando viene pubblicato un favore nelle tue aree di competenza
-          </Text>
+          <Text style={styles.skillsHint}>{tt('Riceverai notifiche quando viene pubblicato un favore nelle tue aree di competenza')}</Text>
         </View>
 
         {/* Received Reviews Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recensioni Ricevute</Text>
+            <Text style={styles.sectionTitle}>{tt('Recensioni Ricevute')}</Text>
             <View style={styles.reviewsCount}>
               <Ionicons name="star" size={16} color="#FFD700" />
               <Text style={styles.reviewsCountText}>{receivedReviews.length}</Text>
@@ -702,7 +661,7 @@ export default function ProfileScreen() {
                       {new Date(review.created_at).toLocaleDateString('it-IT')}
                     </Text>
                   </View>
-                  <Text style={styles.reviewerName}>da {review.reviewer_name}</Text>
+                  <Text style={styles.reviewerName}>{tt('da')}{' '}{review.reviewer_name}</Text>
                   {review.comment && (
                     <Text style={styles.reviewComment}>"{review.comment}"</Text>
                   )}
@@ -716,29 +675,26 @@ export default function ProfileScreen() {
               ))}
               {receivedReviews.length > 5 && (
                 <Text style={styles.moreReviewsText}>
-                  +{receivedReviews.length - 5} altre recensioni
-                </Text>
+                  +{receivedReviews.length - 5}{' '}{tt('altre recensioni')}</Text>
               )}
             </View>
           ) : (
             <View style={styles.noReviewsCard}>
               <Ionicons name="chatbubble-ellipses-outline" size={40} color="#8FA595" />
-              <Text style={styles.noReviewsText}>
-                Nessuna recensione ricevuta ancora. Completa dei favori per ricevere feedback!
-              </Text>
+              <Text style={styles.noReviewsText}>{tt('Nessuna recensione ricevuta ancora. Completa dei favori per ricevere feedback!')}</Text>
             </View>
           )}
         </View>
 
         {/* Solidarity Fund */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Fondo Solidarietà</Text>
+          <Text style={styles.sectionTitle}>{tt('Fondo Solidarietà')}</Text>
           <View style={styles.fundCard}>
             <View style={styles.fundInfo}>
               <Ionicons name="heart" size={32} color="#ff6b6b" />
               <View>
                 <Text style={styles.fundAmount}>{solidarityFund} {CURRENCY_NAME}</Text>
-                <Text style={styles.fundLabel}>disponibili per chi ha bisogno</Text>
+                <Text style={styles.fundLabel}>{tt('disponibili per chi ha bisogno')}</Text>
               </View>
             </View>
             <TouchableOpacity
@@ -746,12 +702,10 @@ export default function ProfileScreen() {
               onPress={() => setShowDonateModal(true)}
             >
               <Ionicons name="gift" size={18} color="#fff" />
-              <Text style={styles.donateButtonText}>Dona</Text>
+              <Text style={styles.donateButtonText}>{tt('Dona')}</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.fundDescription}>
-            Il Fondo Solidarietà aiuta anziani e persone fragili a partecipare alla community
-          </Text>
+          <Text style={styles.fundDescription}>{tt('Il Fondo Solidarietà aiuta anziani e persone fragili a partecipare alla community')}</Text>
         </View>
 
         {/* Referral Section */}
@@ -762,10 +716,9 @@ export default function ProfileScreen() {
           <View style={styles.referralLeft}>
             <Ionicons name="people" size={28} color="#F87828" />
             <View>
-              <Text style={styles.referralTitle}>Invita Amici</Text>
+              <Text style={styles.referralTitle}>{tt('Invita Amici')}</Text>
               <Text style={styles.referralSubtitle}>
-                {referralInfo?.successful_referrals || 0} inviti completati
-              </Text>
+                {referralInfo?.successful_referrals || 0}{' '}{tt('inviti completati')}</Text>
             </View>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#9DB3A4" />
@@ -783,8 +736,8 @@ export default function ProfileScreen() {
               <Ionicons name="heart" size={28} color="#ffd700" />
             </View>
             <View>
-              <Text style={styles.supporterTitle}>Sostieni il Progetto</Text>
-              <Text style={styles.supporterSubtitle}>Diventa un Pilastro della Community</Text>
+              <Text style={styles.supporterTitle}>{tt('Sostieni il Progetto')}</Text>
+              <Text style={styles.supporterSubtitle}>{tt('Diventa un Pilastro della Community')}</Text>
             </View>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#ffd700" />
@@ -797,13 +750,13 @@ export default function ProfileScreen() {
           onPress={() => setShowLeaderboard(true)}
         >
           <Ionicons name="trophy" size={24} color="#ffd700" />
-          <Text style={styles.leaderboardButtonText}>Classifica Community</Text>
+          <Text style={styles.leaderboardButtonText}>{tt('Classifica Community')}</Text>
           <Ionicons name="chevron-forward" size={24} color="#9DB3A4" />
         </TouchableOpacity>
 
         {/* Info Cards */}
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Come Funzionano i {CURRENCY_NAME}</Text>
+          <Text style={styles.sectionTitle}>{tt('Come Funzionano i')}{' '}{CURRENCY_NAME}</Text>
           
           <View style={styles.infoCard}>
             <View style={styles.infoItem}>
@@ -811,10 +764,8 @@ export default function ProfileScreen() {
                 <Text style={styles.infoIconText}>{CURRENCY_SYMBOL}</Text>
               </View>
               <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>1 Ora = 1 Granello</Text>
-                <Text style={styles.infoDescription}>
-                  Un'ora del tuo aiuto vale 1 Granello: lo guadagni aiutando e lo spendi quando hai bisogno
-                </Text>
+                <Text style={styles.infoTitle}>{tt('1 Ora = 1 Granello')}</Text>
+                <Text style={styles.infoDescription}>{tt('Un\'ora del tuo aiuto vale 1 Granello: lo guadagni aiutando e lo spendi quando hai bisogno')}</Text>
               </View>
             </View>
 
@@ -823,100 +774,21 @@ export default function ProfileScreen() {
                 <Ionicons name="qr-code" size={20} color="#F87828" />
               </View>
               <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>Check-in QR</Text>
-                <Text style={styles.infoDescription}>
-                  Valida l'incontro con il codice QR
-                </Text>
+                <Text style={styles.infoTitle}>{tt('Check-in QR')}</Text>
+                <Text style={styles.infoDescription}>{tt('Valida l\'incontro con il codice QR')}</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {/* Notification Preferences Section */}
-        <View style={styles.section} data-testid="notification-preferences-section">
-          <Text style={styles.sectionTitle}>Preferenze Notifiche</Text>
-          <View style={styles.notifPrefsContainer}>
-            {[
-              { key: 'favor_accepted', label: 'Favore accettato', icon: 'checkmark-circle', desc: 'Quando qualcuno accetta il tuo favore' },
-              { key: 'favor_completed', label: 'Favore completato', icon: 'trophy', desc: 'Al completamento di un favore' },
-              { key: 'new_message', label: 'Nuovi messaggi', icon: 'chatbubble', desc: 'Messaggi nella chat' },
-              { key: 'new_review', label: 'Nuove recensioni', icon: 'star', desc: 'Quando ricevi una recensione' },
-              { key: 'skill_match', label: 'Match competenze', icon: 'flash', desc: 'Favori che corrispondono alle tue competenze' },
-            ].map((item) => (
-              <View key={item.key} style={styles.notifPrefRow}>
-                <View style={styles.notifPrefIcon}>
-                  <Ionicons name={item.icon as any} size={18} color={themeColors.accent} />
-                </View>
-                <View style={styles.notifPrefText}>
-                  <Text style={styles.notifPrefLabel}>{item.label}</Text>
-                  <Text style={styles.notifPrefDesc}>{item.desc}</Text>
-                </View>
-                <Switch
-                  value={notifPrefs[item.key as keyof typeof notifPrefs]}
-                  onValueChange={() => handleToggleNotifPref(item.key)}
-                  trackColor={{ false: themeColors.backgroundLight, true: themeColors.primaryLight }}
-                  thumbColor={notifPrefs[item.key as keyof typeof notifPrefs] ? themeColors.accent : '#D0DDD3'}
-                  data-testid={`notif-toggle-${item.key}`}
-                />
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Language Selector */}
-        <View style={styles.languageSection}>
-          <View style={styles.languageLabelRow}>
-            <Ionicons name="language" size={18} color="#A8C4B0" />
-            <Text style={styles.languageLabel}>{t('settings.language')}</Text>
-          </View>
-          <View style={styles.languageButtons}>
-            {SUPPORTED_LANGUAGES.map(lang => (
-              <TouchableOpacity
-                key={lang.code}
-                style={[styles.languageBtn, i18n.language === lang.code && styles.languageBtnActive]}
-                onPress={() => changeLanguage(lang.code)}
-              >
-                <Text style={styles.languageBtnText}>{lang.flag} {lang.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out" size={20} color="#ff6b6b" />
-          <Text style={styles.logoutText}>{t('profile.logout')}</Text>
-        </TouchableOpacity>
-
-        {/* Delete account (GDPR right to erasure; required by Google Play) */}
-        <TouchableOpacity
-          style={styles.deleteAccountButton}
-          onPress={() => setShowDeleteModal(true)}
-          accessibilityRole="button"
-          accessibilityLabel="Elimina il mio account"
-        >
-          <Text style={styles.deleteAccountText}>Elimina account</Text>
-        </TouchableOpacity>
       </ScrollView>
-
-      <DeleteAccountModal
-        visible={showDeleteModal}
-        email={user?.email ?? ''}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={async (confirmEmail) => {
-          await deleteAccount(confirmEmail);
-          setShowDeleteModal(false);
-        }}
-      />
 
       {/* Donate Modal */}
       <Modal visible={showDonateModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Dona al Fondo Solidarietà</Text>
-            <Text style={styles.modalDescription}>
-              I tuoi {CURRENCY_NAME} aiuteranno anziani e persone fragili della community
-            </Text>
+            <Text style={styles.modalTitle}>{tt('Dona al Fondo Solidarietà')}</Text>
+            <Text style={styles.modalDescription}>{tt('I tuoi')}{' '}{CURRENCY_NAME}{' '}{tt('aiuteranno anziani e persone fragili della community')}</Text>
             
             <View style={styles.donateInputContainer}>
               <TouchableOpacity
@@ -946,11 +818,11 @@ export default function ProfileScreen() {
                 style={styles.modalCancelButton}
                 onPress={() => setShowDonateModal(false)}
               >
-                <Text style={styles.modalCancelText}>Annulla</Text>
+                <Text style={styles.modalCancelText}>{tt('Annulla')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalConfirmButton} onPress={handleDonate}>
                 <Ionicons name="heart" size={18} color="#fff" />
-                <Text style={styles.modalConfirmText}>Dona</Text>
+                <Text style={styles.modalConfirmText}>{tt('Dona')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -961,26 +833,24 @@ export default function ProfileScreen() {
       <Modal visible={showReferralModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Invita i Tuoi Amici</Text>
-            <Text style={styles.modalDescription}>
-              Guadagna {referralInfo?.bonus_per_referral || 3} {CURRENCY_NAME} quando un amico completa il primo favore
-            </Text>
+            <Text style={styles.modalTitle}>{tt('Invita i Tuoi Amici')}</Text>
+            <Text style={styles.modalDescription}>{tt('Guadagna')}{' '}{referralInfo?.bonus_per_referral || 3} {CURRENCY_NAME}{' '}{tt('quando un amico completa il primo favore')}</Text>
             
             <View style={styles.referralCodeBox}>
-              <Text style={styles.referralCodeLabel}>Il tuo codice:</Text>
+              <Text style={styles.referralCodeLabel}>{tt('Il tuo codice:')}</Text>
               <Text style={styles.referralCode}>{referralInfo?.referral_code || '...'}</Text>
             </View>
 
             <View style={styles.referralStats}>
               <View style={styles.referralStatItem}>
                 <Text style={styles.referralStatValue}>{referralInfo?.successful_referrals || 0}</Text>
-                <Text style={styles.referralStatLabel}>Inviti Completati</Text>
+                <Text style={styles.referralStatLabel}>{tt('Inviti Completati')}</Text>
               </View>
               <View style={styles.referralStatItem}>
                 <Text style={styles.referralStatValue}>
                   {(referralInfo?.successful_referrals || 0) * (referralInfo?.bonus_per_referral || 3)}
                 </Text>
-                <Text style={styles.referralStatLabel}>{CURRENCY_NAME} Guadagnati</Text>
+                <Text style={styles.referralStatLabel}>{CURRENCY_NAME}{' '}{tt('Guadagnati')}</Text>
               </View>
             </View>
 
@@ -989,11 +859,11 @@ export default function ProfileScreen() {
                 style={styles.modalCancelButton}
                 onPress={() => setShowReferralModal(false)}
               >
-                <Text style={styles.modalCancelText}>Chiudi</Text>
+                <Text style={styles.modalCancelText}>{tt('Chiudi')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.modalConfirmButton} onPress={handleShareReferral}>
                 <Ionicons name="share-social" size={18} color="#fff" />
-                <Text style={styles.modalConfirmText}>Condividi</Text>
+                <Text style={styles.modalConfirmText}>{tt('Condividi')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1004,7 +874,7 @@ export default function ProfileScreen() {
       <Modal visible={showLeaderboard} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, styles.leaderboardModal]}>
-            <Text style={styles.modalTitle}>Classifica Community</Text>
+            <Text style={styles.modalTitle}>{tt('Classifica Community')}</Text>
             
             <ScrollView style={styles.leaderboardList}>
               {leaderboard.map((item, index) => (
@@ -1028,11 +898,11 @@ export default function ProfileScreen() {
                   </View>
                   <View style={styles.leaderboardInfo}>
                     <Text style={styles.leaderboardName}>{item.name}</Text>
-                    <Text style={styles.leaderboardTitle}>{item.title}</Text>
+                    <Text style={styles.leaderboardTitle}>{tt(item.title)}</Text>
                   </View>
                   <View style={styles.leaderboardScore}>
                     <Text style={styles.leaderboardScoreValue}>{item.community_score}</Text>
-                    <Text style={styles.leaderboardScoreLabel}>punti</Text>
+                    <Text style={styles.leaderboardScoreLabel}>{tt('punti')}</Text>
                   </View>
                 </View>
               ))}
@@ -1042,7 +912,7 @@ export default function ProfileScreen() {
               style={styles.modalCloseButton}
               onPress={() => setShowLeaderboard(false)}
             >
-              <Text style={styles.modalCloseText}>Chiudi</Text>
+              <Text style={styles.modalCloseText}>{tt('Chiudi')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1052,10 +922,8 @@ export default function ProfileScreen() {
       <Modal visible={showSkillsModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, styles.skillsModal]}>
-            <Text style={styles.modalTitle}>Le Tue Competenze</Text>
-            <Text style={styles.modalDescription}>
-              Seleziona le categorie in cui puoi aiutare. Riceverai notifiche quando qualcuno cerca aiuto in queste aree.
-            </Text>
+            <Text style={styles.modalTitle}>{tt('Le Tue Competenze')}</Text>
+            <Text style={styles.modalDescription}>{tt('Seleziona le categorie in cui puoi aiutare. Riceverai notifiche quando qualcuno cerca aiuto in queste aree.')}</Text>
             
             <ScrollView style={styles.skillsList} showsVerticalScrollIndicator={false}>
               {categories.map((category) => {
@@ -1076,7 +944,7 @@ export default function ProfileScreen() {
                     </View>
                     <View style={styles.skillSelectInfo}>
                       <Text style={[styles.skillSelectName, isSelected && styles.skillSelectNameActive]}>
-                        {category.name}
+                        {tt(category.name)}
                       </Text>
                     </View>
                     <View style={[styles.skillCheckbox, isSelected && styles.skillCheckboxActive]}>
@@ -1089,8 +957,7 @@ export default function ProfileScreen() {
 
             <View style={styles.selectedCount}>
               <Text style={styles.selectedCountText}>
-                {selectedSkills.length} competenze selezionate
-              </Text>
+                {selectedSkills.length}{' '}{tt('competenze selezionate')}</Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -1098,7 +965,7 @@ export default function ProfileScreen() {
                 style={styles.modalCancelButton}
                 onPress={() => setShowSkillsModal(false)}
               >
-                <Text style={styles.modalCancelText}>Annulla</Text>
+                <Text style={styles.modalCancelText}>{tt('Annulla')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.modalConfirmButton, savingSkills && styles.modalConfirmButtonDisabled]} 
@@ -1110,7 +977,7 @@ export default function ProfileScreen() {
                 ) : (
                   <>
                     <Ionicons name="save" size={18} color="#fff" />
-                    <Text style={styles.modalConfirmText}>Salva</Text>
+                    <Text style={styles.modalConfirmText}>{tt('Salva')}</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -1135,20 +1002,20 @@ export default function ProfileScreen() {
                 <View style={[styles.badgeModalStatus, selectedBadge.earned ? styles.badgeEarned : styles.badgeLocked]}>
                   <Ionicons name={selectedBadge.earned ? 'checkmark-circle' : 'lock-closed'} size={16} color={selectedBadge.earned ? '#B8C868' : '#8FA595'} />
                   <Text style={[styles.badgeStatusText, selectedBadge.earned && styles.badgeStatusEarned]}>
-                    {selectedBadge.earned ? 'Ottenuto!' : 'Non ancora ottenuto'}
+                    {selectedBadge.earned ? tt('Ottenuto!') : tt('Non ancora ottenuto')}
                   </Text>
                 </View>
                 <Text style={styles.badgeModalDescription}>
-                  {BADGE_INFO[selectedBadge.name]?.description || selectedBadge.description || 'Badge della community.'}
+                  {BADGE_INFO[selectedBadge.name]?.description || selectedBadge.description || tt('Badge della community.')}
                 </Text>
                 <View style={styles.badgeHowToGet}>
                   <Ionicons name="bulb" size={18} color="#FFD700" />
                   <Text style={styles.badgeHowToGetText}>
-                    {BADGE_INFO[selectedBadge.name]?.howToGet || 'Partecipa attivamente alla community.'}
+                    {BADGE_INFO[selectedBadge.name]?.howToGet || tt('Partecipa attivamente alla community.')}
                   </Text>
                 </View>
                 <TouchableOpacity style={styles.badgeModalClose} onPress={() => setShowBadgeModal(false)}>
-                  <Text style={styles.badgeModalCloseText}>Chiudi</Text>
+                  <Text style={styles.badgeModalCloseText}>{tt('Chiudi')}</Text>
                 </TouchableOpacity>
               </>
             )}

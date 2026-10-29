@@ -15,6 +15,7 @@ import { useAuth } from '../src/context/AuthContext';
 import { api, Notification } from '../src/services/api';
 import colors from '../src/theme/colors';
 import { logger } from '../src/utils/logger';
+import { tt } from '../src/i18n/tt';
 
 const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   skill_match: { name: 'star', color: colors.accent },
@@ -145,7 +146,7 @@ export default function NotificationsScreen() {
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Notifiche</Text>
+          <Text style={styles.headerTitle}>{tt('Notifiche')}</Text>
           <View style={styles.placeholder} />
         </View>
         <View style={styles.loadingContainer}>
@@ -165,7 +166,7 @@ export default function NotificationsScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Notifiche</Text>
+          <Text style={styles.headerTitle}>{tt('Notifiche')}</Text>
           {unreadCount > 0 && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
@@ -179,10 +180,8 @@ export default function NotificationsScreen() {
       {notifications.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="notifications-off-outline" size={60} color={colors.textMuted} />
-          <Text style={styles.emptyTitle}>Nessuna notifica</Text>
-          <Text style={styles.emptySubtitle}>
-            Qui appariranno le notifiche sui favori e le corrispondenze con le tue competenze
-          </Text>
+          <Text style={styles.emptyTitle}>{tt('Nessuna notifica')}</Text>
+          <Text style={styles.emptySubtitle}>{tt('Qui appariranno le notifiche sui favori e le corrispondenze con le tue competenze')}</Text>
         </View>
       ) : (
         <FlatList

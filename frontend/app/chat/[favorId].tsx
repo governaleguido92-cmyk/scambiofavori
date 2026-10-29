@@ -22,6 +22,8 @@ import { api, ChatMessage, Favor, CURRENCY_SYMBOL } from '../../src/services/api
 import { SupporterBadge, SupporterProfileBorder, UserNameWithBadge } from '../../src/components/SupporterBadge';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt } from '../../src/i18n/tt';
 
 // Theme colors
 const colors = {
@@ -70,7 +72,7 @@ export default function ChatScreen() {
       setChatStatus(statusData);
     } catch (error: any) {
       logger.debug('Error loading chat:', error);
-      Alert.alert(t('common.error'), error.message || t('chat.title'));
+      notify(t('common.error'), error.message || t('chat.title'));
     } finally {
       setLoading(false);
     }
@@ -106,7 +108,7 @@ export default function ChatScreen() {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (error: any) {
-      Alert.alert(t('chat.blocked'), error.message || t('chat.errorSend'));
+      notify(t('chat.blocked'), error.message || t('chat.errorSend'));
     } finally {
       setSending(false);
     }
@@ -119,7 +121,7 @@ export default function ChatScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(t('chat.permissionDenied'), t('chat.locationPermissionMsg'));
+        notify(t('chat.permissionDenied'), t('chat.locationPermissionMsg'));
         return;
       }
       
@@ -133,9 +135,9 @@ export default function ChatScreen() {
       await api.sendMessage(favorId, locationMessage, token);
       await loadData();
       
-      Alert.alert(t('chat.locationSent'), t('chat.locationSentMsg'));
+      notify(t('chat.locationSent'), t('chat.locationSentMsg'));
     } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || t('chat.errorLocation'));
+      notify(t('common.error'), error.message || t('chat.errorLocation'));
     } finally {
       setSendingLocation(false);
     }
@@ -157,26 +159,26 @@ export default function ChatScreen() {
     
     try {
       await api.reportUserInChat(favorId, otherUser.id, reportReason, '', token);
-      Alert.alert('Segnalazione Inviata', 'Grazie per aiutarci a mantenere la community sicura.');
+      notify(tt('Segnalazione Inviata'), tt('Grazie per aiutarci a mantenere la community sicura.'));
       setShowReportModal(false);
       setReportReason('');
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile inviare segnalazione');
+      notify(tt('Errore'), error.message || tt('Impossibile inviare segnalazione'));
     }
   };
 
   const handleSendMeetingPoint = () => {
     Alert.alert(
-      'Punto di Incontro',
-      'Seleziona un luogo pubblico per incontrarvi in sicurezza',
+      tt('Punto di Incontro'),
+      tt('Seleziona un luogo pubblico per incontrarvi in sicurezza'),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: tt('Annulla'), style: 'cancel' },
         { 
-          text: 'Piazza/Centro', 
+          text: tt('Piazza/Centro'), 
           onPress: () => sendMeetingPointMessage('Piazza del Centro', 'Incontriamoci nella piazza centrale')
         },
         { 
-          text: 'Bar/Caffè', 
+          text: tt('Bar/Caffè'), 
           onPress: () => sendMeetingPointMessage('Bar/Caffè', 'Incontriamoci al bar più vicino')
         },
       ]
@@ -190,7 +192,7 @@ export default function ChatScreen() {
       const msg = response.message || response;
       setMessages(prev => [...prev, msg]);
     } catch (error: any) {
-      Alert.alert('Errore', error.message);
+      notify(tt('Errore'), error.message);
     }
   };
 
@@ -244,7 +246,7 @@ export default function ChatScreen() {
           {item.blocked && (
             <View style={styles.blockedBadge}>
               <Ionicons name="warning" size={12} color={colors.error} />
-              <Text style={styles.blockedBadgeText}>Bloccato</Text>
+              <Text style={styles.blockedBadgeText}>{tt('Bloccato')}</Text>
             </View>
           )}
           {/* Show sender name with badge for other's messages */}
@@ -263,8 +265,8 @@ export default function ChatScreen() {
               <View style={styles.locationMessage}>
                 <Ionicons name="location" size={20} color={colors.accent} />
                 <View>
-                  <Text style={styles.locationTitle}>📍 Posizione condivisa</Text>
-                  <Text style={styles.locationLink}>Tocca per aprire in Google Maps</Text>
+                  <Text style={styles.locationTitle}>{tt('📍 Posizione condivisa')}</Text>
+                  <Text style={styles.locationLink}>{tt('Tocca per aprire in Google Maps')}</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -304,7 +306,7 @@ export default function ChatScreen() {
         
         <View style={styles.headerInfo}>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {favor?.title || 'Chat'}
+            {favor?.title || tt('Chat')}
           </Text>
           <View style={styles.headerSubRow}>
             <UserNameWithBadge 
@@ -330,17 +332,14 @@ export default function ChatScreen() {
       {/* Ethical Reminder Banner */}
       <View style={styles.ethicalBanner}>
         <Ionicons name="heart" size={16} color={colors.primary} />
-        <Text style={styles.ethicalText}>
-          Ricorda: lo scambio è basato sul tempo, non sul denaro. Sii puntuale e gentile.
-        </Text>
+        <Text style={styles.ethicalText}>{tt('Ricorda: lo scambio è basato sul tempo, non sul denaro. Sii puntuale e gentile.')}</Text>
       </View>
 
       {/* Read-Only Banner */}
       {isReadOnly && (
         <View style={styles.readOnlyBanner}>
           <Ionicons name="lock-closed" size={16} color={colors.warning} />
-          <Text style={styles.readOnlyText}>
-            Chat in sola lettura - {chatStatus.read_only_reason}
+          <Text style={styles.readOnlyText}>{tt('Chat in sola lettura -')}{' '}{chatStatus.read_only_reason}
           </Text>
         </View>
       )}
@@ -408,16 +407,13 @@ export default function ChatScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.alertModal}>
             <Ionicons name="warning" size={40} color={colors.warning} />
-            <Text style={styles.alertTitle}>Attenzione!</Text>
-            <Text style={styles.alertText}>
-              Stai condividendo dati personali (telefono o email).{'\n\n'}
-              Assicurati di fidarti del tuo vicino prima di procedere.
-            </Text>
+            <Text style={styles.alertTitle}>{tt('Attenzione!')}</Text>
+            <Text style={styles.alertText}>{tt('Stai condividendo dati personali (telefono o email).')}{'\n\n'}{tt('Assicurati di fidarti del tuo vicino prima di procedere.')}</Text>
             <TouchableOpacity 
               style={styles.alertButton}
               onPress={() => setShowPrivacyAlert(false)}
             >
-              <Text style={styles.alertButtonText}>Ho capito</Text>
+              <Text style={styles.alertButtonText}>{tt('Ho capito')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -428,15 +424,13 @@ export default function ChatScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.reportModal}>
             <View style={styles.reportHeader}>
-              <Text style={styles.reportTitle}>Segnala Utente</Text>
+              <Text style={styles.reportTitle}>{tt('Segnala Utente')}</Text>
               <TouchableOpacity onPress={() => setShowReportModal(false)}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
             
-            <Text style={styles.reportSubtitle}>
-              Segnala {otherParticipant?.name} per comportamento inappropriato
-            </Text>
+            <Text style={styles.reportSubtitle}>{tt('Segnala')}{' '}{otherParticipant?.name}{' '}{tt('per comportamento inappropriato')}</Text>
             
             {['offensive', 'money_request', 'spam', 'inappropriate', 'other'].map((reason) => (
               <TouchableOpacity
@@ -450,11 +444,11 @@ export default function ChatScreen() {
                   color={reportReason === reason ? colors.primary : colors.textMuted} 
                 />
                 <Text style={styles.reportOptionText}>
-                  {reason === 'offensive' && 'Linguaggio offensivo'}
-                  {reason === 'money_request' && 'Richiesta di denaro'}
-                  {reason === 'spam' && 'Spam o messaggi indesiderati'}
-                  {reason === 'inappropriate' && 'Comportamento inappropriato'}
-                  {reason === 'other' && 'Altro'}
+                  {reason === 'offensive' && tt('Linguaggio offensivo')}
+                  {reason === 'money_request' && tt('Richiesta di denaro')}
+                  {reason === 'spam' && tt('Spam o messaggi indesiderati')}
+                  {reason === 'inappropriate' && tt('Comportamento inappropriato')}
+                  {reason === 'other' && tt('Altro')}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -464,7 +458,7 @@ export default function ChatScreen() {
               onPress={handleReport}
               disabled={!reportReason}
             >
-              <Text style={styles.reportSubmitText}>Invia Segnalazione</Text>
+              <Text style={styles.reportSubmitText}>{tt('Invia Segnalazione')}</Text>
             </TouchableOpacity>
           </View>
         </View>

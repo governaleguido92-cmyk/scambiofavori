@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { logger } from '../utils/logger';
+import { tt } from '../i18n/tt';
 
 // Platform-specific camera import
 let CameraComponent: React.ComponentType<any> | null = null;
@@ -36,12 +37,8 @@ export function QRScanner({ onBarcodeScanned, scanningComplete }: QRScannerProps
     return (
       <View style={styles.placeholder}>
         <Ionicons name="qr-code-outline" size={64} color="#8FA595" />
-        <Text style={styles.placeholderText}>
-          Scanner QR non disponibile su questa piattaforma
-        </Text>
-        <Text style={styles.placeholderSubtext}>
-          Usa l'app su iOS o Android per scansionare
-        </Text>
+        <Text style={styles.placeholderText}>{tt('Scanner QR non disponibile su questa piattaforma')}</Text>
+        <Text style={styles.placeholderSubtext}>{tt('Usa l\'app su iOS o Android per scansionare')}</Text>
       </View>
     );
   }
