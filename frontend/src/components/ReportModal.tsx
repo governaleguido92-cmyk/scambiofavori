@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
+import { notify } from '../utils/notify';
+import { tt } from '../i18n/tt';
 
 interface ReportModalProps {
   visible: boolean;
@@ -55,7 +57,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
   const handleSubmit = async () => {
     if (!selectedReason) {
-      Alert.alert('Errore', 'Seleziona un motivo per la segnalazione');
+      notify(tt('Errore'), tt('Seleziona un motivo per la segnalazione'));
       return;
     }
 
@@ -69,14 +71,14 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         token
       );
       Alert.alert(
-        'Segnalazione inviata',
-        'Grazie per aiutarci a mantenere la community sicura. Esamineremo la segnalazione al più presto.',
-        [{ text: 'OK', onPress: onClose }]
+        tt('Segnalazione inviata'),
+        tt('Grazie per aiutarci a mantenere la community sicura. Esamineremo la segnalazione al più presto.'),
+        [{ text: tt('OK'), onPress: onClose }]
       );
       setSelectedReason(null);
       setDescription('');
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Impossibile inviare la segnalazione');
+      notify(tt('Errore'), error.message || tt('Impossibile inviare la segnalazione'));
     } finally {
       setSubmitting(false);
     }
@@ -94,8 +96,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
         <View style={styles.modalContent}>
           <View style={styles.header}>
             <Ionicons name="flag" size={24} color="#ff6b6b" />
-            <Text style={styles.title}>
-              Segnala {reportType === 'favor' ? 'Annuncio' : 'Utente'}
+            <Text style={styles.title}>{tt('Segnala')}{' '}{reportType === 'favor' ? tt('Annuncio') : tt('Utente')}
             </Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color="#9DB3A4" />
@@ -103,12 +104,11 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           </View>
 
           {targetName && (
-            <Text style={styles.targetInfo}>
-              Stai segnalando: <Text style={styles.targetName}>{targetName}</Text>
+            <Text style={styles.targetInfo}>{tt('Stai segnalando:')}{' '}<Text style={styles.targetName}>{targetName}</Text>
             </Text>
           )}
 
-          <Text style={styles.sectionTitle}>Motivo della segnalazione</Text>
+          <Text style={styles.sectionTitle}>{tt('Motivo della segnalazione')}</Text>
 
           <View style={styles.reasonsList}>
             {reasons.map((reason) => (
@@ -135,7 +135,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   styles.reasonLabel,
                   selectedReason === reason.id && styles.reasonLabelSelected,
                 ]}>
-                  {reason.label}
+                  {tt(reason.label)}
                 </Text>
                 {selectedReason === reason.id && (
                   <Ionicons name="checkmark-circle" size={20} color="#ff6b6b" />
@@ -144,10 +144,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>Dettagli aggiuntivi (opzionale)</Text>
+          <Text style={styles.sectionTitle}>{tt('Dettagli aggiuntivi (opzionale)')}</Text>
           <TextInput
             style={styles.descriptionInput}
-            placeholder="Descrivi il problema..."
+            placeholder={tt('Descrivi il problema...')}
             placeholderTextColor="#8FA595"
             value={description}
             onChangeText={setDescription}
@@ -158,7 +158,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
           <View style={styles.buttons}>
             <TouchableOpacity style={styles.cancelButton} onPress={handleClose}>
-              <Text style={styles.cancelButtonText}>Annulla</Text>
+              <Text style={styles.cancelButtonText}>{tt('Annulla')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
@@ -171,7 +171,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               ) : (
                 <>
                   <Ionicons name="send" size={16} color="#fff" />
-                  <Text style={styles.submitButtonText}>Invia Segnalazione</Text>
+                  <Text style={styles.submitButtonText}>{tt('Invia Segnalazione')}</Text>
                 </>
               )}
             </TouchableOpacity>

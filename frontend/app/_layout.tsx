@@ -6,8 +6,9 @@ import { StatusBar } from 'expo-status-bar';
 import LegalConsentModal from '../src/components/LegalConsentModal';
 import OnboardingSlides from '../src/components/OnboardingSlides';
 import { OfflineNotice } from '../src/components/OfflineNotice';
+import { ToastHost } from '../src/components/ToastHost';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
-import { I18nextProvider } from 'react-i18next';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { initI18n } from '../src/i18n';
 import i18n from '../src/i18n';
 import { installWebAlert } from '../src/utils/webAlert';
@@ -16,6 +17,8 @@ installWebAlert();
 
 function RootLayoutNav() {
   const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user, token } = useAuth();
+  // useSuspense off: i18n is initialised in the effect below, so it is not ready on first render.
+  const { i18n: i18nInstance } = useTranslation(undefined, { useSuspense: false });
   const [i18nReady, setI18nReady] = useState(false);
 
   useEffect(() => {
@@ -32,8 +35,11 @@ function RootLayoutNav() {
       <StatusBar style="light" />
       {/* Global Offline Notice */}
       <OfflineNotice />
+      {/* Non-blocking messages (replaces simple Alert.alert) */}
+      <ToastHost />
       
       <Stack
+        key={i18nInstance.language}
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: '#0F1A14' },
@@ -44,6 +50,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="favor/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="chat/[favorId]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="settings" options={{ presentation: 'card' }} />
         <Stack.Screen name="legal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="supporter" options={{ presentation: 'modal' }} />
       </Stack>

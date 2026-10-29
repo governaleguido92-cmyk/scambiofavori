@@ -9,13 +9,14 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../../src/services/api';
 import colors from '../../src/theme/colors';
+import { notify } from '../../src/utils/notify';
+import { tt } from '../../src/i18n/tt';
 
 type RecoveryMode = 'choose' | 'password' | 'username';
 type PasswordStep = 'email' | 'code' | 'done';
@@ -40,51 +41,51 @@ export default function RecoveryScreen() {
   const [recoveredUsername, setRecoveredUsername] = useState('');
 
   const handleForgotPassword = async () => {
-    if (!email) { Alert.alert('Errore', 'Inserisci la tua email'); return; }
+    if (!email) { notify(tt('Errore'), tt('Inserisci la tua email')); return; }
     setIsLoading(true);
     try {
       await api.forgotPassword(email);
-      Alert.alert('Codice inviato', 'Controlla la tua email per il codice di reset');
+      notify(tt('Codice inviato'), tt('Controlla la tua email per il codice di reset'));
       setPwStep('code');
     } catch (e: any) {
-      Alert.alert('Errore', e.message || 'Errore');
+      notify(tt('Errore'), e.message || tt('Errore'));
     } finally { setIsLoading(false); }
   };
 
   const handleResetPassword = async () => {
-    if (!pwCode || pwCode.length !== 6) { Alert.alert('Errore', 'Inserisci il codice a 6 cifre'); return; }
-    if (!newPassword || newPassword.length < 8) { Alert.alert('Errore', 'La password deve avere almeno 8 caratteri'); return; }
-    if (newPassword !== confirmPassword) { Alert.alert('Errore', 'Le password non corrispondono'); return; }
+    if (!pwCode || pwCode.length !== 6) { notify(tt('Errore'), tt('Inserisci il codice a 6 cifre')); return; }
+    if (!newPassword || newPassword.length < 8) { notify(tt('Errore'), tt('La password deve avere almeno 8 caratteri')); return; }
+    if (newPassword !== confirmPassword) { notify(tt('Errore'), tt('Le password non corrispondono')); return; }
     setIsLoading(true);
     try {
       await api.resetPassword(email, pwCode, newPassword);
       setPwStep('done');
     } catch (e: any) {
-      Alert.alert('Errore', e.message || 'Codice non valido');
+      notify(tt('Errore'), e.message || tt('Codice non valido'));
     } finally { setIsLoading(false); }
   };
 
   const handleRecoverUsername = async () => {
-    if (!email) { Alert.alert('Errore', 'Inserisci la tua email'); return; }
+    if (!email) { notify(tt('Errore'), tt('Inserisci la tua email')); return; }
     setIsLoading(true);
     try {
       await api.recoverUsername(email);
-      Alert.alert('Codice inviato', 'Controlla la tua email per il codice di verifica');
+      notify(tt('Codice inviato'), tt('Controlla la tua email per il codice di verifica'));
       setUnStep('code');
     } catch (e: any) {
-      Alert.alert('Errore', e.message || 'Errore');
+      notify(tt('Errore'), e.message || tt('Errore'));
     } finally { setIsLoading(false); }
   };
 
   const handleVerifyUsername = async () => {
-    if (!unCode || unCode.length !== 6) { Alert.alert('Errore', 'Inserisci il codice a 6 cifre'); return; }
+    if (!unCode || unCode.length !== 6) { notify(tt('Errore'), tt('Inserisci il codice a 6 cifre')); return; }
     setIsLoading(true);
     try {
       const result = await api.verifyUsernameRecovery(email, unCode);
       setRecoveredUsername(result.username);
       setUnStep('result');
     } catch (e: any) {
-      Alert.alert('Errore', e.message || 'Codice non valido');
+      notify(tt('Errore'), e.message || tt('Codice non valido'));
     } finally { setIsLoading(false); }
   };
 
@@ -94,8 +95,8 @@ export default function RecoveryScreen() {
         <View style={styles.iconCircle}>
           <Ionicons name="help-circle" size={40} color={colors.accent} />
         </View>
-        <Text style={styles.title}>Hai bisogno di aiuto?</Text>
-        <Text style={styles.subtitle}>Scegli cosa vuoi recuperare</Text>
+        <Text style={styles.title}>{tt('Hai bisogno di aiuto?')}</Text>
+        <Text style={styles.subtitle}>{tt('Scegli cosa vuoi recuperare')}</Text>
       </View>
       <View style={styles.form}>
         <TouchableOpacity style={styles.optionCard} onPress={() => setMode('password')} data-testid="recover-password-option">
@@ -103,8 +104,8 @@ export default function RecoveryScreen() {
             <Ionicons name="lock-open" size={24} color={colors.accent} />
           </View>
           <View style={styles.optionText}>
-            <Text style={styles.optionTitle}>Reset Password</Text>
-            <Text style={styles.optionDesc}>Ricevi un codice via email per impostare una nuova password</Text>
+            <Text style={styles.optionTitle}>{tt('Reset Password')}</Text>
+            <Text style={styles.optionDesc}>{tt('Ricevi un codice via email per impostare una nuova password')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
@@ -113,8 +114,8 @@ export default function RecoveryScreen() {
             <Ionicons name="person" size={24} color={colors.primary} />
           </View>
           <View style={styles.optionText}>
-            <Text style={styles.optionTitle}>Recupera Nome Utente</Text>
-            <Text style={styles.optionDesc}>Ricevi il tuo nome utente associato all'email</Text>
+            <Text style={styles.optionTitle}>{tt('Recupera Nome Utente')}</Text>
+            <Text style={styles.optionDesc}>{tt('Ricevi il tuo nome utente associato all\'email')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
@@ -130,11 +131,11 @@ export default function RecoveryScreen() {
             <View style={[styles.iconCircle, { backgroundColor: colors.primaryMuted }]}>
               <Ionicons name="checkmark-circle" size={40} color={colors.primaryLight} />
             </View>
-            <Text style={styles.title}>Password Aggiornata!</Text>
-            <Text style={styles.subtitle}>Ora puoi accedere con la nuova password</Text>
+            <Text style={styles.title}>{tt('Password Aggiornata!')}</Text>
+            <Text style={styles.subtitle}>{tt('Ora puoi accedere con la nuova password')}</Text>
           </View>
           <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/(auth)/login')} data-testid="back-to-login-btn">
-            <Text style={styles.primaryButtonText}>Torna al Login</Text>
+            <Text style={styles.primaryButtonText}>{tt('Torna al Login')}</Text>
           </TouchableOpacity>
         </>
       );
@@ -146,9 +147,9 @@ export default function RecoveryScreen() {
           <View style={styles.iconCircle}>
             <Ionicons name="lock-open" size={36} color={colors.accent} />
           </View>
-          <Text style={styles.title}>Reset Password</Text>
+          <Text style={styles.title}>{tt('Reset Password')}</Text>
           <Text style={styles.subtitle}>
-            {pwStep === 'email' ? 'Inserisci la tua email per ricevere il codice' : 'Inserisci il codice e la nuova password'}
+            {pwStep === 'email' ? tt('Inserisci la tua email per ricevere il codice') : tt('Inserisci il codice e la nuova password')}
           </Text>
         </View>
         <View style={styles.form}>
@@ -156,10 +157,10 @@ export default function RecoveryScreen() {
             <>
               <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                <TextInput style={styles.input} placeholder="Email" placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" data-testid="recovery-email-input" />
+                <TextInput style={styles.input} placeholder={tt('Email')} placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" data-testid="recovery-email-input" />
               </View>
               <TouchableOpacity style={styles.primaryButton} onPress={handleForgotPassword} disabled={isLoading} data-testid="send-reset-code-btn">
-                {isLoading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>Invia Codice</Text>}
+                {isLoading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>{tt('Invia Codice')}</Text>}
               </TouchableOpacity>
             </>
           ) : (
@@ -169,20 +170,20 @@ export default function RecoveryScreen() {
               </View>
               <View style={styles.inputContainer}>
                 <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                <TextInput style={styles.input} placeholder="Nuova password" placeholderTextColor={colors.textMuted} value={newPassword} onChangeText={setNewPassword} secureTextEntry={!showPassword} data-testid="new-password-input" />
+                <TextInput style={styles.input} placeholder={tt('Nuova password')} placeholderTextColor={colors.textMuted} value={newPassword} onChangeText={setNewPassword} secureTextEntry={!showPassword} data-testid="new-password-input" />
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textMuted} />
                 </TouchableOpacity>
               </View>
               <View style={styles.inputContainer}>
                 <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                <TextInput style={styles.input} placeholder="Conferma password" placeholderTextColor={colors.textMuted} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry={!showPassword} data-testid="confirm-password-input" />
+                <TextInput style={styles.input} placeholder={tt('Conferma password')} placeholderTextColor={colors.textMuted} value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry={!showPassword} data-testid="confirm-password-input" />
               </View>
               <TouchableOpacity style={styles.primaryButton} onPress={handleResetPassword} disabled={isLoading} data-testid="reset-password-btn">
-                {isLoading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>Cambia Password</Text>}
+                {isLoading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>{tt('Cambia Password')}</Text>}
               </TouchableOpacity>
               <TouchableOpacity onPress={handleForgotPassword} disabled={isLoading} style={styles.resendLink}>
-                <Text style={styles.resendText}>Non hai ricevuto il codice? <Text style={styles.resendBold}>Reinvia</Text></Text>
+                <Text style={styles.resendText}>{tt('Non hai ricevuto il codice?')}{' '}<Text style={styles.resendBold}>{tt('Reinvia')}</Text></Text>
               </TouchableOpacity>
             </>
           )}
@@ -199,14 +200,14 @@ export default function RecoveryScreen() {
             <View style={[styles.iconCircle, { backgroundColor: colors.primaryMuted }]}>
               <Ionicons name="person-circle" size={40} color={colors.primaryLight} />
             </View>
-            <Text style={styles.title}>Nome Utente Trovato</Text>
+            <Text style={styles.title}>{tt('Nome Utente Trovato')}</Text>
             <View style={styles.usernameBox}>
-              <Text style={styles.usernameLabel}>Il tuo nome utente è:</Text>
+              <Text style={styles.usernameLabel}>{tt('Il tuo nome utente è:')}</Text>
               <Text style={styles.usernameValue}>{recoveredUsername}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/(auth)/login')} data-testid="back-to-login-btn">
-            <Text style={styles.primaryButtonText}>Torna al Login</Text>
+            <Text style={styles.primaryButtonText}>{tt('Torna al Login')}</Text>
           </TouchableOpacity>
         </>
       );
@@ -218,9 +219,9 @@ export default function RecoveryScreen() {
           <View style={[styles.iconCircle, { backgroundColor: colors.primaryMuted }]}>
             <Ionicons name="person" size={36} color={colors.primaryLight} />
           </View>
-          <Text style={styles.title}>Recupera Nome Utente</Text>
+          <Text style={styles.title}>{tt('Recupera Nome Utente')}</Text>
           <Text style={styles.subtitle}>
-            {unStep === 'email' ? 'Inserisci la tua email per ricevere il codice' : 'Inserisci il codice ricevuto via email'}
+            {unStep === 'email' ? tt('Inserisci la tua email per ricevere il codice') : tt('Inserisci il codice ricevuto via email')}
           </Text>
         </View>
         <View style={styles.form}>
@@ -228,10 +229,10 @@ export default function RecoveryScreen() {
             <>
               <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
-                <TextInput style={styles.input} placeholder="Email" placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" data-testid="username-email-input" />
+                <TextInput style={styles.input} placeholder={tt('Email')} placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" data-testid="username-email-input" />
               </View>
               <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleRecoverUsername} disabled={isLoading} data-testid="send-username-code-btn">
-                {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>Invia Codice</Text>}
+                {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{tt('Invia Codice')}</Text>}
               </TouchableOpacity>
             </>
           ) : (
@@ -240,10 +241,10 @@ export default function RecoveryScreen() {
                 <TextInput style={styles.codeInput} placeholder="000000" placeholderTextColor={colors.textMuted} value={unCode} onChangeText={setUnCode} keyboardType="number-pad" maxLength={6} textAlign="center" data-testid="username-code-input" />
               </View>
               <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleVerifyUsername} disabled={isLoading} data-testid="verify-username-btn">
-                {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>Verifica</Text>}
+                {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{tt('Verifica')}</Text>}
               </TouchableOpacity>
               <TouchableOpacity onPress={handleRecoverUsername} disabled={isLoading} style={styles.resendLink}>
-                <Text style={styles.resendText}>Non hai ricevuto il codice? <Text style={styles.resendBold}>Reinvia</Text></Text>
+                <Text style={styles.resendText}>{tt('Non hai ricevuto il codice?')}{' '}<Text style={styles.resendBold}>{tt('Reinvia')}</Text></Text>
               </TouchableOpacity>
             </>
           )}

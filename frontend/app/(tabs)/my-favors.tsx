@@ -16,6 +16,8 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt, tx } from '../../src/i18n/tt';
 
 export default function MyFavorsScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -55,19 +57,19 @@ export default function MyFavorsScreen() {
     if (!token) return;
     Alert.alert(
       t('common.confirm'),
-      `Sei sicuro di voler segnare questo favore come completato? I ${CURRENCY_NAME} verranno trasferiti.`,
+      tx('Sei sicuro di voler segnare questo favore come completato? I {0} verranno trasferiti.', [CURRENCY_NAME]),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: tt('Annulla'), style: 'cancel' },
         {
-          text: 'Completa',
+          text: tt('Completa'),
           onPress: async () => {
             try {
               await api.completeFavor(favorId, token);
               await refreshUser();
               loadMyFavors();
-              Alert.alert(t('common.success'), `Favore completato! I ${CURRENCY_NAME} sono stati trasferiti.`);
+              notify(t('common.success'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
             } catch (error: any) {
-              Alert.alert(t('common.error'), error.message || t('favor.errorComplete'));
+              notify(t('common.error'), error.message || t('favor.errorComplete'));
             }
           },
         },
@@ -79,18 +81,18 @@ export default function MyFavorsScreen() {
     if (!token) return;
     Alert.alert(
       t('common.confirm'),
-      'Sei sicuro di voler cancellare questo favore?',
+      tt('Sei sicuro di voler cancellare questo favore?'),
       [
-        { text: 'No', style: 'cancel' },
+        { text: tt('No'), style: 'cancel' },
         {
-          text: 'Sì, cancella',
+          text: tt('Sì, cancella'),
           style: 'destructive',
           onPress: async () => {
             try {
               await api.cancelFavor(favorId, token);
               loadMyFavors();
             } catch (error: any) {
-              Alert.alert(t('common.error'), error.message || t('favor.errorAccept'));
+              notify(t('common.error'), error.message || t('favor.errorAccept'));
             }
           },
         },
@@ -171,7 +173,7 @@ export default function MyFavorsScreen() {
             color="#9DB3A4"
           />
           <Text style={styles.roleText}>
-            {isCreator ? 'Creato da te' : `Accettato da ${item.creator_name}`}
+            {isCreator ? tt('Creato da te') : tx('Accettato da {0}', [item.creator_name])}
           </Text>
         </View>
 
@@ -207,8 +209,7 @@ export default function MyFavorsScreen() {
         {item.accepted_by_name && (
           <View style={styles.acceptedByContainer}>
             <Ionicons name="person" size={14} color="#B8C868" />
-            <Text style={styles.acceptedByText}>
-              Accettato da: {item.accepted_by_name}
+            <Text style={styles.acceptedByText}>{tt('Accettato da:')}{' '}{item.accepted_by_name}
             </Text>
           </View>
         )}
@@ -246,10 +247,10 @@ export default function MyFavorsScreen() {
           <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
           <Text style={styles.emptySubtext}>
             {filter === 'all'
-              ? 'Non hai ancora creato o accettato favori'
+              ? tt('Non hai ancora creato o accettato favori')
               : filter === 'created'
-              ? 'Non hai ancora creato favori'
-              : 'Non hai ancora accettato favori'}
+              ? tt('Non hai ancora creato favori')
+              : tt('Non hai ancora accettato favori')}
           </Text>
         </View>
       ) : (

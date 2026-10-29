@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../src/context/AuthContext';
 import * as Linking from 'expo-linking';
 import { logger } from '../src/utils/logger';
+import { tt } from '../src/i18n/tt';
 
 export default function Index() {
   const { user, loading, exchangeSessionId } = useAuth();
@@ -61,7 +62,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#B8C868" />
-      <Text style={styles.loadingText}>Caricamento...</Text>
+      <Text style={styles.loadingText}>{tt('Caricamento...')}</Text>
     </View>
   );
 }

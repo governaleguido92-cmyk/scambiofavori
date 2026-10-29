@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
+import { tt } from '../i18n/tt';
 
 const { width } = Dimensions.get('window');
 
@@ -82,8 +83,8 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
         <Ionicons name={item.icon as any} size={60} color={item.iconColor} />
       </View>
       
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.subtitle}>{item.subtitle}</Text>
+      <Text style={styles.title}>{tt(item.title)}</Text>
+      <Text style={styles.subtitle}>{tt(item.subtitle)}</Text>
       
       <View style={styles.pointsContainer}>
         {item.points.map((point, idx) => (
@@ -91,12 +92,12 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
             <View style={styles.pointIcon}>
               <Ionicons name={point.icon as any} size={22} color={colors.accent} />
             </View>
-            <Text style={styles.pointText}>{point.text}</Text>
+            <Text style={styles.pointText}>{tt(point.text)}</Text>
           </View>
         ))}
       </View>
       
-      <Text style={styles.quote}>{item.quote}</Text>
+      <Text style={styles.quote}>{tt(item.quote)}</Text>
     </View>
   );
 
@@ -109,7 +110,7 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-        <Text style={styles.skipText}>Salta</Text>
+        <Text style={styles.skipText}>{tt('Salta')}</Text>
       </TouchableOpacity>
 
       <FlatList
@@ -165,7 +166,7 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
       {/* Next button */}
       <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
         <Text style={styles.nextText}>
-          {currentIndex === SLIDES.length - 1 ? 'Iniziamo!' : 'Avanti'}
+          {currentIndex === SLIDES.length - 1 ? tt('Iniziamo!') : tt('Avanti')}
         </Text>
         <Ionicons
           name={currentIndex === SLIDES.length - 1 ? 'checkmark' : 'arrow-forward'}

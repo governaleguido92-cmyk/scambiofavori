@@ -18,6 +18,7 @@ import { api } from '../src/services/api';
 import colors from '../src/theme/colors';
 import { logger } from '../src/utils/logger';
 import { SUPPORTER_PURCHASE_ENABLED } from '../src/utils/features';
+import { notify } from '../src/utils/notify';
 
 function SupporterContent() {
   const { user, token, refreshUser } = useAuth();
@@ -82,7 +83,7 @@ function SupporterContent() {
         return;
       } else if (status.status === 'expired') {
         setCheckingStatus(false);
-        Alert.alert('Sessione scaduta', 'La sessione di pagamento è scaduta. Riprova.');
+        notify('Sessione scaduta', 'La sessione di pagamento è scaduta. Riprova.');
         return;
       }
 
@@ -96,7 +97,7 @@ function SupporterContent() {
 
   const handleSubscribe = async () => {
     if (!token) {
-      Alert.alert('Accedi', 'Devi effettuare l\'accesso per diventare un Sostenitore');
+      notify('Accedi', 'Devi effettuare l\'accesso per diventare un Sostenitore');
       return;
     }
 
@@ -106,7 +107,7 @@ function SupporterContent() {
       const originUrl =
         Platform.OS === 'web' ? window.location.origin : process.env.EXPO_PUBLIC_BACKEND_URL;
       if (!originUrl) {
-        Alert.alert('Errore', 'Configurazione URL mancante');
+        notify('Errore', 'Configurazione URL mancante');
         setLoading(false);
         return;
       }
@@ -117,10 +118,10 @@ function SupporterContent() {
       if (supported) {
         await Linking.openURL(result.checkout_url);
       } else {
-        Alert.alert('Errore', 'Impossibile aprire il checkout');
+        notify('Errore', 'Impossibile aprire il checkout');
       }
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Errore nella creazione del checkout');
+      notify('Errore', error.message || 'Errore nella creazione del checkout');
     } finally {
       setLoading(false);
     }
@@ -135,7 +136,7 @@ function SupporterContent() {
         await Linking.openURL(result.manage_url);
       }
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Errore nel caricamento del portale');
+      notify('Errore', error.message || 'Errore nel caricamento del portale');
     }
   };
 

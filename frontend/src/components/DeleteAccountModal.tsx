@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
+import { tt } from '../i18n/tt';
 
 interface DeleteAccountModalProps {
   visible: boolean;
@@ -60,42 +61,33 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible,
         <View style={styles.content}>
           <View style={styles.header}>
             <Ionicons name="warning" size={24} color={colors.error} />
-            <Text style={styles.title} accessibilityRole="header">Elimina account</Text>
+            <Text style={styles.title} accessibilityRole="header">{tt('Elimina account')}</Text>
             <TouchableOpacity
               onPress={handleClose}
               accessibilityRole="button"
-              accessibilityLabel="Chiudi"
+              accessibilityLabel={tt('Chiudi')}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Ionicons name="close" size={24} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.warning}>
-            Questa azione è definitiva e non si può annullare.
-          </Text>
-          <Text style={styles.body}>
-            • Il tuo profilo, i tuoi messaggi e le tue notifiche vengono cancellati.{'\n'}
-            • La foto profilo viene rimossa.{'\n'}
-            • I favori e le recensioni che hai scritto restano per gli altri utenti, ma senza i tuoi dati
-            personali (il tuo nome diventa "Utente eliminato").{'\n'}
-            • I tuoi Granelli andranno persi.{'\n'}
-            • I dati dei pagamenti sono conservati per gli obblighi di legge.
-          </Text>
+          <Text style={styles.warning}>{tt('Questa azione è definitiva e non si può annullare.')}</Text>
+          <Text style={styles.body}>{tt('• Il tuo profilo, i tuoi messaggi e le tue notifiche vengono cancellati.')}{'\n'}{tt('• La foto profilo viene rimossa.')}{'\n'}{tt('• I favori e le recensioni che hai scritto restano per gli altri utenti, ma senza i tuoi dati personali (il tuo nome diventa "Utente eliminato").')}{'\n'}{tt('• I tuoi Granelli andranno persi.')}{'\n'}{tt('• I dati dei pagamenti sono conservati per gli obblighi di legge.')}</Text>
 
-          <Text style={styles.label}>Per confermare, scrivi la tua email:</Text>
+          <Text style={styles.label}>{tt('Per confermare, scrivi la tua email:')}</Text>
           <Text style={styles.emailHint}>{email}</Text>
           <TextInput
             style={styles.input}
             value={typedEmail}
             onChangeText={setTypedEmail}
-            placeholder="la tua email"
+            placeholder={tt('la tua email')}
             placeholderTextColor={colors.textMuted}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
             editable={!deleting}
-            accessibilityLabel="Conferma la tua email"
+            accessibilityLabel={tt('Conferma la tua email')}
           />
 
           {error && <Text style={styles.error} accessibilityLiveRegion="polite">{error}</Text>}
@@ -107,7 +99,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible,
               disabled={deleting}
               accessibilityRole="button"
             >
-              <Text style={styles.cancelText}>Annulla</Text>
+              <Text style={styles.cancelText}>{tt('Annulla')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.deleteButton, !canDelete && styles.deleteButtonDisabled]}
@@ -115,12 +107,12 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible,
               disabled={!canDelete}
               accessibilityRole="button"
               accessibilityState={{ disabled: !canDelete }}
-              accessibilityLabel="Elimina definitivamente il mio account"
+              accessibilityLabel={tt('Elimina definitivamente il mio account')}
             >
               {deleting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.deleteText}>Elimina definitivamente</Text>
+                <Text style={styles.deleteText}>{tt('Elimina definitivamente')}</Text>
               )}
             </TouchableOpacity>
           </View>

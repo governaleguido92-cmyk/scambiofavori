@@ -26,6 +26,7 @@ import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/
 import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/home.styles';
 import { logger } from '../../src/utils/logger';
+import { tt, tx } from '../../src/i18n/tt';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -43,7 +44,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 // The shown position is intentionally blurred, so the distance is rounded up.
 const formatDistance = (km: number): string =>
-  km < 1 ? 'meno di 1 km' : `circa ${Math.ceil(km)} km`;
+  km < 1 ? tt('meno di 1 km') : tx('circa {0} km', [Math.ceil(km)]);
 
 export default function HomeScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -228,12 +229,12 @@ export default function HomeScreen() {
               size={10}
               color={colors.lime}
             />
-            <Text style={styles.categoryText}>{item.category}</Text>
+            <Text style={styles.categoryText}>{tt(item.category)}</Text>
           </View>
           {item.is_emergency && (
             <View style={styles.emergencyBadge}>
               <Ionicons name="alert-circle" size={10} color={colors.error} />
-              <Text style={styles.emergencyText}>Urgente</Text>
+              <Text style={styles.emergencyText}>{tt('Urgente')}</Text>
             </View>
           )}
         </View>
@@ -265,10 +266,8 @@ export default function HomeScreen() {
               <Ionicons name="heart" size={24} color="#FFD700" />
             </View>
             <View style={styles.promoBannerText}>
-              <Text style={styles.promoBannerTitle}>Diventa Sostenitore!</Text>
-              <Text style={styles.promoBannerSubtitle}>
-                Solo 1€/mese per supportare la community e ottenere il badge dorato ✨
-              </Text>
+              <Text style={styles.promoBannerTitle}>{tt('Diventa Sostenitore!')}</Text>
+              <Text style={styles.promoBannerSubtitle}>{tt('Solo 1€/mese per supportare la community e ottenere il badge dorato ✨')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#FFD700" />
           </View>
@@ -277,7 +276,7 @@ export default function HomeScreen() {
         <View style={styles.thanksBoardSection}>
           <View style={styles.thanksBoardHeader}>
             <Ionicons name="heart" size={18} color="#ff6b6b" />
-            <Text style={styles.thanksBoardTitle}>Bacheca dei Grazie</Text>
+            <Text style={styles.thanksBoardTitle}>{tt('Bacheca dei Grazie')}</Text>
           </View>
           <FlatList
             horizontal
@@ -335,7 +334,7 @@ export default function HomeScreen() {
               color={selectedCategory === cat.name ? colors.textPrimary : colors.lime}
             />
             <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
-              {cat.name}
+              {tt(cat.name)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -356,7 +355,7 @@ export default function HomeScreen() {
         <View style={styles.headerLeft}>
           <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
           <View>
-            <Text style={styles.greeting}>Ciao, {user?.name?.trim().split(/\s+/)[0] ?? ''}!</Text>
+            <Text style={styles.greeting}>{tt('Ciao,')}{' '}{user?.name?.trim().split(/\s+/)[0] ?? ''}!</Text>
             <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
           </View>
         </View>
@@ -399,7 +398,7 @@ export default function HomeScreen() {
             <View style={styles.emptyContainer}>
               <Ionicons name="search" size={60} color="#333" />
               <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
-              <Text style={styles.emptySubtext}>Prova a cambiare i filtri</Text>
+              <Text style={styles.emptySubtext}>{tt('Prova a cambiare i filtri')}</Text>
             </View>
           }
           refreshControl={
@@ -414,7 +413,7 @@ export default function HomeScreen() {
         onPress={() => router.push('/emergencies' as any)}
       >
         <Ionicons name="alert-circle" size={22} color="#fff" />
-        <Text style={styles.emergencyButtonText}>Urgenze</Text>
+        <Text style={styles.emergencyButtonText}>{tt('Urgenze')}</Text>
       </TouchableOpacity>
 
       {/* Report Modal */}

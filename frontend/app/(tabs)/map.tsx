@@ -20,6 +20,7 @@ import { SupporterBadge } from '../../src/components/SupporterBadge';
 import { MapMarkersSkeleton } from '../../src/components/Skeleton';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
+import { tt, tx } from '../../src/i18n/tt';
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.02;
@@ -43,7 +44,7 @@ const MapPlaceholder = ({
         {userLocation && (
           <View style={styles.userLocationMarker}>
             <View style={styles.userLocationDot} />
-            <Text style={styles.userLocationText}>Tu sei qui</Text>
+            <Text style={styles.userLocationText}>{tt('Tu sei qui')}</Text>
           </View>
         )}
         
@@ -77,7 +78,7 @@ const MapPlaceholder = ({
                   color={colors.textPrimary} 
                 />
                 <Text style={styles.circleDistance} numberOfLines={1}>
-                  {favor.distance_km ? `${favor.distance_km}km` : '~'}
+                  {favor.distance_km ? tx('{0}km', [favor.distance_km]) : '~'}
                 </Text>
               </View>
               <View style={styles.circleLabel}>
@@ -95,9 +96,7 @@ const MapPlaceholder = ({
         {/* Privacy notice */}
         <View style={styles.privacyBanner}>
           <Ionicons name="shield-checkmark" size={16} color={colors.primary} />
-          <Text style={styles.privacyText}>
-            Le posizioni sono approssimative per proteggere la privacy
-          </Text>
+          <Text style={styles.privacyText}>{tt('Le posizioni sono approssimative per proteggere la privacy')}</Text>
         </View>
       </View>
     </View>
@@ -186,8 +185,7 @@ export default function MapScreen() {
         <View>
           <Text style={styles.title}>{t('map.title')}</Text>
           <Text style={styles.subtitle}>
-            {favors.length} favori nelle vicinanze
-          </Text>
+            {favors.length}{' '}{tt('favori nelle vicinanze')}</Text>
         </View>
         <TouchableOpacity 
           style={styles.refreshButton}
@@ -257,11 +255,11 @@ export default function MapScreen() {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
-          <Text style={styles.legendText}>Offerte</Text>
+          <Text style={styles.legendText}>{tt('Offerte')}</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
-          <Text style={styles.legendText}>Richieste</Text>
+          <Text style={styles.legendText}>{tt('Richieste')}</Text>
         </View>
       </View>
     </SafeAreaView>

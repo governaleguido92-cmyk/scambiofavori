@@ -18,6 +18,8 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, LendableObject, ObjectCategory, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { styles } from '../../src/styles/oggettoteca.styles';
 import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt, tx } from '../../src/i18n/tt';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Utensili': 'hammer',
@@ -124,26 +126,26 @@ export default function OggettotecaScreen() {
     if (!token) return;
     
     if ((user?.granelli || 0) < depositSoli) {
-      Alert.alert('Soli insufficienti', `Servono ${depositSoli} ${CURRENCY_NAME} come deposito`);
+      notify(tt('Soli insufficienti'), tx('Servono {0} {1} come deposito', [depositSoli, CURRENCY_NAME]));
       return;
     }
 
     Alert.alert(
-      'Conferma Prestito',
-      `Verranno trattenuti ${depositSoli} ${CURRENCY_NAME} come deposito. Li riavrai quando restituirai l'oggetto in buone condizioni.`,
+      tt('Conferma Prestito'),
+      tx('Verranno trattenuti {0} {1} come deposito. Li riavrai quando restituirai l\'oggetto in buone condizioni.', [depositSoli, CURRENCY_NAME]),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: tt('Annulla'), style: 'cancel' },
         {
-          text: 'Prendi in Prestito',
+          text: tt('Prendi in Prestito'),
           onPress: async () => {
             try {
               await api.borrowObject(objectId, token);
               await refreshUser();
               loadObjects();
               loadMyObjects();
-              Alert.alert('Fatto!', 'Oggetto preso in prestito. Contatta il proprietario per il ritiro.');
+              notify(tt('Fatto!'), tt('Oggetto preso in prestito. Contatta il proprietario per il ritiro.'));
             } catch (error: any) {
-              Alert.alert('Errore', error.message);
+              notify(tt('Errore'), error.message);
             }
           },
         },
@@ -155,26 +157,26 @@ export default function OggettotecaScreen() {
     if (!token) return;
 
     Alert.alert(
-      'Restituisci Oggetto',
-      'In che condizioni è l\'oggetto?',
+      tt('Restituisci Oggetto'),
+      tt('In che condizioni è l\'oggetto?'),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: tt('Annulla'), style: 'cancel' },
         {
-          text: 'Buone condizioni',
+          text: tt('Buone condizioni'),
           onPress: async () => {
             try {
               await api.returnObject(objectId, 'good', token);
               await refreshUser();
               loadObjects();
               loadMyObjects();
-              Alert.alert('Grazie!', 'Deposito restituito.');
+              notify(tt('Grazie!'), tt('Deposito restituito.'));
             } catch (error: any) {
-              Alert.alert('Errore', error.message);
+              notify(tt('Errore'), error.message);
             }
           },
         },
         {
-          text: 'Danneggiato',
+          text: tt('Danneggiato'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -182,9 +184,9 @@ export default function OggettotecaScreen() {
               await refreshUser();
               loadObjects();
               loadMyObjects();
-              Alert.alert('Restituito', 'Il deposito è stato trasferito al proprietario.');
+              notify(tt('Restituito'), tt('Il deposito è stato trasferito al proprietario.'));
             } catch (error: any) {
-              Alert.alert('Errore', error.message);
+              notify(tt('Errore'), error.message);
             }
           },
         },
@@ -195,11 +197,11 @@ export default function OggettotecaScreen() {
   const handleAddObject = async () => {
     if (!token) return;
     if (!newObject.name.trim()) {
-      Alert.alert('Errore', 'Inserisci un nome');
+      notify(tt('Errore'), tt('Inserisci un nome'));
       return;
     }
     if (!newObject.description.trim()) {
-      Alert.alert('Errore', 'Inserisci una descrizione');
+      notify(tt('Errore'), tt('Inserisci una descrizione'));
       return;
     }
 
@@ -220,9 +222,9 @@ export default function OggettotecaScreen() {
       setNewObject({ name: '', description: '', category: 'Utensili', deposit_soli: '2' });
       loadObjects();
       loadMyObjects();
-      Alert.alert('Fatto!', 'Oggetto aggiunto all\'Oggettoteca');
+      notify(tt('Fatto!'), tt('Oggetto aggiunto all\'Oggettoteca'));
     } catch (error: any) {
-      Alert.alert('Errore', error.message);
+      notify(tt('Errore'), error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -241,13 +243,13 @@ export default function OggettotecaScreen() {
               size={16}
               color="#A8B858"
             />
-            <Text style={styles.categoryText}>{item.category}</Text>
+            <Text style={styles.categoryText}>{tt(item.category)}</Text>
           </View>
           <View style={[styles.statusBadge, 
             item.status === 'available' ? styles.statusAvailable : styles.statusBorrowed
           ]}>
             <Text style={styles.statusText}>
-              {item.status === 'available' ? 'Disponibile' : 'In prestito'}
+              {item.status === 'available' ? tt('Disponibile') : tt('In prestito')}
             </Text>
           </View>
         </View>
@@ -261,11 +263,11 @@ export default function OggettotecaScreen() {
           <View style={styles.ownerInfo}>
             <Ionicons name="person-circle" size={18} color="#9DB3A4" />
             <Text style={styles.ownerName}>
-              {isMine ? 'Tu' : item.owner_name}
+              {isMine ? tt('Tu') : item.owner_name}
             </Text>
           </View>
           <View style={styles.depositContainer}>
-            <Text style={styles.depositLabel}>Deposito:</Text>
+            <Text style={styles.depositLabel}>{tt('Deposito:')}</Text>
             <Text style={styles.depositSymbol}>{CURRENCY_SYMBOL}</Text>
             <Text style={styles.depositValue}>{item.deposit_granelli}</Text>
           </View>
@@ -274,7 +276,7 @@ export default function OggettotecaScreen() {
         {item.distance_km !== null && item.distance_km !== undefined && (
           <View style={styles.distanceContainer}>
             <Ionicons name="location" size={14} color="#A8B858" />
-            <Text style={styles.distanceText}>{item.distance_km} km</Text>
+            <Text style={styles.distanceText}>{item.distance_km}{' '}{tt('km')}</Text>
           </View>
         )}
 
@@ -285,7 +287,7 @@ export default function OggettotecaScreen() {
             onPress={() => handleBorrow(item.object_id, item.deposit_granelli)}
           >
             <Ionicons name="hand-left" size={18} color="#fff" />
-            <Text style={styles.borrowButtonText}>Prendi in Prestito</Text>
+            <Text style={styles.borrowButtonText}>{tt('Prendi in Prestito')}</Text>
           </TouchableOpacity>
         )}
 
@@ -295,7 +297,7 @@ export default function OggettotecaScreen() {
             onPress={() => handleReturn(item.object_id)}
           >
             <Ionicons name="return-down-back" size={18} color="#fff" />
-            <Text style={styles.returnButtonText}>Restituisci</Text>
+            <Text style={styles.returnButtonText}>{tt('Restituisci')}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -306,8 +308,8 @@ export default function OggettotecaScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Oggettoteca</Text>
-          <Text style={styles.subtitle}>Presta e prendi in prestito oggetti</Text>
+          <Text style={styles.title}>{tt('Oggettoteca')}</Text>
+          <Text style={styles.subtitle}>{tt('Presta e prendi in prestito oggetti')}</Text>
         </View>
         <TouchableOpacity
           style={styles.addButton}
@@ -328,9 +330,7 @@ export default function OggettotecaScreen() {
             size={18}
             color={activeTab === 'available' ? '#0F1A14' : '#9DB3A4'}
           />
-          <Text style={[styles.tabText, activeTab === 'available' && styles.tabTextActive]}>
-            Disponibili
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'available' && styles.tabTextActive]}>{tt('Disponibili')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'mine' && styles.tabActive]}
@@ -341,9 +341,7 @@ export default function OggettotecaScreen() {
             size={18}
             color={activeTab === 'mine' ? '#0F1A14' : '#9DB3A4'}
           />
-          <Text style={[styles.tabText, activeTab === 'mine' && styles.tabTextActive]}>
-            I Miei Oggetti
-          </Text>
+          <Text style={[styles.tabText, activeTab === 'mine' && styles.tabTextActive]}>{tt('I Miei Oggetti')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -359,9 +357,7 @@ export default function OggettotecaScreen() {
             style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
             onPress={() => setSelectedCategory(null)}
           >
-            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-              Tutti
-            </Text>
+            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>{tt('Tutti')}</Text>
           </TouchableOpacity>
           {categories.map((cat) => (
             <TouchableOpacity
@@ -375,7 +371,7 @@ export default function OggettotecaScreen() {
                 color={selectedCategory === cat.name ? '#0F1A14' : '#A8B858'}
               />
               <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
-                {cat.name}
+                {tt(cat.name)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -400,13 +396,13 @@ export default function OggettotecaScreen() {
               <Ionicons name="cube-outline" size={60} color="#333" />
               <Text style={styles.emptyText}>
                 {activeTab === 'available' 
-                  ? 'Nessun oggetto disponibile' 
-                  : 'Non hai ancora aggiunto oggetti'}
+                  ? tt('Nessun oggetto disponibile') 
+                  : tt('Non hai ancora aggiunto oggetti')}
               </Text>
               <Text style={styles.emptySubtext}>
                 {activeTab === 'available' 
-                  ? 'Prova a cambiare categoria' 
-                  : 'Aggiungi il primo oggetto!'}
+                  ? tt('Prova a cambiare categoria') 
+                  : tt('Aggiungi il primo oggetto!')}
               </Text>
             </View>
           }
@@ -417,16 +413,14 @@ export default function OggettotecaScreen() {
       <Modal visible={showAddModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Aggiungi Oggetto</Text>
-            <Text style={styles.modalSubtitle}>
-              Condividi un oggetto con il tuo quartiere
-            </Text>
+            <Text style={styles.modalTitle}>{tt('Aggiungi Oggetto')}</Text>
+            <Text style={styles.modalSubtitle}>{tt('Condividi un oggetto con il tuo quartiere')}</Text>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Nome</Text>
+              <Text style={styles.inputLabel}>{tt('Nome')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Es: Trapano elettrico"
+                placeholder={tt('Es: Trapano elettrico')}
                 placeholderTextColor="#8FA595"
                 value={newObject.name}
                 onChangeText={(text) => setNewObject({ ...newObject, name: text })}
@@ -435,10 +429,10 @@ export default function OggettotecaScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Descrizione</Text>
+              <Text style={styles.inputLabel}>{tt('Descrizione')}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Descrivi l'oggetto..."
+                placeholder={tt('Descrivi l\'oggetto...')}
                 placeholderTextColor="#8FA595"
                 value={newObject.description}
                 onChangeText={(text) => setNewObject({ ...newObject, description: text })}
@@ -449,7 +443,7 @@ export default function OggettotecaScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Categoria</Text>
+              <Text style={styles.inputLabel}>{tt('Categoria')}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {categories.map((cat) => (
                   <TouchableOpacity
@@ -469,7 +463,7 @@ export default function OggettotecaScreen() {
                       styles.categoryOptionText,
                       newObject.category === cat.name && styles.categoryOptionTextActive,
                     ]}>
-                      {cat.name}
+                      {tt(cat.name)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -477,7 +471,7 @@ export default function OggettotecaScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Deposito ({CURRENCY_NAME})</Text>
+              <Text style={styles.inputLabel}>{tt('Deposito (')}{CURRENCY_NAME})</Text>
               <View style={styles.depositInput}>
                 <TouchableOpacity
                   style={styles.depositAdjust}
@@ -502,9 +496,7 @@ export default function OggettotecaScreen() {
                   <Ionicons name="add" size={20} color="#fff" />
                 </TouchableOpacity>
               </View>
-              <Text style={styles.depositHint}>
-                Il deposito garantisce la cura dell'oggetto
-              </Text>
+              <Text style={styles.depositHint}>{tt('Il deposito garantisce la cura dell\'oggetto')}</Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -512,7 +504,7 @@ export default function OggettotecaScreen() {
                 style={styles.modalCancelButton}
                 onPress={() => setShowAddModal(false)}
               >
-                <Text style={styles.modalCancelText}>Annulla</Text>
+                <Text style={styles.modalCancelText}>{tt('Annulla')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalConfirmButton}
@@ -524,7 +516,7 @@ export default function OggettotecaScreen() {
                 ) : (
                   <>
                     <Ionicons name="add-circle" size={18} color="#fff" />
-                    <Text style={styles.modalConfirmText}>Aggiungi</Text>
+                    <Text style={styles.modalConfirmText}>{tt('Aggiungi')}</Text>
                   </>
                 )}
               </TouchableOpacity>

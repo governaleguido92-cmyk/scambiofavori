@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import colors from '../theme/colors';
 import { logger } from '../utils/logger';
+import { tt } from '../i18n/tt';
 
 interface ProfileCompletionItem {
   id: string;
@@ -77,9 +78,9 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
             <Ionicons name="person-circle" size={22} color={colors.accent} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Completa il tuo profilo</Text>
+            <Text style={styles.title}>{tt('Completa il tuo profilo')}</Text>
             <Text style={styles.subtitle}>
-              {completedCount}/4 completati • {percentage}%
+              {completedCount}{tt('/4 completati •')}{' '}{percentage}%
             </Text>
           </View>
         </View>
@@ -152,9 +153,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
           
           <View style={styles.badgeInfo}>
             <Ionicons name="ribbon" size={14} color={colors.granelli} />
-            <Text style={styles.badgeInfoText}>
-              Completa al 100% per il badge "Profilo Completo"!
-            </Text>
+            <Text style={styles.badgeInfoText}>{tt('Completa al 100% per il badge "Profilo Completo"!')}</Text>
           </View>
         </View>
       )}

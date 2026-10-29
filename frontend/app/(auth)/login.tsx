@@ -9,7 +9,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { useRouter, Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +20,8 @@ import * as Linking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { api } from '../../src/services/api';
 import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt } from '../../src/i18n/tt';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -44,7 +45,7 @@ export default function LoginScreen() {
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Errore', 'Inserisci email e password');
+      notify(tt('Errore'), tt('Inserisci email e password'));
       return;
     }
 
@@ -53,7 +54,7 @@ export default function LoginScreen() {
       await login(email, password);
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Errore', error.message || 'Login fallito');
+      notify(tt('Errore'), error.message || tt('Login fallito'));
     } finally {
       setIsLoading(false);
     }
@@ -94,11 +95,11 @@ export default function LoginScreen() {
             router.replace('/(tabs)');
           } else {
             logger.debug('Google Login - No session_id in fragment');
-            Alert.alert('Errore', 'Sessione non trovata nella risposta');
+            notify(tt('Errore'), tt('Sessione non trovata nella risposta'));
           }
         } else {
           logger.debug('Google Login - No hash fragment in URL');
-          Alert.alert('Errore', 'Risposta non valida dal server di autenticazione');
+          notify(tt('Errore'), tt('Risposta non valida dal server di autenticazione'));
         }
       } else if (result.type === 'cancel') {
         logger.debug('Google Login - Cancelled by user');
@@ -107,7 +108,7 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       console.error('Google Login Error:', error);
-      Alert.alert('Errore', error.message || 'Errore durante il login con Google');
+      notify(tt('Errore'), error.message || tt('Errore durante il login con Google'));
     } finally {
       setIsLoading(false);
     }
@@ -155,7 +156,7 @@ export default function LoginScreen() {
         logger.debug('Apple Login - Cancelled by user');
         return;
       }
-      Alert.alert('Errore', error.message || 'Errore durante il login con Apple');
+      notify(tt('Errore'), error.message || tt('Errore durante il login con Apple'));
     } finally {
       setIsLoading(false);
     }
@@ -179,8 +180,8 @@ export default function LoginScreen() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.title}>Scambio di Favori</Text>
-            <Text style={styles.subtitle}>Accedi al tuo account</Text>
+            <Text style={styles.title}>{tt('Scambio di Favori')}</Text>
+            <Text style={styles.subtitle}>{tt('Accedi al tuo account')}</Text>
           </View>
 
           <View style={styles.form}>
@@ -188,7 +189,7 @@ export default function LoginScreen() {
               <Ionicons name="mail-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Email"
+                placeholder={tt('Email')}
                 placeholderTextColor="#9DB3A4"
                 value={email}
                 onChangeText={setEmail}
@@ -201,7 +202,7 @@ export default function LoginScreen() {
               <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder={tt('Password')}
                 placeholderTextColor="#9DB3A4"
                 value={password}
                 onChangeText={setPassword}
@@ -224,19 +225,19 @@ export default function LoginScreen() {
               {isLoading ? (
                 <ActivityIndicator color="#0F1A14" />
               ) : (
-                <Text style={styles.loginButtonText}>Accedi</Text>
+                <Text style={styles.loginButtonText}>{tt('Accedi')}</Text>
               )}
             </TouchableOpacity>
 
             <Link href="/(auth)/recovery" asChild>
               <TouchableOpacity style={styles.forgotContainer} data-testid="forgot-link">
-                <Text style={styles.forgotText}>Hai dimenticato la password o il nome utente?</Text>
+                <Text style={styles.forgotText}>{tt('Hai dimenticato la password o il nome utente?')}</Text>
               </TouchableOpacity>
             </Link>
 
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>oppure</Text>
+              <Text style={styles.dividerText}>{tt('oppure')}</Text>
               <View style={styles.dividerLine} />
             </View>
 
@@ -247,7 +248,7 @@ export default function LoginScreen() {
               data-testid="google-login-button"
             >
               <Ionicons name="logo-google" size={20} color="#fff" />
-              <Text style={styles.googleButtonText}>Continua con Google</Text>
+              <Text style={styles.googleButtonText}>{tt('Continua con Google')}</Text>
             </TouchableOpacity>
 
             {/* Apple Sign In - Native per iOS, placeholder per altre piattaforme */}
@@ -262,20 +263,20 @@ export default function LoginScreen() {
             ) : (
               <TouchableOpacity
                 style={styles.appleButton}
-                onPress={() => Alert.alert('Disponibile su iOS', 'Accedi con Apple è disponibile solo su dispositivi iOS.')}
+                onPress={() => notify(tt('Disponibile su iOS'), tt('Accedi con Apple è disponibile solo su dispositivi iOS.'))}
                 disabled={isLoading}
                 data-testid="apple-login-button"
               >
                 <Ionicons name="logo-apple" size={20} color="#fff" />
-                <Text style={styles.appleButtonText}>Continua con Apple</Text>
+                <Text style={styles.appleButtonText}>{tt('Continua con Apple')}</Text>
               </TouchableOpacity>
             )}
 
             <View style={styles.registerContainer}>
-              <Text style={styles.registerText}>Non hai un account? </Text>
+              <Text style={styles.registerText}>{tt('Non hai un account?')}{' '}</Text>
               <Link href="/(auth)/register" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.registerLink}>Registrati</Text>
+                  <Text style={styles.registerLink}>{tt('Registrati')}</Text>
                 </TouchableOpacity>
               </Link>
             </View>

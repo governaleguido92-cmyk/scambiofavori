@@ -18,6 +18,8 @@ import * as Location from 'expo-location';
 import { useAuth } from '../src/context/AuthContext';
 import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../src/services/api';
 import { logger } from '../src/utils/logger';
+import { notify } from '../src/utils/notify';
+import { tt } from '../src/i18n/tt';
 
 export default function EmergenciesScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -82,20 +84,20 @@ export default function EmergenciesScreen() {
     if (!token) return;
     
     Alert.alert(
-      'Aiuta questa persona',
-      'Sei sicuro di voler rispondere a questa emergenza di gentilezza?',
+      tt('Aiuta questa persona'),
+      tt('Sei sicuro di voler rispondere a questa emergenza di gentilezza?'),
       [
-        { text: 'Annulla', style: 'cancel' },
+        { text: tt('Annulla'), style: 'cancel' },
         {
-          text: 'Sì, aiuto!',
+          text: tt('Sì, aiuto!'),
           onPress: async () => {
             try {
               await api.acceptFavor(favorId, token);
               loadEmergencies();
-              Alert.alert('Grazie!', 'Hai risposto all\'emergenza. Contatta la persona per aiutarla.');
+              notify(tt('Grazie!'), tt('Hai risposto all\'emergenza. Contatta la persona per aiutarla.'));
               router.push(`/favor/${favorId}` as any);
             } catch (error: any) {
-              Alert.alert('Errore', error.message);
+              notify(tt('Errore'), error.message);
             }
           },
         },
@@ -106,11 +108,11 @@ export default function EmergenciesScreen() {
   const handleCreateEmergency = async () => {
     if (!token || !location) return;
     if (!newEmergency.title.trim()) {
-      Alert.alert('Errore', 'Inserisci un titolo');
+      notify(tt('Errore'), tt('Inserisci un titolo'));
       return;
     }
     if (!newEmergency.description.trim()) {
-      Alert.alert('Errore', 'Descrivi la tua emergenza');
+      notify(tt('Errore'), tt('Descrivi la tua emergenza'));
       return;
     }
 
@@ -134,14 +136,14 @@ export default function EmergenciesScreen() {
       setShowCreateModal(false);
       setNewEmergency({ title: '', description: '' });
       Alert.alert(
-        'Emergenza Inviata!',
-        'Le persone vicine a te saranno notificate. Qualcuno ti aiuterà presto!',
+        tt('Emergenza Inviata!'),
+        tt('Le persone vicine a te saranno notificate. Qualcuno ti aiuterà presto!'),
         [
-          { text: 'OK', onPress: () => router.push(`/favor/${favor.favor_id}` as any) }
+          { text: tt('OK'), onPress: () => router.push(`/favor/${favor.favor_id}` as any) }
         ]
       );
     } catch (error: any) {
-      Alert.alert('Errore', error.message);
+      notify(tt('Errore'), error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -152,12 +154,12 @@ export default function EmergenciesScreen() {
       <View style={styles.emergencyHeader}>
         <View style={styles.urgentBadge}>
           <Ionicons name="alert-circle" size={16} color="#ff6b6b" />
-          <Text style={styles.urgentText}>URGENTE</Text>
+          <Text style={styles.urgentText}>{tt('URGENTE')}</Text>
         </View>
         {item.distance_km !== undefined && (
           <View style={styles.distanceBadge}>
             <Ionicons name="location" size={14} color="#B8C868" />
-            <Text style={styles.distanceText}>{item.distance_km} km</Text>
+            <Text style={styles.distanceText}>{item.distance_km}{' '}{tt('km')}</Text>
           </View>
         )}
       </View>
@@ -173,7 +175,7 @@ export default function EmergenciesScreen() {
         </View>
         <View>
           <Text style={styles.creatorName}>{item.creator_name}</Text>
-          <Text style={styles.creatorTitle}>{item.creator_title}</Text>
+          <Text style={styles.creatorTitle}>{tt(item.creator_title)}</Text>
         </View>
       </View>
 
@@ -182,7 +184,7 @@ export default function EmergenciesScreen() {
         onPress={() => handleAcceptEmergency(item.favor_id)}
       >
         <Ionicons name="heart" size={20} color="#fff" />
-        <Text style={styles.helpButtonText}>Voglio Aiutare</Text>
+        <Text style={styles.helpButtonText}>{tt('Voglio Aiutare')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -197,17 +199,15 @@ export default function EmergenciesScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={styles.title}>Emergenze Gentilezza</Text>
-          <Text style={styles.subtitle}>Aiuta chi ha bisogno vicino a te</Text>
+          <Text style={styles.title}>{tt('Emergenze Gentilezza')}</Text>
+          <Text style={styles.subtitle}>{tt('Aiuta chi ha bisogno vicino a te')}</Text>
         </View>
       </View>
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
         <Ionicons name="information-circle" size={20} color="#B8C868" />
-        <Text style={styles.infoBannerText}>
-          Le emergenze sono richieste urgenti inviate a vicini affidabili e valutati positivamente.
-        </Text>
+        <Text style={styles.infoBannerText}>{tt('Le emergenze sono richieste urgenti inviate a vicini affidabili e valutati positivamente.')}</Text>
       </View>
 
       {loading ? (
@@ -219,10 +219,8 @@ export default function EmergenciesScreen() {
           <View style={styles.emptyIcon}>
             <Ionicons name="heart-outline" size={60} color="#B8C868" />
           </View>
-          <Text style={styles.emptyText}>Nessuna emergenza nelle vicinanze</Text>
-          <Text style={styles.emptySubtext}>
-            Il quartiere è tranquillo! Ma se hai bisogno, puoi sempre chiedere aiuto.
-          </Text>
+          <Text style={styles.emptyText}>{tt('Nessuna emergenza nelle vicinanze')}</Text>
+          <Text style={styles.emptySubtext}>{tt('Il quartiere è tranquillo! Ma se hai bisogno, puoi sempre chiedere aiuto.')}</Text>
         </View>
       ) : (
         <FlatList
@@ -242,7 +240,7 @@ export default function EmergenciesScreen() {
         onPress={() => setShowCreateModal(true)}
       >
         <Ionicons name="add" size={24} color="#fff" />
-        <Text style={styles.createButtonText}>Ho bisogno di aiuto</Text>
+        <Text style={styles.createButtonText}>{tt('Ho bisogno di aiuto')}</Text>
       </TouchableOpacity>
 
       {/* Create Emergency Modal */}
@@ -251,17 +249,15 @@ export default function EmergenciesScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Ionicons name="alert-circle" size={32} color="#ff6b6b" />
-              <Text style={styles.modalTitle}>Emergenza Gentilezza</Text>
+              <Text style={styles.modalTitle}>{tt('Emergenza Gentilezza')}</Text>
             </View>
-            <Text style={styles.modalSubtitle}>
-              Le persone affidabili vicino a te riceveranno una notifica
-            </Text>
+            <Text style={styles.modalSubtitle}>{tt('Le persone affidabili vicino a te riceveranno una notifica')}</Text>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Di cosa hai bisogno?</Text>
+              <Text style={styles.inputLabel}>{tt('Di cosa hai bisogno?')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Es: Aiuto urgente con..."
+                placeholder={tt('Es: Aiuto urgente con...')}
                 placeholderTextColor="#8FA595"
                 value={newEmergency.title}
                 onChangeText={(text) => setNewEmergency({ ...newEmergency, title: text })}
@@ -270,10 +266,10 @@ export default function EmergenciesScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Descrivi la situazione</Text>
+              <Text style={styles.inputLabel}>{tt('Descrivi la situazione')}</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Spiega brevemente cosa ti serve..."
+                placeholder={tt('Spiega brevemente cosa ti serve...')}
                 placeholderTextColor="#8FA595"
                 value={newEmergency.description}
                 onChangeText={(text) => setNewEmergency({ ...newEmergency, description: text })}
@@ -284,7 +280,7 @@ export default function EmergenciesScreen() {
             </View>
 
             <View style={styles.costInfo}>
-              <Text style={styles.costLabel}>Costo:</Text>
+              <Text style={styles.costLabel}>{tt('Costo:')}</Text>
               <Text style={styles.costValue}>{CURRENCY_SYMBOL} 1 {CURRENCY_NAME.slice(0, -1)}e</Text>
             </View>
 
@@ -293,7 +289,7 @@ export default function EmergenciesScreen() {
                 style={styles.modalCancelButton}
                 onPress={() => setShowCreateModal(false)}
               >
-                <Text style={styles.modalCancelText}>Annulla</Text>
+                <Text style={styles.modalCancelText}>{tt('Annulla')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalConfirmButton}
@@ -305,7 +301,7 @@ export default function EmergenciesScreen() {
                 ) : (
                   <>
                     <Ionicons name="alert-circle" size={18} color="#fff" />
-                    <Text style={styles.modalConfirmText}>Invia Emergenza</Text>
+                    <Text style={styles.modalConfirmText}>{tt('Invia Emergenza')}</Text>
                   </>
                 )}
               </TouchableOpacity>
