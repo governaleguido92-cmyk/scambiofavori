@@ -20,18 +20,19 @@
   <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "Scambio di Favori", "url": "https://scambiofavori.it/", "inLanguage": "it-IT"}</script>
   <script type="application/ld+json">{"@context": "https://schema.org", "@type": "MobileApplication", "name": "Scambio di Favori", "applicationCategory": "SocialNetworkingApplication", "operatingSystem": "Android", "description": "Scambio di Favori è l'app gratuita per aiutarsi tra vicini: offri e ricevi favori, guadagna Granelli e costruisci una rete di supporto nel tuo quartiere.", "inLanguage": "it-IT", "url": "https://scambiofavori.it/", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}}</script>
   <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Cos'è Scambio di Favori?", "acceptedAnswer": {"@type": "Answer", "text": "Scambio di Favori è un'app gratuita che mette in contatto le persone dello stesso quartiere: puoi chiedere un aiuto o offrire il tuo tempo per piccoli favori come fare la spesa, portare a spasso il cane, dare ripetizioni o annaffiare le piante."}}, {"@type": "Question", "name": "Cosa sono i Granelli?", "acceptedAnswer": {"@type": "Answer", "text": "I Granelli 🌾 sono la valuta della comunità: 1 ora del tuo aiuto vale 1 Granello. Li guadagni aiutando un vicino e li spendi quando hai bisogno tu. Non sono denaro: servono a tenere lo scambio equo tra tutti."}}, {"@type": "Question", "name": "L'app è gratuita?", "acceptedAnswer": {"@type": "Answer", "text": "Sì. Scaricare e usare Scambio di Favori non costa nulla e non ci sono abbonamenti obbligatori. Chi vuole può sostenere il progetto con un contributo volontario."}}, {"@type": "Question", "name": "Come funziona uno scambio di favori?", "acceptedAnswer": {"@type": "Answer", "text": "Pubblichi una richiesta o un'offerta, un vicino la accetta e vi mettete d'accordo. A favore concluso si conferma con un codice QR, i Granelli passano da chi riceve l'aiuto a chi lo dà e ci si lascia una recensione."}}, {"@type": "Question", "name": "Come viene garantita la sicurezza?", "acceptedAnswer": {"@type": "Answer", "text": "Ogni favore si chiude con la conferma tramite QR, gli utenti si lasciano recensioni reciproche e i contenuti inappropriati vengono moderati. I dati personali vengono trattati nel rispetto del GDPR."}}, {"@type": "Question", "name": "In che lingue è disponibile l'app?", "acceptedAnswer": {"@type": "Answer", "text": "L'app è disponibile in italiano e in inglese: puoi cambiare lingua in qualsiasi momento da Profilo → Impostazioni."}}, {"@type": "Question", "name": "Dove posso scaricare l'app?", "acceptedAnswer": {"@type": "Answer", "text": "L'app è in pubblicazione su Google Play per Android. Torna su questa pagina per il link ufficiale appena disponibile."}}]}</script>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
   <style>
     :root {
       --green-dark: #0F1A14;
       --green-mid: #1A2E22;
-      --green-card: #162419;
+      --green-card: #1A2E22;
+      --lime: #B8C868;
       --green-primary: #2D5A3D;
       --green-light: #3D7A52;
       --green-text: #B8D4C0;
       --green-muted: #7A9F85;
-      --orange: #E07B39;
-      --orange-light: #F59E5E;
+      --orange: #F87828;
+      --orange-light: #FB9A52;
       --gold: #FFD700;
       --white: #FFFFFF;
       --border: #2A4A35;
@@ -88,7 +89,7 @@
     }
     .blob-2 {
       width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(224,123,57,0.3), transparent 70%);
+      background: radial-gradient(circle, rgba(248,120,40,0.3), transparent 70%);
       top: 20%; right: -80px;
       animation-delay: -4s;
     }
@@ -117,9 +118,9 @@
       border-bottom: 1px solid rgba(45,90,61,0.3);
     }
     .nav-logo {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: 1.3rem;
-      font-weight: 900;
+      font-weight: 800;
       color: var(--white);
       letter-spacing: -0.02em;
     }
@@ -133,11 +134,11 @@
       border-radius: 100px;
       text-decoration: none;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 0 0 0 rgba(224,123,57,0.4);
+      box-shadow: 0 0 0 0 rgba(248,120,40,0.4);
     }
     .nav-cta:hover {
       transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(224,123,57,0.4);
+      box-shadow: 0 0 20px rgba(248,120,40,0.4);
     }
 
 
@@ -187,9 +188,9 @@
 
     /* HEADLINE */
     h1 {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: clamp(3rem, 8vw, 6.5rem);
-      font-weight: 900;
+      font-weight: 800;
       line-height: 1.0;
       letter-spacing: -0.03em;
       margin-bottom: 1.5rem;
@@ -228,11 +229,11 @@
       border-radius: 100px;
       text-decoration: none;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 8px 30px rgba(224,123,57,0.35);
+      box-shadow: 0 8px 30px rgba(248,120,40,0.35);
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(224,123,57,0.5);
+      box-shadow: 0 12px 40px rgba(248,120,40,0.5);
     }
     .btn-secondary {
       background: transparent;
@@ -294,13 +295,14 @@
       flex-shrink: 0;
     }
     .favor-icon.green { background: rgba(45,90,61,0.4); }
-    .favor-icon.orange { background: rgba(224,123,57,0.25); }
+    .favor-icon.orange { background: rgba(248,120,40,0.25); }
     .favor-icon.gold { background: rgba(255,215,0,0.15); }
     .favor-text { text-align: left; }
     .favor-title { font-size: 0.75rem; font-weight: 600; color: var(--white); }
     .favor-sub { font-size: 0.65rem; color: var(--green-muted); margin-top: 2px; }
     .favor-granelli {
       margin-left: auto;
+      flex-shrink: 0;
       background: rgba(255,215,0,0.12);
       border: 1px solid rgba(255,215,0,0.3);
       border-radius: 8px;
@@ -350,9 +352,9 @@
       text-align: center;
     }
     .stat-num {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: 2.5rem;
-      font-weight: 900;
+      font-weight: 800;
       color: var(--orange);
       line-height: 1;
     }
@@ -369,13 +371,13 @@
       font-weight: 700;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--orange);
+      color: var(--lime);
       margin-bottom: 0.75rem;
     }
     .section-title {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 900;
+      font-weight: 800;
       line-height: 1.1;
       letter-spacing: -0.02em;
       margin-bottom: 1rem;
@@ -414,7 +416,7 @@
       border-color: var(--green-light);
     }
     .feature-card.accent-card::before {
-      background: radial-gradient(circle at top left, rgba(224,123,57,0.15), transparent 60%);
+      background: radial-gradient(circle at top left, rgba(248,120,40,0.15), transparent 60%);
     }
     .feature-card.accent-card:hover { border-color: var(--orange); }
     .feature-card.gold-card::before {
@@ -430,12 +432,12 @@
       margin-bottom: 1.25rem;
     }
     .feature-icon.green { background: rgba(45,90,61,0.4); border: 1px solid rgba(45,90,61,0.8); }
-    .feature-icon.orange { background: rgba(224,123,57,0.2); border: 1px solid rgba(224,123,57,0.5); }
+    .feature-icon.orange { background: rgba(248,120,40,0.2); border: 1px solid rgba(248,120,40,0.5); }
     .feature-icon.gold { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.4); }
     .feature-icon.red { background: rgba(217,79,79,0.15); border: 1px solid rgba(217,79,79,0.4); }
 
     .feature-title {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: 1.35rem;
       font-weight: 700;
       margin-bottom: 0.6rem;
@@ -453,7 +455,7 @@
       font-size: 0.75rem;
       font-weight: 600;
     }
-    .tag-orange { background: rgba(224,123,57,0.15); color: var(--orange-light); }
+    .tag-orange { background: rgba(248,120,40,0.15); color: var(--orange-light); }
     .tag-gold { background: rgba(255,215,0,0.12); color: var(--gold); }
     .tag-green { background: rgba(45,90,61,0.35); color: #90CDA0; }
     .tag-red { background: rgba(217,79,79,0.12); color: #F08080; }
@@ -482,10 +484,10 @@
       gap: 1rem;
     }
     .step-number {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: 3.5rem;
-      font-weight: 900;
-      color: rgba(255,255,255,0.06);
+      font-weight: 800;
+      color: rgba(184,200,104,0.28);
       line-height: 1;
       margin-bottom: -0.5rem;
     }
@@ -493,7 +495,7 @@
       font-size: 1.8rem;
     }
     .step-title {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: 1.2rem;
       font-weight: 700;
     }
@@ -543,17 +545,17 @@
       background: linear-gradient(135deg, var(--green-card), rgba(255,215,0,0.05));
     }
     .g-amount {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: 1.5rem;
-      font-weight: 900;
+      font-weight: 800;
       color: var(--gold);
     }
     .g-label { font-size: 0.85rem; color: var(--green-text); }
     .g-emoji { font-size: 1.8rem; }
     .granelli-info h2 {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 900;
+      font-weight: 800;
       letter-spacing: -0.02em;
       margin-bottom: 1rem;
     }
@@ -583,9 +585,9 @@
       animation: pulse 2s infinite;
     }
     .emergency-inner h2 {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: clamp(2rem, 5vw, 3rem);
-      font-weight: 900;
+      font-weight: 800;
       margin-bottom: 1rem;
     }
     .emergency-inner h2 span { color: #F08080; }
@@ -608,15 +610,15 @@
     .cta-glow {
       position: absolute;
       width: 500px; height: 300px;
-      background: radial-gradient(ellipse, rgba(224,123,57,0.15), transparent 70%);
+      background: radial-gradient(ellipse, rgba(248,120,40,0.15), transparent 70%);
       left: 50%; top: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
     .cta-section h2 {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: clamp(2.5rem, 7vw, 5rem);
-      font-weight: 900;
+      font-weight: 800;
       letter-spacing: -0.03em;
       line-height: 1.05;
       margin-bottom: 1.5rem;
@@ -698,9 +700,9 @@
       margin: 0 auto;
     }
     .footer-logo {
-      font-family: 'Fraunces', serif;
+      font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em;
       font-size: 1.1rem;
-      font-weight: 900;
+      font-weight: 800;
     }
     .footer-logo span { color: var(--orange); }
     .footer-copy { color: var(--green-muted); font-size: 0.8rem; }
@@ -749,7 +751,7 @@
 
     <div class="badge">
       <div class="badge-dot"></div>
-      Ora disponibile · v1.0
+      In arrivo su Google Play
     </div>
 
     <h1>
@@ -815,7 +817,7 @@
           <div class="favor-granelli">🌾 6</div>
         </div>
 
-        <div style="margin-top:1rem; background:var(--green-primary); border-radius:12px; padding:0.75rem; text-align:center; font-size:0.75rem; font-weight:700; color:var(--green-dark);">
+        <div style="margin-top:1rem; background:var(--orange); border-radius:12px; padding:0.75rem; text-align:center; font-size:0.75rem; font-weight:700; color:var(--green-dark);">
           + Offri un favore
         </div>
       </div>
@@ -1024,7 +1026,7 @@
   </section>
   <style>
     .faq { max-width: 760px; margin: 0 auto; padding: 4rem 1.5rem; }
-    .faq h2 { font-family: 'Fraunces', serif; font-size: clamp(1.8rem, 4vw, 2.4rem); margin-bottom: 1.5rem; }
+    .faq h2 { font-family: 'DM Sans', sans-serif; letter-spacing: -0.02em; font-size: clamp(1.8rem, 4vw, 2.4rem); margin-bottom: 1.5rem; }
     .faq-item { border-bottom: 1px solid var(--border); padding: 1rem 0; }
     .faq-item summary { cursor: pointer; font-weight: 600; color: var(--white); }
     .faq-item p { margin-top: .7rem; color: var(--green-text); line-height: 1.6; }
