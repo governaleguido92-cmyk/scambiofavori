@@ -156,7 +156,7 @@ export default function EmergenciesScreen() {
         </View>
         {item.distance_km !== undefined && (
           <View style={styles.distanceBadge}>
-            <Ionicons name="location" size={14} color="#4ecca3" />
+            <Ionicons name="location" size={14} color="#B8C868" />
             <Text style={styles.distanceText}>{item.distance_km} km</Text>
           </View>
         )}
@@ -204,7 +204,7 @@ export default function EmergenciesScreen() {
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
-        <Ionicons name="information-circle" size={20} color="#4ecca3" />
+        <Ionicons name="information-circle" size={20} color="#B8C868" />
         <Text style={styles.infoBannerText}>
           Le emergenze sono richieste urgenti inviate a vicini affidabili e valutati positivamente.
         </Text>
@@ -217,7 +217,7 @@ export default function EmergenciesScreen() {
       ) : emergencies.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="heart-outline" size={60} color="#4ecca3" />
+            <Ionicons name="heart-outline" size={60} color="#B8C868" />
           </View>
           <Text style={styles.emptyText}>Nessuna emergenza nelle vicinanze</Text>
           <Text style={styles.emptySubtext}>
@@ -262,7 +262,7 @@ export default function EmergenciesScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Es: Aiuto urgente con..."
-                placeholderTextColor="#666"
+                placeholderTextColor="#8FA595"
                 value={newEmergency.title}
                 onChangeText={(text) => setNewEmergency({ ...newEmergency, title: text })}
                 maxLength={60}
@@ -274,7 +274,7 @@ export default function EmergenciesScreen() {
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder="Spiega brevemente cosa ti serve..."
-                placeholderTextColor="#666"
+                placeholderTextColor="#8FA595"
                 value={newEmergency.description}
                 onChangeText={(text) => setNewEmergency({ ...newEmergency, description: text })}
                 multiline
@@ -320,7 +320,7 @@ export default function EmergenciesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
   },
   header: {
     flexDirection: 'row',
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -348,13 +348,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#888',
+    color: '#9DB3A4',
     marginTop: 2,
   },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     marginHorizontal: 20,
     marginTop: 12,
     padding: 12,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   infoBannerText: {
     flex: 1,
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
     lineHeight: 18,
   },
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptySubtext: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emergencyCard: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   distanceText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   },
   emergencyDescription: {
     fontSize: 14,
-    color: '#888',
+    color: '#9DB3A4',
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -465,12 +465,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     justifyContent: 'center',
     alignItems: 'center',
   },
   creatorAvatarText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   creatorTitle: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
   },
   helpButton: {
@@ -519,7 +519,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   modalSubtitle: {
-    color: '#888',
+    color: '#9DB3A4',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     borderRadius: 12,
     padding: 14,
     color: '#fff',
@@ -565,14 +565,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     padding: 12,
     borderRadius: 12,
     gap: 8,
     marginBottom: 20,
   },
   costLabel: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
   },
   costValue: {
@@ -589,11 +589,11 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#888',
+    borderColor: '#9DB3A4',
     alignItems: 'center',
   },
   modalCancelText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontWeight: '600',
   },
   modalConfirmButton: {

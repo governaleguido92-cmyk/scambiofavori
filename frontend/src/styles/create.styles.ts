@@ -3,7 +3,7 @@ import { StyleSheet, Modal } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
   },
   keyboardView: {
     flex: 1,
@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
   soliDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -46,7 +46,7 @@ export const styles = StyleSheet.create({
   },
   typeButton: {
     flex: 1,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
@@ -54,8 +54,8 @@ export const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   typeButtonActive: {
-    backgroundColor: '#4ecca3',
-    borderColor: '#4ecca3',
+    backgroundColor: '#B8C868',
+    borderColor: '#B8C868',
   },
   typeButtonActiveRequest: {
     backgroundColor: '#ff6b6b',
@@ -68,22 +68,22 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   typeButtonTextActive: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
   },
   typeButtonSubtext: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
     marginTop: 4,
   },
   typeButtonSubtextActive: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     opacity: 0.8,
   },
   microToggle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
@@ -99,7 +99,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   microToggleHint: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
   },
   inputGroup: {
@@ -112,7 +112,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 12,
     padding: 16,
     color: '#fff',
@@ -128,7 +128,7 @@ export const styles = StyleSheet.create({
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
@@ -136,18 +136,18 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   categoryChipActive: {
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#B8C868',
   },
   categoryChipMicro: {
     borderWidth: 1,
-    borderColor: '#ff9800',
+    borderColor: '#F87828',
   },
   categoryChipText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
   },
   categoryChipTextActive: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontWeight: '600',
   },
   durationContainer: {
@@ -157,7 +157,7 @@ export const styles = StyleSheet.create({
     gap: 20,
   },
   durationButton: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -168,8 +168,8 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   durationValue: {
-    backgroundColor: '#16213e',
-    color: '#4ecca3',
+    backgroundColor: '#1A2E22',
+    color: '#B8C868',
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -178,7 +178,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
   durationUnit: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
     marginTop: 4,
   },
@@ -190,11 +190,11 @@ export const styles = StyleSheet.create({
     marginTop: 12,
   },
   parityText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 12,
   },
   soliPreview: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -203,7 +203,7 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   granelliPreview: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -212,7 +212,7 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   granelliPreviewLabel: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
   },
   granelliPreviewValue: {
@@ -221,7 +221,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   soliPreviewLabel: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
   },
   soliPreviewValue: {
@@ -238,20 +238,20 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   granelliPreviewUnit: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
   },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 16,
     borderRadius: 12,
     gap: 8,
   },
   locationButtonText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -262,7 +262,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   addressText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
     flex: 1,
   },
@@ -281,21 +281,29 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   locationInfoTitle: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
   },
   locationInfoDescription: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
     lineHeight: 18,
+  },
+  fieldHint: {
+    color: '#9DB3A4',
+    fontSize: 12,
+    marginTop: 6,
+    marginBottom: 14,
+    marginHorizontal: 4,
+    lineHeight: 17,
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#F87828',
     padding: 18,
     borderRadius: 16,
     gap: 10,
@@ -309,12 +317,12 @@ export const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontSize: 18,
     fontWeight: 'bold',
   },
   submitButtonTextDisabled: {
-    color: '#666',
+    color: '#8FA595',
   },
   // Debt styles
   soliValueDebt: {
@@ -340,7 +348,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   debtBannerSubtitle: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
     marginTop: 2,
   },
@@ -353,7 +361,7 @@ export const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 20,
     padding: 24,
     width: '100%',
@@ -379,14 +387,14 @@ export const styles = StyleSheet.create({
     color: '#fff',
   },
   modalText: {
-    color: '#aaa',
+    color: '#B3C7B9',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 16,
   },
   modalInfoBox: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     borderRadius: 12,
     padding: 16,
     width: '100%',
@@ -405,18 +413,18 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalInfoText: {
-    color: '#aaa',
+    color: '#B3C7B9',
     fontSize: 13,
   },
   modalWarning: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 12,
     textAlign: 'center',
     fontStyle: 'italic',
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#B8C868',
     paddingHorizontal: 40,
     paddingVertical: 14,
     borderRadius: 12,
@@ -424,7 +432,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalButtonText: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -445,7 +453,7 @@ export const styles = StyleSheet.create({
     gap: 4,
   },
   validityBadgeText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -456,25 +464,25 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     marginRight: 10,
     borderWidth: 1,
-    borderColor: '#2a3a5e',
+    borderColor: '#2A4A35',
   },
   validityChipActive: {
-    backgroundColor: '#4ecca3',
-    borderColor: '#4ecca3',
+    backgroundColor: '#B8C868',
+    borderColor: '#B8C868',
   },
   validityChipText: {
-    color: '#aaa',
+    color: '#B3C7B9',
     fontSize: 14,
     fontWeight: '600',
   },
   validityChipTextActive: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
   },
   validityHint: {
-    color: '#666',
+    color: '#8FA595',
     fontSize: 11,
     fontStyle: 'italic',
   },

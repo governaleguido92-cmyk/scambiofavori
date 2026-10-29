@@ -151,7 +151,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={styles.codeInput}
                   placeholder="000000"
-                  placeholderTextColor="#666"
+                  placeholderTextColor="#8FA595"
                   value={verificationCode}
                   onChangeText={setVerificationCode}
                   keyboardType="number-pad"
@@ -224,11 +224,11 @@ export default function RegisterScreen() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons name="person-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Nome"
-                placeholderTextColor="#888"
+                placeholderTextColor="#9DB3A4"
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
@@ -236,11 +236,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Email"
-                placeholderTextColor="#888"
+                placeholderTextColor="#9DB3A4"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -249,11 +249,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Password"
-                placeholderTextColor="#888"
+                placeholderTextColor="#9DB3A4"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -262,17 +262,17 @@ export default function RegisterScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color="#888"
+                  color="#9DB3A4"
                 />
               </TouchableOpacity>
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Conferma Password"
-                placeholderTextColor="#888"
+                placeholderTextColor="#9DB3A4"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showPassword}
@@ -280,11 +280,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="gift-outline" size={20} color="#888" style={styles.inputIcon} />
+              <Ionicons name="gift-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Codice Referral (opzionale)"
-                placeholderTextColor="#888"
+                placeholderTextColor="#9DB3A4"
                 value={referralCode}
                 onChangeText={setReferralCode}
                 autoCapitalize="characters"
@@ -298,7 +298,7 @@ export default function RegisterScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#1a1a2e" />
+                <ActivityIndicator color="#0F1A14" />
               ) : (
                 <Text style={styles.registerButtonText}>Registrati</Text>
               )}
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#888',
+    color: '#9DB3A4',
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 24,
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   loginText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
   },
   loginLink: {
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resendText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 14,
   },
   resendLink: {

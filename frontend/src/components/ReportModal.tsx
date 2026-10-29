@@ -98,7 +98,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               Segnala {reportType === 'favor' ? 'Annuncio' : 'Utente'}
             </Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#888" />
+              <Ionicons name="close" size={24} color="#9DB3A4" />
             </TouchableOpacity>
           </View>
 
@@ -128,7 +128,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   <Ionicons
                     name={reason.icon as any}
                     size={18}
-                    color={selectedReason === reason.id ? '#fff' : '#888'}
+                    color={selectedReason === reason.id ? '#fff' : '#9DB3A4'}
                   />
                 </View>
                 <Text style={[
@@ -148,7 +148,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           <TextInput
             style={styles.descriptionInput}
             placeholder="Descrivi il problema..."
-            placeholderTextColor="#666"
+            placeholderTextColor="#8FA595"
             value={description}
             onChangeText={setDescription}
             multiline
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   targetInfo: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 13,
     marginBottom: 16,
   },
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   sectionTitle: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 12,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   reasonItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   descriptionInput: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 12,
     padding: 14,
     color: '#fff',

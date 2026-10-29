@@ -435,11 +435,11 @@ export default function FavorDetailScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return '#4ecca3';
+      case 'active': return '#B8C868';
       case 'accepted': return '#ffd700';
-      case 'completed': return '#4caf50';
+      case 'completed': return '#B8C868';
       case 'cancelled': return '#ff6b6b';
-      default: return '#888';
+      default: return '#9DB3A4';
     }
   };
 
@@ -482,7 +482,7 @@ export default function FavorDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4ecca3" />
+          <ActivityIndicator size="large" color="#B8C868" />
         </View>
       </SafeAreaView>
     );
@@ -512,17 +512,17 @@ export default function FavorDetailScreen() {
               onPress={() => router.push(`/chat/${favor.favor_id}` as any)}
               data-testid="chat-button"
             >
-              <Ionicons name="chatbubble" size={22} color="#4ecca3" />
+              <Ionicons name="chatbubble" size={22} color="#B8C868" />
             </TouchableOpacity>
           )}
           {canViewQR() && (
             <TouchableOpacity style={styles.qrButton} onPress={loadQRCode}>
-              <Ionicons name="qr-code" size={24} color="#4ecca3" />
+              <Ionicons name="qr-code" size={24} color="#B8C868" />
             </TouchableOpacity>
           )}
           {canScanQR() && (
             <TouchableOpacity style={styles.scanButton} onPress={openScanner}>
-              <Ionicons name="scan" size={24} color="#E07B39" />
+              <Ionicons name="scan" size={24} color="#F87828" />
             </TouchableOpacity>
           )}
           {/* Report Favor Button */}
@@ -570,14 +570,14 @@ export default function FavorDetailScreen() {
           <Ionicons
             name={(CATEGORY_ICONS[favor.category] || 'ellipsis-horizontal') as any}
             size={20}
-            color="#4ecca3"
+            color="#B8C868"
           />
           <Text style={styles.categoryText}>{favor.category}</Text>
         </View>
 
         {/* Creation Date/Time */}
         <View style={styles.dateTimeContainer}>
-          <Ionicons name="calendar-outline" size={16} color="#888" />
+          <Ionicons name="calendar-outline" size={16} color="#9DB3A4" />
           <Text style={styles.dateTimeText}>
             Creato il {new Date(favor.created_at || Date.now()).toLocaleDateString('it-IT', {
               day: 'numeric',
@@ -588,6 +588,17 @@ export default function FavorDetailScreen() {
             })}
           </Text>
         </View>
+        {favor.expires_at && favor.status === 'active' && (
+          <View style={styles.dateTimeContainer}>
+            <Ionicons name="hourglass-outline" size={16} color="#9DB3A4" />
+            <Text style={styles.dateTimeText}>
+              Disponibile fino al {new Date(favor.expires_at).toLocaleDateString('it-IT', {
+                day: 'numeric',
+                month: 'long',
+              })}
+            </Text>
+          </View>
+        )}
 
         {/* Title and Description */}
         <Text style={styles.title}>{favor.title}</Text>
@@ -601,7 +612,7 @@ export default function FavorDetailScreen() {
             <Text style={styles.infoLabel}>{CURRENCY_NAME}</Text>
           </View>
           <View style={styles.infoCard}>
-            <Ionicons name="time" size={24} color="#4ecca3" />
+            <Ionicons name="time" size={24} color="#B8C868" />
             <Text style={styles.infoValue}>{favor.duration_hours}</Text>
             <Text style={styles.infoLabel}>ore</Text>
           </View>
@@ -624,7 +635,7 @@ export default function FavorDetailScreen() {
             </Text>
             <View style={styles.userNameRow}>
               <Text style={styles.userName}>{favor.creator_name}</Text>
-              <Ionicons name="chevron-forward" size={16} color="#888" />
+              <Ionicons name="chevron-forward" size={16} color="#9DB3A4" />
             </View>
             {favor.creator_title && (
               <Text style={styles.userTitle}>{favor.creator_title}</Text>
@@ -639,8 +650,8 @@ export default function FavorDetailScreen() {
             onPress={() => handleViewProfile(favor.accepted_by!, favor.accepted_by_name || 'Utente')}
             activeOpacity={0.7}
           >
-            <View style={[styles.userAvatar, { backgroundColor: '#4ecca3' }]}>
-              <Text style={[styles.userAvatarText, { color: '#1a1a2e' }]}>
+            <View style={[styles.userAvatar, { backgroundColor: '#B8C868' }]}>
+              <Text style={[styles.userAvatarText, { color: '#0F1A14' }]}>
                 {favor.accepted_by_name.charAt(0).toUpperCase()}
               </Text>
             </View>
@@ -650,7 +661,7 @@ export default function FavorDetailScreen() {
               </Text>
               <View style={styles.userNameRow}>
                 <Text style={styles.userName}>{favor.accepted_by_name}</Text>
-                <Ionicons name="chevron-forward" size={16} color="#888" />
+                <Ionicons name="chevron-forward" size={16} color="#9DB3A4" />
               </View>
             </View>
           </TouchableOpacity>
@@ -715,7 +726,7 @@ export default function FavorDetailScreen() {
             <TextInput
               style={styles.commentInput}
               placeholder="Commento (opzionale)"
-              placeholderTextColor="#666"
+              placeholderTextColor="#8FA595"
               value={comment}
               onChangeText={setComment}
               multiline
@@ -725,7 +736,7 @@ export default function FavorDetailScreen() {
             <TextInput
               style={[styles.commentInput, { marginTop: 12 }]}
               placeholder="Ringraziamento pubblico (opzionale - apparirà nella Bacheca dei Grazie)"
-              placeholderTextColor="#666"
+              placeholderTextColor="#8FA595"
               value={publicThanks}
               onChangeText={setPublicThanks}
               multiline
@@ -745,7 +756,7 @@ export default function FavorDetailScreen() {
                 disabled={actionLoading}
               >
                 {actionLoading ? (
-                  <ActivityIndicator size="small" color="#1a1a2e" />
+                  <ActivityIndicator size="small" color="#0F1A14" />
                 ) : (
                   <Text style={styles.submitReviewText}>Pubblica</Text>
                 )}
@@ -763,14 +774,19 @@ export default function FavorDetailScreen() {
               disabled={actionLoading}
             >
               {actionLoading ? (
-                <ActivityIndicator color="#1a1a2e" />
+                <ActivityIndicator color="#0F1A14" />
               ) : (
                 <>
-                  <Ionicons name="checkmark-circle" size={20} color="#1a1a2e" />
+                  <Ionicons name="checkmark-circle" size={20} color="#0F1A14" />
                   <Text style={styles.acceptButtonText}>Accetta Favore</Text>
                 </>
               )}
             </TouchableOpacity>
+          )}
+          {canAccept() && (
+            <Text style={styles.acceptHint}>
+              Dopo l'accettazione si apre la chat per accordarvi. All'incontro scansionate il codice QR per completare il favore.
+            </Text>
           )}
 
           {canComplete() && (
@@ -780,10 +796,10 @@ export default function FavorDetailScreen() {
               disabled={actionLoading}
             >
               {actionLoading ? (
-                <ActivityIndicator color="#1a1a2e" />
+                <ActivityIndicator color="#0F1A14" />
               ) : (
                 <>
-                  <Ionicons name="trophy" size={20} color="#1a1a2e" />
+                  <Ionicons name="trophy" size={20} color="#0F1A14" />
                   <Text style={styles.completeButtonText}>Segna come Completato</Text>
                 </>
               )}
@@ -820,7 +836,7 @@ export default function FavorDetailScreen() {
         <View style={styles.qrModalOverlay}>
           <View style={styles.qrModalContent}>
             <View style={styles.qrModalHeader}>
-              <Ionicons name="heart-circle" size={32} color="#4ecca3" />
+              <Ionicons name="heart-circle" size={32} color="#B8C868" />
               <Text style={styles.qrModalTitle}>Check-in QR</Text>
             </View>
             
@@ -836,18 +852,18 @@ export default function FavorDetailScreen() {
                   resizeMode="contain"
                 />
               ) : (
-                <Ionicons name="qr-code" size={120} color="#4ecca3" />
+                <Ionicons name="qr-code" size={120} color="#B8C868" />
               )}
             </View>
             
             <View style={styles.qrCodeInfo}>
-              <Ionicons name="shield-checkmark" size={16} color="#4ecca3" />
+              <Ionicons name="shield-checkmark" size={16} color="#B8C868" />
               <Text style={styles.qrCodeInfoText}>Codice sicuro monouso</Text>
             </View>
 
             {favor?.checkin_completed && (
               <View style={styles.checkinComplete}>
-                <Ionicons name="checkmark-circle" size={24} color="#4ecca3" />
+                <Ionicons name="checkmark-circle" size={24} color="#B8C868" />
                 <Text style={styles.checkinCompleteText}>Check-in completato!</Text>
               </View>
             )}
@@ -887,7 +903,7 @@ export default function FavorDetailScreen() {
               />
             ) : (
               <View style={styles.cameraPlaceholder}>
-                <Ionicons name="camera-outline" size={64} color="#666" />
+                <Ionicons name="camera-outline" size={64} color="#8FA595" />
                 <Text style={styles.cameraPlaceholderText}>
                   {isCameraAvailable() ? 'Permesso fotocamera non concesso' : 'Fotocamera non disponibile'}
                 </Text>
@@ -921,7 +937,7 @@ export default function FavorDetailScreen() {
           </View>
           
           <View style={styles.scannerFooter}>
-            <Ionicons name="qr-code-outline" size={24} color="#4ecca3" />
+            <Ionicons name="qr-code-outline" size={24} color="#B8C868" />
             <Text style={styles.scannerHint}>
               Inquadra il codice QR mostrato dall'altro utente per completare il favore
             </Text>
@@ -967,7 +983,7 @@ export default function FavorDetailScreen() {
             </View>
             
             {loadingProfile ? (
-              <ActivityIndicator size="large" color="#4ecca3" style={{ marginTop: 40 }} />
+              <ActivityIndicator size="large" color="#B8C868" style={{ marginTop: 40 }} />
             ) : userProfile ? (
               <ScrollView style={styles.profileModalScroll}>
                 {/* Profile Header */}

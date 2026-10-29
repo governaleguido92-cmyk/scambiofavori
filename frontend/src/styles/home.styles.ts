@@ -332,15 +332,15 @@ export const styles = StyleSheet.create({
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primaryMuted,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    backgroundColor: colors.limeMuted,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderRadius: 4,
-    gap: 3,
+    gap: 4,
   },
   categoryText: {
-    color: colors.primaryLight,
-    fontSize: 9,
+    color: colors.lime,
+    fontSize: 11,
     fontWeight: '600',
   },
   emergencyBadge: {
@@ -425,8 +425,10 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     bottom: 16,
-    width: 48,
     height: 48,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    gap: 6,
     borderRadius: 24,
     backgroundColor: colors.error,
     justifyContent: 'center',
@@ -436,5 +438,19 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 6,
+  },
+  emergencyButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  distanceText: {
+    color: colors.textMuted,
+    fontSize: 11,
+    marginRight: 8,
+  },
+  footerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

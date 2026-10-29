@@ -254,10 +254,10 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="gift"
                 size={24}
-                color={type === 'offer' ? '#1a1a2e' : '#4ecca3'}
+                color={type === 'offer' ? '#0F1A14' : '#B8C868'}
               />
               <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>
-                Dona
+                Dona un favore
               </Text>
               <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>
                 Guadagna {CURRENCY_NAME}
@@ -271,10 +271,10 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="hand-left"
                 size={24}
-                color={type === 'request' ? '#1a1a2e' : '#ff6b6b'}
+                color={type === 'request' ? '#0F1A14' : '#ff6b6b'}
               />
               <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>
-                Ricevi
+                Ricevi un favore
               </Text>
               <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>
                 Spendi {CURRENCY_NAME}
@@ -288,7 +288,7 @@ export default function CreateFavorScreen() {
             <TextInput
               style={styles.input}
               placeholder="Es: Aiuto con la spesa"
-              placeholderTextColor="#666"
+              placeholderTextColor="#8FA595"
               value={title}
               onChangeText={setTitle}
               maxLength={100}
@@ -301,7 +301,7 @@ export default function CreateFavorScreen() {
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Descrivi il favore in dettaglio..."
-              placeholderTextColor="#666"
+              placeholderTextColor="#8FA595"
               value={description}
               onChangeText={setDescription}
               multiline
@@ -331,7 +331,7 @@ export default function CreateFavorScreen() {
                   <Ionicons
                     name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
                     size={18}
-                    color={category === cat.name ? '#1a1a2e' : '#4ecca3'}
+                    color={category === cat.name ? '#0F1A14' : '#B8C868'}
                   />
                   <Text style={[
                     styles.categoryChipText,
@@ -372,7 +372,7 @@ export default function CreateFavorScreen() {
               </TouchableOpacity>
             </View>
             <View style={styles.parityInfo}>
-              <Ionicons name="information-circle" size={16} color="#4ecca3" />
+              <Ionicons name="information-circle" size={16} color="#B8C868" />
               <Text style={styles.parityText}>1 ora = 1 {CURRENCY_NAME} (Parità di Valore)</Text>
             </View>
           </View>
@@ -388,13 +388,18 @@ export default function CreateFavorScreen() {
               <Text style={styles.granelliPreviewUnit}>{CURRENCY_NAME}</Text>
             </View>
           </View>
+          {type === 'request' && (
+            <Text style={styles.fieldHint}>
+              Questi {CURRENCY_NAME} li paghi a chi ti aiuta, a favore completato. Ora ne hai {user?.granelli || 0}.
+            </Text>
+          )}
 
           {/* Validity Days Selector */}
           <View style={styles.inputGroup}>
             <View style={styles.validityHeader}>
               <Text style={styles.label}>Durata Annuncio</Text>
               <View style={styles.validityBadge}>
-                <Ionicons name="time-outline" size={14} color="#4ecca3" />
+                <Ionicons name="time-outline" size={14} color="#B8C868" />
                 <Text style={styles.validityBadgeText}>{validityDays} {validityDays === 1 ? 'giorno' : 'giorni'}</Text>
               </View>
             </View>
@@ -430,7 +435,7 @@ export default function CreateFavorScreen() {
           {/* Location - Hidden from UI, automatically added */}
           <View style={styles.inputGroup}>
             <View style={styles.locationInfoBox}>
-              <Ionicons name="shield-checkmark" size={20} color="#4ecca3" />
+              <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
               <View style={styles.locationInfoText}>
                 <Text style={styles.locationInfoTitle}>Privacy Protetta</Text>
                 <Text style={styles.locationInfoDescription}>
@@ -444,19 +449,19 @@ export default function CreateFavorScreen() {
               disabled={gettingLocation}
             >
               {gettingLocation ? (
-                <ActivityIndicator size="small" color="#4ecca3" />
+                <ActivityIndicator size="small" color="#B8C868" />
               ) : (
                 <>
-                  <Ionicons name="location" size={20} color="#4ecca3" />
+                  <Ionicons name="location" size={20} color="#B8C868" />
                   <Text style={styles.locationButtonText}>
-                    {location ? 'Posizione aggiunta' : 'Aggiungi posizione'}
+                    {location ? 'Posizione aggiunta' : 'Aggiungi posizione (obbligatoria)'}
                   </Text>
                 </>
               )}
             </TouchableOpacity>
             {location && (
               <View style={styles.addressContainer}>
-                <Ionicons name="checkmark-circle" size={16} color="#4ecca3" />
+                <Ionicons name="checkmark-circle" size={16} color="#B8C868" />
                 <Text style={styles.addressText}>Posizione salvata (visibile solo sulla mappa)</Text>
               </View>
             )}
@@ -474,13 +479,13 @@ export default function CreateFavorScreen() {
             data-testid="create-favor-submit"
           >
             {isLoading ? (
-              <ActivityIndicator color="#1a1a2e" />
+              <ActivityIndicator color="#0F1A14" />
             ) : (
               <>
                 <Ionicons
                   name={type === 'offer' ? 'gift' : 'hand-left'}
                   size={20}
-                  color={type === 'request' && isInDebt ? '#666' : '#1a1a2e'}
+                  color={type === 'request' && isInDebt ? '#8FA595' : '#0F1A14'}
                 />
                 <Text style={[
                   styles.submitButtonText,
@@ -526,11 +531,11 @@ export default function CreateFavorScreen() {
             <View style={styles.modalInfoBox}>
               <Text style={styles.modalInfoTitle}>Come tornare in positivo:</Text>
               <View style={styles.modalInfoItem}>
-                <Ionicons name="gift-outline" size={18} color="#4ecca3" />
+                <Ionicons name="gift-outline" size={18} color="#B8C868" />
                 <Text style={styles.modalInfoText}>Offri favori alla community</Text>
               </View>
               <View style={styles.modalInfoItem}>
-                <Ionicons name="heart-outline" size={18} color="#4ecca3" />
+                <Ionicons name="heart-outline" size={18} color="#B8C868" />
                 <Text style={styles.modalInfoText}>Richiedi aiuto dal Fondo Solidarietà</Text>
               </View>
             </View>

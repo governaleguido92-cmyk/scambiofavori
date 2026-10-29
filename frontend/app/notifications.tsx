@@ -22,7 +22,7 @@ const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   system: { name: 'information-circle', color: colors.textSecondary },
   chat: { name: 'chatbubble-ellipses', color: colors.primary },
   new_message: { name: 'chatbubble', color: colors.accent },
-  favor_completed: { name: 'checkmark-circle', color: '#4ecca3' },
+  favor_completed: { name: 'checkmark-circle', color: '#B8C868' },
   supporter: { name: 'heart', color: '#ffd700' },
 };
 

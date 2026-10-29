@@ -103,7 +103,7 @@ export default {
     errorTitle: 'Please enter a title',
     errorDescription: 'Please enter a description',
     errorCategory: 'Please select a category',
-    errorLocation: 'You must set your location',
+    errorLocation: 'Add the favor location so nearby people can see it.',
     offlineError: 'Connect to the internet to publish a favor.',
     granelliInsufficient: 'Insufficient Granelli',
   },

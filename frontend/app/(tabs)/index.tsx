@@ -41,6 +41,10 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Altro': 'heart-outline',
 };
 
+// The shown position is intentionally blurred, so the distance is rounded up.
+const formatDistance = (km: number): string =>
+  km < 1 ? 'meno di 1 km' : `circa ${Math.ceil(km)} km`;
+
 export default function HomeScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
@@ -162,7 +166,7 @@ export default function HomeScreen() {
       <View style={styles.thanksHeader}>
         <Ionicons name="heart" size={12} color="#ff6b6b" />
         <Text style={styles.thanksGiver}>{item.giver_name}</Text>
-        <Ionicons name="arrow-forward" size={10} color="#888" />
+        <Ionicons name="arrow-forward" size={10} color="#9DB3A4" />
         <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
       </View>
       <Text style={styles.thanksMessage} numberOfLines={1}>"{item.message}"</Text>
@@ -222,7 +226,7 @@ export default function HomeScreen() {
             <Ionicons
               name={(CATEGORY_ICONS[item.category] || 'ellipsis-horizontal') as any}
               size={10}
-              color={colors.primaryLight}
+              color={colors.lime}
             />
             <Text style={styles.categoryText}>{item.category}</Text>
           </View>
@@ -233,9 +237,14 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-        <View style={styles.soliContainer}>
-          <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-          <Text style={styles.soliText}>{item.granelli_cost}</Text>
+        <View style={styles.footerRight}>
+          {typeof item.distance_km === 'number' && (
+            <Text style={styles.distanceText}>{formatDistance(item.distance_km)}</Text>
+          )}
+          <View style={styles.soliContainer}>
+            <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
+            <Text style={styles.soliText}>{item.granelli_cost}</Text>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -323,7 +332,7 @@ export default function HomeScreen() {
             <Ionicons
               name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
               size={14}
-              color={selectedCategory === cat.name ? colors.textPrimary : colors.primaryLight}
+              color={selectedCategory === cat.name ? colors.textPrimary : colors.lime}
             />
             <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
               {cat.name}
@@ -394,7 +403,7 @@ export default function HomeScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#B8C868" />
           }
         />
       )}
@@ -404,7 +413,8 @@ export default function HomeScreen() {
         style={styles.emergencyButton}
         onPress={() => router.push('/emergencies' as any)}
       >
-        <Ionicons name="alert-circle" size={24} color="#fff" />
+        <Ionicons name="alert-circle" size={22} color="#fff" />
+        <Text style={styles.emergencyButtonText}>Urgenze</Text>
       </TouchableOpacity>
 
       {/* Report Modal */}

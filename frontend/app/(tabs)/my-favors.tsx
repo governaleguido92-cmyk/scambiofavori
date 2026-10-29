@@ -107,15 +107,15 @@ export default function MyFavorsScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return '#4ecca3';
+        return '#B8C868';
       case 'accepted':
         return '#ffd700';
       case 'completed':
-        return '#4caf50';
+        return '#B8C868';
       case 'cancelled':
         return '#ff6b6b';
       default:
-        return '#888';
+        return '#9DB3A4';
     }
   };
 
@@ -168,7 +168,7 @@ export default function MyFavorsScreen() {
           <Ionicons
             name={isCreator ? 'create' : 'hand-left'}
             size={14}
-            color="#888"
+            color="#9DB3A4"
           />
           <Text style={styles.roleText}>
             {isCreator ? 'Creato da te' : `Accettato da ${item.creator_name}`}
@@ -206,7 +206,7 @@ export default function MyFavorsScreen() {
 
         {item.accepted_by_name && (
           <View style={styles.acceptedByContainer}>
-            <Ionicons name="person" size={14} color="#4ecca3" />
+            <Ionicons name="person" size={14} color="#B8C868" />
             <Text style={styles.acceptedByText}>
               Accettato da: {item.accepted_by_name}
             </Text>
@@ -238,7 +238,7 @@ export default function MyFavorsScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4ecca3" />
+          <ActivityIndicator size="large" color="#B8C868" />
         </View>
       ) : filteredFavors.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -259,7 +259,7 @@ export default function MyFavorsScreen() {
           keyExtractor={(item) => item.favor_id}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4ecca3" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#B8C868" />
           }
         />
       )}
@@ -270,7 +270,7 @@ export default function MyFavorsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0F1A14',
   },
   header: {
     paddingHorizontal: 20,
@@ -292,17 +292,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
   },
   filterButtonActive: {
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#B8C868',
   },
   filterButtonText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontWeight: '600',
   },
   filterButtonTextActive: {
-    color: '#1a1a2e',
+    color: '#0F1A14',
   },
   loadingContainer: {
     flex: 1,
@@ -315,12 +315,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 18,
     marginTop: 16,
   },
   emptySubtext: {
-    color: '#666',
+    color: '#8FA595',
     fontSize: 14,
     marginTop: 4,
     textAlign: 'center',
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   favorCard: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
   },
   favorDescription: {
     fontSize: 14,
-    color: '#888',
+    color: '#9DB3A4',
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   roleText: {
-    color: '#888',
+    color: '#9DB3A4',
     fontSize: 12,
   },
   favorFooter: {
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
   completeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4ecca3',
+    backgroundColor: '#B8C868',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#333',
   },
   acceptedByText: {
-    color: '#4ecca3',
+    color: '#B8C868',
     fontSize: 12,
   },
 });

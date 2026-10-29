@@ -267,10 +267,10 @@ function SupporterContent() {
             data-testid="subscribe-button"
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#1a1a2e" />
+              <ActivityIndicator size="small" color="#0F1A14" />
             ) : (
               <>
-                <Ionicons name="heart" size={24} color="#1a1a2e" />
+                <Ionicons name="heart" size={24} color="#0F1A14" />
                 <Text style={styles.subscribeButtonText}>Sostieni Ora - 1€/mese</Text>
               </>
             )}
@@ -279,7 +279,7 @@ function SupporterContent() {
 
         {/* Transparency Note */}
         <View style={styles.transparencyNote}>
-          <Ionicons name="shield-checkmark" size={20} color="#4ecca3" />
+          <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
           <Text style={styles.transparencyText}>
             Pagamento sicuro con Stripe. Puoi disdire quando vuoi dal portale di gestione.
           </Text>
@@ -287,7 +287,7 @@ function SupporterContent() {
 
         {/* Privacy Note */}
         <View style={styles.privacyNote}>
-          <Ionicons name="eye-off" size={16} color="#888" />
+          <Ionicons name="eye-off" size={16} color="#9DB3A4" />
           <Text style={styles.privacyText}>
             Il tuo contributo è privato: gli altri vedranno solo che sei un Sostenitore, non l'importo.
           </Text>
@@ -339,12 +339,12 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 15,
-    color: '#888',
+    color: '#9DB3A4',
     textAlign: 'center',
     lineHeight: 22,
   },
   messageCard: {
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     marginHorizontal: 20,
     padding: 20,
     borderRadius: 16,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   },
   messageSubtext: {
     fontSize: 13,
-    color: '#888',
+    color: '#9DB3A4',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#16213e',
+    backgroundColor: '#1A2E22',
     padding: 16,
     borderRadius: 12,
     marginBottom: 10,
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   },
   benefitDesc: {
     fontSize: 13,
-    color: '#888',
+    color: '#9DB3A4',
   },
   pricingCard: {
     backgroundColor: '#ffd70015',
@@ -436,12 +436,12 @@ const styles = StyleSheet.create({
   },
   priceInterval: {
     fontSize: 18,
-    color: '#888',
+    color: '#9DB3A4',
     marginLeft: 4,
   },
   priceHint: {
     fontSize: 13,
-    color: '#888',
+    color: '#9DB3A4',
     marginTop: 8,
   },
   subscribeButton: {
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   subscribeButtonText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#1a1a2e',
+    color: '#0F1A14',
   },
   supporterActive: {
     backgroundColor: '#ffd70015',
@@ -510,13 +510,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     padding: 14,
-    backgroundColor: '#4ecca315',
+    backgroundColor: '#B8C86815',
     borderRadius: 10,
   },
   transparencyText: {
     flex: 1,
     fontSize: 12,
-    color: '#4ecca3',
+    color: '#B8C868',
   },
   privacyNote: {
     flexDirection: 'row',
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   privacyText: {
     flex: 1,
     fontSize: 11,
-    color: '#666',
+    color: '#8FA595',
   },
   loadingContainer: {
     flex: 1,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   },
   loadingSubtext: {
     fontSize: 14,
-    color: '#888',
+    color: '#9DB3A4',
     marginTop: 8,
   },
 });
