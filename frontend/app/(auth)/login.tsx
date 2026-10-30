@@ -180,7 +180,7 @@ export default function LoginScreen() {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.title}>{tt('Scambio di Favori')}</Text>
+            <Text style={styles.title}>{tt('Scambio Favori')}</Text>
             <Text style={styles.subtitle}>{tt('Accedi al tuo account')}</Text>
           </View>
 

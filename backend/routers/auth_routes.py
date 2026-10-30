@@ -181,7 +181,7 @@ async def forgot_password(request: Request, data: ForgotPasswordRequest):
     html_content = f"""
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background-color: #0F1A14; color: #FFFFFF; padding: 32px; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #2D5A3D; margin: 0;">Scambio di Favori</h1>
+            <h1 style="color: #2D5A3D; margin: 0;">Scambio Favori</h1>
             <p style="color: #B8D4C0; margin-top: 8px;">Reset Password</p>
         </div>
         <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
@@ -202,7 +202,7 @@ async def forgot_password(request: Request, data: ForgotPasswordRequest):
             params = {
                 "from": SENDER_EMAIL,
                 "to": [data.email],
-                "subject": "Scambio di Favori - Reset Password",
+                "subject": "Scambio Favori - Reset Password",
                 "html": html_content,
             }
             await asyncio.to_thread(resend.Emails.send, params)
@@ -274,7 +274,7 @@ async def recover_username(request: Request, data: RecoverUsernameRequest):
     html_content = f"""
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background-color: #0F1A14; color: #FFFFFF; padding: 32px; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #2D5A3D; margin: 0;">Scambio di Favori</h1>
+            <h1 style="color: #2D5A3D; margin: 0;">Scambio Favori</h1>
             <p style="color: #B8D4C0; margin-top: 8px;">Recupero Nome Utente</p>
         </div>
         <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
@@ -293,7 +293,7 @@ async def recover_username(request: Request, data: RecoverUsernameRequest):
             params = {
                 "from": SENDER_EMAIL,
                 "to": [data.email],
-                "subject": "Scambio di Favori - Recupero Nome Utente",
+                "subject": "Scambio Favori - Recupero Nome Utente",
                 "html": html_content,
             }
             await asyncio.to_thread(resend.Emails.send, params)

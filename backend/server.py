@@ -11,7 +11,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Root endpoint for health checks (Kubernetes probes)
 @app.get("/")
 async def root():
-    return {"status": "healthy", "app": "Scambio di Favori API"}
+    return {"status": "healthy", "app": "Scambio Favori API"}
 
 # Include routers
 for _router in ROUTERS:

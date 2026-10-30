@@ -41,7 +41,7 @@ export default function LegalScreen() {
           <View style={styles.article}>
             <Text style={styles.articleTitle}>1. Natura della Piattaforma</Text>
             <Text style={styles.articleText}>
-              "Scambio di Favori" è una piattaforma che facilita lo scambio di favori tra privati cittadini. 
+              "Scambio Favori" è una piattaforma che facilita lo scambio di favori tra privati cittadini. 
               L'app agisce esclusivamente come intermediario tecnologico e non partecipa in alcun modo 
               agli accordi tra gli utenti.
             </Text>

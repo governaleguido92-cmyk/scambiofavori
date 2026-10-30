@@ -39,7 +39,7 @@ async def create_subscription_checkout(
                 "price_data": {
                     "currency": SUPPORTER_PLAN["currency"],
                     "unit_amount": to_minor_units(SUPPORTER_PLAN["amount"]),
-                    "product_data": {"name": "Scambio di Favori — Sostenitore"},
+                    "product_data": {"name": "Scambio Favori — Sostenitore"},
                 },
                 "quantity": 1,
             }],

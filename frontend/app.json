@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Scambio di Favori",
+    "name": "Scambio Favori",
     "slug": "scambio-di-favori",
     "version": "1.1.0",
     "orientation": "portrait",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.emergent.scambiodifavori",
-      "buildNumber": "11",
+      "buildNumber": "12",
       "deploymentTarget": "16.0",
       "infoPlist": {
         "NSCameraUsageDescription": "Questa app usa la fotocamera per scansionare codici QR per completare i favori.",
@@ -55,7 +55,7 @@
         "backgroundColor": "#0F1A14"
       },
       "package": "com.emergent.scambiodifavori",
-      "versionCode": 11,
+      "versionCode": 12,
       "permissions": [
         "CAMERA",
         "ACCESS_FINE_LOCATION",

@@ -32,7 +32,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
   // Android: create notification channel
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
-      name: 'Scambio di Favori',
+      name: 'Scambio Favori',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#2D5A3D',
