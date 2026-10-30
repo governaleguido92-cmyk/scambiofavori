@@ -207,10 +207,10 @@ export default function LegalScreen() {
               Per qualsiasi domanda sulla privacy o per esercitare i tuoi diritti scrivi a:{'\n\n'}
               <Text
                 style={styles.emailText}
-                onPress={() => Linking.openURL('mailto:governaleguido92@gmail.com')}
+                onPress={() => Linking.openURL('mailto:infoapp@scambiofavori.it')}
                 accessibilityRole="link"
               >
-                governaleguido92@gmail.com
+                infoapp@scambiofavori.it
               </Text>
               {'\n\n'}Informativa completa:{'\n'}
               <Text
