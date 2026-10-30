@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 import core
 from conftest import make_user
 
-AUDIENCE = "com.emergent.scambiodifavori"
+AUDIENCE = "it.scambiofavori.app"
 ISSUER = "https://appleid.apple.com"
 
 
