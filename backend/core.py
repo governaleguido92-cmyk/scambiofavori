@@ -1111,7 +1111,7 @@ class VerifyUsernameRecoveryRequest(BaseModel):
 APPLE_ISSUER = "https://appleid.apple.com"
 APPLE_JWKS_URL = "https://appleid.apple.com/auth/keys"
 # Bundle id(s) the identity token must be issued for (comma separated override via env).
-APPLE_AUDIENCES = [a.strip() for a in os.environ.get("APPLE_CLIENT_IDS", "com.emergent.scambiodifavori").split(",") if a.strip()]
+APPLE_AUDIENCES = [a.strip() for a in os.environ.get("APPLE_CLIENT_IDS", "it.scambiofavori.app").split(",") if a.strip()]
 _apple_jwks_client = None
 
 
