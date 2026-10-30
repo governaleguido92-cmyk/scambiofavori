@@ -260,7 +260,7 @@ async def send_verification_email(to_email: str, code: str, user_name: str):
     html_content = f"""
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background-color: #0F1A14; color: #FFFFFF; padding: 32px; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
-            <h1 style="color: #2D5A3D; margin: 0;">Scambio di Favori</h1>
+            <h1 style="color: #2D5A3D; margin: 0;">Scambio Favori</h1>
             <p style="color: #B8D4C0; margin-top: 8px;">Verifica il tuo account</p>
         </div>
         <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
@@ -278,7 +278,7 @@ async def send_verification_email(to_email: str, code: str, user_name: str):
     params = {
         "from": SENDER_EMAIL,
         "to": [to_email],
-        "subject": "Scambio di Favori - Codice di Verifica",
+        "subject": "Scambio Favori - Codice di Verifica",
         "html": html_content,
     }
     
@@ -828,7 +828,7 @@ def generate_qr_image(data: str, favor_id: str = None) -> str:
         "type": "scambio_favori",
         "code": data,
         "favor_id": favor_id,
-        "app": "Scambio di Favori"
+        "app": "Scambio Favori"
     }
     qr.add_data(str(payload))
     qr.make(fit=True)

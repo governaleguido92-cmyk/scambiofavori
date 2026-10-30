@@ -505,7 +505,7 @@ async def verify_and_complete_qr(
         "user_id": receiver_id,
         "type": "favor_completed",
         "title": "Favore Completato! 🎉",
-        "message": f"Il favore \"{favor.title}\" è stato completato. Grazie per aver usato Scambio di Favori!",
+        "message": f"Il favore \"{favor.title}\" è stato completato. Grazie per aver usato Scambio Favori!",
         "related_id": favor_id,
         "read": False,
         "created_at": datetime.now(timezone.utc)

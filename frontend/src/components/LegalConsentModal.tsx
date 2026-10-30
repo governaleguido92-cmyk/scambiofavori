@@ -57,7 +57,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
             <View style={styles.iconContainer}>
               <Ionicons name="shield-checkmark" size={40} color={colors.primary} />
             </View>
-            <Text style={styles.title}>{tt('Benvenuto in Scambio di Favori!')}</Text>
+            <Text style={styles.title}>{tt('Benvenuto in Scambio Favori!')}</Text>
             <Text style={styles.subtitle}>{tt('Prima di iniziare, leggi e accetta i nostri termini')}</Text>
           </View>
 

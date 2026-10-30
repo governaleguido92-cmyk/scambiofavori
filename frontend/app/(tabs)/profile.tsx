@@ -105,7 +105,7 @@ export default function ProfileScreen() {
       howToGet: tt('Completa 10 micro-favori.')
     },
     'Sostenitore': {
-      description: tt('Supporti lo sviluppo di Scambio di Favori con un contributo.'),
+      description: tt('Supporti lo sviluppo di Scambio Favori con un contributo.'),
       howToGet: SUPPORTER_PURCHASE_ENABLED
         ? 'Diventa Sostenitore da "Sostieni il Progetto" nel tuo profilo.'
         : 'Non disponibile in questa versione dell\'app.'
@@ -280,7 +280,7 @@ export default function ProfileScreen() {
     if (!referralInfo) return;
     try {
       await Share.share({
-        message: `Unisciti a Scambio di Favori! Usa il mio codice referral: ${referralInfo.referral_code} per iniziare con bonus ${CURRENCY_NAME}!`,
+        message: `Unisciti a Scambio Favori! Usa il mio codice referral: ${referralInfo.referral_code} per iniziare con bonus ${CURRENCY_NAME}!`,
       });
     } catch (error) {
       logger.debug('Error sharing:', error);

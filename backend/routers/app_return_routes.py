@@ -20,7 +20,7 @@ PAGE = """<!doctype html>
 <html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="refresh" content="0;url={link}">
-<title>Scambio di Favori</title>
+<title>Scambio Favori</title>
 <style>body{{font-family:system-ui,sans-serif;text-align:center;padding:3rem 1.5rem}}
 a{{display:inline-block;margin-top:1.5rem;padding:.8rem 1.6rem;border-radius:.6rem;background:#1f6f5c;color:#fff;text-decoration:none}}</style>
 </head><body><h1>{title}</h1><p>{message}</p>
