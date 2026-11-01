@@ -1,6 +1,7 @@
 """HTTP routes: favors."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+import places
 
 api_router = APIRouter(prefix="/api")
 
@@ -90,6 +91,11 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     }
     
     await db.favors.insert_one(favor_doc)
+
+    # Prepara in sottofondo l'elenco dei luoghi della zona (per il punto d'incontro), usando solo la posizione
+    # approssimata: così, quando serve in chat, è già pronto.
+    if approx_lat is not None and approx_lon is not None:
+        places.schedule_warm(approx_lat, approx_lon)
     
     # Invia notifiche agli utenti con competenze corrispondenti (solo per richieste)
     if favor_data.type == "request":

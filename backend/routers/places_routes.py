@@ -7,6 +7,9 @@ import places
 
 api_router = APIRouter(prefix="/api")
 
+# Le copie dei luoghi stanno nel database, così sopravvivono ai riavvii del server.
+places.default_cache = places.MongoPlacesCache(lambda: db.places_cache)
+
 QUERY_MAX_LENGTH = 40
 
 
@@ -58,6 +61,11 @@ async def find_meeting_places(
             if name_filter:
                 wanted = places.fold(name_filter)
                 found = [place for place in found if wanted in places.fold(place["name"])]
+    except places.PlacesPending:
+        raise HTTPException(
+            status_code=503,
+            detail="Sto ancora preparando l'elenco dei luoghi di questa zona: riprova tra un minuto, oppure scrivi tu dove incontrarvi.",
+        )
     except places.PlacesUnavailable:
         logger.warning("Ricerca luoghi non disponibile per il favore %s", favor_id)
         raise HTTPException(status_code=503, detail="Non riesco a cercare i luoghi adesso: scrivi tu dove incontrarvi.")
