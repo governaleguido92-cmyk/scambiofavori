@@ -447,6 +447,7 @@ async def update_user_name(name_data: NameUpdate, current_user: User = Depends(g
         raise HTTPException(status_code=400, detail="Il nome deve avere almeno 2 caratteri")
     if len(name) > 50:
         raise HTTPException(status_code=400, detail="Il nome non può superare i 50 caratteri")
+    ensure_text_allowed(name)
 
     await db.users.update_one(
         {"user_id": current_user.user_id},

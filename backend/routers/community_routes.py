@@ -70,6 +70,7 @@ async def get_currency_info():
 @api_router.post("/wall", response_model=WallPost)
 async def create_wall_post(post_data: WallPostCreate, current_user: User = Depends(get_current_user)):
     """Create a post on the neighborhood wall"""
+    ensure_text_allowed(post_data.content)
     post_id = f"post_{uuid.uuid4().hex[:12]}"
     
     approx_lat, approx_lon = None, None
@@ -156,6 +157,7 @@ async def like_wall_post(post_id: str, current_user: User = Depends(get_current_
 @api_router.post("/objects", response_model=LendableObject)
 async def create_lendable_object(obj_data: ObjectCreate, current_user: User = Depends(get_current_user)):
     """Add an object to the Oggettoteca"""
+    ensure_text_allowed(obj_data.name, obj_data.description)
     object_id = f"obj_{uuid.uuid4().hex[:12]}"
     
     approx_lat, approx_lon = None, None

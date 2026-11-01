@@ -17,7 +17,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     # ========================
     # CONTENT MODERATION (Store Compliance)
     # ========================
-    content_to_check = f"{favor_data.title} {favor_data.description}"
+    content_to_check = f"{favor_data.title} {favor_data.description} {favor_data.address or ''}"
     moderation_result = moderate_content(content_to_check)
     if not moderation_result["allowed"]:
         raise HTTPException(
@@ -565,6 +565,9 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
     if existing:
         raise HTTPException(status_code=400, detail="Hai già recensito questo favore")
     
+    # I testi pubblici (commento e Bacheca dei Grazie) passano dal filtro prima di essere salvati
+    ensure_text_allowed(review_data.comment, review_data.public_thanks)
+
     for rating in [review_data.rating, review_data.kindness_rating, review_data.impact_rating]:
         if rating < 1 or rating > 5:
             raise HTTPException(status_code=400, detail="I rating devono essere tra 1 e 5")
@@ -757,6 +760,10 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     content = msg.content.strip()
     if not content:
         raise HTTPException(status_code=400, detail="Messaggio vuoto")
+
+    # Anche il nome e l'indirizzo del punto d'incontro sono testo libero
+    if msg.meeting_point:
+        ensure_text_allowed(msg.meeting_point.name, msg.meeting_point.address)
     
     # ========================
     # CONTENT FILTERS

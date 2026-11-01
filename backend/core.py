@@ -116,6 +116,7 @@ RELIABILITY_DROP_RATE = 0.5  # How much reliability drops per check
 # CHAT MESSAGE FILTER (Anti-Money)
 # ========================
 import re
+from moderation import check_text
 
 # Regex patterns to block real money transactions
 MONEY_FILTER_PATTERNS = [
@@ -146,25 +147,6 @@ MONEY_FILTER_PATTERNS = [
     r'\b\d+\s*\$',      # 50$
 ]
 
-# Offensive language filter patterns
-OFFENSIVE_PATTERNS = [
-    r'\bstronz[oa]?\b',
-    r'\bcoglion[ei]?\b',
-    r'\bvaffanculo\b',
-    r'\bminchia\b',
-    r'\bcazz[oa]?\b',
-    r'\bfottit[io]\b',
-    r'\bputtana?\b',
-    r'\btroia\b',
-    r'\bbastard[oa]?\b',
-    r'\bidiota\b',
-    r'\bimbecille\b',
-    r'\bdeficiente\b',
-    r'\bscemo\b',
-    r'\bmer[d]+a\b',
-    r'\bfanculo\b',
-]
-
 # Personal data patterns for privacy alerts
 PERSONAL_DATA_PATTERNS = {
     'phone': r'(\+?\d{2,3}[\s.-]?)?\d{3}[\s.-]?\d{3,4}[\s.-]?\d{3,4}',
@@ -180,12 +162,8 @@ def contains_money_reference(text: str) -> bool:
     return False
 
 def contains_offensive_language(text: str) -> bool:
-    """Check if text contains offensive language"""
-    text_lower = text.lower()
-    for pattern in OFFENSIVE_PATTERNS:
-        if re.search(pattern, text_lower, re.IGNORECASE):
-            return True
-    return False
+    """True se il testo contiene insulti, odio e discriminazione, minacce o contenuti sessuali (vedi moderation.py)."""
+    return not check_text(text).allowed
 
 def contains_personal_data(text: str) -> dict:
     """Check if text contains personal data (phone, email)"""
@@ -216,12 +194,13 @@ def moderate_content(text: str) -> dict:
     """
     warnings = []
     
-    # Check for offensive language
-    if contains_offensive_language(text):
+    # Insulti, odio e discriminazione, minacce, contenuti sessuali
+    verdict = check_text(text)
+    if not verdict.allowed:
         return {
             "allowed": False,
-            "reason": "Il testo contiene linguaggio offensivo",
-            "warnings": ["offensive_language"]
+            "reason": verdict.reason,
+            "warnings": [verdict.category]
         }
     
     # Check for suspicious links
@@ -246,6 +225,16 @@ def moderate_content(text: str) -> dict:
         "reason": None,
         "warnings": warnings
     }
+
+def ensure_text_allowed(*texts: Optional[str]) -> None:
+    """Ferma con un errore 400 se uno dei testi liberi contiene odio, minacce, contenuti sessuali o insulti."""
+    for text in texts:
+        verdict = check_text(text)
+        if not verdict.allowed:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Contenuto non consentito: {verdict.reason}. Modifica il testo e riprova.",
+            )
 
 # ========================
 # EMAIL SENDING HELPER
