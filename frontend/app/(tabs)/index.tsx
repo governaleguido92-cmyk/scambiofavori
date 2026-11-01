@@ -15,18 +15,19 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Category, ThanksEntry, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Favor, Category, ThanksEntry, CURRENCY_SYMBOL } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { ReportModal } from '../../src/components/ReportModal';
-import { FavorsListSkeleton } from '../../src/components/Skeleton';
+import { FavorsGridSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 import { offlineCache } from '../../src/utils/offlineCache';
-import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
 import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/home.styles';
 import { logger } from '../../src/utils/logger';
-import { tt, tx } from '../../src/i18n/tt';
+import { tt } from '../../src/i18n/tt';
+import { FavorCard } from '../../src/components/FavorCard';
+import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -42,10 +43,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Altro': 'heart-outline',
 };
 
-// The shown position is intentionally blurred, so the distance is rounded up.
-const formatDistance = (km: number): string =>
-  km < 1 ? tt('meno di 1 km') : tx('circa {0} km', [Math.ceil(km)]);
-
 export default function HomeScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
@@ -53,7 +50,8 @@ export default function HomeScreen() {
   const [favors, setFavors] = useState<Favor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string>('all');
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState<FavorType>('request');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -118,7 +116,7 @@ export default function HomeScreen() {
       setNetworkError(false);
       const params: any = { status: 'active' };
       if (selectedCategory) params.category = selectedCategory;
-      if (selectedType !== 'all') params.type = selectedType;
+      params.type = selectedType;
       if (location) {
         params.latitude = location.latitude;
         params.longitude = location.longitude;
@@ -131,7 +129,7 @@ export default function HomeScreen() {
       logger.debug('Error loading favors:', error);
       setNetworkError(true);
       const cached = await offlineCache.loadFavors();
-      if (cached) { setFavors(cached); setNetworkError(false); }
+      if (cached) { setFavors(cached.filter((f) => f.type === selectedType)); setNetworkError(false); }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -170,85 +168,17 @@ export default function HomeScreen() {
         <Ionicons name="arrow-forward" size={14} color="#9DB3A4" />
         <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
       </View>
-      <Text style={styles.thanksMessage} numberOfLines={1}>"{item.message}"</Text>
+      <Text style={styles.thanksMessage} numberOfLines={1}>{`"${item.message}"`}</Text>
     </View>
   );
 
   const renderFavorCard = ({ item }: { item: Favor }) => (
-    <TouchableOpacity
-      style={[
-        styles.favorCard,
-        item.creator_in_debt && item.type === 'offer' && styles.favorCardDebtHighlight
-      ]}
-      onPress={() => router.push(`/favor/${item.favor_id}`)}
-      data-testid={`favor-card-${item.favor_id}`}
-    >
-      {/* Compact Header: Avatar + Name + Type Badge */}
-      <View style={styles.favorHeader}>
-        <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={32}>
-          <View style={styles.authorAvatar}>
-            <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
-          </View>
-        </SupporterProfileBorder>
-        <View style={styles.headerContent}>
-          <UserNameWithBadge 
-            name={item.creator_name} 
-            isSupporter={item.creator_is_supporter}
-            nameStyle={styles.creatorName}
-          />
-        </View>
-        <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-          <Text style={styles.typeText}>
-            {item.type === 'offer' ? t('favor.offer') : t('favor.request')}
-          </Text>
-        </View>
-        {item.creator_id !== user?.user_id && (
-          <TouchableOpacity
-            style={styles.reportButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleReportFavor(item.favor_id, item.title);
-            }}
-            data-testid={`report-favor-${item.favor_id}`}
-          >
-            <Ionicons name="flag-outline" size={14} color={colors.textMuted} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Title */}
-      <Text style={styles.favorTitle} numberOfLines={1}>{item.title}</Text>
-      <Text style={styles.favorDescription} numberOfLines={2}>{item.description}</Text>
-
-      {/* Footer: Category + Emergency + Granelli */}
-      <View style={styles.favorFooter}>
-        <View style={styles.footerLeft}>
-          <View style={styles.categoryBadge}>
-            <Ionicons
-              name={(CATEGORY_ICONS[item.category] || 'ellipsis-horizontal') as any}
-              size={14}
-              color={colors.lime}
-            />
-            <Text style={styles.categoryText}>{tt(item.category)}</Text>
-          </View>
-          {item.is_emergency && (
-            <View style={styles.emergencyBadge}>
-              <Ionicons name="alert-circle" size={14} color={colors.error} />
-              <Text style={styles.emergencyText}>{tt('Urgente')}</Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.footerRight}>
-          {typeof item.distance_km === 'number' && (
-            <Text style={styles.distanceText}>{formatDistance(item.distance_km)}</Text>
-          )}
-          <View style={styles.soliContainer}>
-            <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.soliText}>{item.granelli_cost}</Text>
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
+    <FavorCard
+      item={item}
+      currentUserId={user?.user_id}
+      onPress={(favor) => router.push(`/favor/${favor.favor_id}`)}
+      onReport={(favor) => handleReportFavor(favor.favor_id, favor.title)}
+    />
   );
 
   // Header component for FlatList
@@ -289,56 +219,56 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {/* Type Filter */}
-      <View style={styles.typeFilter}>
-        {['all', 'offer', 'request'].map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={[styles.typeButton, selectedType === type && styles.typeButtonActive]}
-            onPress={() => setSelectedType(type)}
-          >
-            <Text style={[styles.typeButtonText, selectedType === type && styles.typeButtonTextActive]}>
-              {type === 'all' ? t('common.all') : type === 'offer' ? t('home.offers') : t('home.requests')}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <FavorTypeTabs value={selectedType} onChange={setSelectedType} />
 
-      {/* Categories */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesContainer}
-        contentContainerStyle={styles.categoriesContent}
+      {/* Categorie: chiuse di default, si aprono con un tocco */}
+      <TouchableOpacity
+        style={styles.categoriesToggle}
+        onPress={() => setCategoriesOpen((open) => !open)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: categoriesOpen }}
       >
-        <TouchableOpacity
-          style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-          onPress={() => setSelectedCategory(null)}
+        <Text style={styles.categoriesToggleText}>
+          {tt('Categoria')}: {selectedCategory ? tt(selectedCategory) : t('common.all')}
+        </Text>
+        <Ionicons name={categoriesOpen ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
+      </TouchableOpacity>
+      {categoriesOpen && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesContainer}
+          contentContainerStyle={styles.categoriesContent}
         >
-          <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-            {t('common.all')}
-          </Text>
-        </TouchableOpacity>
-        {categories.map((cat) => (
           <TouchableOpacity
-            key={cat.name}
-            style={[
-              styles.categoryChip,
-              selectedCategory === cat.name && styles.categoryChipActive,
-            ]}
-            onPress={() => setSelectedCategory(cat.name)}
+            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
+            onPress={() => { setSelectedCategory(null); setCategoriesOpen(false); }}
           >
-            <Ionicons
-              name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-              size={14}
-              color={selectedCategory === cat.name ? colors.textPrimary : colors.lime}
-            />
-            <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
-              {tt(cat.name)}
+            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
+              {t('common.all')}
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.name}
+              style={[
+                styles.categoryChip,
+                selectedCategory === cat.name && styles.categoryChipActive,
+              ]}
+              onPress={() => { setSelectedCategory(cat.name); setCategoriesOpen(false); }}
+            >
+              <Ionicons
+                name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
+                size={14}
+                color={selectedCategory === cat.name ? colors.textPrimary : colors.lime}
+              />
+              <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
+                {tt(cat.name)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </>
   );
 
@@ -385,13 +315,15 @@ export default function HomeScreen() {
 
       {loading ? (
         <View style={styles.skeletonContainer}>
-          <FavorsListSkeleton count={4} />
+          <FavorsGridSkeleton count={4} />
         </View>
       ) : (
         <FlatList
           data={favors}
           renderItem={renderFavorCard}
           keyExtractor={(item) => item.favor_id}
+          numColumns={2}
+          columnWrapperStyle={styles.gridRow}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={

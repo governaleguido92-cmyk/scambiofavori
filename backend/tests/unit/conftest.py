@@ -14,6 +14,7 @@ os.environ.setdefault("MONGO_URL", "mongodb://localhost:27017")
 os.environ.setdefault("DB_NAME", "test_db")
 os.environ.setdefault("UPLOAD_PATH", "/tmp/scambiofavori-test-uploads")
 os.environ.setdefault("JWT_SECRET", "unit-test-secret")
+os.environ.setdefault("PLACES_WARM_ENABLED", "0")  # niente chiamate a OpenStreetMap durante i test
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import core  # noqa: E402

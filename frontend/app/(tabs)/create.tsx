@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,39 +13,53 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { useNetworkStatus } from '../../src/hooks/useNetworkStatus';
 import { useTranslation } from 'react-i18next';
-import { api, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Category, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { styles } from '../../src/styles/create.styles';
+import { FavorCard } from '../../src/components/FavorCard';
+import { getCategoryVisual } from '../../src/utils/favorVisual';
+import { getTitleExamples } from '../../src/utils/favorExamples';
+import { granelliWord } from '../../src/utils/granelli';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 
 const DEBT_LIMIT = -3; // Social debt threshold
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'Trasporto': 'car',
-  'Spesa': 'cart',
-  'Tecnologia': 'laptop',
-  'Pulizie': 'water',
-  'Compagnia': 'people',
-  'Cucina': 'restaurant',
-  'Giardinaggio': 'leaf',
-  'Consiglio': 'bulb',
-  'Informazione': 'information-circle',
-  'Aiuto Rapido': 'flash',
-  'Altro': 'ellipsis-horizontal',
-};
+const TITLE_MAX = 100;
+const DESCRIPTION_MAX = 500;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_HOURS = 1; // si va di ora in ora, niente mezze ore
+
+// Durata dell'annuncio: tre scelte semplici (il server accetta da 1 a 10 giorni).
+/** Un favore vecchio può avere una durata che non è tra le tre scelte: si porta alla più vicina. */
+const nearestValidity = (days: number): number => (days <= 1 ? 1 : days <= 4 ? 3 : 7);
+
+const PREFILL_KEYS = ['editId', 'title', 'description', 'category', 'type', 'durationHours', 'validityDays'] as const;
+
+const VALIDITY_CHOICES: ReadonlyArray<{ days: number; label: string }> = [
+  { days: 1, label: '1 giorno' },
+  { days: 3, label: '3 giorni' },
+  { days: 7, label: '1 settimana' },
+];
 
 export default function CreateFavorScreen() {
   const { user, token, refreshUser } = useAuth();
   const { isOffline } = useNetworkStatus();
   const { t } = useTranslation();
   const router = useRouter();
+  // "Ripubblica" e "Modifica" da I Miei aprono questa pagina con i dati già compilati.
+  // Con editId il favore esistente viene aggiornato; senza, se ne pubblica uno nuovo.
+  const prefill = useLocalSearchParams<{
+    editId?: string; title?: string; description?: string; category?: string; type?: string; durationHours?: string; validityDays?: string;
+  }>();
+  const editingId = prefill.editId ? String(prefill.editId) : null;
+  const editing = editingId !== null;
   const [type, setType] = useState<'offer' | 'request'>('offer');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -64,19 +78,44 @@ export default function CreateFavorScreen() {
   
   // Check if user is in social debt
   const isInDebt = (user?.granelli || 0) <= DEBT_LIMIT;
-
-  // Opzioni durata annuncio
-  const validityOptions = [1, 2, 3, 5, 7, 10];
+  // Un debito sociale impedisce di pubblicare nuove richieste, non di correggere una già pubblicata
+  const blocked = !editing && type === 'request' && isInDebt;
 
   useEffect(() => {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    if (prefill.title) setTitle(String(prefill.title).slice(0, TITLE_MAX));
+    if (prefill.description) setDescription(String(prefill.description).slice(0, DESCRIPTION_MAX));
+    if (prefill.type === 'offer' || prefill.type === 'request') setType(prefill.type);
+    if (prefill.durationHours && /^\d{1,3}$/.test(String(prefill.durationHours))) setDurationHours(String(prefill.durationHours));
+    if (prefill.validityDays && Number.isFinite(Number(prefill.validityDays))) setValidityDays(nearestValidity(Number(prefill.validityDays)));
+  }, [prefill.title, prefill.description, prefill.type, prefill.durationHours, prefill.validityDays]);
+
+  // Uscendo dalla pagina i dati precompilati vanno via: tornando su "Crea" si riparte da un favore nuovo.
+  const hasPrefillRef = useRef(false);
+  hasPrefillRef.current = PREFILL_KEYS.some((key) => Boolean(prefill[key]));
+  const clearPrefill = useCallback(() => {
+    setTitle('');
+    setDescription('');
+    setDurationHours('1');
+    setValidityDays(3);
+    router.setParams(Object.fromEntries(PREFILL_KEYS.map((key) => [key, undefined])) as any);
+  }, [router]);
+  useFocusEffect(
+    useCallback(() => () => {
+      if (hasPrefillRef.current) clearPrefill();
+    }, [clearPrefill])
+  );
+
   const loadCategories = async () => {
     try {
       const data = await api.getCategories();
       setCategories(data);
-      if (data.length > 0) setCategory(data[0].name);
+      const wanted = data.find((cat) => cat.name === prefill.category);
+      if (wanted) setCategory(wanted.name);
+      else if (data.length > 0) setCategory(data[0].name);
     } catch (error) {
       logger.debug('Error loading categories:', error);
     }
@@ -115,6 +154,56 @@ export default function CreateFavorScreen() {
     }
   };
 
+  /** Titolo, descrizione e categoria obbligatori: mostra l'errore e dice se si può andare avanti. */
+  const validateTexts = (): boolean => {
+    if (!title.trim()) {
+      notify(t('common.error'), t('create.errorTitle'));
+      return false;
+    }
+    if (!description.trim()) {
+      notify(t('common.error'), t('create.errorDescription'));
+      return false;
+    }
+    if (!category) {
+      notify(t('common.error'), t('create.errorCategory'));
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!editingId || !token) return;
+    if (isOffline) {
+      notify(t('common.offline'), t('create.offlineError'));
+      return;
+    }
+    if (!validateTexts()) return;
+    if (type === 'request' && (user?.granelli || 0) < currentHours) {
+      notify(tx('{0} insufficienti', [CURRENCY_NAME]), tx('Hai solo {0} {1} disponibili. Servono {2} {3}.', [user?.granelli ?? 0, CURRENCY_NAME, currentHours, CURRENCY_NAME]));
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await api.updateFavor(
+        editingId,
+        { title: title.trim(), description: description.trim(), category, duration_hours: currentHours, validity_days: validityDays },
+        token
+      );
+      notify(t('common.success'), tt('Favore aggiornato!'));
+      clearPrefill();
+      router.push('/(tabs)/my-favors');
+    } catch (error: any) {
+      notify(t('common.error'), error.message || t('create.errorTitle'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    clearPrefill();
+    router.push('/(tabs)/my-favors');
+  };
+
   const handleCreate = async () => {
     if (isOffline) {
       notify(t('common.offline'), t('create.offlineError'));
@@ -136,24 +225,13 @@ export default function CreateFavorScreen() {
       return;
     }
 
-    if (!title.trim()) {
-      notify(t('common.error'), t('create.errorTitle'));
-      return;
-    }
-    if (!description.trim()) {
-      notify(t('common.error'), t('create.errorDescription'));
-      return;
-    }
-    if (!category) {
-      notify(t('common.error'), t('create.errorCategory'));
-      return;
-    }
+    if (!validateTexts()) return;
     if (!location) {
       notify(t('common.error'), t('create.errorLocation'));
       return;
     }
 
-    const duration = parseFloat(durationHours) || 1;
+    const duration = currentHours;
     const granelliNeeded = Math.max(1, Math.round(duration));
 
     if (type === 'request' && (user?.granelli || 0) < granelliNeeded) {
@@ -209,7 +287,32 @@ export default function CreateFavorScreen() {
     }
   };
 
-  const granelliPreview = Math.max(1, Math.round(parseFloat(durationHours) || 1));
+  // Ore intere, almeno 1: un campo vuoto o 0 vale 1.
+  const currentHours = Math.max(MIN_HOURS, parseInt(durationHours, 10) || MIN_HOURS);
+  const granelliPreview = currentHours;
+  const titleExamples = getTitleExamples(category);
+
+  // Scheda di anteprima costruita dai campi del form, con segnaposto finché non si scrive.
+  const previewFavor: Favor = {
+    favor_id: 'preview',
+    creator_id: user?.user_id ?? '',
+    creator_name: user?.name || '?',
+    creator_title: '',
+    creator_is_supporter: false,
+    type,
+    title: title.trim() || tt('Il titolo del tuo favore'),
+    description: description.trim() || tt('Qui comparirà la descrizione.'),
+    category: category || 'Altro',
+    duration_hours: currentHours,
+    granelli_cost: granelliPreview,
+    status: 'active',
+    is_emergency: false,
+    creator_in_debt: false,
+    validity_days: validityDays,
+    expires_at: new Date(Date.now() + validityDays * DAY_MS).toISOString(),
+    checkin_completed: false,
+    created_at: new Date().toISOString(),
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -222,7 +325,7 @@ export default function CreateFavorScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>{t('create.title')}</Text>
+            <Text style={styles.title}>{editing ? tt('Modifica il favore') : t('create.title')}</Text>
             <View style={styles.soliDisplay}>
               <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
               <Text style={[styles.soliValue, isInDebt && styles.soliValueDebt]}>{user?.granelli || 0}</Text>
@@ -248,189 +351,46 @@ export default function CreateFavorScreen() {
           {/* Type Selector */}
           <View style={styles.typeSelector}>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'offer' && styles.typeButtonActive]}
+              style={[styles.typeButton, type === 'offer' && styles.typeButtonActive, editing && type !== 'offer' && styles.typeButtonLocked]}
               onPress={() => setType('offer')}
+              disabled={editing}
+              accessibilityState={{ selected: type === 'offer', disabled: editing }}
             >
               <Ionicons
                 name="gift"
                 size={24}
-                color={type === 'offer' ? '#0F1A14' : '#B8C868'}
+                color={type === 'offer' ? '#0F1A14' : '#5FBF7F'}
               />
-              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Dona un favore')}</Text>
-              <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>{tt('Guadagna')}{' '}{CURRENCY_NAME}
+              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Offro un favore')}</Text>
+              <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>{tt('Guadagni')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.typeButton, type === 'request' && styles.typeButtonActiveRequest]}
+              style={[styles.typeButton, type === 'request' && styles.typeButtonActiveRequest, editing && type !== 'request' && styles.typeButtonLocked]}
               onPress={() => setType('request')}
+              disabled={editing}
+              accessibilityState={{ selected: type === 'request', disabled: editing }}
             >
               <Ionicons
                 name="hand-left"
                 size={24}
-                color={type === 'request' ? '#0F1A14' : '#ff6b6b'}
+                color={type === 'request' ? '#0F1A14' : '#F87828'}
               />
-              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Ricevi un favore')}</Text>
+              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Chiedo un favore')}</Text>
               <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>{tt('Spendi')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Title Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('create.titleLabel')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={tt('Es: Aiuto con la spesa')}
-              placeholderTextColor="#8FA595"
-              value={title}
-              onChangeText={setTitle}
-              maxLength={100}
-            />
-          </View>
-
-          {/* Description Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('create.descriptionLabel')}</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder={tt('Descrivi il favore in dettaglio...')}
-              placeholderTextColor="#8FA595"
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-              maxLength={500}
-            />
-          </View>
-
-          {/* Category Selector */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('create.categoryLabel')}</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.categoriesScroll}
-            >
-              {categories.map((cat) => (
-                <TouchableOpacity
-                  key={cat.name}
-                  style={[
-                    styles.categoryChip,
-                    category === cat.name && styles.categoryChipActive,
-                  ]}
-                  onPress={() => setCategory(cat.name)}
-                >
-                  <Ionicons
-                    name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-                    size={20}
-                    color={category === cat.name ? '#0F1A14' : '#B8C868'}
-                  />
-                  <Text style={[
-                    styles.categoryChipText,
-                    category === cat.name && styles.categoryChipTextActive,
-                  ]}>
-                    {tt(cat.name)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Duration Input */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>{tt('Durata Stimata')}</Text>
-            <View style={styles.durationContainer}>
-              <TouchableOpacity
-                style={styles.durationButton}
-                onPress={() => setDurationHours(String(Math.max(0.5, parseFloat(durationHours) - 0.5)))}
-              >
-                <Ionicons name="remove" size={24} color="#fff" />
-              </TouchableOpacity>
-              <View style={styles.durationDisplay}>
-                <TextInput
-                  style={styles.durationValue}
-                  value={durationHours}
-                  onChangeText={setDurationHours}
-                  keyboardType="decimal-pad"
-                  maxLength={4}
-                />
-                <Text style={styles.durationUnit}>{tt('ore')}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.durationButton}
-                onPress={() => setDurationHours(String(parseFloat(durationHours) + 0.5))}
-              >
-                <Ionicons name="add" size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.parityInfo}>
-              <Ionicons name="information-circle" size={16} color="#B8C868" />
-              <Text style={styles.parityText}>{tt('1 ora = 1')}{' '}{CURRENCY_NAME}{' '}{tt('(Parità di Valore)')}</Text>
-            </View>
-          </View>
-
-          {/* Granelli Preview */}
-          <View style={styles.granelliPreview}>
-            <Text style={styles.granelliPreviewLabel}>
-              {type === 'offer' ? tt('Guadagnerai:') : tt('Spenderai:')}
-            </Text>
-            <View style={styles.granelliPreviewValue}>
-              <Text style={styles.granelliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
-              <Text style={styles.granelliPreviewNumber}>{granelliPreview}</Text>
-              <Text style={styles.granelliPreviewUnit}>{CURRENCY_NAME}</Text>
-            </View>
-          </View>
-          {type === 'request' && (
-            <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}.
-            </Text>
-          )}
-
-          {/* Validity Days Selector */}
-          <View style={styles.inputGroup}>
-            <View style={styles.validityHeader}>
-              <Text style={styles.label}>{tt('Durata Annuncio')}</Text>
-              <View style={styles.validityBadge}>
-                <Ionicons name="time-outline" size={14} color="#B8C868" />
-                <Text style={styles.validityBadgeText}>{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}</Text>
-              </View>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.validityScroll}
-            >
-              {validityOptions.map((days) => (
-                <TouchableOpacity
-                  key={days}
-                  style={[
-                    styles.validityChip,
-                    validityDays === days && styles.validityChipActive,
-                  ]}
-                  onPress={() => setValidityDays(days)}
-                  data-testid={`validity-${days}`}
-                >
-                  <Text style={[
-                    styles.validityChipText,
-                    validityDays === days && styles.validityChipTextActive,
-                  ]}>
-                    {days} {days === 1 ? tt('g') : tt('gg')}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-            <Text style={styles.validityHint}>{tt('L\'annuncio scadrà automaticamente dopo')}{' '}{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}
-            </Text>
-          </View>
-
-          {/* Location - Hidden from UI, automatically added */}
+          {/* Posizione: subito in alto, perché è obbligatoria e serve sapere cosa vedranno gli altri (in modifica non cambia) */}
+          {!editing && (
           <View style={styles.inputGroup}>
             <View style={styles.locationInfoBox}>
               <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
               <View style={styles.locationInfoText}>
                 <Text style={styles.locationInfoTitle}>{tt('Privacy Protetta')}</Text>
-                <Text style={styles.locationInfoDescription}>{tt('La tua posizione sarà visibile solo sulla mappa. Potrai condividere l\'indirizzo esatto via chat.')}</Text>
+                <Text style={styles.locationInfoDescription}>{tt('Gli altri vedranno solo una zona approssimata sulla mappa, non il tuo indirizzo. L\'indirizzo esatto lo condividi tu in chat.')}</Text>
               </View>
             </View>
             <TouchableOpacity
@@ -456,16 +416,175 @@ export default function CreateFavorScreen() {
               </View>
             )}
           </View>
+          )}
+
+          {/* Title Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('create.titleLabel')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={tt('Es: Aiuto con la spesa')}
+              placeholderTextColor="#8FA595"
+              value={title}
+              onChangeText={setTitle}
+              maxLength={TITLE_MAX}
+            />
+            <Text style={styles.charCounter}>{title.length}/{TITLE_MAX}</Text>
+            {title.length === 0 && titleExamples.length > 0 && (
+              <View style={styles.exampleRow}>
+                <Text style={styles.exampleLabel}>{tt('Per esempio')}:</Text>
+                {titleExamples.map((example) => (
+                  <TouchableOpacity
+                    key={example}
+                    style={styles.exampleChip}
+                    onPress={() => setTitle(example)}
+                    accessibilityRole="button"
+                    accessibilityLabel={example}
+                  >
+                    <Text style={styles.exampleChipText}>{example}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Description Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('create.descriptionLabel')}</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder={tt('Descrivi il favore in dettaglio...')}
+              placeholderTextColor="#8FA595"
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              maxLength={DESCRIPTION_MAX}
+            />
+            <Text style={styles.charCounter}>{description.length}/{DESCRIPTION_MAX}</Text>
+          </View>
+
+          {/* Category Selector */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('create.categoryLabel')}</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoriesScroll}
+            >
+              {categories.map((cat) => {
+                const visual = getCategoryVisual(cat.name);
+                const active = category === cat.name;
+                return (
+                  <TouchableOpacity
+                    key={cat.name}
+                    style={[styles.categoryChip, active && { backgroundColor: visual.color }]}
+                    onPress={() => setCategory(cat.name)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                  >
+                    <Text style={styles.categoryChipEmoji}>{visual.emoji}</Text>
+                    <Text style={[styles.categoryChipText, active && styles.categoryChipTextOnColor]}>
+                      {tt(cat.name)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
+          {/* Duration Input */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{tt('Durata Stimata')}</Text>
+            <View style={styles.durationContainer}>
+              <TouchableOpacity
+                style={styles.durationButton}
+                onPress={() => setDurationHours(String(Math.max(MIN_HOURS, currentHours - 1)))}
+              >
+                <Ionicons name="remove" size={24} color="#fff" />
+              </TouchableOpacity>
+              <View style={styles.durationDisplay}>
+                <TextInput
+                  style={styles.durationValue}
+                  value={durationHours}
+                  onChangeText={(text) => setDurationHours(text.replace(/[^0-9]/g, ''))}
+                  onBlur={() => setDurationHours(String(currentHours))}
+                  keyboardType="number-pad"
+                  maxLength={3}
+                />
+                <Text style={styles.durationUnit}>{tt('ore')}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.durationButton}
+                onPress={() => setDurationHours(String(currentHours + 1))}
+              >
+                <Ionicons name="add" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.parityInfo}>
+              <Ionicons name="information-circle" size={16} color="#B8C868" />
+              <Text style={styles.parityText}>{tt('1 ora = 1')}{' '}{granelliWord(1)}{' '}{tt('(Parità di Valore)')}</Text>
+            </View>
+          </View>
+
+          {/* Granelli Preview */}
+          <View style={styles.granelliPreview}>
+            <Text style={styles.granelliPreviewLabel}>
+              {type === 'offer' ? tt('Guadagnerai:') : tt('Spenderai:')}
+            </Text>
+            <View style={styles.granelliPreviewValue}>
+              <Text style={styles.granelliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
+              <Text style={styles.granelliPreviewNumber}>{granelliPreview}</Text>
+              <Text style={styles.granelliPreviewUnit}>{granelliWord(granelliPreview)}</Text>
+            </View>
+          </View>
+          {type === 'request' && (
+            <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}.
+            </Text>
+          )}
+
+          {/* Durata annuncio: tre scelte semplici */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{tt('Durata Annuncio')}</Text>
+            <View style={styles.validityChoices}>
+              {VALIDITY_CHOICES.map((choice) => (
+                <TouchableOpacity
+                  key={choice.days}
+                  style={[styles.validityChoice, validityDays === choice.days && styles.validityChoiceActive]}
+                  onPress={() => setValidityDays(choice.days)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: validityDays === choice.days }}
+                  data-testid={`validity-${choice.days}`}
+                >
+                  <Text style={[styles.validityChoiceText, validityDays === choice.days && styles.validityChoiceTextActive]}>
+                    {tt(choice.label)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={styles.validityHint}>{tt('L\'annuncio scadrà automaticamente dopo')}{' '}{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}
+            </Text>
+          </View>
+
+          {/* Anteprima: come lo vedranno i vicini */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{tt('Così lo vedranno i vicini')}</Text>
+            <View style={styles.previewWrap}>
+              <FavorCard item={previewFavor} onPress={() => undefined} style={styles.previewCard} />
+            </View>
+          </View>
 
           {/* Submit Button */}
           <TouchableOpacity
             style={[
-              styles.submitButton, 
+              styles.submitButton,
               type === 'request' && styles.submitButtonRequest,
-              type === 'request' && isInDebt && styles.submitButtonDisabled
+              blocked && styles.submitButtonDisabled
             ]}
-            onPress={handleCreate}
-            disabled={isLoading || (type === 'request' && isInDebt)}
+            onPress={editing ? handleSave : handleCreate}
+            disabled={isLoading || blocked}
+            accessibilityRole="button"
             data-testid="create-favor-submit"
           >
             {isLoading ? (
@@ -473,19 +592,22 @@ export default function CreateFavorScreen() {
             ) : (
               <>
                 <Ionicons
-                  name={type === 'offer' ? 'gift' : 'hand-left'}
+                  name={editing ? 'checkmark-circle' : type === 'offer' ? 'gift' : 'hand-left'}
                   size={20}
-                  color={type === 'request' && isInDebt ? '#8FA595' : '#0F1A14'}
+                  color={blocked ? '#8FA595' : '#0F1A14'}
                 />
-                <Text style={[
-                  styles.submitButtonText,
-                  type === 'request' && isInDebt && styles.submitButtonTextDisabled
-                ]}>
-                  {t('create.publishBtn')}
+                <Text style={[styles.submitButtonText, blocked && styles.submitButtonTextDisabled]}>
+                  {editing ? tt('Salva le modifiche') : t('create.publishBtn')}
                 </Text>
               </>
             )}
           </TouchableOpacity>
+
+          {editing && (
+            <TouchableOpacity style={styles.cancelEditButton} onPress={handleCancelEdit} accessibilityRole="button">
+              <Text style={styles.cancelEditText}>{tt('Annulla la modifica')}</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Ethical Banner */}
           <View style={styles.ethicalBanner}>

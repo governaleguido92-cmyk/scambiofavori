@@ -37,6 +37,11 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface BadgeRequirement {
+  type: string;
+  value: number;
+}
+
 export interface Badge {
   id: string;
   name: string;
@@ -44,6 +49,8 @@ export interface Badge {
   icon: string;
   color: string;
   earned_at?: string;
+  /** Cosa serve per ottenerlo (il server lo manda per tutti i badge). */
+  requirement?: BadgeRequirement;
 }
 
 export interface User {
@@ -263,8 +270,6 @@ export interface LeaderboardUser {
   name: string;
   title: string;
   community_score: number;
-  badges: string[];
-  total_favors_given: number;
 }
 
 export interface Notification {
@@ -304,6 +309,27 @@ export interface CurrencyInfo {
     meaning: string;
     exchange_rate: string;
   };
+}
+
+export interface FavorUpdateData {
+  title?: string;
+  description?: string;
+  category?: string;
+  duration_hours?: number;
+  validity_days?: number;
+}
+
+export interface PlaceSuggestion {
+  id: string;
+  name: string;
+  category: string;
+  distance_m: number;
+  street?: string | null;
+}
+
+export interface PlacesResponse {
+  places: PlaceSuggestion[];
+  attribution: string;
 }
 
 const handleResponse = async (response: Response) => {
@@ -536,6 +562,23 @@ export const api = {
     return handleResponse(response);
   },
 
+  /** Luoghi pubblici vicino al favore (OpenStreetMap), per scegliere il punto d'incontro. */
+  getMeetingPlaces: async (
+    favorId: string,
+    search: { category?: string; q?: string },
+    token: string,
+    signal?: AbortSignal
+  ): Promise<PlacesResponse> => {
+    const params = new URLSearchParams();
+    if (search.category) params.set('category', search.category);
+    if (search.q) params.set('q', search.q);
+    const response = await fetch(`${API_URL}/api/favors/${encodeURIComponent(favorId)}/places?${params.toString()}`, {
+      headers: getHeaders(token),
+      signal,
+    });
+    return handleResponse(response);
+  },
+
   reportUserInChat: async (
     favorId: string, 
     reportedUserId: string, 
@@ -716,6 +759,16 @@ export const api = {
     return handleResponse(response);
   },
 
+  /** Modifica un favore proprio che nessuno ha ancora accettato. Solo i campi inviati cambiano. */
+  updateFavor: async (favorId: string, data: FavorUpdateData, token: string): Promise<Favor> => {
+    const response = await fetch(`${API_URL}/api/favors/${encodeURIComponent(favorId)}`, {
+      method: 'PUT',
+      headers: getHeaders(token),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
   acceptFavor: async (favorId: string, token: string): Promise<Favor> => {
     const response = await fetch(`${API_URL}/api/favors/accept`, {
       method: 'POST',
@@ -772,20 +825,20 @@ export const api = {
     return handleResponse(response);
   },
 
-  getFavorReviews: async (favorId: string): Promise<Review[]> => {
-    const response = await fetch(`${API_URL}/api/reviews/favor/${favorId}`);
+  getFavorReviews: async (favorId: string, token: string): Promise<Review[]> => {
+    const response = await fetch(`${API_URL}/api/reviews/favor/${favorId}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 
-  getUserReviews: async (userId: string): Promise<Review[]> => {
-    const response = await fetch(`${API_URL}/api/reviews/user/${userId}`);
+  getUserReviews: async (userId: string, token: string): Promise<Review[]> => {
+    const response = await fetch(`${API_URL}/api/reviews/user/${userId}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 
-  // Get user public profile (visible to all users)
-  getUserPublicProfile: async (userId: string, token?: string): Promise<any> => {
+  // Profilo pubblico di un utente (serve l'accesso)
+  getUserPublicProfile: async (userId: string, token: string): Promise<any> => {
     const response = await fetch(`${API_URL}/api/users/${userId}/public`, {
-      headers: token ? getHeaders(token) : { 'Content-Type': 'application/json' },
+      headers: getHeaders(token),
     });
     return handleResponse(response);
   },
@@ -813,13 +866,14 @@ export const api = {
   },
 
   // Users
-  getUserProfile: async (userId: string): Promise<User> => {
-    const response = await fetch(`${API_URL}/api/users/${userId}`);
+  /** Il profilo completo si legge solo per sé: per gli altri c'è getUserPublicProfile. */
+  getUserProfile: async (userId: string, token: string): Promise<User> => {
+    const response = await fetch(`${API_URL}/api/users/${userId}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 
-  getLeaderboard: async (): Promise<LeaderboardUser[]> => {
-    const response = await fetch(`${API_URL}/api/leaderboard`);
+  getLeaderboard: async (token: string): Promise<LeaderboardUser[]> => {
+    const response = await fetch(`${API_URL}/api/leaderboard`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 

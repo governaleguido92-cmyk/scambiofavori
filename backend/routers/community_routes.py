@@ -70,6 +70,7 @@ async def get_currency_info():
 @api_router.post("/wall", response_model=WallPost)
 async def create_wall_post(post_data: WallPostCreate, current_user: User = Depends(get_current_user)):
     """Create a post on the neighborhood wall"""
+    ensure_text_allowed(post_data.content)
     post_id = f"post_{uuid.uuid4().hex[:12]}"
     
     approx_lat, approx_lon = None, None
@@ -156,6 +157,7 @@ async def like_wall_post(post_id: str, current_user: User = Depends(get_current_
 @api_router.post("/objects", response_model=LendableObject)
 async def create_lendable_object(obj_data: ObjectCreate, current_user: User = Depends(get_current_user)):
     """Add an object to the Oggettoteca"""
+    ensure_text_allowed(obj_data.name, obj_data.description)
     object_id = f"obj_{uuid.uuid4().hex[:12]}"
     
     approx_lat, approx_lon = None, None
@@ -473,8 +475,8 @@ async def request_debt_recovery(current_user: User = Depends(get_current_user)):
     }
 
 @api_router.get("/leaderboard")
-async def get_leaderboard():
-    """Get community leaderboard"""
+async def get_leaderboard(current_user: User = Depends(get_current_user)):
+    """Classifica della community: serve il login e restituisce solo ciò che l'app mostra."""
     users_cursor = db.users.find(
         {},
         {"_id": 0, "user_id": 1, "name": 1, "community_score": 1, "badges": 1, "total_favors_given": 1}
@@ -482,10 +484,15 @@ async def get_leaderboard():
     users = await users_cursor.to_list(20)
     
     # Add titles
-    for user in users:
-        user["title"] = get_user_title(user)
-    
-    return users
+    return [
+        {
+            "user_id": user["user_id"],
+            "name": user.get("name", "Utente"),
+            "community_score": user.get("community_score", 0),
+            "title": get_user_title(user),
+        }
+        for user in users
+    ]
 
 @api_router.get("/referral/code")
 async def get_my_referral_code(current_user: User = Depends(get_current_user)):

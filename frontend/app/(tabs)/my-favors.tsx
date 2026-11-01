@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,29 +18,103 @@ import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
+import colors from '../../src/theme/colors';
+import { FavorCard } from '../../src/components/FavorCard';
+import { canComplete, groupByTab, isExpired, MyFavorTab } from '../../src/utils/myFavors';
+import { roleText, statusOf } from '../../src/utils/favorLabels';
+
+const TAB_ORDER: ReadonlyArray<MyFavorTab> = ['ongoing', 'published', 'closed'];
+
+const tabLabel = (tab: MyFavorTab): string =>
+  tab === 'ongoing' ? tt('In corso') : tab === 'published' ? tt('Pubblicati') : tt('Conclusi');
+
+interface SummaryProps {
+  helped: number;
+  received: number;
+  balance: number;
+}
+
+function SummaryStrip({ helped, received, balance }: SummaryProps) {
+  return (
+    <View style={styles.summary}>
+      <View style={styles.summaryItem}>
+        <Text style={styles.summaryValue}>{helped}</Text>
+        <Text style={styles.summaryLabel}>{tt('Hai aiutato')}</Text>
+      </View>
+      <View style={styles.summaryItem}>
+        <Text style={styles.summaryValue}>{received}</Text>
+        <Text style={styles.summaryLabel}>{tt('Hai ricevuto')}</Text>
+      </View>
+      <View style={styles.summaryItem}>
+        <Text style={[styles.summaryValue, styles.summaryGold]}>{CURRENCY_SYMBOL} {balance}</Text>
+        <Text style={styles.summaryLabel}>{tt('Il tuo saldo')}</Text>
+      </View>
+    </View>
+  );
+}
+
+interface EmptyProps {
+  tab: MyFavorTab;
+  onCreate: () => void;
+  onBrowse: () => void;
+}
+
+function EmptyState({ tab, onCreate, onBrowse }: EmptyProps) {
+  const text =
+    tab === 'ongoing'
+      ? tt('Nessun favore in corso')
+      : tab === 'published'
+      ? tt('Non hai favori pubblicati')
+      : tt('Ancora nessun favore concluso');
+  const hint =
+    tab === 'ongoing'
+      ? tt('Quando accetti un favore, o qualcuno accetta il tuo, compare qui.')
+      : tab === 'published'
+      ? tt('Pubblica una richiesta o un\'offerta: i tuoi vicini la vedranno subito.')
+      : tt('I favori finiti restano qui, per ricordare quanto aiuto avete scambiato.');
+  return (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="heart-outline" size={56} color={colors.textMuted} />
+      <Text style={styles.emptyText}>{text}</Text>
+      <Text style={styles.emptySubtext}>{hint}</Text>
+      {tab === 'published' && (
+        <TouchableOpacity style={styles.primaryButton} onPress={onCreate} accessibilityRole="button">
+          <Ionicons name="add-circle" size={20} color="#fff" />
+          <Text style={styles.primaryButtonText}>{tt('Crea il tuo primo favore')}</Text>
+        </TouchableOpacity>
+      )}
+      {tab === 'ongoing' && (
+        <TouchableOpacity style={styles.primaryButton} onPress={onBrowse} accessibilityRole="button">
+          <Ionicons name="search" size={20} color="#fff" />
+          <Text style={styles.primaryButtonText}>{tt('Vedi i favori vicino a te')}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
 
 export default function MyFavorsScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
   const [favors, setFavors] = useState<Favor[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'created' | 'accepted'>('all');
-  const { t } = useTranslation();
+  const [chosenTab, setChosenTab] = useState<MyFavorTab | null>(null);
 
   const loadMyFavors = useCallback(async () => {
     if (!token) return;
     try {
-      setLoading(true);
       const data = await api.getMyFavors(token);
       setFavors(data);
     } catch (error) {
       logger.debug('Error loading my favors:', error);
+      notify(t('common.error'), tt('Non riesco ad aggiornare i tuoi favori. Riprova tra poco.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [token]);
+  }, [token, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,12 +122,17 @@ export default function MyFavorsScreen() {
     }, [loadMyFavors])
   );
 
+  const groups = useMemo(() => groupByTab(favors), [favors]);
+  // Finché non scegli una scheda si apre quella che richiede attenzione: i favori in corso, altrimenti i pubblicati.
+  const tab: MyFavorTab = chosenTab ?? (groups.ongoing.length > 0 ? 'ongoing' : 'published');
+  const visible = groups[tab];
+
   const onRefresh = () => {
     setRefreshing(true);
     loadMyFavors();
   };
 
-  const handleComplete = async (favorId: string) => {
+  const handleComplete = (favorId: string) => {
     if (!token) return;
     Alert.alert(
       t('common.confirm'),
@@ -77,143 +156,151 @@ export default function MyFavorsScreen() {
     );
   };
 
-  const handleCancel = async (favorId: string) => {
+  const handleCancel = (favorId: string) => {
     if (!token) return;
-    Alert.alert(
-      t('common.confirm'),
-      tt('Sei sicuro di voler cancellare questo favore?'),
-      [
-        { text: tt('No'), style: 'cancel' },
-        {
-          text: tt('Sì, cancella'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.cancelFavor(favorId, token);
-              loadMyFavors();
-            } catch (error: any) {
-              notify(t('common.error'), error.message || t('favor.errorAccept'));
-            }
-          },
+    Alert.alert(t('common.confirm'), tt('Sei sicuro di voler cancellare questo favore?'), [
+      { text: tt('No'), style: 'cancel' },
+      {
+        text: tt('Sì, cancella'),
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.cancelFavor(favorId, token);
+            loadMyFavors();
+          } catch (error: any) {
+            notify(t('common.error'), error.message || t('favor.errorAccept'));
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  const filteredFavors = favors.filter((favor) => {
-    if (filter === 'created') return favor.creator_id === user?.user_id;
-    if (filter === 'accepted') return favor.accepted_by === user?.user_id;
-    return true;
-  });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return '#B8C868';
-      case 'accepted':
-        return '#ffd700';
-      case 'completed':
-        return '#B8C868';
-      case 'cancelled':
-        return '#ff6b6b';
-      default:
-        return '#9DB3A4';
-    }
+  // Ripubblicare = aprire "Crea" con i testi già compilati, da rivedere prima di pubblicare.
+  const handleRepublish = (favor: Favor) => {
+    router.push({
+      pathname: '/create',
+      params: { title: favor.title, description: favor.description, category: favor.category, type: favor.type },
+    } as any);
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'active': return t('favor.status.active');
-      case 'accepted': return t('favor.status.accepted');
-      case 'completed': return t('favor.status.completed');
-      case 'cancelled': return t('favor.status.cancelled');
-      default: return status;
-    }
+  // Modificare = aprire "Crea" sullo stesso favore, con i dati già compilati: al salvataggio si aggiorna quello, non se ne crea un altro.
+  const handleEdit = (favor: Favor) => {
+    router.push({
+      pathname: '/create',
+      params: {
+        editId: favor.favor_id,
+        title: favor.title,
+        description: favor.description,
+        category: favor.category,
+        type: favor.type,
+        durationHours: String(Math.max(1, Math.round(favor.duration_hours))),
+        validityDays: String(favor.validity_days ?? 3),
+      },
+    } as any);
   };
 
-  const renderFavorCard = ({ item }: { item: Favor }) => {
+  const openFavor = (favor: Favor) => router.push(`/favor/${favor.favor_id}`);
+
+  const renderFavor = ({ item }: { item: Favor }) => {
+    const status = statusOf(item);
     const isCreator = item.creator_id === user?.user_id;
-    const isAccepter = item.accepted_by === user?.user_id;
+    const expired = isExpired(item);
+    const mayComplete = canComplete(item, user?.user_id);
 
     return (
-      <TouchableOpacity
-        style={styles.favorCard}
-        onPress={() => router.push(`/favor/${item.favor_id}`)}
+      <FavorCard
+        item={item}
+        currentUserId={user?.user_id}
+        onPress={openFavor}
+        statusLabel={status.label}
+        statusColor={status.color}
+        roleText={roleText(item, user?.user_id)}
+        style={styles.card}
       >
-        <View style={styles.favorHeader}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '30' }]}>
-            <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
-            <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-              {getStatusText(item.status)}
+        {item.status === 'accepted' && (
+          <View style={styles.cardActions}>
+            <Text style={styles.hint}>
+              {mayComplete
+                ? tx('A favore finito tocca Completa: i {0} passano a chi ti ha aiutato.', [CURRENCY_NAME])
+                : tt('Accordatevi in chat. Il favore lo chiude chi lo riceve.')}
             </Text>
-          </View>
-          <View style={styles.badgesRow}>
-            {item.is_emergency && (
-              <View style={styles.emergencyBadge}>
-                <Ionicons name="alert-circle" size={14} color="#ff6b6b" />
-              </View>
-            )}
-            <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-              <Text style={styles.typeText}>
-                {item.type === 'offer' ? t('favor.offer') : t('favor.request')}
-              </Text>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={[styles.primaryButton, styles.flexButton]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  router.push(`/chat/${item.favor_id}` as any);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Apri la chat')}
+              >
+                <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+                <Text style={styles.primaryButtonText}>{tt('Apri la chat')}</Text>
+              </TouchableOpacity>
+              {mayComplete && (
+                <TouchableOpacity
+                  style={[styles.secondaryButton, styles.flexButton]}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleComplete(item.favor_id);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('favor.complete')}
+                >
+                  <Ionicons name="checkmark-circle" size={18} color={colors.lime} />
+                  <Text style={styles.secondaryButtonText}>{t('favor.complete')}</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
-        </View>
+        )}
 
-        <Text style={styles.favorTitle}>{item.title}</Text>
-        <Text style={styles.favorDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-
-        <View style={styles.roleContainer}>
-          <Ionicons
-            name={isCreator ? 'create' : 'hand-left'}
-            size={14}
-            color="#9DB3A4"
-          />
-          <Text style={styles.roleText}>
-            {isCreator ? tt('Creato da te') : tx('Accettato da {0}', [item.creator_name])}
-          </Text>
-        </View>
-
-        <View style={styles.favorFooter}>
-          <View style={styles.soliContainer}>
-            <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.soliText}>{item.granelli_cost} {CURRENCY_NAME}</Text>
-          </View>
-
-          {/* Actions */}
-          <View style={styles.actionsContainer}>
-            {item.status === 'accepted' &&
-              (item.type === 'request' ? isCreator : item.accepted_by === user?.user_id) && (
+        {item.status === 'active' && isCreator && (
+          <View style={styles.cardActions}>
+            {expired && (
               <TouchableOpacity
-                style={styles.completeButton}
-                onPress={() => handleComplete(item.favor_id)}
+                style={styles.primaryButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleRepublish(item);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Ripubblica')}
               >
-                <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                <Text style={styles.completeButtonText}>{t('favor.complete')}</Text>
+                <Ionicons name="refresh" size={18} color="#fff" />
+                <Text style={styles.primaryButtonText}>{tt('Ripubblica')}</Text>
               </TouchableOpacity>
             )}
-            {item.status === 'active' && isCreator && (
+            <View style={styles.buttonRow}>
               <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => handleCancel(item.favor_id)}
+                style={[styles.secondaryButton, styles.flexButton]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Modifica il favore')}
+                data-testid={`edit-favor-${item.favor_id}`}
               >
-                <Ionicons name="close-circle" size={20} color="#ff6b6b" />
+                <Ionicons name="create-outline" size={18} color={colors.lime} />
+                <Text style={styles.secondaryButtonText}>{tt('Modifica')}</Text>
               </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {item.accepted_by_name && (
-          <View style={styles.acceptedByContainer}>
-            <Ionicons name="person" size={14} color="#B8C868" />
-            <Text style={styles.acceptedByText}>{tt('Accettato da:')}{' '}{item.accepted_by_name}
-            </Text>
+              <TouchableOpacity
+                style={[styles.secondaryButton, styles.flexButton]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleCancel(item.favor_id);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Annulla il favore')}
+              >
+                <Ionicons name="close-circle" size={18} color={colors.error} />
+                <Text style={[styles.secondaryButtonText, styles.dangerText]}>{tt('Annulla il favore')}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
-      </TouchableOpacity>
+      </FavorCard>
     );
   };
 
@@ -223,45 +310,46 @@ export default function MyFavorsScreen() {
         <Text style={styles.title}>{t('tabs.myFavors')}</Text>
       </View>
 
-      <View style={styles.filterContainer}>
-        {(['all', 'created', 'accepted'] as const).map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.filterButton, filter === f && styles.filterButtonActive]}
-            onPress={() => setFilter(f)}
-          >
-            <Text style={[styles.filterButtonText, filter === f && styles.filterButtonTextActive]}>
-              {f === 'all' ? t('common.all') : f === 'created' ? t('favor.offer') : t('favor.accept')}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <SummaryStrip
+        helped={user?.total_favors_given ?? 0}
+        received={user?.total_favors_received ?? 0}
+        balance={user?.granelli ?? 0}
+      />
+
+      <View style={styles.tabs} accessibilityRole="tablist">
+        {TAB_ORDER.map((key) => {
+          const active = tab === key;
+          return (
+            <TouchableOpacity
+              key={key}
+              style={[styles.tab, active && styles.tabActive]}
+              onPress={() => setChosenTab(key)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+            >
+              <Text style={[styles.tabText, active && styles.tabTextActive]}>{tabLabel(key)}</Text>
+              <View style={[styles.tabCount, active && styles.tabCountActive]}>
+                <Text style={[styles.tabCountText, active && styles.tabCountTextActive]}>{groups[key].length}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#B8C868" />
-        </View>
-      ) : filteredFavors.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="folder-open" size={64} color="#333" />
-          <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
-          <Text style={styles.emptySubtext}>
-            {filter === 'all'
-              ? tt('Non hai ancora creato o accettato favori')
-              : filter === 'created'
-              ? tt('Non hai ancora creato favori')
-              : tt('Non hai ancora accettato favori')}
-          </Text>
+          <ActivityIndicator size="large" color={colors.lime} />
         </View>
       ) : (
         <FlatList
-          data={filteredFavors}
-          renderItem={renderFavorCard}
+          data={visible}
+          renderItem={renderFavor}
           keyExtractor={(item) => item.favor_id}
           contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#B8C868" />
+          ListEmptyComponent={
+            <EmptyState tab={tab} onCreate={() => router.push('/create' as any)} onBrowse={() => router.push('/(tabs)' as any)} />
           }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.lime} />}
         />
       )}
     </SafeAreaView>
@@ -269,200 +357,81 @@ export default function MyFavorsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0F1A14',
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  filterContainer: {
+  container: { flex: 1, backgroundColor: colors.background },
+  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  title: { fontSize: 28, fontWeight: 'bold', color: colors.textPrimary },
+  summary: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 12,
-    marginTop: 16,
-  },
-  filterButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#1A2E22',
-  },
-  filterButtonActive: {
-    backgroundColor: '#B8C868',
-  },
-  filterButtonText: {
-    color: '#9DB3A4',
-    fontWeight: '600',
-  },
-  filterButtonTextActive: {
-    color: '#0F1A14',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emptyText: {
-    color: '#9DB3A4',
-    fontSize: 18,
-    marginTop: 16,
-  },
-  emptySubtext: {
-    color: '#8FA595',
-    fontSize: 14,
+    marginHorizontal: 20,
     marginTop: 4,
-    textAlign: 'center',
-    paddingHorizontal: 40,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: colors.backgroundCard,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  listContent: {
-    padding: 20,
-    paddingTop: 16,
-  },
-  favorCard: {
-    backgroundColor: '#1A2E22',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-  },
-  favorHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statusBadge: {
+  summaryItem: { flex: 1, alignItems: 'center' },
+  summaryValue: { color: colors.textPrimary, fontSize: 20, fontWeight: '800' },
+  summaryGold: { color: colors.granelli },
+  summaryLabel: { color: colors.textMuted, fontSize: 11, marginTop: 2 },
+  tabs: { flexDirection: 'row', gap: 8, paddingHorizontal: 20, marginTop: 14, marginBottom: 6 },
+  tab: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: colors.backgroundLight,
+  },
+  tabActive: { backgroundColor: colors.accentDark },
+  tabText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
+  tabTextActive: { color: '#fff', fontWeight: '800' },
+  tabCount: {
+    minWidth: 20,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  tabCountActive: { backgroundColor: 'rgba(0,0,0,0.25)' },
+  tabCountText: { color: colors.textSecondary, fontSize: 11, fontWeight: '700' },
+  tabCountTextActive: { color: '#fff' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  listContent: { padding: 20, paddingBottom: 100 },
+  card: { flexBasis: 'auto', alignSelf: 'stretch' },
+  cardActions: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
+  hint: { color: colors.textSecondary, fontSize: 12, lineHeight: 17 },
+  buttonRow: { flexDirection: 'row', gap: 8 },
+  flexButton: { flex: 1 },
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     borderRadius: 12,
-    gap: 6,
+    backgroundColor: colors.accent,
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  badgesRow: {
+  primaryButtonText: { color: '#fff', fontSize: 14, fontWeight: '800' },
+  secondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
-  },
-  emergencyBadge: {
-    backgroundColor: 'rgba(255, 107, 107, 0.2)',
-    padding: 4,
-    borderRadius: 8,
-  },
-  microBadge: {
-    backgroundColor: 'rgba(255, 152, 0, 0.2)',
-    padding: 4,
-    borderRadius: 8,
-  },
-  typeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundLight,
   },
-  offerBadge: {
-    backgroundColor: 'rgba(78, 204, 163, 0.2)',
-  },
-  requestBadge: {
-    backgroundColor: 'rgba(255, 107, 107, 0.2)',
-  },
-  typeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  favorTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  favorDescription: {
-    fontSize: 14,
-    color: '#9DB3A4',
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  roleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 12,
-  },
-  roleText: {
-    color: '#9DB3A4',
-    fontSize: 12,
-  },
-  favorFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  soliContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  soliSymbol: {
-    fontSize: 16,
-  },
-  soliText: {
-    color: '#ffd700',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  actionsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  completeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#B8C868',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    gap: 4,
-  },
-  completeButtonText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    padding: 6,
-  },
-  acceptedByContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#333',
-  },
-  acceptedByText: {
-    color: '#B8C868',
-    fontSize: 12,
-  },
+  secondaryButtonText: { color: colors.lime, fontSize: 14, fontWeight: '700' },
+  dangerText: { color: colors.error },
+  emptyContainer: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 12, gap: 8 },
+  emptyText: { color: colors.textPrimary, fontSize: 17, fontWeight: '700', textAlign: 'center' },
+  emptySubtext: { color: colors.textSecondary, fontSize: 13, lineHeight: 19, textAlign: 'center', marginBottom: 8 },
 });

@@ -159,8 +159,8 @@ async def get_blocked_users(current_user: User = Depends(get_current_user)):
     return {"blocked_users": blocked_users}
 
 @api_router.get("/users/{user_id}/public")
-async def get_user_public_profile(user_id: str):
-    """Get public profile of any user - visible to all"""
+async def get_user_public_profile(user_id: str, current_user: User = Depends(get_current_user)):
+    """Profilo pubblico di un utente: visibile a chi ha fatto l'accesso, senza email né posizione."""
     
     user_doc = await db.users.find_one(
         {"user_id": user_id}, 
@@ -332,8 +332,10 @@ async def upload_profile_picture(
 # ========================
 
 @api_router.get("/users/{user_id}")
-async def get_user_profile(user_id: str):
-    """Get a user's public profile"""
+async def get_user_profile(user_id: str, current_user: User = Depends(get_current_user)):
+    """Il profilo completo (con email e Granelli) si legge solo per sé; per gli altri c'è /users/{id}/public."""
+    if user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Puoi vedere solo il tuo profilo completo")
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "password_hash": 0, "exact_latitude": 0, "exact_longitude": 0})
     if not user_doc:
         raise HTTPException(status_code=404, detail="Utente non trovato")
@@ -447,6 +449,7 @@ async def update_user_name(name_data: NameUpdate, current_user: User = Depends(g
         raise HTTPException(status_code=400, detail="Il nome deve avere almeno 2 caratteri")
     if len(name) > 50:
         raise HTTPException(status_code=400, detail="Il nome non può superare i 50 caratteri")
+    ensure_text_allowed(name)
 
     await db.users.update_one(
         {"user_id": current_user.user_id},

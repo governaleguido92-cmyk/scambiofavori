@@ -18,12 +18,22 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, ChatMessage, Favor, CURRENCY_SYMBOL } from '../../src/services/api';
-import { SupporterBadge, SupporterProfileBorder, UserNameWithBadge } from '../../src/components/SupporterBadge';
+import { api, ChatMessage, Favor, CURRENCY_NAME } from '../../src/services/api';
+import { SupporterProfileBorder } from '../../src/components/SupporterBadge';
+import { ChatHeader } from '../../src/components/chat/ChatHeader';
+import { ChatQuickReplies } from '../../src/components/chat/ChatQuickReplies';
+import { ChatActionsBar } from '../../src/components/chat/ChatActionsBar';
+import { MeetingPointModal } from '../../src/components/chat/MeetingPointModal';
+import { MeetingPointCard } from '../../src/components/chat/MeetingPointCard';
+import { formatMeetingPointMessage, parseMeetingPointMessage } from '../../src/utils/meetingPoint';
+import { buildRows, ChatRow } from '../../src/utils/chatDays';
+import { canComplete as mayCompleteFavor } from '../../src/utils/myFavors';
+import { getCategoryVisual } from '../../src/utils/favorVisual';
+import i18n from '../../src/i18n';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
-import { tt } from '../../src/i18n/tt';
+import { tt, tx } from '../../src/i18n/tt';
 
 // Theme colors
 const colors = {
@@ -44,7 +54,7 @@ const colors = {
 
 export default function ChatScreen() {
   const { favorId } = useLocalSearchParams<{ favorId: string }>();
-  const { user, token } = useAuth();
+  const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -57,6 +67,9 @@ export default function ChatScreen() {
   const [reportReason, setReportReason] = useState('');
   const [showPrivacyAlert, setShowPrivacyAlert] = useState(false);
   const [sendingLocation, setSendingLocation] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showMeeting, setShowMeeting] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   const loadData = useCallback(async () => {
@@ -85,13 +98,14 @@ export default function ChatScreen() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const handleSend = async () => {
-    if (!token || !favorId || !newMessage.trim() || chatStatus?.read_only) return;
-    
+  const sendText = async (text: string, clearInput: boolean): Promise<boolean> => {
+    if (!token || !favorId || !text.trim() || chatStatus?.read_only) return false;
+
     setSending(true);
+    setSendError(null);
     try {
-      const response = await api.sendMessage(favorId, newMessage.trim(), token);
-      
+      const response = await api.sendMessage(favorId, text.trim(), token);
+
       // Check for warnings (like personal data alert)
       if (response.warnings) {
         response.warnings.forEach((w: any) => {
@@ -100,18 +114,52 @@ export default function ChatScreen() {
           }
         });
       }
-      
+
       const message = response.message || response;
       setMessages(prev => [...prev, message]);
-      setNewMessage('');
+      if (clearInput) setNewMessage('');
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
+      return true;
     } catch (error: any) {
-      notify(t('chat.blocked'), error.message || t('chat.errorSend'));
+      // Il messaggio resta nel campo: l'avviso è dentro la chat, vicino a dove si scrive
+      setSendError(error.message || t('chat.errorSend'));
+      return false;
     } finally {
       setSending(false);
     }
+  };
+
+  const handleSend = () => sendText(newMessage, true);
+
+  const handleChangeText = (text: string) => {
+    setNewMessage(text);
+    if (sendError) setSendError(null);
+  };
+
+  const handleComplete = () => {
+    if (!token || !favorId) return;
+    Alert.alert(
+      t('common.confirm'),
+      tx('Sei sicuro di voler segnare questo favore come completato? I {0} verranno trasferiti.', [CURRENCY_NAME]),
+      [
+        { text: tt('Annulla'), style: 'cancel' },
+        {
+          text: tt('Completa'),
+          onPress: async () => {
+            try {
+              await api.completeFavor(favorId, token);
+              await refreshUser();
+              await loadData();
+              notify(t('common.success'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
+            } catch (error: any) {
+              notify(t('common.error'), error.message || t('favor.errorComplete'));
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleSendLocation = async () => {
@@ -168,32 +216,15 @@ export default function ChatScreen() {
   };
 
   const handleSendMeetingPoint = () => {
-    Alert.alert(
-      tt('Punto di Incontro'),
-      tt('Seleziona un luogo pubblico per incontrarvi in sicurezza'),
-      [
-        { text: tt('Annulla'), style: 'cancel' },
-        { 
-          text: tt('Piazza/Centro'), 
-          onPress: () => sendMeetingPointMessage('Piazza del Centro', 'Incontriamoci nella piazza centrale')
-        },
-        { 
-          text: tt('Bar/Caffè'), 
-          onPress: () => sendMeetingPointMessage('Bar/Caffè', 'Incontriamoci al bar più vicino')
-        },
-      ]
-    );
+    setSendError(null);
+    setShowMeeting(true);
   };
 
-  const sendMeetingPointMessage = async (place: string, message: string) => {
-    if (!token || !favorId) return;
-    try {
-      const response = await api.sendMessage(favorId, `📍 ${message} - ${place}`, token);
-      const msg = response.message || response;
-      setMessages(prev => [...prev, msg]);
-    } catch (error: any) {
-      notify(tt('Errore'), error.message);
-    }
+  const submitMeetingPoint = async (place: string, when: string) => {
+    const text = formatMeetingPointMessage(place, when);
+    if (!text) return;
+    // La finestra si chiude solo se il messaggio è partito: altrimenti mostra il motivo
+    if (await sendText(text, false)) setShowMeeting(false);
   };
 
   const getOtherParticipant = () => {
@@ -223,8 +254,29 @@ export default function ChatScreen() {
     return false; // accepted_by supporter status not available from favor
   };
 
-  const renderMessage = ({ item }: { item: ChatMessage }) => {
+  const dayLabel = (row: Extract<ChatRow<ChatMessage>, { type: 'day' }>): string => {
+    if (row.bucket.kind === 'today') return tt('Oggi');
+    if (row.bucket.kind === 'yesterday') return tt('Ieri');
+    return row.bucket.date.toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'it-IT', {
+      weekday: 'long', day: 'numeric', month: 'long',
+    });
+  };
+
+  const renderRow = ({ item: row }: { item: ChatRow<ChatMessage> }) => {
+    if (row.type === 'day') {
+      return (
+        <View style={styles.daySeparator}>
+          <Text style={styles.daySeparatorText}>{dayLabel(row)}</Text>
+        </View>
+      );
+    }
+    return renderMessage(row.message);
+  };
+
+  const renderMessage = (item: ChatMessage) => {
     const isMe = item.sender_id === user?.user_id;
+    const meetingPoint = item.blocked ? null : parseMeetingPointMessage(item.content);
+    const messageTime = new Date(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     const senderIsSupporter = getSenderIsSupporter(item.sender_id);
     
     return (
@@ -232,7 +284,7 @@ export default function ChatScreen() {
         {!isMe && (
           <View style={{ marginRight: 8 }}>
             <SupporterProfileBorder isSupporter={senderIsSupporter} size={32}>
-              <View style={styles.avatarContainer}>
+              <View style={[styles.avatarContainer, { backgroundColor: categoryColor }]}>
                 <Text style={styles.avatarText}>{item.sender_name?.charAt(0).toUpperCase()}</Text>
               </View>
             </SupporterProfileBorder>
@@ -249,18 +301,9 @@ export default function ChatScreen() {
               <Text style={styles.blockedBadgeText}>{tt('Bloccato')}</Text>
             </View>
           )}
-          {/* Show sender name with badge for other's messages */}
-          {!isMe && (
-            <View style={styles.senderNameRow}>
-              <UserNameWithBadge 
-                name={item.sender_name || 'Utente'} 
-                isSupporter={senderIsSupporter}
-                nameStyle={styles.senderNameText}
-              />
-            </View>
-          )}
-          {/* Check if message contains a location link */}
-          {item.content.includes('maps.google.com') ? (
+          {meetingPoint ? (
+            <MeetingPointCard point={meetingPoint} time={messageTime} />
+          ) : item.content.includes('maps.google.com') ? (
             <TouchableOpacity onPress={() => openLocationInMaps(item.content)}>
               <View style={styles.locationMessage}>
                 <Ionicons name="location" size={20} color={colors.accent} />
@@ -275,9 +318,7 @@ export default function ChatScreen() {
               {item.content}
             </Text>
           )}
-          <Text style={styles.messageTime}>
-            {new Date(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
-          </Text>
+          {!meetingPoint && <Text style={styles.messageTime}>{messageTime}</Text>}
         </View>
       </View>
     );
@@ -295,44 +336,26 @@ export default function ChatScreen() {
 
   const otherParticipant = getOtherParticipant();
   const isReadOnly = chatStatus?.read_only;
+  const categoryColor = getCategoryVisual(favor?.category ?? 'Altro').color;
+  const rows = buildRows(messages);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header with Favor Info */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-        
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {favor?.title || tt('Chat')}
-          </Text>
-          <View style={styles.headerSubRow}>
-            <UserNameWithBadge 
-              name={`con ${otherParticipant?.name || 'Utente'}`}
-              isSupporter={otherParticipant?.isSupporter || false}
-              nameStyle={styles.headerSubtitle}
-            />
-            <View style={styles.granelliBadge}>
-              <Text style={styles.granelliText}>{CURRENCY_SYMBOL} {favor?.granelli_cost || 0}</Text>
-            </View>
-          </View>
-        </View>
-        
-        <TouchableOpacity 
-          style={styles.reportButton} 
-          onPress={() => setShowReportModal(true)}
-          data-testid="report-button"
-        >
-          <Ionicons name="flag" size={24} color={colors.error} />
-        </TouchableOpacity>
-      </View>
+      <ChatHeader
+        favor={favor}
+        currentUserId={user?.user_id}
+        otherName={otherParticipant?.name}
+        canComplete={!!favor && mayCompleteFavor(favor, user?.user_id)}
+        onBack={() => router.back()}
+        onMenu={() => setShowMenu(true)}
+        onComplete={handleComplete}
+      />
 
-      {/* Ethical Reminder Banner */}
-      <View style={styles.ethicalBanner}>
-        <Ionicons name="heart" size={16} color={colors.primary} />
-        <Text style={styles.ethicalText}>{tt('Ricorda: lo scambio è basato sul tempo, non sul denaro. Sii puntuale e gentile.')}</Text>
+      <View style={styles.safetyNote}>
+        <Ionicons name="shield-checkmark" size={18} color={colors.textSecondary} />
+        <Text style={styles.safetyText}>
+          {tt('Incontratevi in un luogo pubblico. Lo scambio è basato sul tempo, non sul denaro: siate puntuali e gentili.')}
+        </Text>
       </View>
 
       {/* Read-Only Banner */}
@@ -352,55 +375,99 @@ export default function ChatScreen() {
         {/* Messages */}
         <FlatList
           ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.message_id}
-          renderItem={renderMessage}
+          data={rows}
+          keyExtractor={(row) => row.key}
+          renderItem={renderRow}
           contentContainerStyle={styles.messagesList}
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          ListEmptyComponent={
+            <View style={styles.emptyChat}>
+              <Text style={styles.emptyEmoji}>💬</Text>
+              <Text style={styles.emptyTitle}>{tt('Iniziate a parlare')}</Text>
+              <Text style={styles.emptyText}>{tt('Salutate e accordatevi su dove e quando incontrarvi. Toccate una risposta rapida qui sotto per cominciare.')}</Text>
+            </View>
+          }
         />
 
         {/* Input Area */}
         {!isReadOnly && (
-          <View style={styles.inputContainer}>
-            {/* Send Location Button */}
-            <TouchableOpacity 
-              style={styles.meetingButton} 
-              onPress={handleSendLocation}
-              disabled={sendingLocation}
-              data-testid="send-location-button"
-            >
-              {sendingLocation ? (
-                <ActivityIndicator size="small" color={colors.accent} />
-              ) : (
-                <Ionicons name="location" size={24} color={colors.accent} />
-              )}
-            </TouchableOpacity>
-            
-            <TextInput
-              style={styles.input}
-              value={newMessage}
-              onChangeText={setNewMessage}
-              placeholder={t('chat.placeholder')}
-              placeholderTextColor={colors.textMuted}
-              multiline
-              maxLength={500}
+          <View style={styles.composer}>
+            {sendError && (
+              <View style={styles.sendError} accessibilityLiveRegion="polite">
+                <Ionicons name="warning" size={16} color={colors.error} />
+                <Text style={styles.sendErrorText}>{sendError}</Text>
+              </View>
+            )}
+            <ChatQuickReplies
+              disabled={sending}
+              onSend={(text) => sendText(text, false)}
+              onPrefill={(text) => handleChangeText(text)}
             />
-            
-            <TouchableOpacity 
-              style={[styles.sendButton, (!newMessage.trim() || sending) && styles.sendButtonDisabled]} 
-              onPress={handleSend}
-              disabled={!newMessage.trim() || sending}
-              data-testid="send-button"
-            >
-              {sending ? (
-                <ActivityIndicator size="small" color={colors.background} />
-              ) : (
-                <Ionicons name="send" size={20} color={colors.background} />
-              )}
-            </TouchableOpacity>
+            <ChatActionsBar
+              sendingLocation={sendingLocation}
+              onMeetingPoint={handleSendMeetingPoint}
+              onLocation={handleSendLocation}
+            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                value={newMessage}
+                onChangeText={handleChangeText}
+                placeholder={t('chat.placeholder')}
+                placeholderTextColor={colors.textMuted}
+                multiline
+                maxLength={500}
+                accessibilityLabel={t('chat.placeholder')}
+              />
+
+              <TouchableOpacity
+                style={[styles.sendButton, (!newMessage.trim() || sending) && styles.sendButtonDisabled]}
+                onPress={handleSend}
+                disabled={!newMessage.trim() || sending}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Invia')}
+                data-testid="send-button"
+              >
+                {sending ? (
+                  <ActivityIndicator size="small" color={colors.background} />
+                ) : (
+                  <Ionicons name="send" size={20} color={colors.background} />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         )}
       </KeyboardAvoidingView>
+
+      <MeetingPointModal
+        visible={showMeeting}
+        sending={sending}
+        error={sendError}
+        favorId={String(favorId)}
+        token={token}
+        onClose={() => setShowMeeting(false)}
+        onSubmit={submitMeetingPoint}
+      />
+
+      {/* Menu ⋯: la segnalazione sta qui, non sempre in vista */}
+      <Modal visible={showMenu} transparent animationType="fade" onRequestClose={() => setShowMenu(false)}>
+        <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setShowMenu(false)}>
+          <View style={styles.menuCard}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setShowMenu(false);
+                setShowReportModal(true);
+              }}
+              accessibilityRole="button"
+              data-testid="report-button"
+            >
+              <Ionicons name="flag-outline" size={20} color={colors.error} />
+              <Text style={styles.menuItemText}>{tx('Segnala {0}', [otherParticipant?.name || tt('un vicino')])}</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Privacy Alert Modal */}
       <Modal visible={showPrivacyAlert} transparent animationType="fade">
@@ -468,6 +535,58 @@ export default function ChatScreen() {
 }
 
 const styles = StyleSheet.create({
+  safetyNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: colors.backgroundCard,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  safetyText: { flex: 1, color: colors.textSecondary, fontSize: 12.5, lineHeight: 17 },
+  daySeparator: { alignItems: 'center', marginVertical: 12 },
+  daySeparatorText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: colors.backgroundCard,
+    overflow: 'hidden',
+  },
+  emptyChat: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 24, gap: 8 },
+  emptyEmoji: { fontSize: 44 },
+  emptyTitle: { color: colors.textPrimary, fontSize: 17, fontWeight: '800' },
+  emptyText: { color: colors.textSecondary, fontSize: 13.5, lineHeight: 20, textAlign: 'center' },
+  composer: { backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.border },
+  sendError: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 12,
+    marginTop: 8,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 82, 82, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 82, 82, 0.4)',
+  },
+  sendErrorText: { flex: 1, color: '#FF8A8A', fontSize: 12.5, lineHeight: 17 },
+  menuOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'flex-end', paddingTop: 70, paddingHorizontal: 12 },
+  menuCard: {
+    minWidth: 220,
+    borderRadius: 14,
+    backgroundColor: colors.backgroundCard,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 6,
+  },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 14 },
+  menuItemText: { color: colors.textPrimary, fontSize: 15, fontWeight: '600' },
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -476,73 +595,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: colors.backgroundCard,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerInfo: {
-    flex: 1,
-    marginHorizontal: 8,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  headerSubRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  granelliBadge: {
-    backgroundColor: colors.backgroundLight,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  granelliText: {
-    color: colors.granelli,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  reportButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  ethicalBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.backgroundLight,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  ethicalText: {
-    flex: 1,
-    fontSize: 12,
-    color: colors.primary,
-    fontStyle: 'italic',
   },
   readOnlyBanner: {
     flexDirection: 'row',
@@ -587,14 +639,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
-  },
-  senderNameRow: {
-    marginBottom: 4,
-  },
-  senderNameText: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '600',
   },
   messageBubble: {
     maxWidth: '75%',
@@ -648,14 +692,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     gap: 8,
-  },
-  meetingButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.backgroundLight,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   input: {
     flex: 1,

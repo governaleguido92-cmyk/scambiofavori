@@ -54,12 +54,12 @@ export const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   typeButtonActive: {
-    backgroundColor: '#B8C868',
-    borderColor: '#B8C868',
+    backgroundColor: '#5FBF7F',
+    borderColor: '#5FBF7F',
   },
   typeButtonActiveRequest: {
-    backgroundColor: '#ff6b6b',
-    borderColor: '#ff6b6b',
+    backgroundColor: '#F87828',
+    borderColor: '#F87828',
   },
   typeButtonText: {
     color: '#fff',
@@ -437,50 +437,6 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   // Validity days styles
-  validityHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  validityBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(78, 204, 163, 0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  validityBadgeText: {
-    color: '#B8C868',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  validityScroll: {
-    marginBottom: 8,
-  },
-  validityChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#1A2E22',
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#2A4A35',
-  },
-  validityChipActive: {
-    backgroundColor: '#B8C868',
-    borderColor: '#B8C868',
-  },
-  validityChipText: {
-    color: '#B3C7B9',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  validityChipTextActive: {
-    color: '#0F1A14',
-  },
   validityHint: {
     color: '#8FA595',
     fontSize: 12,
@@ -503,5 +459,90 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#2D5A3D',
     lineHeight: 16,
+  },
+  charCounter: {
+    alignSelf: 'flex-end',
+    marginTop: 4,
+    color: '#8FA595',
+    fontSize: 11,
+  },
+  exampleRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  exampleLabel: {
+    color: '#8FA595',
+    fontSize: 12,
+  },
+  exampleChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#1A2E22',
+    borderWidth: 1,
+    borderColor: '#2A4A35',
+  },
+  exampleChipText: {
+    color: '#C4DACB',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  categoryChipEmoji: {
+    fontSize: 18,
+  },
+  categoryChipTextOnColor: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  validityChoices: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  validityChoice: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: '#1A2E22',
+    borderWidth: 1,
+    borderColor: '#2A4A35',
+  },
+  validityChoiceActive: {
+    backgroundColor: '#B8C868',
+    borderColor: '#B8C868',
+  },
+  validityChoiceText: {
+    color: '#B3C7B9',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  validityChoiceTextActive: {
+    color: '#0F1A14',
+    fontWeight: '700',
+  },
+  previewWrap: {
+    alignItems: 'center',
+  },
+  previewCard: {
+    width: 220,
+    flexBasis: 'auto',
+    marginBottom: 0,
+  },
+  typeButtonLocked: {
+    opacity: 0.35,
+  },
+  cancelEditButton: {
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  cancelEditText: {
+    color: '#9DB3A4',
+    fontSize: 14,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });

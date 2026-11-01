@@ -94,7 +94,7 @@ export default function FavorDetailScreen() {
         
         if (data.status === 'completed') {
           try {
-            const reviewsData = await api.getFavorReviews(id);
+            const reviewsData = await api.getFavorReviews(id, token || '');
             if (mounted) {
               setReviews(reviewsData);
             }
@@ -151,9 +151,9 @@ export default function FavorDetailScreen() {
     setLoadingProfile(true);
     
     try {
-      const profile = await api.getUserPublicProfile(userId, token || undefined);
+      const profile = await api.getUserPublicProfile(userId, token || '');
       setUserProfile(profile);
-      const reviews = await api.getUserReviews(userId);
+      const reviews = await api.getUserReviews(userId, token || '');
       setUserReviews(reviews);
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -205,7 +205,7 @@ export default function FavorDetailScreen() {
       const data = await api.getFavor(id, token || undefined);
       setFavor(data);
       if (data.status === 'completed') {
-        const reviewsData = await api.getFavorReviews(id);
+        const reviewsData = await api.getFavorReviews(id, token || '');
         setReviews(reviewsData);
       }
     } catch (error) {

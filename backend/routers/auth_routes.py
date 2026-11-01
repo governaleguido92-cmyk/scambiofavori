@@ -12,6 +12,7 @@ api_router = APIRouter(prefix="/api")
 @limiter.limit("5/minute")
 async def register(request: Request, user_data: UserCreate):
     """Register a new user with email verification via Resend"""
+    ensure_text_allowed(user_data.name)
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email già registrata")

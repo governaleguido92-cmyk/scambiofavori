@@ -1,6 +1,7 @@
 """HTTP routes: favors."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+import places
 
 api_router = APIRouter(prefix="/api")
 
@@ -17,7 +18,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     # ========================
     # CONTENT MODERATION (Store Compliance)
     # ========================
-    content_to_check = f"{favor_data.title} {favor_data.description}"
+    content_to_check = f"{favor_data.title} {favor_data.description} {favor_data.address or ''}"
     moderation_result = moderate_content(content_to_check)
     if not moderation_result["allowed"]:
         raise HTTPException(
@@ -90,6 +91,11 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     }
     
     await db.favors.insert_one(favor_doc)
+
+    # Prepara in sottofondo l'elenco dei luoghi della zona (per il punto d'incontro), usando solo la posizione
+    # approssimata: così, quando serve in chat, è già pronto.
+    if approx_lat is not None and approx_lon is not None:
+        places.schedule_warm(approx_lat, approx_lon)
     
     # Invia notifiche agli utenti con competenze corrispondenti (solo per richieste)
     if favor_data.type == "request":
@@ -100,6 +106,70 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     favor_doc["exact_longitude"] = None
     
     return Favor(**favor_doc)
+
+FAVOR_TITLE_MAX = 100
+FAVOR_DESCRIPTION_MAX = 500
+FAVOR_DURATION_MAX_HOURS = 999
+
+@api_router.put("/favors/{favor_id}", response_model=Favor, response_model_exclude={"qr_code"})
+async def update_favor(favor_id: str, update: FavorUpdate, current_user: User = Depends(get_current_user)):
+    """Modifica un favore proprio che nessuno ha ancora accettato. Solo i campi inviati cambiano."""
+    changes = update.model_dump(exclude_none=True)
+    if not changes:
+        raise HTTPException(status_code=400, detail="Nessuna modifica indicata")
+
+    favor = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
+    if not favor:
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+    if favor["creator_id"] != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Puoi modificare solo i tuoi favori")
+    if favor["status"] != "active" or favor.get("accepted_by"):
+        raise HTTPException(status_code=400, detail="Puoi modificare solo i favori che nessuno ha ancora accettato")
+
+    values: dict = {}
+    if "title" in changes:
+        title = changes["title"].strip()
+        if not title or len(title) > FAVOR_TITLE_MAX:
+            raise HTTPException(status_code=400, detail=f"Il titolo deve avere da 1 a {FAVOR_TITLE_MAX} caratteri")
+        values["title"] = title
+    if "description" in changes:
+        description = changes["description"].strip()
+        if not description or len(description) > FAVOR_DESCRIPTION_MAX:
+            raise HTTPException(status_code=400, detail=f"La descrizione deve avere da 1 a {FAVOR_DESCRIPTION_MAX} caratteri")
+        values["description"] = description
+    if "category" in changes:
+        if changes["category"] not in [category["name"] for category in FAVOR_CATEGORIES]:
+            raise HTTPException(status_code=400, detail="Categoria non valida")
+        values["category"] = changes["category"]
+
+    # Lo stesso filtro della pubblicazione: odio, minacce, contenuti sessuali, insulti
+    moderation_result = moderate_content(" ".join(values.get(field, "") for field in ("title", "description")))
+    if not moderation_result["allowed"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Contenuto non consentito: {moderation_result['reason']}. Modifica il testo e riprova.",
+        )
+
+    if "duration_hours" in changes:
+        duration = changes["duration_hours"]
+        if duration <= 0 or duration > FAVOR_DURATION_MAX_HOURS:
+            raise HTTPException(status_code=400, detail="La durata deve essere di almeno un'ora")
+        granelli_cost = max(1, int(duration * GRANELLI_PER_HOUR))
+        if favor["type"] == "request" and granelli_cost > current_user.granelli:
+            raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
+        values["duration_hours"] = duration
+        values["granelli_cost"] = granelli_cost
+    if "validity_days" in changes:
+        validity_days = max(1, min(10, changes["validity_days"]))
+        values["validity_days"] = validity_days
+        values["expires_at"] = datetime.now(timezone.utc) + timedelta(days=validity_days)
+
+    await db.favors.update_one({"favor_id": favor_id}, {"$set": values})
+    favor.update(values)
+    # Come alla pubblicazione, la posizione esatta non esce mai
+    favor["exact_latitude"] = None
+    favor["exact_longitude"] = None
+    return Favor(**favor)
 
 @api_router.get("/favors", response_model=List[Favor], response_model_exclude={"__all__": {"qr_code"}})
 async def get_favors(
@@ -565,6 +635,9 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
     if existing:
         raise HTTPException(status_code=400, detail="Hai già recensito questo favore")
     
+    # I testi pubblici (commento e Bacheca dei Grazie) passano dal filtro prima di essere salvati
+    ensure_text_allowed(review_data.comment, review_data.public_thanks)
+
     for rating in [review_data.rating, review_data.kindness_rating, review_data.impact_rating]:
         if rating < 1 or rating > 5:
             raise HTTPException(status_code=400, detail="I rating devono essere tra 1 e 5")
@@ -674,13 +747,13 @@ async def get_thanks_board(limit: int = 20):
     return [ThanksEntry(**t) for t in thanks]
 
 @api_router.get("/reviews/user/{user_id}", response_model=List[Review])
-async def get_user_reviews(user_id: str):
+async def get_user_reviews(user_id: str, current_user: User = Depends(get_current_user)):
     reviews_cursor = db.reviews.find({"reviewed_id": user_id}, {"_id": 0}).sort("created_at", -1)
     reviews = await reviews_cursor.to_list(100)
     return [Review(**review) for review in reviews]
 
 @api_router.get("/reviews/favor/{favor_id}", response_model=List[Review])
-async def get_favor_reviews(favor_id: str):
+async def get_favor_reviews(favor_id: str, current_user: User = Depends(get_current_user)):
     reviews_cursor = db.reviews.find({"favor_id": favor_id}, {"_id": 0})
     reviews = await reviews_cursor.to_list(10)
     return [Review(**review) for review in reviews]
@@ -757,6 +830,10 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     content = msg.content.strip()
     if not content:
         raise HTTPException(status_code=400, detail="Messaggio vuoto")
+
+    # Anche il nome e l'indirizzo del punto d'incontro sono testo libero
+    if msg.meeting_point:
+        ensure_text_allowed(msg.meeting_point.name, msg.meeting_point.address)
     
     # ========================
     # CONTENT FILTERS
