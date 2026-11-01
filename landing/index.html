@@ -723,6 +723,18 @@
       transition: color 0.2s;
     }
     .footer-links a:hover { color: var(--lime); }
+    .contact-panel {
+      flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem;
+      padding: 1rem 1.25rem; border: 1px solid var(--border); border-radius: 14px;
+    }
+    .contact-panel[hidden] { display: none; }
+    .contact-panel .contact-label { color: var(--green-muted); font-size: .85rem; }
+    .contact-panel .contact-email { color: var(--white); font-weight: 600; user-select: all; }
+    .contact-panel button {
+      font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
+      background: var(--orange); color: #fff; border: 0; border-radius: 100px; padding: .45rem 1.1rem;
+    }
+    .contact-panel a { color: var(--green-muted); font-size: .85rem; }
 
     /* Scroll reveal */
     .reveal {
@@ -1040,8 +1052,14 @@
     <div class="footer-links">
       <a href="/privacy">Privacy</a>
       <a href="/sostieni">Sostieni il progetto</a>
-      <a href="mailto:infoapp@scambiofavori.it">Contatti</a>
+      <a href="mailto:infoapp@scambiofavori.it" id="contact-link" aria-controls="contact-panel" aria-expanded="false">Contatti</a>
       <a href="#" data-cookie-prefs hidden>Preferenze cookie</a>
+    </div>
+    <div class="contact-panel" id="contact-panel" hidden>
+      <span class="contact-label">Scrivici a</span>
+      <span class="contact-email">infoapp@scambiofavori.it</span>
+      <button type="button" id="contact-copy">Copia indirizzo</button>
+      <a href="mailto:infoapp@scambiofavori.it">Apri nel programma di posta</a>
     </div>
   </footer>
 
@@ -1082,5 +1100,39 @@
     }
   </script>
   <script src="/analytics.js" defer></script>
+  <script>
+    // Contatti: il mailto non fa nulla senza un programma di posta predefinito, quindi mostra l'indirizzo con "Copia"
+    (function () {
+      var link = document.getElementById('contact-link');
+      var panel = document.getElementById('contact-panel');
+      var copyBtn = document.getElementById('contact-copy');
+      if (!link || !panel || !copyBtn) return;
+      var EMAIL = 'infoapp@scambiofavori.it';
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        var open = panel.hidden;
+        panel.hidden = !open;
+        link.setAttribute('aria-expanded', String(open));
+        if (open && panel.scrollIntoView) panel.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      });
+      copyBtn.addEventListener('click', function () {
+        function done(ok) {
+          copyBtn.textContent = ok ? 'Copiato ✓' : 'Seleziona e copia';
+          setTimeout(function () { copyBtn.textContent = 'Copia indirizzo'; }, 2500);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(EMAIL).then(function () { done(true); }, function () { done(false); });
+          return;
+        }
+        var ta = document.createElement('textarea');
+        ta.value = EMAIL; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+        document.body.removeChild(ta);
+        done(ok);
+      });
+    })();
+  </script>
 </body>
 </html>
