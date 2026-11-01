@@ -37,6 +37,11 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export interface BadgeRequirement {
+  type: string;
+  value: number;
+}
+
 export interface Badge {
   id: string;
   name: string;
@@ -44,6 +49,8 @@ export interface Badge {
   icon: string;
   color: string;
   earned_at?: string;
+  /** Cosa serve per ottenerlo (il server lo manda per tutti i badge). */
+  requirement?: BadgeRequirement;
 }
 
 export interface User {
@@ -263,8 +270,6 @@ export interface LeaderboardUser {
   name: string;
   title: string;
   community_score: number;
-  badges: string[];
-  total_favors_given: number;
 }
 
 export interface Notification {
@@ -820,20 +825,20 @@ export const api = {
     return handleResponse(response);
   },
 
-  getFavorReviews: async (favorId: string): Promise<Review[]> => {
-    const response = await fetch(`${API_URL}/api/reviews/favor/${favorId}`);
+  getFavorReviews: async (favorId: string, token: string): Promise<Review[]> => {
+    const response = await fetch(`${API_URL}/api/reviews/favor/${favorId}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 
-  getUserReviews: async (userId: string): Promise<Review[]> => {
-    const response = await fetch(`${API_URL}/api/reviews/user/${userId}`);
+  getUserReviews: async (userId: string, token: string): Promise<Review[]> => {
+    const response = await fetch(`${API_URL}/api/reviews/user/${userId}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 
-  // Get user public profile (visible to all users)
-  getUserPublicProfile: async (userId: string, token?: string): Promise<any> => {
+  // Profilo pubblico di un utente (serve l'accesso)
+  getUserPublicProfile: async (userId: string, token: string): Promise<any> => {
     const response = await fetch(`${API_URL}/api/users/${userId}/public`, {
-      headers: token ? getHeaders(token) : { 'Content-Type': 'application/json' },
+      headers: getHeaders(token),
     });
     return handleResponse(response);
   },
@@ -861,13 +866,14 @@ export const api = {
   },
 
   // Users
-  getUserProfile: async (userId: string): Promise<User> => {
-    const response = await fetch(`${API_URL}/api/users/${userId}`);
+  /** Il profilo completo si legge solo per sé: per gli altri c'è getUserPublicProfile. */
+  getUserProfile: async (userId: string, token: string): Promise<User> => {
+    const response = await fetch(`${API_URL}/api/users/${userId}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 
-  getLeaderboard: async (): Promise<LeaderboardUser[]> => {
-    const response = await fetch(`${API_URL}/api/leaderboard`);
+  getLeaderboard: async (token: string): Promise<LeaderboardUser[]> => {
+    const response = await fetch(`${API_URL}/api/leaderboard`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 

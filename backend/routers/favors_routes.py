@@ -747,13 +747,13 @@ async def get_thanks_board(limit: int = 20):
     return [ThanksEntry(**t) for t in thanks]
 
 @api_router.get("/reviews/user/{user_id}", response_model=List[Review])
-async def get_user_reviews(user_id: str):
+async def get_user_reviews(user_id: str, current_user: User = Depends(get_current_user)):
     reviews_cursor = db.reviews.find({"reviewed_id": user_id}, {"_id": 0}).sort("created_at", -1)
     reviews = await reviews_cursor.to_list(100)
     return [Review(**review) for review in reviews]
 
 @api_router.get("/reviews/favor/{favor_id}", response_model=List[Review])
-async def get_favor_reviews(favor_id: str):
+async def get_favor_reviews(favor_id: str, current_user: User = Depends(get_current_user)):
     reviews_cursor = db.reviews.find({"favor_id": favor_id}, {"_id": 0})
     reviews = await reviews_cursor.to_list(10)
     return [Review(**review) for review in reviews]

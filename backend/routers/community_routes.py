@@ -475,8 +475,8 @@ async def request_debt_recovery(current_user: User = Depends(get_current_user)):
     }
 
 @api_router.get("/leaderboard")
-async def get_leaderboard():
-    """Get community leaderboard"""
+async def get_leaderboard(current_user: User = Depends(get_current_user)):
+    """Classifica della community: serve il login e restituisce solo ciò che l'app mostra."""
     users_cursor = db.users.find(
         {},
         {"_id": 0, "user_id": 1, "name": 1, "community_score": 1, "badges": 1, "total_favors_given": 1}
@@ -484,10 +484,15 @@ async def get_leaderboard():
     users = await users_cursor.to_list(20)
     
     # Add titles
-    for user in users:
-        user["title"] = get_user_title(user)
-    
-    return users
+    return [
+        {
+            "user_id": user["user_id"],
+            "name": user.get("name", "Utente"),
+            "community_score": user.get("community_score", 0),
+            "title": get_user_title(user),
+        }
+        for user in users
+    ]
 
 @api_router.get("/referral/code")
 async def get_my_referral_code(current_user: User = Depends(get_current_user)):
