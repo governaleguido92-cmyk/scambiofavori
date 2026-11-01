@@ -319,6 +319,12 @@ export default function HomeScreen() {
         })}
       </View>
 
+      <Text style={styles.typeHint}>
+        {selectedType === 'request'
+          ? tt('Aiuta un vicino e guadagni Granelli')
+          : tt('Scegli l\'aiuto che ti serve tra quelli offerti dai vicini')}
+      </Text>
+
       {/* Categories */}
       <ScrollView
         horizontal

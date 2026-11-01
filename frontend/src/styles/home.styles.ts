@@ -169,6 +169,12 @@ export const styles = StyleSheet.create({
     gap: 8,
     marginTop: 10,
   },
+  typeHint: {
+    marginTop: 8,
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   typeButton: {
     flex: 1,
     alignItems: 'center',
