@@ -511,4 +511,5 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Offerte di favori': 'Favor offers',
   'Richieste di favori': 'Favor requests',
   'Raggio di ricerca': 'Search radius',
+  'Attiva la posizione per scegliere il raggio di ricerca': 'Turn on location to choose the search radius',
 };

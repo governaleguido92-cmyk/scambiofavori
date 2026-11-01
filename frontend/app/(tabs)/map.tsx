@@ -244,8 +244,13 @@ export default function MapScreen() {
         </TouchableOpacity>
       </View>
 
-      {userLocation && (
+      {userLocation ? (
         <RadiusSlider valueKm={radiusKm} onChange={setRadiusKm} label={tt('Raggio di ricerca')} />
+      ) : (
+        <View style={styles.noLocationNote}>
+          <Ionicons name="location-outline" size={16} color={colors.textMuted} />
+          <Text style={styles.noLocationText}>{tt('Attiva la posizione per scegliere il raggio di ricerca')}</Text>
+        </View>
       )}
 
       {/* Map View */}
@@ -314,6 +319,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryMuted,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  noLocationNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  noLocationText: {
+    flex: 1,
+    color: colors.textMuted,
+    fontSize: 12,
   },
   filterContainer: {
     flexDirection: 'row',
