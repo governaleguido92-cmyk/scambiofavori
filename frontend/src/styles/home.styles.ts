@@ -169,11 +169,43 @@ export const styles = StyleSheet.create({
     gap: 8,
     marginTop: 10,
   },
-  typeHint: {
+  typeHintBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  typeHintBoxRequest: {
+    backgroundColor: 'rgba(248, 120, 40, 0.14)',
+    borderColor: 'rgba(248, 120, 40, 0.5)',
+  },
+  typeHintBoxOffer: {
+    backgroundColor: 'rgba(95, 191, 127, 0.14)',
+    borderColor: 'rgba(95, 191, 127, 0.5)',
+  },
+  typeHintText: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
+  categoriesToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
     marginTop: 8,
-    color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 18,
+    paddingVertical: 4,
+  },
+  categoriesToggleText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: '600',
   },
   typeButton: {
     flex: 1,

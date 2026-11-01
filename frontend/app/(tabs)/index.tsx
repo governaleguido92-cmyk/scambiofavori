@@ -54,6 +54,7 @@ export default function HomeScreen() {
   const [favors, setFavors] = useState<Favor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<'request' | 'offer'>('request');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -319,47 +320,67 @@ export default function HomeScreen() {
         })}
       </View>
 
-      <Text style={styles.typeHint}>
-        {selectedType === 'request'
-          ? tt('Aiuta un vicino e guadagni Granelli')
-          : tt('Trova chi ha tempo per te, vicino a casa')}
-      </Text>
+      <View style={[styles.typeHintBox, selectedType === 'offer' ? styles.typeHintBoxOffer : styles.typeHintBoxRequest]}>
+        <Ionicons
+          name={selectedType === 'offer' ? 'search' : 'hand-left'}
+          size={20}
+          color={selectedType === 'offer' ? '#5FBF7F' : colors.accentLight}
+        />
+        <Text style={styles.typeHintText}>
+          {selectedType === 'request'
+            ? tt('Aiuta un vicino e guadagni Granelli')
+            : tt('Trova chi ha tempo per te, vicino a casa')}
+        </Text>
+      </View>
 
-      {/* Categories */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesContainer}
-        contentContainerStyle={styles.categoriesContent}
+      {/* Categorie: chiuse di default, si aprono con un tocco */}
+      <TouchableOpacity
+        style={styles.categoriesToggle}
+        onPress={() => setCategoriesOpen((open) => !open)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: categoriesOpen }}
       >
-        <TouchableOpacity
-          style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-          onPress={() => setSelectedCategory(null)}
+        <Text style={styles.categoriesToggleText}>
+          {tt('Categoria')}: {selectedCategory ? tt(selectedCategory) : t('common.all')}
+        </Text>
+        <Ionicons name={categoriesOpen ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
+      </TouchableOpacity>
+      {categoriesOpen && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesContainer}
+          contentContainerStyle={styles.categoriesContent}
         >
-          <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-            {t('common.all')}
-          </Text>
-        </TouchableOpacity>
-        {categories.map((cat) => (
           <TouchableOpacity
-            key={cat.name}
-            style={[
-              styles.categoryChip,
-              selectedCategory === cat.name && styles.categoryChipActive,
-            ]}
-            onPress={() => setSelectedCategory(cat.name)}
+            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
+            onPress={() => { setSelectedCategory(null); setCategoriesOpen(false); }}
           >
-            <Ionicons
-              name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-              size={14}
-              color={selectedCategory === cat.name ? colors.textPrimary : colors.lime}
-            />
-            <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
-              {tt(cat.name)}
+            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
+              {t('common.all')}
             </Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+          {categories.map((cat) => (
+            <TouchableOpacity
+              key={cat.name}
+              style={[
+                styles.categoryChip,
+                selectedCategory === cat.name && styles.categoryChipActive,
+              ]}
+              onPress={() => { setSelectedCategory(cat.name); setCategoriesOpen(false); }}
+            >
+              <Ionicons
+                name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
+                size={14}
+                color={selectedCategory === cat.name ? colors.textPrimary : colors.lime}
+              />
+              <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
+                {tt(cat.name)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </>
   );
 
