@@ -179,9 +179,10 @@ async def get_favors(
     is_emergency: Optional[bool] = None,
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
-    max_distance_km: Optional[float] = None
+    max_distance_km: Optional[float] = None,
+    current_user: User = Depends(get_current_user),
 ):
-    """Get favors (uses approximate location for privacy)"""
+    """Get favors (richiede il login; usa la posizione approssimata per privacy)"""
     query = {"status": status}
     
     # Filtra annunci scaduti (solo per status active)
