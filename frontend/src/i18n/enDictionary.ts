@@ -504,4 +504,6 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Bambini': 'Kids',
   'Fai da te': 'DIY',
   'g': 'd',
+  'scade oggi': 'expires today',
+  'scade tra {0} g': 'expires in {0} d',
 };

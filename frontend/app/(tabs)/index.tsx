@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/home.styles';
 import { logger } from '../../src/utils/logger';
 import { tt, tx } from '../../src/i18n/tt';
+import { getCategoryVisual, getExpiryInfo } from '../../src/utils/favorVisual';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -174,85 +175,83 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderFavorCard = ({ item }: { item: Favor }) => (
-    <TouchableOpacity
-      style={[
-        styles.gridCard,
-        item.creator_in_debt && item.type === 'offer' && styles.favorCardDebtHighlight
-      ]}
-      onPress={() => router.push(`/favor/${item.favor_id}`)}
-      data-testid={`favor-card-${item.favor_id}`}
-    >
-      <View>
-        {/* Autore + segnalazione */}
-        <View style={styles.gridTopRow}>
-          <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={32}>
-            <View style={styles.authorAvatar}>
-              <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
-            </View>
-          </SupporterProfileBorder>
-          <View style={styles.headerContent}>
-            <UserNameWithBadge
-              name={item.creator_name}
-              isSupporter={item.creator_is_supporter}
-              nameStyle={styles.creatorName}
-            />
+  const renderFavorCard = ({ item }: { item: Favor }) => {
+    const visual = getCategoryVisual(item.category);
+    const expiry = getExpiryInfo(item.expires_at);
+    const isOffer = item.type === 'offer';
+    return (
+      <TouchableOpacity
+        style={[
+          styles.gridCard,
+          isOffer ? styles.gridCardOffer : styles.gridCardRequest,
+          item.is_emergency && styles.gridCardUrgent,
+          item.creator_in_debt && isOffer && styles.favorCardDebtHighlight,
+        ]}
+        onPress={() => router.push(`/favor/${item.favor_id}`)}
+        data-testid={`favor-card-${item.favor_id}`}
+      >
+        {/* Banda colorata per categoria */}
+        <View style={[styles.gridBand, { backgroundColor: visual.color }]}>
+          <View style={styles.gridBandCircleA} />
+          <View style={styles.gridBandCircleB} />
+          <Text style={styles.gridBandEmoji}>{visual.emoji}</Text>
+          <View style={styles.gridKindPill}>
+            <Text style={styles.gridKindText}>{isOffer ? t('favor.offer') : t('favor.request')}</Text>
           </View>
-          {item.creator_id !== user?.user_id && (
-            <TouchableOpacity
-              style={styles.reportButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleReportFavor(item.favor_id, item.title);
-              }}
-              data-testid={`report-favor-${item.favor_id}`}
-            >
-              <Ionicons name="flag-outline" size={14} color={colors.textMuted} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={styles.gridTypeRow}>
-          <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-            <Text style={styles.typeText}>
-              {item.type === 'offer' ? t('favor.offer') : t('favor.request')}
-            </Text>
-          </View>
-        </View>
-
-        <Text style={styles.gridTitle} numberOfLines={2}>{item.title}</Text>
-        <Text style={styles.gridDescription} numberOfLines={3}>{item.description}</Text>
-      </View>
-
-      <View style={styles.gridBottom}>
-        <View style={styles.gridBadges}>
-          <View style={styles.categoryBadge}>
-            <Ionicons
-              name={(CATEGORY_ICONS[item.category] || 'ellipsis-horizontal') as any}
-              size={14}
-              color={colors.lime}
-            />
-            <Text style={styles.categoryText} numberOfLines={1}>{tt(item.category)}</Text>
+          <View style={styles.gridGranelliPill}>
+            <Text style={styles.gridGranelliText}>{CURRENCY_SYMBOL} {item.granelli_cost}</Text>
           </View>
           {item.is_emergency && (
-            <View style={styles.emergencyBadge}>
-              <Ionicons name="alert-circle" size={14} color={colors.error} />
-              <Text style={styles.emergencyText}>{tt('Urgente')}</Text>
+            <View style={styles.gridUrgentPill}>
+              <Text style={styles.gridUrgentText}>{tt('URGENTE')}</Text>
             </View>
           )}
         </View>
-        <View style={styles.gridFooterRow}>
-          {typeof item.distance_km === 'number' ? (
-            <Text style={styles.distanceText}>{formatDistance(item.distance_km)}</Text>
-          ) : <View />}
-          <View style={styles.soliContainer}>
-            <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
-            <Text style={styles.soliText}>{item.granelli_cost}</Text>
+
+        <View style={styles.gridBody}>
+          <View style={styles.gridWhoRow}>
+            <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={24}>
+              <View style={[styles.gridAvatar, { backgroundColor: visual.color }]}>
+                <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+              </View>
+            </SupporterProfileBorder>
+            <View style={styles.headerContent}>
+              <UserNameWithBadge
+                name={item.creator_name}
+                isSupporter={item.creator_is_supporter}
+                nameStyle={styles.gridCreatorName}
+              />
+            </View>
+            {item.creator_id !== user?.user_id && (
+              <TouchableOpacity
+                style={styles.reportButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleReportFavor(item.favor_id, item.title);
+                }}
+                data-testid={`report-favor-${item.favor_id}`}
+              >
+                <Ionicons name="flag-outline" size={14} color={colors.textMuted} />
+              </TouchableOpacity>
+            )}
           </View>
+          <Text style={styles.gridTitle} numberOfLines={2}>{item.title}</Text>
+          <Text style={styles.gridDescription} numberOfLines={2}>{item.description}</Text>
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+
+        <View style={styles.gridMeta}>
+          <Text style={styles.gridNear} numberOfLines={1}>
+            {typeof item.distance_km === 'number' ? `● ${formatDistance(item.distance_km)}` : tt(item.category)}
+          </Text>
+          {expiry && (
+            <Text style={[styles.gridExpiry, expiry.isSoon && styles.gridExpirySoon]} numberOfLines={1}>
+              {expiry.label}
+            </Text>
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   // Header component for FlatList
   const ListHeader = () => (
