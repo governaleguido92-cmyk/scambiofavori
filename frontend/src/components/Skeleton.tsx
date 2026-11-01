@@ -56,31 +56,24 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   );
 };
 
-// Skeleton per una card di favore
-export const FavorCardSkeleton: React.FC = () => (
-  <View style={styles.favorCard}>
-    <View style={styles.favorHeader}>
-      <Skeleton width={40} height={40} borderRadius={20} />
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <Skeleton width="60%" height={14} />
-        <Skeleton width="40%" height={12} style={{ marginTop: 6 }} />
-      </View>
-    </View>
-    <Skeleton width="90%" height={18} style={{ marginTop: 12 }} />
-    <Skeleton width="100%" height={14} style={{ marginTop: 8 }} />
-    <Skeleton width="70%" height={14} style={{ marginTop: 4 }} />
-    <View style={styles.favorFooter}>
-      <Skeleton width={80} height={24} borderRadius={12} />
-      <Skeleton width={60} height={24} borderRadius={12} />
+// Skeleton per una scheda della griglia favori (banda + testo + riga in basso)
+const FavorGridCardSkeleton: React.FC = () => (
+  <View style={styles.gridCard}>
+    <Skeleton width="100%" height={74} borderRadius={0} />
+    <View style={{ padding: 12 }}>
+      <Skeleton width="50%" height={12} />
+      <Skeleton width="90%" height={18} style={{ marginTop: 10 }} />
+      <Skeleton width="100%" height={12} style={{ marginTop: 8 }} />
+      <Skeleton width="70%" height={12} style={{ marginTop: 4 }} />
     </View>
   </View>
 );
 
-// Skeleton per la lista favori nella home
-export const FavorsListSkeleton: React.FC<{ count?: number }> = ({ count = 3 }) => (
-  <View>
+// Skeleton della griglia favori nella home (2 colonne, come la lista vera)
+export const FavorsGridSkeleton: React.FC<{ count?: number }> = ({ count = 4 }) => (
+  <View style={styles.gridWrap}>
     {Array.from({ length: count }).map((_, index) => (
-      <FavorCardSkeleton key={index} />
+      <FavorGridCardSkeleton key={index} />
     ))}
   </View>
 );
@@ -117,23 +110,25 @@ export const ProfileSkeleton: React.FC = () => (
 );
 
 const styles = StyleSheet.create({
+  gridWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  gridCard: {
+    flexBasis: '48.5%',
+    flexGrow: 0,
+    flexShrink: 0,
+    minHeight: 236,
+    marginBottom: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#2A4A35',
+    backgroundColor: '#1A2E22',
+    overflow: 'hidden',
+  },
   skeleton: {
     backgroundColor: '#333',
-  },
-  favorCard: {
-    backgroundColor: '#1A2E22',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-  },
-  favorHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  favorFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
   },
   mapContainer: {
     padding: 16,

@@ -19,7 +19,7 @@ import { api, Favor, Category, ThanksEntry, CURRENCY_NAME, CURRENCY_SYMBOL } fro
 import colors from '../../src/theme/colors';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { ReportModal } from '../../src/components/ReportModal';
-import { FavorsListSkeleton } from '../../src/components/Skeleton';
+import { FavorsGridSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 import { offlineCache } from '../../src/utils/offlineCache';
 import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
@@ -171,7 +171,7 @@ export default function HomeScreen() {
         <Ionicons name="arrow-forward" size={14} color="#9DB3A4" />
         <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
       </View>
-      <Text style={styles.thanksMessage} numberOfLines={1}>"{item.message}"</Text>
+      <Text style={styles.thanksMessage} numberOfLines={1}>{`"${item.message}"`}</Text>
     </View>
   );
 
@@ -188,6 +188,8 @@ export default function HomeScreen() {
           item.creator_in_debt && isOffer && styles.favorCardDebtHighlight,
         ]}
         onPress={() => router.push(`/favor/${item.favor_id}`)}
+        accessibilityRole="button"
+        accessibilityLabel={`${isOffer ? t('favor.offer') : t('favor.request')}: ${item.title}, ${item.granelli_cost} ${CURRENCY_NAME}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
         data-testid={`favor-card-${item.favor_id}`}
       >
         {/* Banda colorata per categoria */}
@@ -229,6 +231,9 @@ export default function HomeScreen() {
                   e.stopPropagation();
                   handleReportFavor(item.favor_id, item.title);
                 }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Segnala')}
                 data-testid={`report-favor-${item.favor_id}`}
               >
                 <Ionicons name="flag-outline" size={14} color={colors.textMuted} />
@@ -387,7 +392,7 @@ export default function HomeScreen() {
 
       {loading ? (
         <View style={styles.skeletonContainer}>
-          <FavorsListSkeleton count={4} />
+          <FavorsGridSkeleton count={4} />
         </View>
       ) : (
         <FlatList
