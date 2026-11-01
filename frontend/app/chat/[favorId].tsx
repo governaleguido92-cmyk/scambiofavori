@@ -23,6 +23,9 @@ import { SupporterProfileBorder } from '../../src/components/SupporterBadge';
 import { ChatHeader } from '../../src/components/chat/ChatHeader';
 import { ChatQuickReplies } from '../../src/components/chat/ChatQuickReplies';
 import { ChatActionsBar } from '../../src/components/chat/ChatActionsBar';
+import { MeetingPointModal } from '../../src/components/chat/MeetingPointModal';
+import { MeetingPointCard } from '../../src/components/chat/MeetingPointCard';
+import { formatMeetingPointMessage, parseMeetingPointMessage } from '../../src/utils/meetingPoint';
 import { buildRows, ChatRow } from '../../src/utils/chatDays';
 import { canComplete as mayCompleteFavor } from '../../src/utils/myFavors';
 import { getCategoryVisual } from '../../src/utils/favorVisual';
@@ -65,6 +68,7 @@ export default function ChatScreen() {
   const [showPrivacyAlert, setShowPrivacyAlert] = useState(false);
   const [sendingLocation, setSendingLocation] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showMeeting, setShowMeeting] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
@@ -94,8 +98,8 @@ export default function ChatScreen() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  const sendText = async (text: string, clearInput: boolean) => {
-    if (!token || !favorId || !text.trim() || chatStatus?.read_only) return;
+  const sendText = async (text: string, clearInput: boolean): Promise<boolean> => {
+    if (!token || !favorId || !text.trim() || chatStatus?.read_only) return false;
 
     setSending(true);
     setSendError(null);
@@ -117,9 +121,11 @@ export default function ChatScreen() {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
+      return true;
     } catch (error: any) {
       // Il messaggio resta nel campo: l'avviso è dentro la chat, vicino a dove si scrive
       setSendError(error.message || t('chat.errorSend'));
+      return false;
     } finally {
       setSending(false);
     }
@@ -210,32 +216,15 @@ export default function ChatScreen() {
   };
 
   const handleSendMeetingPoint = () => {
-    Alert.alert(
-      tt('Punto di Incontro'),
-      tt('Seleziona un luogo pubblico per incontrarvi in sicurezza'),
-      [
-        { text: tt('Annulla'), style: 'cancel' },
-        { 
-          text: tt('Piazza/Centro'), 
-          onPress: () => sendMeetingPointMessage('Piazza del Centro', 'Incontriamoci nella piazza centrale')
-        },
-        { 
-          text: tt('Bar/Caffè'), 
-          onPress: () => sendMeetingPointMessage('Bar/Caffè', 'Incontriamoci al bar più vicino')
-        },
-      ]
-    );
+    setSendError(null);
+    setShowMeeting(true);
   };
 
-  const sendMeetingPointMessage = async (place: string, message: string) => {
-    if (!token || !favorId) return;
-    try {
-      const response = await api.sendMessage(favorId, `📍 ${message} - ${place}`, token);
-      const msg = response.message || response;
-      setMessages(prev => [...prev, msg]);
-    } catch (error: any) {
-      notify(tt('Errore'), error.message);
-    }
+  const submitMeetingPoint = async (place: string, when: string) => {
+    const text = formatMeetingPointMessage(place, when);
+    if (!text) return;
+    // La finestra si chiude solo se il messaggio è partito: altrimenti mostra il motivo
+    if (await sendText(text, false)) setShowMeeting(false);
   };
 
   const getOtherParticipant = () => {
@@ -286,6 +275,8 @@ export default function ChatScreen() {
 
   const renderMessage = (item: ChatMessage) => {
     const isMe = item.sender_id === user?.user_id;
+    const meetingPoint = item.blocked ? null : parseMeetingPointMessage(item.content);
+    const messageTime = new Date(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     const senderIsSupporter = getSenderIsSupporter(item.sender_id);
     
     return (
@@ -310,8 +301,9 @@ export default function ChatScreen() {
               <Text style={styles.blockedBadgeText}>{tt('Bloccato')}</Text>
             </View>
           )}
-          {/* Check if message contains a location link */}
-          {item.content.includes('maps.google.com') ? (
+          {meetingPoint ? (
+            <MeetingPointCard point={meetingPoint} time={messageTime} />
+          ) : item.content.includes('maps.google.com') ? (
             <TouchableOpacity onPress={() => openLocationInMaps(item.content)}>
               <View style={styles.locationMessage}>
                 <Ionicons name="location" size={20} color={colors.accent} />
@@ -326,9 +318,7 @@ export default function ChatScreen() {
               {item.content}
             </Text>
           )}
-          <Text style={styles.messageTime}>
-            {new Date(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
-          </Text>
+          {!meetingPoint && <Text style={styles.messageTime}>{messageTime}</Text>}
         </View>
       </View>
     );
@@ -448,6 +438,14 @@ export default function ChatScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      <MeetingPointModal
+        visible={showMeeting}
+        sending={sending}
+        error={sendError}
+        onClose={() => setShowMeeting(false)}
+        onSubmit={submitMeetingPoint}
+      />
 
       {/* Menu ⋯: la segnalazione sta qui, non sempre in vista */}
       <Modal visible={showMenu} transparent animationType="fade" onRequestClose={() => setShowMenu(false)}>
