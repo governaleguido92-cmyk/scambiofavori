@@ -20,40 +20,13 @@ import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 import colors from '../../src/theme/colors';
 import { FavorCard } from '../../src/components/FavorCard';
-import { canComplete, groupByTab, isExpired, MyFavorTab, roleOf } from '../../src/utils/myFavors';
-
-const STATUS_COLORS = {
-  waiting: '#C9A227',
-  expired: '#6B7F72',
-  ongoing: '#2F7A4D',
-  completed: '#2F8F5B',
-  cancelled: '#8A8A8A',
-} as const;
+import { canComplete, groupByTab, isExpired, MyFavorTab } from '../../src/utils/myFavors';
+import { roleText, statusOf } from '../../src/utils/favorLabels';
 
 const TAB_ORDER: ReadonlyArray<MyFavorTab> = ['ongoing', 'published', 'closed'];
 
 const tabLabel = (tab: MyFavorTab): string =>
   tab === 'ongoing' ? tt('In corso') : tab === 'published' ? tt('Pubblicati') : tt('Conclusi');
-
-/** Etichetta e colore dello stato sulla banda della scheda. */
-const statusOf = (favor: Favor): { label: string; color: string } => {
-  if (favor.status === 'accepted') return { label: tt('In corso'), color: STATUS_COLORS.ongoing };
-  if (favor.status === 'completed') return { label: tt('Concluso'), color: STATUS_COLORS.completed };
-  if (favor.status === 'cancelled') return { label: tt('Annullato'), color: STATUS_COLORS.cancelled };
-  if (isExpired(favor)) return { label: tt('Scaduto'), color: STATUS_COLORS.expired };
-  return { label: tt('In attesa'), color: STATUS_COLORS.waiting };
-};
-
-/** La riga che dice chi aiuta chi, al posto del nome dell'autore. */
-const roleText = (favor: Favor, userId: string | undefined): string => {
-  if (favor.status === 'cancelled') return tt('Favore annullato');
-  const { relation, otherName } = roleOf(favor, userId);
-  const name = otherName || tt('un vicino');
-  const done = favor.status === 'completed';
-  if (relation === 'iHelp') return tx(done ? 'Hai aiutato {0}' : 'Stai aiutando {0}', [name]);
-  if (relation === 'helpsMe') return tx(done ? '{0} ti ha aiutato' : '{0} ti sta aiutando', [name]);
-  return isExpired(favor) ? tt('Nessuno ha accettato in tempo') : tt('In attesa di qualcuno che accetti');
-};
 
 interface SummaryProps {
   helped: number;
