@@ -34,6 +34,7 @@ const DEBT_LIMIT = -3; // Social debt threshold
 const TITLE_MAX = 100;
 const DESCRIPTION_MAX = 500;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_HOURS = 1; // si va di ora in ora, niente mezze ore
 
 // Durata dell'annuncio: tre scelte semplici (il server accetta da 1 a 10 giorni).
 const VALIDITY_CHOICES: ReadonlyArray<{ days: number; label: string }> = [
@@ -151,7 +152,7 @@ export default function CreateFavorScreen() {
       return;
     }
 
-    const duration = parseFloat(durationHours) || 1;
+    const duration = currentHours;
     const granelliNeeded = Math.max(1, Math.round(duration));
 
     if (type === 'request' && (user?.granelli || 0) < granelliNeeded) {
@@ -207,7 +208,9 @@ export default function CreateFavorScreen() {
     }
   };
 
-  const granelliPreview = Math.max(1, Math.round(parseFloat(durationHours) || 1));
+  // Ore intere, almeno 1: un campo vuoto o 0 vale 1.
+  const currentHours = Math.max(MIN_HOURS, parseInt(durationHours, 10) || MIN_HOURS);
+  const granelliPreview = currentHours;
   const titleExamples = getTitleExamples(category);
 
   // Scheda di anteprima costruita dai campi del form, con segnaposto finché non si scrive.
@@ -221,7 +224,7 @@ export default function CreateFavorScreen() {
     title: title.trim() || tt('Il titolo del tuo favore'),
     description: description.trim() || tt('Qui comparirà la descrizione.'),
     category: category || 'Altro',
-    duration_hours: parseFloat(durationHours) || 1,
+    duration_hours: currentHours,
     granelli_cost: granelliPreview,
     status: 'active',
     is_emergency: false,
@@ -412,7 +415,7 @@ export default function CreateFavorScreen() {
             <View style={styles.durationContainer}>
               <TouchableOpacity
                 style={styles.durationButton}
-                onPress={() => setDurationHours(String(Math.max(0.5, parseFloat(durationHours) - 0.5)))}
+                onPress={() => setDurationHours(String(Math.max(MIN_HOURS, currentHours - 1)))}
               >
                 <Ionicons name="remove" size={24} color="#fff" />
               </TouchableOpacity>
@@ -420,15 +423,16 @@ export default function CreateFavorScreen() {
                 <TextInput
                   style={styles.durationValue}
                   value={durationHours}
-                  onChangeText={setDurationHours}
-                  keyboardType="decimal-pad"
-                  maxLength={4}
+                  onChangeText={(text) => setDurationHours(text.replace(/[^0-9]/g, ''))}
+                  onBlur={() => setDurationHours(String(currentHours))}
+                  keyboardType="number-pad"
+                  maxLength={3}
                 />
                 <Text style={styles.durationUnit}>{tt('ore')}</Text>
               </View>
               <TouchableOpacity
                 style={styles.durationButton}
-                onPress={() => setDurationHours(String(parseFloat(durationHours) + 0.5))}
+                onPress={() => setDurationHours(String(currentHours + 1))}
               >
                 <Ionicons name="add" size={24} color="#fff" />
               </TouchableOpacity>
