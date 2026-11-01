@@ -111,6 +111,14 @@
   function removeBanner() {
     var el = document.getElementById('sf-consent');
     if (el) el.remove();
+    document.body.style.paddingBottom = '';
+    window.removeEventListener('resize', reserveBannerSpace);
+  }
+
+  // The banner is fixed to the bottom: reserve room under the page so the footer links stay reachable.
+  function reserveBannerSpace() {
+    var el = document.getElementById('sf-consent');
+    document.body.style.paddingBottom = el ? (el.offsetHeight + 32) + 'px' : '';
   }
 
   function showBanner() {
@@ -159,6 +167,8 @@
     box.appendChild(text);
     box.appendChild(row);
     document.body.appendChild(box);
+    reserveBannerSpace();
+    window.addEventListener('resize', reserveBannerSpace);
     box.querySelector('.sf-reject').addEventListener('click', function () {
       saveChoice('denied');
       clearAnalyticsCookies();
