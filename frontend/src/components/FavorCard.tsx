@@ -2,11 +2,12 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../services/api';
+import { Favor, CURRENCY_SYMBOL } from '../services/api';
 import colors from '../theme/colors';
 import { styles } from '../styles/home.styles';
 import { tt } from '../i18n/tt';
 import { getCategoryVisual, getExpiryInfo, formatDistance } from '../utils/favorVisual';
+import { formatGranelli } from '../utils/granelli';
 import { UserNameWithBadge, SupporterProfileBorder } from './SupporterBadge';
 
 interface FavorCardProps {
@@ -42,7 +43,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({ item, currentUserId, onPre
       ]}
       onPress={() => onPress(item)}
       accessibilityRole="button"
-      accessibilityLabel={`${kindLabel}: ${item.title}, ${item.granelli_cost} ${CURRENCY_NAME}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
+      accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
       data-testid={`favor-card-${item.favor_id}`}
     >
       {/* Banda colorata per categoria */}

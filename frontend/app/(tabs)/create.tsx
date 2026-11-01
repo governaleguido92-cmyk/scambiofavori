@@ -19,27 +19,28 @@ import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { useNetworkStatus } from '../../src/hooks/useNetworkStatus';
 import { useTranslation } from 'react-i18next';
-import { api, Category, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Category, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { styles } from '../../src/styles/create.styles';
+import { FavorCard } from '../../src/components/FavorCard';
+import { getCategoryVisual } from '../../src/utils/favorVisual';
+import { getTitleExamples } from '../../src/utils/favorExamples';
+import { granelliWord } from '../../src/utils/granelli';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 
 const DEBT_LIMIT = -3; // Social debt threshold
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'Trasporto': 'car',
-  'Spesa': 'cart',
-  'Tecnologia': 'laptop',
-  'Pulizie': 'water',
-  'Compagnia': 'people',
-  'Cucina': 'restaurant',
-  'Giardinaggio': 'leaf',
-  'Consiglio': 'bulb',
-  'Informazione': 'information-circle',
-  'Aiuto Rapido': 'flash',
-  'Altro': 'ellipsis-horizontal',
-};
+const TITLE_MAX = 100;
+const DESCRIPTION_MAX = 500;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Durata dell'annuncio: tre scelte semplici (il server accetta da 1 a 10 giorni).
+const VALIDITY_CHOICES: ReadonlyArray<{ days: number; label: string }> = [
+  { days: 1, label: '1 giorno' },
+  { days: 3, label: '3 giorni' },
+  { days: 7, label: '1 settimana' },
+];
 
 export default function CreateFavorScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -64,9 +65,6 @@ export default function CreateFavorScreen() {
   
   // Check if user is in social debt
   const isInDebt = (user?.granelli || 0) <= DEBT_LIMIT;
-
-  // Opzioni durata annuncio
-  const validityOptions = [1, 2, 3, 5, 7, 10];
 
   useEffect(() => {
     loadCategories();
@@ -210,6 +208,29 @@ export default function CreateFavorScreen() {
   };
 
   const granelliPreview = Math.max(1, Math.round(parseFloat(durationHours) || 1));
+  const titleExamples = getTitleExamples(category);
+
+  // Scheda di anteprima costruita dai campi del form, con segnaposto finché non si scrive.
+  const previewFavor: Favor = {
+    favor_id: 'preview',
+    creator_id: user?.user_id ?? '',
+    creator_name: user?.name || '?',
+    creator_title: '',
+    creator_is_supporter: false,
+    type,
+    title: title.trim() || tt('Il titolo del tuo favore'),
+    description: description.trim() || tt('Qui comparirà la descrizione.'),
+    category: category || 'Altro',
+    duration_hours: parseFloat(durationHours) || 1,
+    granelli_cost: granelliPreview,
+    status: 'active',
+    is_emergency: false,
+    creator_in_debt: false,
+    validity_days: validityDays,
+    expires_at: new Date(Date.now() + validityDays * DAY_MS).toISOString(),
+    checkin_completed: false,
+    created_at: new Date().toISOString(),
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -254,10 +275,10 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="gift"
                 size={24}
-                color={type === 'offer' ? '#0F1A14' : '#B8C868'}
+                color={type === 'offer' ? '#0F1A14' : '#5FBF7F'}
               />
-              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Dona un favore')}</Text>
-              <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>{tt('Guadagna')}{' '}{CURRENCY_NAME}
+              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Offro un favore')}</Text>
+              <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>{tt('Guadagni')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
 
@@ -268,12 +289,45 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="hand-left"
                 size={24}
-                color={type === 'request' ? '#0F1A14' : '#ff6b6b'}
+                color={type === 'request' ? '#0F1A14' : '#F87828'}
               />
-              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Ricevi un favore')}</Text>
+              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Chiedo un favore')}</Text>
               <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>{tt('Spendi')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
+          </View>
+
+          {/* Posizione: subito in alto, perché è obbligatoria e serve sapere cosa vedranno gli altri */}
+          <View style={styles.inputGroup}>
+            <View style={styles.locationInfoBox}>
+              <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
+              <View style={styles.locationInfoText}>
+                <Text style={styles.locationInfoTitle}>{tt('Privacy Protetta')}</Text>
+                <Text style={styles.locationInfoDescription}>{tt('Gli altri vedranno solo una zona approssimata sulla mappa, non il tuo indirizzo. L\'indirizzo esatto lo condividi tu in chat.')}</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={styles.locationButton}
+              onPress={getLocation}
+              disabled={gettingLocation}
+            >
+              {gettingLocation ? (
+                <ActivityIndicator size="small" color="#B8C868" />
+              ) : (
+                <>
+                  <Ionicons name="location" size={20} color="#B8C868" />
+                  <Text style={styles.locationButtonText}>
+                    {location ? tt('Posizione aggiunta') : tt('Aggiungi posizione (obbligatoria)')}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+            {location && (
+              <View style={styles.addressContainer}>
+                <Ionicons name="checkmark-circle" size={16} color="#B8C868" />
+                <Text style={styles.addressText}>{tt('Posizione salvata (visibile solo sulla mappa)')}</Text>
+              </View>
+            )}
           </View>
 
           {/* Title Input */}
@@ -285,8 +339,25 @@ export default function CreateFavorScreen() {
               placeholderTextColor="#8FA595"
               value={title}
               onChangeText={setTitle}
-              maxLength={100}
+              maxLength={TITLE_MAX}
             />
+            <Text style={styles.charCounter}>{title.length}/{TITLE_MAX}</Text>
+            {title.length === 0 && titleExamples.length > 0 && (
+              <View style={styles.exampleRow}>
+                <Text style={styles.exampleLabel}>{tt('Per esempio')}:</Text>
+                {titleExamples.map((example) => (
+                  <TouchableOpacity
+                    key={example}
+                    style={styles.exampleChip}
+                    onPress={() => setTitle(example)}
+                    accessibilityRole="button"
+                    accessibilityLabel={example}
+                  >
+                    <Text style={styles.exampleChipText}>{example}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Description Input */}
@@ -301,8 +372,9 @@ export default function CreateFavorScreen() {
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              maxLength={500}
+              maxLength={DESCRIPTION_MAX}
             />
+            <Text style={styles.charCounter}>{description.length}/{DESCRIPTION_MAX}</Text>
           </View>
 
           {/* Category Selector */}
@@ -313,28 +385,24 @@ export default function CreateFavorScreen() {
               showsHorizontalScrollIndicator={false}
               style={styles.categoriesScroll}
             >
-              {categories.map((cat) => (
-                <TouchableOpacity
-                  key={cat.name}
-                  style={[
-                    styles.categoryChip,
-                    category === cat.name && styles.categoryChipActive,
-                  ]}
-                  onPress={() => setCategory(cat.name)}
-                >
-                  <Ionicons
-                    name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-                    size={20}
-                    color={category === cat.name ? '#0F1A14' : '#B8C868'}
-                  />
-                  <Text style={[
-                    styles.categoryChipText,
-                    category === cat.name && styles.categoryChipTextActive,
-                  ]}>
-                    {tt(cat.name)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {categories.map((cat) => {
+                const visual = getCategoryVisual(cat.name);
+                const active = category === cat.name;
+                return (
+                  <TouchableOpacity
+                    key={cat.name}
+                    style={[styles.categoryChip, active && { backgroundColor: visual.color }]}
+                    onPress={() => setCategory(cat.name)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                  >
+                    <Text style={styles.categoryChipEmoji}>{visual.emoji}</Text>
+                    <Text style={[styles.categoryChipText, active && styles.categoryChipTextOnColor]}>
+                      {tt(cat.name)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
 
@@ -367,7 +435,7 @@ export default function CreateFavorScreen() {
             </View>
             <View style={styles.parityInfo}>
               <Ionicons name="information-circle" size={16} color="#B8C868" />
-              <Text style={styles.parityText}>{tt('1 ora = 1')}{' '}{CURRENCY_NAME}{' '}{tt('(Parità di Valore)')}</Text>
+              <Text style={styles.parityText}>{tt('1 ora = 1')}{' '}{granelliWord(1)}{' '}{tt('(Parità di Valore)')}</Text>
             </View>
           </View>
 
@@ -379,7 +447,7 @@ export default function CreateFavorScreen() {
             <View style={styles.granelliPreviewValue}>
               <Text style={styles.granelliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
               <Text style={styles.granelliPreviewNumber}>{granelliPreview}</Text>
-              <Text style={styles.granelliPreviewUnit}>{CURRENCY_NAME}</Text>
+              <Text style={styles.granelliPreviewUnit}>{granelliWord(granelliPreview)}</Text>
             </View>
           </View>
           {type === 'request' && (
@@ -387,74 +455,35 @@ export default function CreateFavorScreen() {
             </Text>
           )}
 
-          {/* Validity Days Selector */}
+          {/* Durata annuncio: tre scelte semplici */}
           <View style={styles.inputGroup}>
-            <View style={styles.validityHeader}>
-              <Text style={styles.label}>{tt('Durata Annuncio')}</Text>
-              <View style={styles.validityBadge}>
-                <Ionicons name="time-outline" size={14} color="#B8C868" />
-                <Text style={styles.validityBadgeText}>{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}</Text>
-              </View>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.validityScroll}
-            >
-              {validityOptions.map((days) => (
+            <Text style={styles.label}>{tt('Durata Annuncio')}</Text>
+            <View style={styles.validityChoices}>
+              {VALIDITY_CHOICES.map((choice) => (
                 <TouchableOpacity
-                  key={days}
-                  style={[
-                    styles.validityChip,
-                    validityDays === days && styles.validityChipActive,
-                  ]}
-                  onPress={() => setValidityDays(days)}
-                  data-testid={`validity-${days}`}
+                  key={choice.days}
+                  style={[styles.validityChoice, validityDays === choice.days && styles.validityChoiceActive]}
+                  onPress={() => setValidityDays(choice.days)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: validityDays === choice.days }}
+                  data-testid={`validity-${choice.days}`}
                 >
-                  <Text style={[
-                    styles.validityChipText,
-                    validityDays === days && styles.validityChipTextActive,
-                  ]}>
-                    {days} {days === 1 ? tt('g') : tt('gg')}
+                  <Text style={[styles.validityChoiceText, validityDays === choice.days && styles.validityChoiceTextActive]}>
+                    {tt(choice.label)}
                   </Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
             <Text style={styles.validityHint}>{tt('L\'annuncio scadrà automaticamente dopo')}{' '}{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}
             </Text>
           </View>
 
-          {/* Location - Hidden from UI, automatically added */}
+          {/* Anteprima: come lo vedranno i vicini */}
           <View style={styles.inputGroup}>
-            <View style={styles.locationInfoBox}>
-              <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
-              <View style={styles.locationInfoText}>
-                <Text style={styles.locationInfoTitle}>{tt('Privacy Protetta')}</Text>
-                <Text style={styles.locationInfoDescription}>{tt('La tua posizione sarà visibile solo sulla mappa. Potrai condividere l\'indirizzo esatto via chat.')}</Text>
-              </View>
+            <Text style={styles.label}>{tt('Così lo vedranno i vicini')}</Text>
+            <View style={styles.previewWrap}>
+              <FavorCard item={previewFavor} onPress={() => undefined} style={styles.previewCard} />
             </View>
-            <TouchableOpacity
-              style={styles.locationButton}
-              onPress={getLocation}
-              disabled={gettingLocation}
-            >
-              {gettingLocation ? (
-                <ActivityIndicator size="small" color="#B8C868" />
-              ) : (
-                <>
-                  <Ionicons name="location" size={20} color="#B8C868" />
-                  <Text style={styles.locationButtonText}>
-                    {location ? tt('Posizione aggiunta') : tt('Aggiungi posizione (obbligatoria)')}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-            {location && (
-              <View style={styles.addressContainer}>
-                <Ionicons name="checkmark-circle" size={16} color="#B8C868" />
-                <Text style={styles.addressText}>{tt('Posizione salvata (visibile solo sulla mappa)')}</Text>
-              </View>
-            )}
           </View>
 
           {/* Submit Button */}
