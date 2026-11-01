@@ -510,4 +510,5 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Trova chi ha tempo per te e usa i tuoi Granelli': 'Find someone with time for you and use your Granelli',
   'Offerte di favori': 'Favor offers',
   'Richieste di favori': 'Favor requests',
+  'Raggio di ricerca': 'Search radius',
 };

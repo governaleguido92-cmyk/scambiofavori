@@ -21,6 +21,8 @@ import { MapMarkersSkeleton } from '../../src/components/Skeleton';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
 import { tt, tx } from '../../src/i18n/tt';
+import { RadiusSlider } from '../../src/components/RadiusSlider';
+import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, withinRadius } from '../../src/utils/radius';
 
 const { width, height } = Dimensions.get('window');
 const LATITUDE_DELTA = 0.02;
@@ -111,6 +113,7 @@ export default function MapScreen() {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<'all' | 'offer' | 'request'>('all');
+  const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_KM);
 
   const getUserLocation = async () => {
     try {
@@ -141,7 +144,7 @@ export default function MapScreen() {
       if (location) {
         params.latitude = location.latitude;
         params.longitude = location.longitude;
-        params.max_distance_km = 10; // 10km radius
+        params.max_distance_km = MAX_RADIUS_KM; // scarico fino al massimo, il raggio scelto filtra sul telefono
       }
       
       if (selectedType !== 'all') {
@@ -164,6 +167,9 @@ export default function MapScreen() {
     loadFavors();
   }, [loadFavors]);
 
+  // Con la posizione attiva si filtra per raggio; senza posizione non c'è distanza e si mostra tutto.
+  const visibleFavors = userLocation ? withinRadius(favors, radiusKm) : favors;
+
   const handleFavorPress = (favor: Favor) => {
     router.push(`/favor/${favor.favor_id}`);
   };
@@ -185,7 +191,7 @@ export default function MapScreen() {
         <View>
           <Text style={styles.title}>{t('map.title')}</Text>
           <Text style={styles.subtitle}>
-            {favors.length}{' '}{tt('favori nelle vicinanze')}</Text>
+            {visibleFavors.length}{' '}{tt('favori nelle vicinanze')}</Text>
         </View>
         <TouchableOpacity 
           style={styles.refreshButton}
@@ -238,6 +244,10 @@ export default function MapScreen() {
         </TouchableOpacity>
       </View>
 
+      {userLocation && (
+        <RadiusSlider valueKm={radiusKm} onChange={setRadiusKm} label={tt('Raggio di ricerca')} />
+      )}
+
       {/* Map View */}
       {loading ? (
         <View style={styles.skeletonContainer}>
@@ -245,7 +255,7 @@ export default function MapScreen() {
         </View>
       ) : (
         <MapPlaceholder 
-          favors={favors}
+          favors={visibleFavors}
           userLocation={userLocation}
           onFavorPress={handleFavorPress}
         />
