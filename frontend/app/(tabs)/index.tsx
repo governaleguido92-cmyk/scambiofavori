@@ -177,59 +177,62 @@ export default function HomeScreen() {
   const renderFavorCard = ({ item }: { item: Favor }) => (
     <TouchableOpacity
       style={[
-        styles.favorCard,
+        styles.gridCard,
         item.creator_in_debt && item.type === 'offer' && styles.favorCardDebtHighlight
       ]}
       onPress={() => router.push(`/favor/${item.favor_id}`)}
       data-testid={`favor-card-${item.favor_id}`}
     >
-      {/* Compact Header: Avatar + Name + Type Badge */}
-      <View style={styles.favorHeader}>
-        <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={32}>
-          <View style={styles.authorAvatar}>
-            <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+      <View>
+        {/* Autore + segnalazione */}
+        <View style={styles.gridTopRow}>
+          <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={32}>
+            <View style={styles.authorAvatar}>
+              <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+            </View>
+          </SupporterProfileBorder>
+          <View style={styles.headerContent}>
+            <UserNameWithBadge
+              name={item.creator_name}
+              isSupporter={item.creator_is_supporter}
+              nameStyle={styles.creatorName}
+            />
           </View>
-        </SupporterProfileBorder>
-        <View style={styles.headerContent}>
-          <UserNameWithBadge 
-            name={item.creator_name} 
-            isSupporter={item.creator_is_supporter}
-            nameStyle={styles.creatorName}
-          />
+          {item.creator_id !== user?.user_id && (
+            <TouchableOpacity
+              style={styles.reportButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleReportFavor(item.favor_id, item.title);
+              }}
+              data-testid={`report-favor-${item.favor_id}`}
+            >
+              <Ionicons name="flag-outline" size={14} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
         </View>
-        <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
-          <Text style={styles.typeText}>
-            {item.type === 'offer' ? t('favor.offer') : t('favor.request')}
-          </Text>
+
+        <View style={styles.gridTypeRow}>
+          <View style={[styles.typeBadge, item.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
+            <Text style={styles.typeText}>
+              {item.type === 'offer' ? t('favor.offer') : t('favor.request')}
+            </Text>
+          </View>
         </View>
-        {item.creator_id !== user?.user_id && (
-          <TouchableOpacity
-            style={styles.reportButton}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleReportFavor(item.favor_id, item.title);
-            }}
-            data-testid={`report-favor-${item.favor_id}`}
-          >
-            <Ionicons name="flag-outline" size={14} color={colors.textMuted} />
-          </TouchableOpacity>
-        )}
+
+        <Text style={styles.gridTitle} numberOfLines={2}>{item.title}</Text>
+        <Text style={styles.gridDescription} numberOfLines={3}>{item.description}</Text>
       </View>
 
-      {/* Title */}
-      <Text style={styles.favorTitle} numberOfLines={1}>{item.title}</Text>
-      <Text style={styles.favorDescription} numberOfLines={2}>{item.description}</Text>
-
-      {/* Footer: Category + Emergency + Granelli */}
-      <View style={styles.favorFooter}>
-        <View style={styles.footerLeft}>
+      <View style={styles.gridBottom}>
+        <View style={styles.gridBadges}>
           <View style={styles.categoryBadge}>
             <Ionicons
               name={(CATEGORY_ICONS[item.category] || 'ellipsis-horizontal') as any}
               size={14}
               color={colors.lime}
             />
-            <Text style={styles.categoryText}>{tt(item.category)}</Text>
+            <Text style={styles.categoryText} numberOfLines={1}>{tt(item.category)}</Text>
           </View>
           {item.is_emergency && (
             <View style={styles.emergencyBadge}>
@@ -238,10 +241,10 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-        <View style={styles.footerRight}>
-          {typeof item.distance_km === 'number' && (
+        <View style={styles.gridFooterRow}>
+          {typeof item.distance_km === 'number' ? (
             <Text style={styles.distanceText}>{formatDistance(item.distance_km)}</Text>
-          )}
+          ) : <View />}
           <View style={styles.soliContainer}>
             <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
             <Text style={styles.soliText}>{item.granelli_cost}</Text>
@@ -392,6 +395,8 @@ export default function HomeScreen() {
           data={favors}
           renderItem={renderFavorCard}
           keyExtractor={(item) => item.favor_id}
+          numColumns={2}
+          columnWrapperStyle={styles.gridRow}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={
