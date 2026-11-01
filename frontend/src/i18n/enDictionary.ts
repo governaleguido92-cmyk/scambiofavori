@@ -512,4 +512,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Richieste di favori': 'Favor requests',
   'Raggio di ricerca': 'Search radius',
   'Attiva la posizione per scegliere il raggio di ricerca': 'Turn on location to choose the search radius',
+  'Nessun favore in questo raggio: prova ad allargare il raggio di ricerca': 'No favors in this radius: try widening the search radius',
+  'Nessun favore trovato': 'No favors found',
+  'Aggiorna': 'Refresh',
 };

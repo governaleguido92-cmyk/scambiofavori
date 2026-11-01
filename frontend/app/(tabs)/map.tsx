@@ -1,133 +1,48 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Dimensions,
-  Platform,
-} from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Favor } from '../../src/services/api';
 import { offlineCache } from '../../src/utils/offlineCache';
 import colors from '../../src/theme/colors';
-import { SupporterBadge } from '../../src/components/SupporterBadge';
 import { MapMarkersSkeleton } from '../../src/components/Skeleton';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
-import { tt, tx } from '../../src/i18n/tt';
+import { tt } from '../../src/i18n/tt';
 import { RadiusSlider } from '../../src/components/RadiusSlider';
-import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, withinRadius } from '../../src/utils/radius';
+import { FavorRadar } from '../../src/components/FavorRadar';
+import { FavorCard } from '../../src/components/FavorCard';
+import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
+import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, formatRadius, withinRadius } from '../../src/utils/radius';
 
-const { width, height } = Dimensions.get('window');
-const LATITUDE_DELTA = 0.02;
-const LONGITUDE_DELTA = LATITUDE_DELTA * (width / height);
+const CARD_WIDTH = 190;
+const CARD_GAP = 12;
 
-// Map component - using a simple WebView approach for web compatibility
-const MapPlaceholder = ({ 
-  favors, 
-  userLocation, 
-  onFavorPress 
-}: { 
-  favors: Favor[];
-  userLocation: { latitude: number; longitude: number } | null;
-  onFavorPress: (favor: Favor) => void;
-}) => {
-  return (
-    <View style={styles.mapContainer}>
-      {/* Map placeholder with favor circles */}
-      <View style={styles.mapView}>
-        {/* User location indicator */}
-        {userLocation && (
-          <View style={styles.userLocationMarker}>
-            <View style={styles.userLocationDot} />
-            <Text style={styles.userLocationText}>{tt('Tu sei qui')}</Text>
-          </View>
-        )}
-        
-        {/* Favor proximity circles */}
-        <View style={styles.favorsGrid}>
-          {favors.slice(0, 6).map((favor, index) => (
-            <TouchableOpacity
-              key={favor.favor_id}
-              style={[
-                styles.favorCircle,
-                favor.type === 'offer' ? styles.offerCircle : styles.requestCircle,
-                favor.creator_is_supporter && styles.supporterCircle,
-                { 
-                  left: `${15 + (index % 3) * 30}%`,
-                  top: `${20 + Math.floor(index / 3) * 35}%`
-                }
-              ]}
-              onPress={() => onFavorPress(favor)}
-              data-testid={`map-favor-${favor.favor_id}`}
-            >
-              {/* Supporter badge in top-right corner */}
-              {favor.creator_is_supporter && (
-                <View style={styles.mapSupporterBadge}>
-                  <SupporterBadge size="small" />
-                </View>
-              )}
-              <View style={styles.circleInner}>
-                <Ionicons 
-                  name={favor.type === 'offer' ? 'gift' : 'hand-left'} 
-                  size={20} 
-                  color={colors.textPrimary} 
-                />
-                <Text style={styles.circleDistance} numberOfLines={1}>
-                  {favor.distance_km ? tx('{0}km', [favor.distance_km]) : '~'}
-                </Text>
-              </View>
-              <View style={styles.circleLabel}>
-                <Text style={styles.circleLabelText} numberOfLines={1}>
-                  {favor.title}
-                </Text>
-                <Text style={styles.circleCreatorText} numberOfLines={1}>
-                  {favor.creator_name}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Privacy notice */}
-        <View style={styles.privacyBanner}>
-          <Ionicons name="shield-checkmark" size={16} color={colors.lime} />
-          <Text style={styles.privacyText}>{tt('Le posizioni sono approssimative per proteggere la privacy')}</Text>
-        </View>
-      </View>
-    </View>
-  );
-};
+type Coordinates = { latitude: number; longitude: number };
 
 export default function MapScreen() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
   const [favors, setFavors] = useState<Favor[]>([]);
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState<'all' | 'offer' | 'request'>('all');
+  const [selectedType, setSelectedType] = useState<FavorType>('request');
   const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_KM);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const listRef = useRef<FlatList<Favor>>(null);
 
-  const getUserLocation = async () => {
+  const getUserLocation = async (): Promise<Coordinates | null> => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
         const location = await Location.getCurrentPositionAsync({});
-        setUserLocation({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        });
-        return {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        };
+        const coords = { latitude: location.coords.latitude, longitude: location.coords.longitude };
+        setUserLocation(coords);
+        return coords;
       }
     } catch (error) {
       logger.debug('Error getting location:', error);
@@ -139,40 +54,44 @@ export default function MapScreen() {
     try {
       setLoading(true);
       const location = await getUserLocation();
-      const params: any = { status: 'active' };
-      
+      const params: any = { status: 'active', type: selectedType };
       if (location) {
         params.latitude = location.latitude;
         params.longitude = location.longitude;
         params.max_distance_km = MAX_RADIUS_KM; // scarico fino al massimo, il raggio scelto filtra sul telefono
       }
-      
-      if (selectedType !== 'all') {
-        params.type = selectedType;
-      }
-      
       const data = await api.getFavors(params);
       setFavors(data);
       await offlineCache.saveFavors(data);
     } catch (error) {
-      console.error('Error loading favors:', error);
+      logger.debug('Error loading favors:', error);
       const cached = await offlineCache.loadFavors();
-      if (cached) setFavors(cached);
+      if (cached) setFavors(cached.filter((favor) => favor.type === selectedType));
     } finally {
       setLoading(false);
     }
   }, [selectedType]);
 
   useEffect(() => {
+    setSelectedId(null);
     loadFavors();
   }, [loadFavors]);
 
   // Con la posizione attiva si filtra per raggio; senza posizione non c'è distanza e si mostra tutto.
   const visibleFavors = userLocation ? withinRadius(favors, radiusKm) : favors;
 
-  const handleFavorPress = (favor: Favor) => {
-    router.push(`/favor/${favor.favor_id}`);
+  // Un favore selezionato che esce dal raggio non ha più senso evidenziarlo.
+  useEffect(() => {
+    if (selectedId && !visibleFavors.some((favor) => favor.favor_id === selectedId)) setSelectedId(null);
+  }, [visibleFavors, selectedId]);
+
+  const handleSelect = (favorId: string) => {
+    setSelectedId(favorId);
+    const index = visibleFavors.findIndex((favor) => favor.favor_id === favorId);
+    if (index >= 0) listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
   };
+
+  const openFavor = (favor: Favor) => router.push(`/favor/${favor.favor_id}`);
 
   if (!user) {
     return (
@@ -186,115 +105,91 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>{t('map.title')}</Text>
-          <Text style={styles.subtitle}>
-            {visibleFavors.length}{' '}{tt('favori nelle vicinanze')}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>{t('map.title')}</Text>
+            <Text style={styles.subtitle}>
+              {visibleFavors.length}{' '}{tt('favori nelle vicinanze')}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.refreshButton} onPress={loadFavors} accessibilityRole="button" accessibilityLabel={tt('Aggiorna')}>
+            <Ionicons name="refresh" size={24} color={colors.lime} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity 
-          style={styles.refreshButton}
-          onPress={loadFavors}
-        >
-          <Ionicons name="refresh" size={24} color={colors.lime} />
-        </TouchableOpacity>
-      </View>
 
-      {/* Type Filter */}
-      <View style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[styles.filterButton, selectedType === 'all' && styles.filterButtonActive]}
-          onPress={() => setSelectedType('all')}
-        >
-          <Ionicons 
-            name="apps" 
-            size={16} 
-            color={selectedType === 'all' ? colors.background : colors.textSecondary} 
-          />
-          <Text style={[styles.filterText, selectedType === 'all' && styles.filterTextActive]}>
-            {t('common.all')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, selectedType === 'offer' && styles.filterButtonActive]}
-          onPress={() => setSelectedType('offer')}
-        >
-          <Ionicons 
-            name="gift" 
-            size={16} 
-            color={selectedType === 'offer' ? colors.background : colors.textSecondary} 
-          />
-          <Text style={[styles.filterText, selectedType === 'offer' && styles.filterTextActive]}>
-            {t('home.offers')}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, selectedType === 'request' && styles.filterButtonActive]}
-          onPress={() => setSelectedType('request')}
-        >
-          <Ionicons 
-            name="hand-left" 
-            size={16} 
-            color={selectedType === 'request' ? colors.background : colors.textSecondary} 
-          />
-          <Text style={[styles.filterText, selectedType === 'request' && styles.filterTextActive]}>
-            {t('home.requests')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.tabsWrap}>
+          <FavorTypeTabs value={selectedType} onChange={setSelectedType} />
+        </View>
 
-      {userLocation ? (
-        <RadiusSlider valueKm={radiusKm} onChange={setRadiusKm} label={tt('Raggio di ricerca')} />
-      ) : (
-        <View style={styles.noLocationNote}>
-          <Ionicons name="location-outline" size={16} color={colors.textMuted} />
-          <Text style={styles.noLocationText}>{tt('Attiva la posizione per scegliere il raggio di ricerca')}</Text>
-        </View>
-      )}
+        {userLocation ? (
+          <RadiusSlider valueKm={radiusKm} onChange={setRadiusKm} label={tt('Raggio di ricerca')} />
+        ) : (
+          <View style={styles.noLocationNote}>
+            <Ionicons name="location-outline" size={16} color={colors.textMuted} />
+            <Text style={styles.noLocationText}>{tt('Attiva la posizione per scegliere il raggio di ricerca')}</Text>
+          </View>
+        )}
 
-      {/* Map View */}
-      {loading ? (
-        <View style={styles.skeletonContainer}>
-          <MapMarkersSkeleton />
-        </View>
-      ) : (
-        <MapPlaceholder 
-          favors={visibleFavors}
-          userLocation={userLocation}
-          onFavorPress={handleFavorPress}
-        />
-      )}
+        {loading ? (
+          <View style={styles.skeletonContainer}>
+            <MapMarkersSkeleton />
+          </View>
+        ) : (
+          <>
+            {userLocation && (
+              <FavorRadar
+                favors={visibleFavors}
+                userLocation={userLocation}
+                radiusKm={radiusKm}
+                selectedId={selectedId}
+                onSelect={handleSelect}
+              />
+            )}
+            <Text style={styles.privacyText}>
+              <Ionicons name="shield-checkmark" size={12} color={colors.lime} />{' '}
+              {tt('Le posizioni sono approssimative per proteggere la privacy')}
+            </Text>
 
-      {/* Legend */}
-      <View style={styles.legend}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.lime }]} />
-          <Text style={styles.legendText}>{tt('Offerte')}</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.accent }]} />
-          <Text style={styles.legendText}>{tt('Richieste')}</Text>
-        </View>
-      </View>
+            {visibleFavors.length === 0 ? (
+              <Text style={styles.emptyText}>
+                {userLocation
+                  ? tt('Nessun favore in questo raggio: prova ad allargare il raggio di ricerca')
+                  : tt('Nessun favore trovato')}
+                {userLocation ? ` (${formatRadius(radiusKm)})` : ''}
+              </Text>
+            ) : (
+              <FlatList
+                ref={listRef}
+                data={visibleFavors}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(item) => item.favor_id}
+                contentContainerStyle={styles.carouselContent}
+                getItemLayout={(_data, index) => ({ length: CARD_WIDTH + CARD_GAP, offset: (CARD_WIDTH + CARD_GAP) * index, index })}
+                renderItem={({ item }) => (
+                  <FavorCard
+                    item={item}
+                    currentUserId={user.user_id}
+                    onPress={openFavor}
+                    highlighted={item.favor_id === selectedId}
+                    style={styles.carouselCard}
+                  />
+                )}
+              />
+            )}
+          </>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loginPrompt: {
-    color: colors.textSecondary,
-    fontSize: 16,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  scrollContent: { paddingBottom: 24 },
+  centerContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loginPrompt: { color: colors.textSecondary, fontSize: 16 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -302,24 +197,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
-  },
-  refreshButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primaryMuted,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  title: { fontSize: 24, fontWeight: 'bold', color: colors.textPrimary },
+  subtitle: { fontSize: 14, color: colors.textSecondary, marginTop: 4 },
+  refreshButton: { padding: 8 },
+  tabsWrap: { paddingHorizontal: 20, marginBottom: 12 },
   noLocationNote: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -327,195 +208,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 12,
   },
-  noLocationText: {
-    flex: 1,
-    color: colors.textMuted,
-    fontSize: 12,
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    gap: 10,
-    marginBottom: 16,
-  },
-  filterButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: colors.backgroundCard,
-    gap: 6,
-  },
-  filterButtonActive: {
-    backgroundColor: colors.primary,
-  },
-  filterText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  filterTextActive: {
-    color: colors.background,
-  },
-  skeletonContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 12,
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  mapContainer: {
-    flex: 1,
-    margin: 16,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  mapView: {
-    flex: 1,
-    backgroundColor: colors.backgroundLight,
-    borderRadius: 20,
-    position: 'relative',
-  },
-  userLocationMarker: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -30 }, { translateY: -30 }],
-    alignItems: 'center',
-  },
-  userLocationDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#4285F4',
-    borderWidth: 3,
-    borderColor: '#fff',
-  },
-  userLocationText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: colors.textSecondary,
-    backgroundColor: colors.background,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  favorsGrid: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  favorCircle: {
-    position: 'absolute',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-  },
-  offerCircle: {
-    backgroundColor: colors.limeMuted,
-    borderColor: colors.lime,
-  },
-  requestCircle: {
-    backgroundColor: colors.accentMuted,
-    borderColor: colors.accent,
-  },
-  supporterCircle: {
-    borderColor: '#ffd700',
-    borderWidth: 3,
-    shadowColor: '#ffd700',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  mapSupporterBadge: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: colors.background,
-    borderRadius: 10,
-    padding: 2,
-    zIndex: 10,
-  },
-  circleInner: {
-    alignItems: 'center',
-  },
-  circleDistance: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  circleLabel: {
-    position: 'absolute',
-    bottom: -20,
-    backgroundColor: colors.background,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    maxWidth: 80,
-  },
-  circleLabelText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  circleCreatorText: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 1,
-  },
-  privacyBanner: {
-    position: 'absolute',
-    bottom: 16,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primaryMuted,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
-    gap: 8,
-  },
+  noLocationText: { flex: 1, color: colors.textMuted, fontSize: 12 },
+  skeletonContainer: { paddingHorizontal: 20 },
   privacyText: {
-    flex: 1,
-    fontSize: 12,
+    marginHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 14,
+    color: colors.textMuted,
+    fontSize: 11,
+  },
+  emptyText: {
+    marginHorizontal: 20,
     color: colors.textSecondary,
-  },
-  legend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 24,
-    paddingVertical: 16,
-    backgroundColor: colors.backgroundCard,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  legendDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  legendText: {
     fontSize: 14,
-    color: colors.textSecondary,
+    lineHeight: 20,
   },
+  carouselContent: { paddingHorizontal: 20, gap: CARD_GAP },
+  carouselCard: { width: CARD_WIDTH, flexBasis: 'auto' },
 });

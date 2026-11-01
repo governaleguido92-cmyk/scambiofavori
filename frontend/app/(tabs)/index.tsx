@@ -15,19 +15,19 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Category, ThanksEntry, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Favor, Category, ThanksEntry, CURRENCY_SYMBOL } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { ReportModal } from '../../src/components/ReportModal';
 import { FavorsGridSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 import { offlineCache } from '../../src/utils/offlineCache';
-import { UserNameWithBadge, SupporterProfileBorder } from '../../src/components/SupporterBadge';
 import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/home.styles';
 import { logger } from '../../src/utils/logger';
-import { tt, tx } from '../../src/i18n/tt';
-import { getCategoryVisual, getExpiryInfo } from '../../src/utils/favorVisual';
+import { tt } from '../../src/i18n/tt';
+import { FavorCard } from '../../src/components/FavorCard';
+import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -43,10 +43,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Altro': 'heart-outline',
 };
 
-// The shown position is intentionally blurred, so the distance is rounded up.
-const formatDistance = (km: number): string =>
-  km < 1 ? tt('meno di 1 km') : tx('circa {0} km', [Math.ceil(km)]);
-
 export default function HomeScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
@@ -55,7 +51,7 @@ export default function HomeScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<'request' | 'offer'>('request');
+  const [selectedType, setSelectedType] = useState<FavorType>('request');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -176,88 +172,14 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderFavorCard = ({ item }: { item: Favor }) => {
-    const visual = getCategoryVisual(item.category);
-    const expiry = getExpiryInfo(item.expires_at);
-    const isOffer = item.type === 'offer';
-    return (
-      <TouchableOpacity
-        style={[
-          styles.gridCard,
-          isOffer ? styles.gridCardOffer : styles.gridCardRequest,
-          item.is_emergency && styles.gridCardUrgent,
-          item.creator_in_debt && isOffer && styles.favorCardDebtHighlight,
-        ]}
-        onPress={() => router.push(`/favor/${item.favor_id}`)}
-        accessibilityRole="button"
-        accessibilityLabel={`${isOffer ? t('favor.offer') : t('favor.request')}: ${item.title}, ${item.granelli_cost} ${CURRENCY_NAME}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
-        data-testid={`favor-card-${item.favor_id}`}
-      >
-        {/* Banda colorata per categoria */}
-        <View style={[styles.gridBand, { backgroundColor: visual.color }]}>
-          <View style={styles.gridBandCircleA} />
-          <View style={styles.gridBandCircleB} />
-          <Text style={styles.gridBandEmoji}>{visual.emoji}</Text>
-          <View style={styles.gridKindPill}>
-            <Text style={styles.gridKindText}>{isOffer ? t('favor.offer') : t('favor.request')}</Text>
-          </View>
-          <View style={styles.gridGranelliPill}>
-            <Text style={styles.gridGranelliText}>{CURRENCY_SYMBOL} {item.granelli_cost}</Text>
-          </View>
-          {item.is_emergency && (
-            <View style={styles.gridUrgentPill}>
-              <Text style={styles.gridUrgentText}>{tt('URGENTE')}</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.gridBody}>
-          <View style={styles.gridWhoRow}>
-            <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={24}>
-              <View style={[styles.gridAvatar, { backgroundColor: visual.color }]}>
-                <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
-              </View>
-            </SupporterProfileBorder>
-            <View style={styles.headerContent}>
-              <UserNameWithBadge
-                name={item.creator_name}
-                isSupporter={item.creator_is_supporter}
-                nameStyle={styles.gridCreatorName}
-              />
-            </View>
-            {item.creator_id !== user?.user_id && (
-              <TouchableOpacity
-                style={styles.reportButton}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  handleReportFavor(item.favor_id, item.title);
-                }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                accessibilityRole="button"
-                accessibilityLabel={tt('Segnala')}
-                data-testid={`report-favor-${item.favor_id}`}
-              >
-                <Ionicons name="flag-outline" size={14} color={colors.textMuted} />
-              </TouchableOpacity>
-            )}
-          </View>
-          <Text style={styles.gridTitle} numberOfLines={2}>{item.title}</Text>
-          <Text style={styles.gridDescription} numberOfLines={2}>{item.description}</Text>
-        </View>
-
-        <View style={styles.gridMeta}>
-          <Text style={styles.gridNear} numberOfLines={1}>
-            {typeof item.distance_km === 'number' ? `● ${formatDistance(item.distance_km)}` : tt(item.category)}
-          </Text>
-          {expiry && (
-            <Text style={[styles.gridExpiry, expiry.isSoon && styles.gridExpirySoon]} numberOfLines={1}>
-              {expiry.label}
-            </Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderFavorCard = ({ item }: { item: Favor }) => (
+    <FavorCard
+      item={item}
+      currentUserId={user?.user_id}
+      onPress={(favor) => router.push(`/favor/${favor.favor_id}`)}
+      onReport={(favor) => handleReportFavor(favor.favor_id, favor.title)}
+    />
+  );
 
   // Header component for FlatList
   const ListHeader = () => (
@@ -297,41 +219,7 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {/* Richieste e offerte separate: due schede, mai mescolate */}
-      <View style={styles.typeFilter}>
-        {(['request', 'offer'] as const).map((type) => {
-          const active = selectedType === type;
-          return (
-            <TouchableOpacity
-              key={type}
-              style={[
-                styles.typeButton,
-                active && (type === 'offer' ? styles.typeButtonActiveOffer : styles.typeButtonActiveRequest),
-              ]}
-              onPress={() => setSelectedType(type)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-            >
-              <Text style={[styles.typeButtonText, active && styles.typeButtonTextActive]}>
-                {type === 'offer' ? tt('Offerte di favori') : tt('Richieste di favori')}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <View style={[styles.typeHintBox, selectedType === 'offer' ? styles.typeHintBoxOffer : styles.typeHintBoxRequest]}>
-        <Ionicons
-          name={selectedType === 'offer' ? 'search' : 'hand-left'}
-          size={20}
-          color={selectedType === 'offer' ? '#5FBF7F' : colors.accentLight}
-        />
-        <Text style={styles.typeHintText}>
-          {selectedType === 'request'
-            ? tt('Aiuta un vicino e guadagni Granelli')
-            : tt('Trova chi ha tempo per te e usa i tuoi Granelli')}
-        </Text>
-      </View>
+      <FavorTypeTabs value={selectedType} onChange={setSelectedType} />
 
       {/* Categorie: chiuse di default, si aprono con un tocco */}
       <TouchableOpacity

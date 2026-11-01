@@ -42,3 +42,7 @@ export const getExpiryInfo = (expiresAt: string | undefined, now: number = Date.
   if (days <= 0) return { label: tt('scade oggi'), isSoon: true };
   return { label: tx('scade tra {0} g', [days]), isSoon: days <= 1 };
 };
+
+// La posizione mostrata è volutamente sfocata, quindi la distanza è arrotondata per eccesso.
+export const formatDistance = (km: number): string =>
+  km < 1 ? tt('meno di 1 km') : tx('circa {0} km', [Math.ceil(km)]);

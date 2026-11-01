@@ -523,6 +523,10 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.error,
   },
+  gridCardHighlighted: {
+    borderWidth: 2,
+    borderColor: colors.lime,
+  },
   gridBand: {
     height: 74,
     alignItems: 'center',
