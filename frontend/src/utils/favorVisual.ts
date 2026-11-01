@@ -19,6 +19,9 @@ export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
   'Consiglio': { emoji: '💡', color: '#2A9AA0' },
   'Informazione': { emoji: 'ℹ️', color: '#4F6FB0' },
   'Aiuto Rapido': { emoji: '⚡', color: '#C9A227' },
+  'Babysitting': { emoji: '👶', color: '#D9777F' },
+  'Animali': { emoji: '🐾', color: '#A0693C' },
+  'Ripetizioni': { emoji: '📚', color: '#4F7DC0' },
   'Altro': DEFAULT_VISUAL,
 };
 
