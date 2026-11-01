@@ -507,7 +507,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'scade oggi': 'expires today',
   'scade tra {0} g': 'expires in {0} d',
   'Aiuta un vicino e guadagni Granelli': 'Help a neighbour and earn Granelli',
-  'Trova chi ha tempo per te, vicino a casa': 'Find someone with time for you, close to home',
+  'Trova chi ha tempo per te e usa i tuoi Granelli': 'Find someone with time for you and use your Granelli',
   'Offerte di favori': 'Favor offers',
   'Richieste di favori': 'Favor requests',
 };

@@ -329,7 +329,7 @@ export default function HomeScreen() {
         <Text style={styles.typeHintText}>
           {selectedType === 'request'
             ? tt('Aiuta un vicino e guadagni Granelli')
-            : tt('Trova chi ha tempo per te, vicino a casa')}
+            : tt('Trova chi ha tempo per te e usa i tuoi Granelli')}
         </Text>
       </View>
 
