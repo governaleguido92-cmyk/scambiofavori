@@ -35,6 +35,8 @@ export default function TabsLayout() {
           paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 10,
         },
+        // Etichetta sempre sotto l'icona: su web, di default, finisce accanto e il tasto Crea risulta fuori asse.
+        tabBarLabelPosition: 'below-icon',
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
@@ -65,7 +67,7 @@ export default function TabsLayout() {
           title: tt('Crea'),
           tabBarIcon: ({ color, size }) => (
             <View style={styles.createButton}>
-              <Ionicons name="heart-circle" size={32} color={colors.background} />
+              <Ionicons name="heart" size={28} color="#fff" />
             </View>
           ),
         }}
@@ -99,13 +101,22 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  // Il cerchio sporge sopra la barra: 54 px di altezza meno 30 di margine = 24 px, come le altre icone,
+  // così l'etichetta "Crea" resta sulla stessa riga delle altre voci.
   createButton: {
     backgroundColor: colors.accent,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    marginTop: -30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    borderWidth: 4,
+    borderColor: colors.background,
+    shadowColor: colors.accent,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
   },
 });
