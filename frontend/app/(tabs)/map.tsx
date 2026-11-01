@@ -24,7 +24,7 @@ const CARD_GAP = 12;
 type Coordinates = { latitude: number; longitude: number };
 
 export default function MapScreen() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
   const [favors, setFavors] = useState<Favor[]>([]);
@@ -60,7 +60,7 @@ export default function MapScreen() {
         params.longitude = location.longitude;
         params.max_distance_km = MAX_RADIUS_KM; // scarico fino al massimo, il raggio scelto filtra sul telefono
       }
-      const data = await api.getFavors(params);
+      const data = await api.getFavors(params, token || undefined);
       setFavors(data);
       await offlineCache.saveFavors(data);
     } catch (error) {
@@ -70,7 +70,7 @@ export default function MapScreen() {
     } finally {
       setLoading(false);
     }
-  }, [selectedType]);
+  }, [selectedType, token]);
 
   useEffect(() => {
     setSelectedId(null);

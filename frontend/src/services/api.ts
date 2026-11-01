@@ -711,7 +711,7 @@ export const api = {
     latitude?: number;
     longitude?: number;
     max_distance_km?: number;
-  }): Promise<Favor[]> => {
+  }, token?: string): Promise<Favor[]> => {
     const searchParams = new URLSearchParams();
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -721,7 +721,7 @@ export const api = {
       });
     }
     const url = `${API_URL}/api/favors${searchParams.toString() ? `?${searchParams}` : ''}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 

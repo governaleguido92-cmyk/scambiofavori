@@ -179,9 +179,10 @@ async def get_favors(
     is_emergency: Optional[bool] = None,
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
-    max_distance_km: Optional[float] = None
+    max_distance_km: Optional[float] = None,
+    current_user: User = Depends(get_current_user),
 ):
-    """Get favors (uses approximate location for privacy)"""
+    """Get favors (richiede il login; usa la posizione approssimata per privacy)"""
     query = {"status": status}
     
     # Filtra annunci scaduti (solo per status active)
@@ -315,24 +316,18 @@ async def get_favor_qr_image(favor_id: str, current_user: User = Depends(get_cur
     }
 
 @api_router.get("/favors/{favor_id}", response_model=Favor, response_model_exclude={"qr_code"})
-async def get_favor(favor_id: str, request: Request):
-    """Get a specific favor"""
+async def get_favor(favor_id: str, current_user: User = Depends(get_current_user)):
+    """Get a specific favor (richiede il login)"""
     favor_doc = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
-    
-    # Check if user is involved to show exact location
-    try:
-        current_user = await get_current_user(request)
-        is_involved = favor_doc["creator_id"] == current_user.user_id or favor_doc.get("accepted_by") == current_user.user_id
-        
-        if not is_involved:
-            favor_doc["exact_latitude"] = None
-            favor_doc["exact_longitude"] = None
-    except:
+
+    # La posizione esatta la vedono solo chi ha creato il favore e chi lo ha accettato
+    is_involved = favor_doc["creator_id"] == current_user.user_id or favor_doc.get("accepted_by") == current_user.user_id
+    if not is_involved:
         favor_doc["exact_latitude"] = None
         favor_doc["exact_longitude"] = None
-    
+
     return Favor(**favor_doc)
 
 @api_router.post("/favors/accept", response_model=Favor, response_model_exclude={"qr_code"})

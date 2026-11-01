@@ -122,7 +122,7 @@ export default function HomeScreen() {
         params.longitude = location.longitude;
         params.max_distance_km = 10;
       }
-      const data = await api.getFavors(params);
+      const data = await api.getFavors(params, token || undefined);
       setFavors(data);
       await offlineCache.saveFavors(data);
     } catch (error) {
@@ -134,7 +134,7 @@ export default function HomeScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedCategory, selectedType, location]);
+  }, [selectedCategory, selectedType, location, token]);
 
   useEffect(() => {
     getLocation();
