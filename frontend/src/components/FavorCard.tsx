@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
+import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Favor, CURRENCY_SYMBOL } from '../services/api';
@@ -21,10 +22,19 @@ interface FavorCardProps {
   style?: StyleProp<ViewStyle>;
   /** Scheda evidenziata, per esempio quella del segnaposto toccato sulla mappa. */
   highlighted?: boolean;
+  /** Etichetta di stato sulla banda (In corso, Concluso...) e il suo colore. */
+  statusLabel?: string;
+  statusColor?: string;
+  /** Al posto del nome dell'autore: per esempio "Marta ti sta aiutando". */
+  roleText?: string;
+  /** Contenuto sotto la scheda: pulsanti e suggerimenti. */
+  children?: ReactNode;
 }
 
 /** Scheda di un favore con banda colorata per categoria. Usata nella home (griglia) e nella mappa (fila scorrevole). */
-export const FavorCard: React.FC<FavorCardProps> = ({ item, currentUserId, onPress, onReport, style, highlighted }) => {
+export const FavorCard: React.FC<FavorCardProps> = ({
+  item, currentUserId, onPress, onReport, style, highlighted, statusLabel, statusColor, roleText, children,
+}) => {
   const { t } = useTranslation();
   const visual = getCategoryVisual(item.category);
   const expiry = getExpiryInfo(item.expires_at);
@@ -57,6 +67,11 @@ export const FavorCard: React.FC<FavorCardProps> = ({ item, currentUserId, onPre
         <View style={styles.gridGranelliPill}>
           <Text style={styles.gridGranelliText}>{CURRENCY_SYMBOL} {item.granelli_cost}</Text>
         </View>
+        {statusLabel && (
+          <View style={[styles.gridStatusPill, { backgroundColor: statusColor ?? colors.primary }]}>
+            <Text style={styles.gridStatusText}>{statusLabel}</Text>
+          </View>
+        )}
         {item.is_emergency && (
           <View style={styles.gridUrgentPill}>
             <Text style={styles.gridUrgentText}>{tt('URGENTE')}</Text>
@@ -72,11 +87,15 @@ export const FavorCard: React.FC<FavorCardProps> = ({ item, currentUserId, onPre
             </View>
           </SupporterProfileBorder>
           <View style={styles.headerContent}>
-            <UserNameWithBadge
-              name={item.creator_name}
-              isSupporter={item.creator_is_supporter}
-              nameStyle={styles.gridCreatorName}
-            />
+            {roleText ? (
+              <Text style={styles.gridCreatorName} numberOfLines={2}>{roleText}</Text>
+            ) : (
+              <UserNameWithBadge
+                name={item.creator_name}
+                isSupporter={item.creator_is_supporter}
+                nameStyle={styles.gridCreatorName}
+              />
+            )}
           </View>
           {onReport && item.creator_id !== currentUserId && (
             <TouchableOpacity
@@ -108,6 +127,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({ item, currentUserId, onPre
           </Text>
         )}
       </View>
+      {children}
     </TouchableOpacity>
   );
 };

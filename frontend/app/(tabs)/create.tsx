@@ -13,7 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
@@ -48,6 +48,8 @@ export default function CreateFavorScreen() {
   const { isOffline } = useNetworkStatus();
   const { t } = useTranslation();
   const router = useRouter();
+  // "Ripubblica" da I Miei apre questa pagina con i testi già compilati (da rivedere prima di pubblicare)
+  const prefill = useLocalSearchParams<{ title?: string; description?: string; category?: string; type?: string }>();
   const [type, setType] = useState<'offer' | 'request'>('offer');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -71,11 +73,19 @@ export default function CreateFavorScreen() {
     loadCategories();
   }, []);
 
+  useEffect(() => {
+    if (prefill.title) setTitle(String(prefill.title).slice(0, TITLE_MAX));
+    if (prefill.description) setDescription(String(prefill.description).slice(0, DESCRIPTION_MAX));
+    if (prefill.type === 'offer' || prefill.type === 'request') setType(prefill.type);
+  }, [prefill.title, prefill.description, prefill.type]);
+
   const loadCategories = async () => {
     try {
       const data = await api.getCategories();
       setCategories(data);
-      if (data.length > 0) setCategory(data[0].name);
+      const wanted = data.find((cat) => cat.name === prefill.category);
+      if (wanted) setCategory(wanted.name);
+      else if (data.length > 0) setCategory(data[0].name);
     } catch (error) {
       logger.debug('Error loading categories:', error);
     }

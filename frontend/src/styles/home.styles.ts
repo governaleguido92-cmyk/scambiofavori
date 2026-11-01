@@ -586,6 +586,20 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
   },
+  gridStatusPill: {
+    position: 'absolute',
+    right: 8,
+    bottom: 8,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+  },
+  gridStatusText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
   gridUrgentPill: {
     position: 'absolute',
     left: 8,
