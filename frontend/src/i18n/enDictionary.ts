@@ -597,4 +597,8 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Cerco i luoghi vicino a voi… può volerci qualche secondo.': 'Looking for places near you… this may take a few seconds.',
   'Nessun luogo trovato qui vicino. Scrivi tu dove incontrarvi.': 'No places found nearby. Type where to meet yourself.',
   'circa': 'about',
+  'Modifica il favore': 'Edit the favor',
+  'Salva le modifiche': 'Save changes',
+  'Annulla la modifica': 'Cancel editing',
+  'Favore aggiornato!': 'Favor updated!',
 };

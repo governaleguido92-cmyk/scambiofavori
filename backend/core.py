@@ -499,6 +499,14 @@ class FavorCreate(BaseModel):
     address: Optional[str] = None
     is_emergency: bool = False  # Emergenza Gentilezza
 
+class FavorUpdate(BaseModel):
+    """Campi modificabili di un favore non ancora accettato. Tipo, autore e posizione non si cambiano."""
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    duration_hours: Optional[float] = None
+    validity_days: Optional[int] = None
+
 class Favor(BaseModel):
     favor_id: str
     creator_id: str

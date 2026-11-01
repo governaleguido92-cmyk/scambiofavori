@@ -532,4 +532,17 @@ export const styles = StyleSheet.create({
     flexBasis: 'auto',
     marginBottom: 0,
   },
+  typeButtonLocked: {
+    opacity: 0.35,
+  },
+  cancelEditButton: {
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  cancelEditText: {
+    color: '#9DB3A4',
+    fontSize: 14,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
 });

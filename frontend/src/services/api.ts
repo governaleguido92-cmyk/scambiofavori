@@ -306,6 +306,14 @@ export interface CurrencyInfo {
   };
 }
 
+export interface FavorUpdateData {
+  title?: string;
+  description?: string;
+  category?: string;
+  duration_hours?: number;
+  validity_days?: number;
+}
+
 export interface PlaceSuggestion {
   id: string;
   name: string;
@@ -740,6 +748,16 @@ export const api = {
   createFavor: async (data: FavorCreateData, token: string): Promise<Favor> => {
     const response = await fetch(`${API_URL}/api/favors`, {
       method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  /** Modifica un favore proprio che nessuno ha ancora accettato. Solo i campi inviati cambiano. */
+  updateFavor: async (favorId: string, data: FavorUpdateData, token: string): Promise<Favor> => {
+    const response = await fetch(`${API_URL}/api/favors/${encodeURIComponent(favorId)}`, {
+      method: 'PUT',
       headers: getHeaders(token),
       body: JSON.stringify(data),
     });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
@@ -37,6 +37,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_HOURS = 1; // si va di ora in ora, niente mezze ore
 
 // Durata dell'annuncio: tre scelte semplici (il server accetta da 1 a 10 giorni).
+/** Un favore vecchio può avere una durata che non è tra le tre scelte: si porta alla più vicina. */
+const nearestValidity = (days: number): number => (days <= 1 ? 1 : days <= 4 ? 3 : 7);
+
+const PREFILL_KEYS = ['editId', 'title', 'description', 'category', 'type', 'durationHours', 'validityDays'] as const;
+
 const VALIDITY_CHOICES: ReadonlyArray<{ days: number; label: string }> = [
   { days: 1, label: '1 giorno' },
   { days: 3, label: '3 giorni' },
@@ -48,8 +53,13 @@ export default function CreateFavorScreen() {
   const { isOffline } = useNetworkStatus();
   const { t } = useTranslation();
   const router = useRouter();
-  // "Ripubblica" da I Miei apre questa pagina con i testi già compilati (da rivedere prima di pubblicare)
-  const prefill = useLocalSearchParams<{ title?: string; description?: string; category?: string; type?: string }>();
+  // "Ripubblica" e "Modifica" da I Miei aprono questa pagina con i dati già compilati.
+  // Con editId il favore esistente viene aggiornato; senza, se ne pubblica uno nuovo.
+  const prefill = useLocalSearchParams<{
+    editId?: string; title?: string; description?: string; category?: string; type?: string; durationHours?: string; validityDays?: string;
+  }>();
+  const editingId = prefill.editId ? String(prefill.editId) : null;
+  const editing = editingId !== null;
   const [type, setType] = useState<'offer' | 'request'>('offer');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -68,6 +78,8 @@ export default function CreateFavorScreen() {
   
   // Check if user is in social debt
   const isInDebt = (user?.granelli || 0) <= DEBT_LIMIT;
+  // Un debito sociale impedisce di pubblicare nuove richieste, non di correggere una già pubblicata
+  const blocked = !editing && type === 'request' && isInDebt;
 
   useEffect(() => {
     loadCategories();
@@ -77,7 +89,25 @@ export default function CreateFavorScreen() {
     if (prefill.title) setTitle(String(prefill.title).slice(0, TITLE_MAX));
     if (prefill.description) setDescription(String(prefill.description).slice(0, DESCRIPTION_MAX));
     if (prefill.type === 'offer' || prefill.type === 'request') setType(prefill.type);
-  }, [prefill.title, prefill.description, prefill.type]);
+    if (prefill.durationHours && /^\d{1,3}$/.test(String(prefill.durationHours))) setDurationHours(String(prefill.durationHours));
+    if (prefill.validityDays && Number.isFinite(Number(prefill.validityDays))) setValidityDays(nearestValidity(Number(prefill.validityDays)));
+  }, [prefill.title, prefill.description, prefill.type, prefill.durationHours, prefill.validityDays]);
+
+  // Uscendo dalla pagina i dati precompilati vanno via: tornando su "Crea" si riparte da un favore nuovo.
+  const hasPrefillRef = useRef(false);
+  hasPrefillRef.current = PREFILL_KEYS.some((key) => Boolean(prefill[key]));
+  const clearPrefill = useCallback(() => {
+    setTitle('');
+    setDescription('');
+    setDurationHours('1');
+    setValidityDays(3);
+    router.setParams(Object.fromEntries(PREFILL_KEYS.map((key) => [key, undefined])) as any);
+  }, [router]);
+  useFocusEffect(
+    useCallback(() => () => {
+      if (hasPrefillRef.current) clearPrefill();
+    }, [clearPrefill])
+  );
 
   const loadCategories = async () => {
     try {
@@ -124,6 +154,56 @@ export default function CreateFavorScreen() {
     }
   };
 
+  /** Titolo, descrizione e categoria obbligatori: mostra l'errore e dice se si può andare avanti. */
+  const validateTexts = (): boolean => {
+    if (!title.trim()) {
+      notify(t('common.error'), t('create.errorTitle'));
+      return false;
+    }
+    if (!description.trim()) {
+      notify(t('common.error'), t('create.errorDescription'));
+      return false;
+    }
+    if (!category) {
+      notify(t('common.error'), t('create.errorCategory'));
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!editingId || !token) return;
+    if (isOffline) {
+      notify(t('common.offline'), t('create.offlineError'));
+      return;
+    }
+    if (!validateTexts()) return;
+    if (type === 'request' && (user?.granelli || 0) < currentHours) {
+      notify(tx('{0} insufficienti', [CURRENCY_NAME]), tx('Hai solo {0} {1} disponibili. Servono {2} {3}.', [user?.granelli ?? 0, CURRENCY_NAME, currentHours, CURRENCY_NAME]));
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await api.updateFavor(
+        editingId,
+        { title: title.trim(), description: description.trim(), category, duration_hours: currentHours, validity_days: validityDays },
+        token
+      );
+      notify(t('common.success'), tt('Favore aggiornato!'));
+      clearPrefill();
+      router.push('/(tabs)/my-favors');
+    } catch (error: any) {
+      notify(t('common.error'), error.message || t('create.errorTitle'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    clearPrefill();
+    router.push('/(tabs)/my-favors');
+  };
+
   const handleCreate = async () => {
     if (isOffline) {
       notify(t('common.offline'), t('create.offlineError'));
@@ -145,18 +225,7 @@ export default function CreateFavorScreen() {
       return;
     }
 
-    if (!title.trim()) {
-      notify(t('common.error'), t('create.errorTitle'));
-      return;
-    }
-    if (!description.trim()) {
-      notify(t('common.error'), t('create.errorDescription'));
-      return;
-    }
-    if (!category) {
-      notify(t('common.error'), t('create.errorCategory'));
-      return;
-    }
+    if (!validateTexts()) return;
     if (!location) {
       notify(t('common.error'), t('create.errorLocation'));
       return;
@@ -256,7 +325,7 @@ export default function CreateFavorScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>{t('create.title')}</Text>
+            <Text style={styles.title}>{editing ? tt('Modifica il favore') : t('create.title')}</Text>
             <View style={styles.soliDisplay}>
               <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
               <Text style={[styles.soliValue, isInDebt && styles.soliValueDebt]}>{user?.granelli || 0}</Text>
@@ -282,8 +351,10 @@ export default function CreateFavorScreen() {
           {/* Type Selector */}
           <View style={styles.typeSelector}>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'offer' && styles.typeButtonActive]}
+              style={[styles.typeButton, type === 'offer' && styles.typeButtonActive, editing && type !== 'offer' && styles.typeButtonLocked]}
               onPress={() => setType('offer')}
+              disabled={editing}
+              accessibilityState={{ selected: type === 'offer', disabled: editing }}
             >
               <Ionicons
                 name="gift"
@@ -296,8 +367,10 @@ export default function CreateFavorScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.typeButton, type === 'request' && styles.typeButtonActiveRequest]}
+              style={[styles.typeButton, type === 'request' && styles.typeButtonActiveRequest, editing && type !== 'request' && styles.typeButtonLocked]}
               onPress={() => setType('request')}
+              disabled={editing}
+              accessibilityState={{ selected: type === 'request', disabled: editing }}
             >
               <Ionicons
                 name="hand-left"
@@ -310,7 +383,8 @@ export default function CreateFavorScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Posizione: subito in alto, perché è obbligatoria e serve sapere cosa vedranno gli altri */}
+          {/* Posizione: subito in alto, perché è obbligatoria e serve sapere cosa vedranno gli altri (in modifica non cambia) */}
+          {!editing && (
           <View style={styles.inputGroup}>
             <View style={styles.locationInfoBox}>
               <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
@@ -342,6 +416,7 @@ export default function CreateFavorScreen() {
               </View>
             )}
           </View>
+          )}
 
           {/* Title Input */}
           <View style={styles.inputGroup}>
@@ -503,12 +578,13 @@ export default function CreateFavorScreen() {
           {/* Submit Button */}
           <TouchableOpacity
             style={[
-              styles.submitButton, 
+              styles.submitButton,
               type === 'request' && styles.submitButtonRequest,
-              type === 'request' && isInDebt && styles.submitButtonDisabled
+              blocked && styles.submitButtonDisabled
             ]}
-            onPress={handleCreate}
-            disabled={isLoading || (type === 'request' && isInDebt)}
+            onPress={editing ? handleSave : handleCreate}
+            disabled={isLoading || blocked}
+            accessibilityRole="button"
             data-testid="create-favor-submit"
           >
             {isLoading ? (
@@ -516,19 +592,22 @@ export default function CreateFavorScreen() {
             ) : (
               <>
                 <Ionicons
-                  name={type === 'offer' ? 'gift' : 'hand-left'}
+                  name={editing ? 'checkmark-circle' : type === 'offer' ? 'gift' : 'hand-left'}
                   size={20}
-                  color={type === 'request' && isInDebt ? '#8FA595' : '#0F1A14'}
+                  color={blocked ? '#8FA595' : '#0F1A14'}
                 />
-                <Text style={[
-                  styles.submitButtonText,
-                  type === 'request' && isInDebt && styles.submitButtonTextDisabled
-                ]}>
-                  {t('create.publishBtn')}
+                <Text style={[styles.submitButtonText, blocked && styles.submitButtonTextDisabled]}>
+                  {editing ? tt('Salva le modifiche') : t('create.publishBtn')}
                 </Text>
               </>
             )}
           </TouchableOpacity>
+
+          {editing && (
+            <TouchableOpacity style={styles.cancelEditButton} onPress={handleCancelEdit} accessibilityRole="button">
+              <Text style={styles.cancelEditText}>{tt('Annulla la modifica')}</Text>
+            </TouchableOpacity>
+          )}
 
           {/* Ethical Banner */}
           <View style={styles.ethicalBanner}>

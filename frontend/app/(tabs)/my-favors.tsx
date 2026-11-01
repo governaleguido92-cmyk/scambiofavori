@@ -183,6 +183,22 @@ export default function MyFavorsScreen() {
     } as any);
   };
 
+  // Modificare = aprire "Crea" sullo stesso favore, con i dati già compilati: al salvataggio si aggiorna quello, non se ne crea un altro.
+  const handleEdit = (favor: Favor) => {
+    router.push({
+      pathname: '/create',
+      params: {
+        editId: favor.favor_id,
+        title: favor.title,
+        description: favor.description,
+        category: favor.category,
+        type: favor.type,
+        durationHours: String(Math.max(1, Math.round(favor.duration_hours))),
+        validityDays: String(favor.validity_days ?? 3),
+      },
+    } as any);
+  };
+
   const openFavor = (favor: Favor) => router.push(`/favor/${favor.favor_id}`);
 
   const renderFavor = ({ item }: { item: Favor }) => {
@@ -241,21 +257,34 @@ export default function MyFavorsScreen() {
 
         {item.status === 'active' && isCreator && (
           <View style={styles.cardActions}>
+            {expired && (
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleRepublish(item);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Ripubblica')}
+              >
+                <Ionicons name="refresh" size={18} color="#fff" />
+                <Text style={styles.primaryButtonText}>{tt('Ripubblica')}</Text>
+              </TouchableOpacity>
+            )}
             <View style={styles.buttonRow}>
-              {expired && (
-                <TouchableOpacity
-                  style={[styles.primaryButton, styles.flexButton]}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    handleRepublish(item);
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={tt('Ripubblica')}
-                >
-                  <Ionicons name="refresh" size={18} color="#fff" />
-                  <Text style={styles.primaryButtonText}>{tt('Ripubblica')}</Text>
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity
+                style={[styles.secondaryButton, styles.flexButton]}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Modifica il favore')}
+                data-testid={`edit-favor-${item.favor_id}`}
+              >
+                <Ionicons name="create-outline" size={18} color={colors.lime} />
+                <Text style={styles.secondaryButtonText}>{tt('Modifica')}</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.secondaryButton, styles.flexButton]}
                 onPress={(e) => {
