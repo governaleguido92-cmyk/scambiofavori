@@ -313,7 +313,7 @@ export default function HomeScreen() {
               accessibilityState={{ selected: active }}
             >
               <Text style={[styles.typeButtonText, active && styles.typeButtonTextActive]}>
-                {type === 'offer' ? t('home.offers') : t('home.requests')}
+                {type === 'offer' ? tt('Offerte di favori') : tt('Richieste di favori')}
               </Text>
             </TouchableOpacity>
           );
