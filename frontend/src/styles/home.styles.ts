@@ -170,17 +170,21 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
   typeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 11,
+    borderRadius: 14,
     backgroundColor: colors.backgroundLight,
   },
-  typeButtonActive: {
-    backgroundColor: colors.primary,
+  typeButtonActiveOffer: {
+    backgroundColor: '#2F7A4D',
+  },
+  typeButtonActiveRequest: {
+    backgroundColor: colors.accentDark,
   },
   typeButtonText: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
   },
   typeButtonTextActive: {

@@ -54,7 +54,7 @@ export default function HomeScreen() {
   const [favors, setFavors] = useState<Favor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<'request' | 'offer'>('request');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -119,7 +119,7 @@ export default function HomeScreen() {
       setNetworkError(false);
       const params: any = { status: 'active' };
       if (selectedCategory) params.category = selectedCategory;
-      if (selectedType !== 'all') params.type = selectedType;
+      params.type = selectedType;
       if (location) {
         params.latitude = location.latitude;
         params.longitude = location.longitude;
@@ -132,7 +132,7 @@ export default function HomeScreen() {
       logger.debug('Error loading favors:', error);
       setNetworkError(true);
       const cached = await offlineCache.loadFavors();
-      if (cached) { setFavors(cached); setNetworkError(false); }
+      if (cached) { setFavors(cached.filter((f) => f.type === selectedType)); setNetworkError(false); }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -296,19 +296,27 @@ export default function HomeScreen() {
         </View>
       ) : null}
 
-      {/* Type Filter */}
+      {/* Richieste e offerte separate: due schede, mai mescolate */}
       <View style={styles.typeFilter}>
-        {['all', 'offer', 'request'].map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={[styles.typeButton, selectedType === type && styles.typeButtonActive]}
-            onPress={() => setSelectedType(type)}
-          >
-            <Text style={[styles.typeButtonText, selectedType === type && styles.typeButtonTextActive]}>
-              {type === 'all' ? t('common.all') : type === 'offer' ? t('home.offers') : t('home.requests')}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {(['request', 'offer'] as const).map((type) => {
+          const active = selectedType === type;
+          return (
+            <TouchableOpacity
+              key={type}
+              style={[
+                styles.typeButton,
+                active && (type === 'offer' ? styles.typeButtonActiveOffer : styles.typeButtonActiveRequest),
+              ]}
+              onPress={() => setSelectedType(type)}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: active }}
+            >
+              <Text style={[styles.typeButtonText, active && styles.typeButtonTextActive]}>
+                {type === 'offer' ? t('home.offers') : t('home.requests')}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* Categories */}
