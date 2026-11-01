@@ -306,6 +306,19 @@ export interface CurrencyInfo {
   };
 }
 
+export interface PlaceSuggestion {
+  id: string;
+  name: string;
+  category: string;
+  distance_m: number;
+  street?: string | null;
+}
+
+export interface PlacesResponse {
+  places: PlaceSuggestion[];
+  attribution: string;
+}
+
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
@@ -532,6 +545,23 @@ export const api = {
   getChatStatus: async (favorId: string, token: string): Promise<ChatStatus> => {
     const response = await fetch(`${API_URL}/api/chat/status/${favorId}`, {
       headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  /** Luoghi pubblici vicino al favore (OpenStreetMap), per scegliere il punto d'incontro. */
+  getMeetingPlaces: async (
+    favorId: string,
+    search: { category?: string; q?: string },
+    token: string,
+    signal?: AbortSignal
+  ): Promise<PlacesResponse> => {
+    const params = new URLSearchParams();
+    if (search.category) params.set('category', search.category);
+    if (search.q) params.set('q', search.q);
+    const response = await fetch(`${API_URL}/api/favors/${encodeURIComponent(favorId)}/places?${params.toString()}`, {
+      headers: getHeaders(token),
+      signal,
     });
     return handleResponse(response);
   },

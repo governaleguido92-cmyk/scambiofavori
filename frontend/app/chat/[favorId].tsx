@@ -443,6 +443,8 @@ export default function ChatScreen() {
         visible={showMeeting}
         sending={sending}
         error={sendError}
+        favorId={String(favorId)}
+        token={token}
         onClose={() => setShowMeeting(false)}
         onSubmit={submitMeetingPoint}
       />
