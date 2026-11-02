@@ -79,13 +79,13 @@ function EmptyState({ tab, onCreate, onBrowse }: EmptyProps) {
       <Text style={styles.emptySubtext}>{hint}</Text>
       {tab === 'published' && (
         <TouchableOpacity style={styles.primaryButton} onPress={onCreate} accessibilityRole="button">
-          <Ionicons name="add-circle" size={20} color="#fff" />
+          <Ionicons name="add-circle" size={20} color={colors.background} />
           <Text style={styles.primaryButtonText}>{tt('Crea il tuo primo favore')}</Text>
         </TouchableOpacity>
       )}
       {tab === 'ongoing' && (
         <TouchableOpacity style={styles.primaryButton} onPress={onBrowse} accessibilityRole="button">
-          <Ionicons name="search" size={20} color="#fff" />
+          <Ionicons name="search" size={20} color={colors.background} />
           <Text style={styles.primaryButtonText}>{tt('Vedi i favori vicino a te')}</Text>
         </TouchableOpacity>
       )}
@@ -234,7 +234,7 @@ export default function MyFavorsScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={tt('Apri la chat')}
               >
-                <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
+                <Ionicons name="chatbubble-ellipses" size={18} color={colors.background} />
                 <Text style={styles.primaryButtonText}>{tt('Apri la chat')}</Text>
               </TouchableOpacity>
               {mayComplete && (
@@ -267,7 +267,7 @@ export default function MyFavorsScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={tt('Ripubblica')}
               >
-                <Ionicons name="refresh" size={18} color="#fff" />
+                <Ionicons name="refresh" size={18} color={colors.background} />
                 <Text style={styles.primaryButtonText}>{tt('Ripubblica')}</Text>
               </TouchableOpacity>
             )}
@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: colors.accent,
   },
-  primaryButtonText: { color: '#fff', fontSize: 14, fontWeight: '800' },
+  primaryButtonText: { color: colors.background, fontSize: 14, fontWeight: '800' },
   secondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -40,6 +40,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
   const expiry = getExpiryInfo(item.expires_at);
   const isOffer = item.type === 'offer';
   const kindLabel = isOffer ? t('favor.offer') : t('favor.request');
+  const isOwn = !!currentUserId && item.creator_id === currentUserId && !roleText;
 
   return (
     <TouchableOpacity
@@ -48,6 +49,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
         isOffer ? styles.gridCardOffer : styles.gridCardRequest,
         item.is_emergency && styles.gridCardUrgent,
         item.creator_in_debt && isOffer && styles.favorCardDebtHighlight,
+        isOwn && styles.gridCardOwn,
         highlighted && styles.gridCardHighlighted,
         style,
       ]}
@@ -87,7 +89,11 @@ export const FavorCard: React.FC<FavorCardProps> = ({
             </View>
           </SupporterProfileBorder>
           <View style={styles.headerContent}>
-            {roleText ? (
+            {isOwn ? (
+              <View style={[styles.ownBadge, { alignSelf: 'flex-start' }]}>
+                <Text style={styles.ownBadgeText}>{tt('IL TUO FAVORE')}</Text>
+              </View>
+            ) : roleText ? (
               <Text style={styles.gridCreatorName} numberOfLines={2}>{roleText}</Text>
             ) : (
               <UserNameWithBadge

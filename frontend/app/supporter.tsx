@@ -170,7 +170,7 @@ function SupporterContent() {
           </View>
           <Text style={styles.heroTitle}>Diventa un Pilastro{'\n'}della Community</Text>
           <Text style={styles.heroSubtitle}>
-            Il tuo supporto mantiene l'app gratuita, sicura e senza pubblicità per tutti
+            Il tuo supporto mantiene l&apos;app gratuita, sicura e senza pubblicità per tutti
           </Text>
         </View>
 
@@ -179,7 +179,7 @@ function SupporterContent() {
           <Ionicons name="cafe-outline" size={32} color={colors.accent} />
           <Text style={styles.messageText}>
             Con solo <Text style={styles.highlight}>1€ al mese</Text> (meno di un caffè!), 
-            ci aiuti a mantenere l'app gratuita, sicura e senza pubblicità.
+            ci aiuti a mantenere l&apos;app gratuita, sicura e senza pubblicità.
           </Text>
           <Text style={styles.messageSubtext}>
             Il tuo contributo finanzia i server e lo sviluppo di nuove funzioni per il quartiere.
@@ -196,7 +196,7 @@ function SupporterContent() {
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Badge Cuore Dorato</Text>
-              <Text style={styles.benefitDesc}>Visibile accanto al tuo nome in tutta l'app</Text>
+              <Text style={styles.benefitDesc}>Visibile accanto al tuo nome in tutta l&apos;app</Text>
             </View>
           </View>
 
@@ -290,7 +290,7 @@ function SupporterContent() {
         <View style={styles.privacyNote}>
           <Ionicons name="eye-off" size={16} color="#9DB3A4" />
           <Text style={styles.privacyText}>
-            Il tuo contributo è privato: gli altri vedranno solo che sei un Sostenitore, non l'importo.
+            Il tuo contributo è privato: gli altri vedranno solo che sei un Sostenitore, non l&apos;importo.
           </Text>
         </View>
       </ScrollView>

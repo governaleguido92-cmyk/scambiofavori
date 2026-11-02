@@ -55,7 +55,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Ionicons name="shield-checkmark" size={40} color={colors.primary} />
+              <Ionicons name="shield-checkmark" size={40} color={colors.lime} />
             </View>
             <Text style={styles.title}>{tt('Benvenuto in Scambio Favori!')}</Text>
             <Text style={styles.subtitle}>{tt('Prima di iniziare, leggi e accetta i nostri termini')}</Text>
@@ -73,19 +73,19 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
             <View style={styles.summaryBox}>
               <Text style={styles.summaryTitle}>{tt('In breve:')}</Text>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.lime} />
                 <Text style={styles.summaryText}>{tt('Siamo un intermediario tra privati')}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.lime} />
                 <Text style={styles.summaryText}>{tt('Scambi solo con Granelli, mai denaro reale')}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.lime} />
                 <Text style={styles.summaryText}>{tt('La tua posizione esatta resta privata')}</Text>
               </View>
               <View style={styles.summaryItem}>
-                <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={20} color={colors.lime} />
                 <Text style={styles.summaryText}>{tt('Puoi eliminare il tuo account quando vuoi')}</Text>
               </View>
             </View>
@@ -130,7 +130,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
 
             {/* Info Text */}
             <View style={styles.infoBox}>
-              <Ionicons name="information-circle" size={20} color={colors.textMuted} />
+              <Ionicons name="information-circle" size={20} color={colors.textPrimary} />
               <Text style={styles.infoText}>{tt('Accettando, confermi di aver compreso che la piattaforma è un semplice intermediario e che ogni scambio è sotto la tua responsabilità.')}</Text>
             </View>
           </ScrollView>
@@ -149,11 +149,12 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
                 <Ionicons 
                   name="arrow-forward" 
                   size={20} 
-                  color={canProceed ? colors.background : colors.textMuted} 
+                  color={canProceed ? colors.background : colors.textPrimary} 
                 />
               </>
             )}
           </TouchableOpacity>
+          {!canProceed && <Text style={styles.acceptHint}>{tt('Spunta le caselle per continuare')}</Text>}
 
           {/* Legal Link */}
           <TouchableOpacity 
@@ -181,21 +182,21 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 400,
-    maxHeight: '90%',
-    padding: 24,
+    maxHeight: '96%',
+    padding: 20,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: colors.primaryMuted,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   title: {
     fontSize: 24,
@@ -205,20 +206,20 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     textAlign: 'center',
     marginTop: 8,
   },
   content: {
-    maxHeight: 320,
+    flexShrink: 1,
   },
   disclaimerBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     backgroundColor: 'rgba(255, 152, 0, 0.15)',
     borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 12,
     gap: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 152, 0, 0.3)',
@@ -226,38 +227,38 @@ const styles = StyleSheet.create({
   disclaimerText: {
     flex: 1,
     fontSize: 14,
-    color: colors.warning,
+    color: colors.textPrimary,
     lineHeight: 18,
     fontWeight: '500',
   },
   summaryBox: {
     backgroundColor: colors.background,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    padding: 12,
+    marginBottom: 14,
   },
   summaryTitle: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   summaryItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   summaryText: {
     flex: 1,
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     lineHeight: 18,
   },
   checkboxRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 12,
     gap: 12,
   },
   checkbox: {
@@ -265,25 +266,25 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: colors.border,
+    borderColor: colors.lime,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
   },
   checkboxTextContainer: {
     flex: 1,
   },
   checkboxText: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     lineHeight: 20,
   },
   linkText: {
-    color: colors.accent,
+    color: colors.textPrimary,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
@@ -299,21 +300,23 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 12,
-    color: colors.textMuted,
+    color: colors.textPrimary,
     lineHeight: 18,
   },
   acceptButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
     paddingVertical: 16,
     borderRadius: 14,
-    marginTop: 20,
+    marginTop: 14,
     gap: 8,
   },
   acceptButtonDisabled: {
-    backgroundColor: colors.border,
+    backgroundColor: colors.backgroundLight,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   acceptButtonText: {
     fontSize: 16,
@@ -321,15 +324,21 @@ const styles = StyleSheet.create({
     color: colors.background,
   },
   acceptButtonTextDisabled: {
-    color: colors.textMuted,
+    color: colors.textPrimary,
+  },
+  acceptHint: {
+    marginTop: 10,
+    textAlign: 'center',
+    fontSize: 13,
+    color: colors.textPrimary,
   },
   legalLinkContainer: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
   },
   legalLink: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: colors.textPrimary,
     textDecorationLine: 'underline',
   },
 });

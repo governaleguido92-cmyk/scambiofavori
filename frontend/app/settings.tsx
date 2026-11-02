@@ -8,6 +8,7 @@ import { useAuth } from '../src/context/AuthContext';
 import { SUPPORTED_LANGUAGES, changeLanguage } from '../src/i18n';
 import { api } from '../src/services/api';
 import { DeleteAccountModal } from '../src/components/DeleteAccountModal';
+import { BlockedUsersSection } from '../src/components/BlockedUsersSection';
 import themeColors from '../src/theme/colors';
 import { styles } from '../src/styles/profile.styles';
 import { logger } from '../src/utils/logger';
@@ -116,6 +117,8 @@ export default function SettingsScreen() {
             ))}
           </View>
         </View>
+
+        <BlockedUsersSection token={token} />
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out" size={20} color="#ff6b6b" />

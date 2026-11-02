@@ -50,6 +50,27 @@ BLOCKED = [
     # attività illegali
     ("vendo droga", "illegal"),
     ("cocaina a buon prezzo", "illegal"),
+    # parole e travestimenti aggiunti
+    ("c*zzo", "offensive"),
+    ("m#rda", "offensive"),
+    ("str*nzo", "offensive"),
+    ("kazzo", "offensive"),
+    ("sei una zoccola", "offensive"),
+    ("che rompicoglioni", "offensive"),
+    ("vai a farti inculare", "offensive"),
+    ("sei un ritardato", "offensive"),
+    ("busone", "discrimination"),
+    ("viva mussolini", "discrimination"),
+    ("ti spezzo le gambe", "violence"),
+    ("ti stacco la testa", "violence"),
+    ("i will murder you", "violence"),
+    ("tagliati le vene", "self_harm"),
+    ("toglieti la vita", "self_harm"),
+    ("sborra ovunque", "sexual"),
+    ("profilo onlyfans", "sexual"),
+    ("vendo mdma", "illegal"),
+    ("vendo documenti falsi", "illegal"),
+    ("lsd a buon prezzo", "illegal"),
 ]
 
 # Testi normali che non devono mai essere bloccati (falsi positivi)
@@ -72,6 +93,15 @@ ALLOWED = [
     "Passaggio in auto fino a Marsala",
     "Persona di colore cerca aiuto con il computer",
     "Mi muoio di fame, qualcuno cucina?",
+    "Mi servono 2 ore di aiuto con i bagagli",
+    "Ritardo di 10 minuti per il treno",
+    "Spezzo la legna per il camino",
+    "Mi spezzo la schiena ad aiutare in giardino",
+    "Cerco una pistola ad acqua per i bambini",
+    "Vendo un coltello da cucina",
+    "Aiuto con l'orto e taglio l'erba",
+    "Il documento è falso? Mi serve aiuto per controllare",
+    "Dalle 20 alle 22 in piazza",
     "Help with a shopping trip",
     "I can cook dinner for a neighbour",
     "",
@@ -106,6 +136,8 @@ def test_allows_normal_text(text):
         "ódio gli immigrati",      # accenti
         "ti   ammazzo",            # spazi doppi
         "TI AMM4ZZ0",              # misto
+        "ca22o",                   # 2 al posto della z
+        "str0n2o",
     ],
 )
 def test_resists_simple_evasions(text):

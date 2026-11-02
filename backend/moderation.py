@@ -34,7 +34,7 @@ class ModerationResult:
 
 _ALLOWED = ModerationResult(allowed=True)
 
-_LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s", "€": "e"})
+_LEET = str.maketrans({"0": "o", "1": "i", "2": "z", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s", "€": "e"})
 # Sequenze di singole lettere separate da spazi o punteggiatura: "s t r o n z o", "s.t.r.o.n.z.o"
 _SPACED_LETTERS = re.compile(r"(?<![a-z])(?:[a-z][\s.\-_*]+){3,}[a-z](?![a-z])")
 _NOT_LETTER_BEFORE = r"(?<![a-z])"
@@ -51,6 +51,11 @@ def normalize(text: str) -> str:
 def _word(word: str) -> str:
     """Parola intera in cui ogni lettera può ripetersi ("stronzo" riconosce anche "stronzooo")."""
     return "".join(re.escape(char) + "+" for char in word)
+
+
+def _word_masked(word: str) -> str:
+    """Come `_word`, ma ogni vocale può essere sostituita da * o # ("c*zzo", "m#rda")."""
+    return "".join(f"(?:{char}|[*#])+" if char in "aeiou" else re.escape(char) + "+" for char in word)
 
 
 def _phrase(phrase: str) -> str:
@@ -115,14 +120,15 @@ _DISCRIMINATION = _compile(
         "mongoloide", "mongoloidi", "storpio", "storpi", "spastico", "spastica",
         "terrone", "terroni", "polentone", "polentoni", "zingaraccio", "zingaracci",
         "nigger", "niggers", "nigga", "niggas", "faggot", "faggots", "fag", "kike", "kikes", "chink", "chinks", "spic", "tranny",
-        "retard", "retarded",
+        "retard", "retarded", "busone", "busoni", "ebreaccio", "ebreacci",
     )
-    + _phrases("heil hitler", "sieg heil", "viva hitler", "viva il duce", "white power")
+    + _phrases("heil hitler", "sieg heil", "viva hitler", "viva il duce", "viva mussolini", "white power", "ku klux klan")
 )
 
 _VIOLENCE_VERBS = (
     r"(?:ammazzo|ammazzero|uccido|uccidero|spacco|spaccero|picchio|picchiero|pesto|massacro|massacrero|strangolo|strangolero|"
-    r"sparo|sparero|accoltello|sgozzo|brucio|brucero|stupro|violento|violentero|distruggo|distruggero|meno|riempio\s+di\s+botte)"
+    r"sparo|sparero|accoltello|sgozzo|brucio|brucero|stupro|violento|violentero|distruggo|distruggero|meno|riempio\s+di\s+botte|"
+    r"spezzo|spezzero|scanno|impicco|avveleno|affogo)"
 )
 _VIOLENCE = [
     # minacce rivolte a una persona: "ti ammazzo", "vi picchio"
@@ -131,7 +137,7 @@ _VIOLENCE = [
         _NOT_LETTER_BEFORE + r"(?:ti|vi)\s+(?:faccio|faro|fare)\s+(?:fuori|la\s+pelle|a\s+pezzi|saltare\s+i\s+denti)" + _NOT_LETTER_AFTER
     ),
     re.compile(
-        _NOT_LETTER_BEFORE + r"(?:ti|vi)\s+(?:taglio\s+la\s+gola|butto\s+di\s+sotto|rompo\s+(?:le\s+gambe|le\s+ossa|la\s+faccia|il\s+muso|la\s+testa))"
+        _NOT_LETTER_BEFORE + r"(?:ti|vi)\s+(?:taglio\s+la\s+gola|butto\s+di\s+sotto|stacco\s+la\s+testa|apro\s+in\s+due|rompo\s+(?:le\s+gambe|le\s+ossa|la\s+faccia|il\s+muso|la\s+testa))"
         + _NOT_LETTER_AFTER
     ),
     # intenzioni: "voglio uccidere lui", "vado a picchiare tutti"
@@ -146,13 +152,16 @@ _VIOLENCE = [
     re.compile(
         _NOT_LETTER_BEFORE
         + r"(?:i(?:'ll|\s+will|'m\s+going\s+to|\s+am\s+going\s+to)\s+|(?:going\s+to\s+))?"
-        r"(?:kill|hurt|rape|stab|shoot|beat\s+up)\s+(?:you|u|him|her|them|everyone)" + _NOT_LETTER_AFTER
+        r"(?:kill|hurt|rape|stab|shoot|murder|strangle|beat\s+up)\s+(?:you|u|him|her|them|everyone)" + _NOT_LETTER_AFTER
     ),
 ]
 
 _SELF_HARM = _compile(
     _words("ammazzati", "ammazzatevi", "uccidetevi", "suicidati", "suicidatevi", "impiccati", "impiccatevi", "sparati", "muori", "kys")
-    + _phrases("vai a morire", "vai a crepare", "kill yourself", "kill urself", "go die")
+    + _phrases(
+        "vai a morire", "vai a crepare", "kill yourself", "kill urself", "go die",
+        "tagliati le vene", "buttati dal ponte", "toglieti la vita", "ammazza te stesso", "uccidi te stesso",
+    )
 )
 
 _SEXUAL = _compile(
@@ -160,13 +169,24 @@ _SEXUAL = _compile(
         "sesso", "scopare", "scopata", "scopate", "scoparti", "trombare", "trombata", "pompino", "pompini",
         "porno", "pornografia", "pornografico", "pornostar", "escort", "prostituta", "prostitute", "prostituzione",
         "erotico", "erotica", "erotici", "tette", "tettona", "sex", "porn", "nudes",
+        "sborra", "sborrata", "sborrare", "masturbazione", "masturbarsi", "blowjob", "handjob",
+        "cumshot", "dildo", "hentai", "onlyfans",
     )
 )
 
 _ILLEGAL = _compile(
-    _words("cocaina", "eroina", "hashish", "sicario")
-    + [_phrase(verb) + r"\s+(?:della\s+|di\s+)?" + "(?:" + "|".join(_words("droga", "armi", "munizioni", "fucile", "fucili")) + ")"
-       for verb in ("vendo", "compro", "cerco", "offro")]
+    _words(
+        "cocaina", "eroina", "hashish", "sicario", "mdma", "ecstasy", "lsd", "anfetamina", "anfetamine",
+        "metanfetamina", "ketamina", "oppio",
+    )
+    + [
+        _phrase(verb) + r"\s+(?:della\s+|di\s+)?" + "(?:" + "|".join(_words("droga", "armi", "munizioni", "fucile", "fucili", "kalashnikov", "esplosivo", "esplosivi")) + ")"
+        for verb in ("vendo", "compro", "cerco", "offro")
+    ]
+    + [
+        _phrase(verb) + r"\s+" + "(?:" + "|".join(_phrases("documenti falsi", "banconote false", "patente falsa", "soldi falsi", "carta d'identita falsa")) + ")"
+        for verb in ("vendo", "compro", "cerco", "offro", "faccio")
+    ]
 )
 
 _OFFENSIVE = _compile(
@@ -174,9 +194,14 @@ _OFFENSIVE = _compile(
         "stronzo", "stronza", "stronzi", "stronze", "coglione", "coglioni", "vaffanculo", "fanculo", "minchia",
         "cazzo", "cazzi", "fottiti", "fottetevi", "puttana", "puttane", "troia", "troie", "bastardo", "bastarda", "bastardi",
         "idiota", "idioti", "imbecille", "imbecilli", "deficiente", "deficienti", "scemo", "scema", "merda", "merde", "culo",
-        "porcodio", "fuck", "fucking", "fucker", "motherfucker", "shit", "shitty", "bitch", "asshole", "cunt", "dickhead", "wanker",
+        "porcodio", "zoccola", "zoccole", "baldracca", "baldracche", "mignotta", "mignotte", "sgualdrina", "puttanella",
+        "rompicoglioni", "rompipalle", "rottinculo", "inculare", "inculato", "inculata", "inculo", "cazzone", "cazzoni",
+        "ritardato", "ritardata", "ritardati", "kazzo", "caxxo", "kulo", "figlio di puttana",
+        "fuck", "fucking", "fucker", "motherfucker", "shit", "shitty", "bitch", "asshole", "cunt", "dickhead", "wanker",
     )
     + _phrases("porco dio", "dio cane", "dio porco")
+    # travestimenti con asterischi o cancelletti al posto delle vocali: "c*zzo", "m#rda"
+    + [_word_masked(word) for word in ("cazzo", "merda", "stronzo", "stronza", "minchia", "puttana", "troia", "coglione", "vaffanculo", "fanculo", "bastardo")]
 )
 
 _CATEGORY_PATTERNS: dict[str, list[Pattern[str]]] = {

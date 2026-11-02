@@ -40,6 +40,7 @@ const colors = {
   primary: '#2D5A3D',
   primaryLight: '#3D7A52',
   accent: '#F87828',
+  lime: '#B8C868',
   background: '#0F1A14',
   backgroundLight: '#1A2E22',
   backgroundCard: '#1A2E22',
@@ -215,6 +216,32 @@ export default function ChatScreen() {
     }
   };
 
+  const confirmBlock = () => {
+    const otherUser = getOtherParticipant();
+    const otherUserId = otherUser?.id;
+    if (!otherUserId) return;
+    const name = otherUser?.name || tt('un vicino');
+    Alert.alert(
+      tx('Bloccare {0}?', [name]),
+      tt('Non vedrai più i suoi favori e non potrete scrivervi. Puoi sbloccarlo dalle Impostazioni.'),
+      [
+        { text: tt('Annulla'), style: 'cancel' },
+        { text: tt('Blocca'), style: 'destructive', onPress: () => handleBlock(otherUserId, name) },
+      ]
+    );
+  };
+
+  const handleBlock = async (otherUserId: string, name: string) => {
+    if (!token) return;
+    try {
+      await api.blockUser(otherUserId, undefined, token);
+      notify(tt('Utente bloccato'), name);
+      router.back();
+    } catch (error: any) {
+      notify(tt('Errore'), error.message || tt('Impossibile bloccare l\'utente'));
+    }
+  };
+
   const handleSendMeetingPoint = () => {
     setSendError(null);
     setShowMeeting(true);
@@ -328,7 +355,7 @@ export default function ChatScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.lime} />
         </View>
       </SafeAreaView>
     );
@@ -464,6 +491,18 @@ export default function ChatScreen() {
             >
               <Ionicons name="flag-outline" size={20} color={colors.error} />
               <Text style={styles.menuItemText}>{tx('Segnala {0}', [otherParticipant?.name || tt('un vicino')])}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setShowMenu(false);
+                confirmBlock();
+              }}
+              accessibilityRole="button"
+              data-testid="block-button"
+            >
+              <Ionicons name="ban-outline" size={20} color={colors.error} />
+              <Text style={styles.menuItemText}>{tx('Blocca {0}', [otherParticipant?.name || tt('un vicino')])}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

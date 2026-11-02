@@ -111,7 +111,7 @@ export default function RecoveryScreen() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.optionCard} onPress={() => setMode('username')} data-testid="recover-username-option">
           <View style={styles.optionIcon}>
-            <Ionicons name="person" size={24} color={colors.primary} />
+            <Ionicons name="person" size={24} color={colors.lime} />
           </View>
           <View style={styles.optionText}>
             <Text style={styles.optionTitle}>{tt('Recupera Nome Utente')}</Text>
@@ -129,7 +129,7 @@ export default function RecoveryScreen() {
         <>
           <View style={styles.header}>
             <View style={[styles.iconCircle, { backgroundColor: colors.primaryMuted }]}>
-              <Ionicons name="checkmark-circle" size={40} color={colors.primaryLight} />
+              <Ionicons name="checkmark-circle" size={40} color={colors.lime} />
             </View>
             <Text style={styles.title}>{tt('Password Aggiornata!')}</Text>
             <Text style={styles.subtitle}>{tt('Ora puoi accedere con la nuova password')}</Text>
@@ -198,7 +198,7 @@ export default function RecoveryScreen() {
         <>
           <View style={styles.header}>
             <View style={[styles.iconCircle, { backgroundColor: colors.primaryMuted }]}>
-              <Ionicons name="person-circle" size={40} color={colors.primaryLight} />
+              <Ionicons name="person-circle" size={40} color={colors.lime} />
             </View>
             <Text style={styles.title}>{tt('Nome Utente Trovato')}</Text>
             <View style={styles.usernameBox}>
@@ -217,7 +217,7 @@ export default function RecoveryScreen() {
       <>
         <View style={styles.header}>
           <View style={[styles.iconCircle, { backgroundColor: colors.primaryMuted }]}>
-            <Ionicons name="person" size={32} color={colors.primaryLight} />
+            <Ionicons name="person" size={32} color={colors.lime} />
           </View>
           <Text style={styles.title}>{tt('Recupera Nome Utente')}</Text>
           <Text style={styles.subtitle}>
@@ -259,7 +259,7 @@ export default function RecoveryScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           {/* Back button */}
           <TouchableOpacity style={styles.backButton} onPress={() => {
-            if (mode === 'choose') router.back();
+            if (mode === 'choose') { if (router.canGoBack()) router.back(); else router.replace('/(auth)/login'); }
             else { setMode('choose'); setPwStep('email'); setUnStep('email'); setPwCode(''); setUnCode(''); setNewPassword(''); setConfirmPassword(''); }
           }} data-testid="recovery-back-btn">
             <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />

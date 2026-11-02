@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
   TouchableOpacity,
   FlatList,
   Animated,
@@ -12,8 +12,6 @@ import {
 import { colors } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { tt } from '../i18n/tt';
-
-const { width, height } = Dimensions.get('window');
 
 interface Slide {
   id: string;
@@ -53,14 +51,16 @@ interface OnboardingSlidesProps {
 }
 
 export default function OnboardingSlides({ visible, onComplete }: OnboardingSlidesProps) {
+  const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
-      setCurrentIndex(currentIndex + 1);
+      const nextIndex = currentIndex + 1;
+      flatListRef.current?.scrollToOffset({ offset: width * nextIndex, animated: true });
+      setCurrentIndex(nextIndex);
     } else {
       onComplete();
     }
@@ -71,7 +71,7 @@ export default function OnboardingSlides({ visible, onComplete }: OnboardingSlid
   };
 
   const renderSlide = ({ item, index }: { item: Slide; index: number }) => (
-    <View style={styles.slide}>
+    <View style={[styles.slide, { width }]}>
       {/* Icon Container */}
       <View style={styles.iconContainer}>
         <View style={styles.iconCircle}>
@@ -159,7 +159,13 @@ export default function OnboardingSlides({ visible, onComplete }: OnboardingSlid
           bounces={false}
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-            { useNativeDriver: false }
+            {
+              useNativeDriver: false,
+              // Sul web l'indice si ricava dallo scorrimento, come sul telefono
+              listener: (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+                setCurrentIndex(Math.round(event.nativeEvent.contentOffset.x / width));
+              },
+            }
           )}
           onMomentumScrollEnd={(event) => {
             const index = Math.round(event.nativeEvent.contentOffset.x / width);
@@ -212,11 +218,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   slide: {
-    width,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
+    paddingTop: 72,
   },
   iconContainer: {
     alignItems: 'center',

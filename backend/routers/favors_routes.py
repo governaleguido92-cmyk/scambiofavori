@@ -200,12 +200,33 @@ async def get_favors(
         query["category"] = category
     if is_emergency is not None:
         query["is_emergency"] = is_emergency
+
+    # Chi ho bloccato (o chi ha bloccato me) non compare nell'elenco
+    blocked_ids = await get_blocked_user_ids(current_user.user_id)
+    if blocked_ids:
+        query["creator_id"] = {"$nin": list(blocked_ids)}
     
     # Sort emergencies first
     sort_order = [("is_emergency", -1), ("created_at", -1)]
     
     favors_cursor = db.favors.find(query, {"_id": 0, "exact_latitude": 0, "exact_longitude": 0}).sort(sort_order).limit(100)
     favors = await favors_cursor.to_list(100)
+
+    # Chi ha creato un favore lo vede esattamente dove si trova (la sfocatura serve solo agli altri)
+    own_ids = [f["favor_id"] for f in favors if f.get("creator_id") == current_user.user_id]
+    if own_ids:
+        exact_positions = {
+            doc["favor_id"]: doc
+            async for doc in db.favors.find(
+                {"favor_id": {"$in": own_ids}},
+                {"_id": 0, "favor_id": 1, "exact_latitude": 1, "exact_longitude": 1},
+            )
+        }
+        for favor in favors:
+            exact = exact_positions.get(favor["favor_id"])
+            if exact and exact.get("exact_latitude") is not None and exact.get("exact_longitude") is not None:
+                favor["approximate_latitude"] = exact["exact_latitude"]
+                favor["approximate_longitude"] = exact["exact_longitude"]
     
     # Get all unique creator IDs to batch check supporter status
     creator_ids = list(set(f.get("creator_id") for f in favors if f.get("creator_id")))
@@ -322,6 +343,9 @@ async def get_favor(favor_id: str, current_user: User = Depends(get_current_user
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
 
+    if favor_doc["creator_id"] in await get_blocked_user_ids(current_user.user_id):
+        raise HTTPException(status_code=404, detail="Favore non trovato")
+
     # La posizione esatta la vedono solo chi ha creato il favore e chi lo ha accettato
     is_involved = favor_doc["creator_id"] == current_user.user_id or favor_doc.get("accepted_by") == current_user.user_id
     if not is_involved:
@@ -341,6 +365,9 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
 
     if favor.creator_id == current_user.user_id:
         raise HTTPException(status_code=400, detail="Non puoi accettare il tuo stesso favore")
+
+    if favor.creator_id in await get_blocked_user_ids(current_user.user_id):
+        raise HTTPException(status_code=403, detail="Non puoi accettare i favori di questo utente")
 
     if favor.type == "offer" and current_user.granelli < favor.granelli_cost:
         raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti per accettare questo favore")
@@ -790,6 +817,10 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     )
     if not is_participant:
         raise HTTPException(status_code=403, detail="Non sei un partecipante di questo favore")
+
+    other_id = favor.get("accepted_by") if favor["creator_id"] == current_user.user_id else favor["creator_id"]
+    if other_id and other_id in await get_blocked_user_ids(current_user.user_id):
+        raise HTTPException(status_code=403, detail="Non puoi scrivere a questo utente")
     
     # ========================
     # CHECK READ-ONLY STATUS

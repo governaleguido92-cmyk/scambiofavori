@@ -19,9 +19,9 @@ import { tt } from '../src/i18n/tt';
 
 const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   skill_match: { name: 'star', color: colors.accent },
-  favor_update: { name: 'hand-left', color: colors.primary },
+  favor_update: { name: 'hand-left', color: colors.lime },
   system: { name: 'information-circle', color: colors.textSecondary },
-  chat: { name: 'chatbubble-ellipses', color: colors.primary },
+  chat: { name: 'chatbubble-ellipses', color: colors.lime },
   new_message: { name: 'chatbubble', color: colors.accent },
   favor_completed: { name: 'checkmark-circle', color: '#B8C868' },
   supporter: { name: 'heart', color: '#ffd700' },
@@ -150,7 +150,7 @@ export default function NotificationsScreen() {
           <View style={styles.placeholder} />
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.lime} />
         </View>
       </SafeAreaView>
     );

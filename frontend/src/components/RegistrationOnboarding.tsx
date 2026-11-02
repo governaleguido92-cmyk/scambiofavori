@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
   FlatList,
   TouchableOpacity,
   Animated,
@@ -11,8 +11,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 import { tt } from '../i18n/tt';
-
-const { width } = Dimensions.get('window');
 
 interface RegistrationOnboardingProps {
   onComplete: () => void;
@@ -61,13 +59,16 @@ const SLIDES = [
 ];
 
 export default function RegistrationOnboarding({ onComplete }: RegistrationOnboardingProps) {
+  const { width } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
 
   const handleNext = () => {
     if (currentIndex < SLIDES.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      flatListRef.current?.scrollToOffset({ offset: width * nextIndex, animated: true });
     } else {
       onComplete();
     }
@@ -78,7 +79,7 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
   };
 
   const renderSlide = ({ item, index }: { item: typeof SLIDES[0]; index: number }) => (
-    <View style={styles.slide}>
+    <View style={[styles.slide, { width }]}>
       <View style={[styles.iconContainer, { backgroundColor: item.iconColor + '20' }]}>
         <Ionicons name={item.icon as any} size={64} color={item.iconColor} />
       </View>
@@ -125,8 +126,15 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
         viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
+          {
+            useNativeDriver: false,
+            // Sul web onViewableItemsChanged non scatta sempre: l'indice si ricava dallo scorrimento.
+            listener: (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+              setCurrentIndex(Math.round(event.nativeEvent.contentOffset.x / width));
+            },
+          }
         )}
+        scrollEventThrottle={16}
       />
 
       {/* Pagination dots */}
@@ -195,7 +203,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   slide: {
-    width,
     paddingHorizontal: 30,
     paddingTop: 100,
     alignItems: 'center',
@@ -223,6 +230,8 @@ const styles = StyleSheet.create({
   },
   pointsContainer: {
     width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
     marginBottom: 30,
   },
   pointRow: {
@@ -271,6 +280,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.accent,
     marginHorizontal: 30,
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
     marginBottom: 40,
     paddingVertical: 16,
     borderRadius: 14,

@@ -11,7 +11,7 @@ export const colors = {
   // Accent - Arancio del logo (azioni principali)
   accent: '#F87828',
   accentLight: '#FB9A52',
-  accentDark: '#D9611A',
+  accentDark: '#BF500E',
   accentMuted: 'rgba(248, 120, 40, 0.15)',
 
   // Secondary - Verde lime del logo (elementi attivi, icone, selezioni)
