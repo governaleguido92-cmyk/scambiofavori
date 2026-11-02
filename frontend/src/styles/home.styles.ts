@@ -523,6 +523,22 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.error,
   },
+  gridCardOwn: {
+    borderWidth: 2,
+    borderColor: 'rgba(184, 200, 104, 0.6)',
+  },
+  ownBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: colors.lime,
+  },
+  ownBadgeText: {
+    color: colors.background,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
   gridCardHighlighted: {
     borderWidth: 2,
     borderColor: colors.lime,

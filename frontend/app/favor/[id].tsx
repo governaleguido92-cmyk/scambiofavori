@@ -706,7 +706,7 @@ export default function FavorDetailScreen() {
                 {review.public_thanks && (
                   <View style={styles.publicThanksBox}>
                     <Ionicons name="heart" size={14} color="#ff6b6b" />
-                    <Text style={styles.publicThanksText}>"{review.public_thanks}"</Text>
+                    <Text style={styles.publicThanksText}>&quot;{review.public_thanks}&quot;</Text>
                   </View>
                 )}
               </View>

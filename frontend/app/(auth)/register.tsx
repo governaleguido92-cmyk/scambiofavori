@@ -204,7 +204,9 @@ export default function RegisterScreen() {
         >
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => router.back()}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/(auth)/login'))}
+            accessibilityRole="button"
+            accessibilityLabel={tt('Indietro')}
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -333,6 +335,9 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: 480,
+    alignSelf: 'center',
     padding: 24,
   },
   backButton: {

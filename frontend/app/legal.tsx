@@ -34,15 +34,15 @@ export default function LegalScreen() {
         {/* Terms of Service */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="document-text" size={24} color={colors.primary} />
+            <Ionicons name="document-text" size={24} color={colors.lime} />
             <Text style={styles.sectionTitle}>Termini di Servizio</Text>
           </View>
           
           <View style={styles.article}>
             <Text style={styles.articleTitle}>1. Natura della Piattaforma</Text>
             <Text style={styles.articleText}>
-              "Scambio Favori" è una piattaforma che facilita lo scambio di favori tra privati cittadini. 
-              L'app agisce esclusivamente come intermediario tecnologico e non partecipa in alcun modo 
+              &quot;Scambio Favori&quot; è una piattaforma che facilita lo scambio di favori tra privati cittadini. 
+              L&apos;app agisce esclusivamente come intermediario tecnologico e non partecipa in alcun modo 
               agli accordi tra gli utenti.
             </Text>
           </View>
@@ -52,7 +52,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               La piattaforma non è responsabile per:{'\n'}
               • Danni diretti o indiretti derivanti dallo scambio di favori{'\n'}
-              • Infortuni o incidenti durante l'esecuzione di un favore{'\n'}
+              • Infortuni o incidenti durante l&apos;esecuzione di un favore{'\n'}
               • Qualità, tempestività o completezza delle prestazioni{'\n'}
               • Comportamenti degli utenti al di fuori della piattaforma{'\n\n'}
               Ogni scambio avviene sotto la piena responsabilità degli utenti coinvolti.
@@ -64,7 +64,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               È severamente vietato richiedere, offrire o scambiare denaro reale (contanti, bonifici, 
               pagamenti elettronici) in cambio di favori.{'\n\n'}
-              Gli scambi avvengono esclusivamente tramite la valuta virtuale "Granelli" (🌾).{'\n\n'}
+              Gli scambi avvengono esclusivamente tramite la valuta virtuale &quot;Granelli&quot; (🌾).{'\n\n'}
               <Text style={styles.warningText}>
                 La violazione di questa regola comporta il ban permanente dalla piattaforma.
               </Text>
@@ -72,9 +72,9 @@ export default function LegalScreen() {
           </View>
 
           <View style={styles.article}>
-            <Text style={styles.articleTitle}>4. Obblighi dell'Utente</Text>
+            <Text style={styles.articleTitle}>4. Obblighi dell&apos;Utente</Text>
             <Text style={styles.articleText}>
-              L'utente si impegna a:{'\n'}
+              L&apos;utente si impegna a:{'\n'}
               • Fornire informazioni veritiere al momento della registrazione{'\n'}
               • Comportarsi con rispetto e correttezza verso gli altri utenti{'\n'}
               • Non utilizzare la piattaforma per attività illegali{'\n'}
@@ -86,7 +86,7 @@ export default function LegalScreen() {
           <View style={styles.article}>
             <Text style={styles.articleTitle}>5. Sospensione e Terminazione</Text>
             <Text style={styles.articleText}>
-              La piattaforma si riserva il diritto di sospendere o terminare l'account di utenti che:{'\n'}
+              La piattaforma si riserva il diritto di sospendere o terminare l&apos;account di utenti che:{'\n'}
               • Violano i presenti Termini di Servizio{'\n'}
               • Ricevono ripetute segnalazioni negative{'\n'}
               • Tentano di eludere il sistema di valuta virtuale{'\n'}
@@ -98,7 +98,7 @@ export default function LegalScreen() {
         {/* Privacy Policy */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="shield-checkmark" size={24} color={colors.primary} />
+            <Ionicons name="shield-checkmark" size={24} color={colors.lime} />
             <Text style={styles.sectionTitle}>Privacy Policy</Text>
           </View>
           
@@ -110,7 +110,7 @@ export default function LegalScreen() {
             <Text style={styles.articleTitle}>1. Dati Raccolti</Text>
             <Text style={styles.articleText}>
               Raccogliamo i seguenti dati:{'\n'}
-              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata); con l'accesso tramite Google o Apple, nome ed email forniti dal servizio (l'accesso con Google passa dal servizio di autenticazione di Emergent){'\n'}
+              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata); con l&apos;accesso tramite Google o Apple, nome ed email forniti dal servizio (l&apos;accesso con Google passa dal servizio di autenticazione di Emergent){'\n'}
               • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione del dispositivo (solo su consenso){'\n'}
               • <Text style={styles.bold}>Profilo:</Text> foto profilo (se la carichi), competenze, punteggi e badge{'\n'}
               • <Text style={styles.bold}>Dati di utilizzo:</Text> favori creati, messaggi, notifiche, recensioni{'\n'}
@@ -138,8 +138,8 @@ export default function LegalScreen() {
             <Text style={styles.articleTitle}>3. Conservazione dei Dati</Text>
             <Text style={styles.articleText}>
               I tuoi dati vengono conservati:{'\n'}
-              • Per tutta la durata dell'account{'\n'}
-              • Dopo la cancellazione dell'account i dati personali vengono eliminati subito, come descritto qui sotto{'\n'}
+              • Per tutta la durata dell&apos;account{'\n'}
+              • Dopo la cancellazione dell&apos;account i dati personali vengono eliminati subito, come descritto qui sotto{'\n'}
               • I dati dei pagamenti per il periodo richiesto dalla normativa fiscale e contabile
             </Text>
           </View>
@@ -157,7 +157,7 @@ export default function LegalScreen() {
           </View>
 
           <View style={styles.article}>
-            <Text style={styles.articleTitle}>5. Diritto all'Oblio</Text>
+            <Text style={styles.articleTitle}>5. Diritto all&apos;Oblio</Text>
             <Text style={styles.articleText}>
               Puoi eliminare il tuo account in qualsiasi momento da Profilo → Elimina account. 
               Verranno cancellati subito:{'\n'}
@@ -166,8 +166,8 @@ export default function LegalScreen() {
               • Messaggi inviati e notifiche{'\n'}
               • Granelli accumulati{'\n\n'}
               I favori e le recensioni che hai scritto restano per lo storico degli altri utenti, ma senza 
-              i tuoi dati personali (il tuo nome diventa "Utente eliminato"). I dati dei pagamenti sono 
-              conservati per gli obblighi di legge. Se non riesci ad accedere all'app, scrivi all'indirizzo 
+              i tuoi dati personali (il tuo nome diventa &quot;Utente eliminato&quot;). I dati dei pagamenti sono 
+              conservati per gli obblighi di legge. Se non riesci ad accedere all&apos;app, scrivi all&apos;indirizzo 
               indicato nei contatti.
             </Text>
           </View>
@@ -187,8 +187,8 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               Non vendiamo i tuoi dati. Usiamo fornitori che li trattano per nostro conto: Render (hosting), 
               MongoDB Atlas (database), Cloudflare R2 (foto profilo), Resend (email di verifica), Stripe 
-              (pagamenti), Expo (notifiche push), Emergent (autenticazione per l'accesso con Google) e, se li scegli, Google o Apple per l'accesso. Alcuni possono 
-              trattare dati anche fuori dall'Unione Europea, con le garanzie previste dal GDPR. L'app non 
+              (pagamenti), Expo (notifiche push), Emergent (autenticazione per l&apos;accesso con Google) e, se li scegli, Google o Apple per l&apos;accesso. Alcuni possono 
+              trattare dati anche fuori dall&apos;Unione Europea, con le garanzie previste dal GDPR. L&apos;app non 
               contiene pubblicità.
             </Text>
           </View>
@@ -196,7 +196,7 @@ export default function LegalScreen() {
           <View style={styles.article}>
             <Text style={styles.articleTitle}>8. Minori</Text>
             <Text style={styles.articleText}>
-              L'app è destinata a persone di almeno 18 anni.
+              L&apos;app è destinata a persone di almeno 18 anni.
             </Text>
           </View>
 
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   gdprBadgeText: {
-    color: colors.primary,
+    color: colors.lime,
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   highlightText: {
-    color: colors.primary,
+    color: colors.lime,
     fontStyle: 'italic',
   },
   emailText: {

@@ -130,7 +130,20 @@ export default function CreateFavorScreen() {
         return;
       }
 
-      const loc = await Location.getCurrentPositionAsync({});
+      let loc: Location.LocationObject | null = null;
+      try {
+        loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      } catch {
+        // Se il GPS non risponde, usa l'ultima posizione nota del dispositivo
+        loc = await Location.getLastKnownPositionAsync();
+      }
+      if (!loc) {
+        notify(
+          tt('Posizione non disponibile'),
+          tt('Il dispositivo non riesce a darci la posizione. Controlla che la localizzazione e il Wi-Fi o il GPS siano attivi e riprova.')
+        );
+        return;
+      }
       setLocation({
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,

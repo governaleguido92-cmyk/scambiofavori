@@ -115,11 +115,10 @@ async def block_user(block_req: BlockUserRequest, current_user: User = Depends(g
 async def unblock_user(user_id: str, current_user: User = Depends(get_current_user)):
     """Unblock a user"""
     
+    # Solo chi ha bloccato può sbloccare: chi è bloccato non può togliere il blocco
     result = await db.blocked_users.delete_one({
-        "$or": [
-            {"blocker_id": current_user.user_id, "blocked_id": user_id},
-            {"blocker_id": user_id, "blocked_id": current_user.user_id}
-        ]
+        "blocker_id": current_user.user_id,
+        "blocked_id": user_id,
     })
     
     if result.deleted_count == 0:
@@ -131,19 +130,9 @@ async def unblock_user(user_id: str, current_user: User = Depends(get_current_us
 async def get_blocked_users(current_user: User = Depends(get_current_user)):
     """Get list of blocked users"""
     
-    blocks = await db.blocked_users.find({
-        "$or": [
-            {"blocker_id": current_user.user_id},
-            {"blocked_id": current_user.user_id}
-        ]
-    }, {"_id": 0}).to_list(100)
-    
-    blocked_ids = set()
-    for block in blocks:
-        if block["blocker_id"] == current_user.user_id:
-            blocked_ids.add(block["blocked_id"])
-        else:
-            blocked_ids.add(block["blocker_id"])
+    # Solo gli utenti che ho bloccato io (non chi ha bloccato me)
+    blocks = await db.blocked_users.find({"blocker_id": current_user.user_id}, {"_id": 0}).to_list(100)
+    blocked_ids = {block["blocked_id"] for block in blocks}
     
     # Get user info for blocked users
     blocked_users = []

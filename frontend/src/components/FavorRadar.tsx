@@ -13,6 +13,8 @@ interface FavorRadarProps {
   radiusKm: number;
   selectedId: string | null;
   onSelect: (favorId: string) => void;
+  /** Id dell'utente: i suoi favori vengono evidenziati. */
+  currentUserId?: string;
 }
 
 const MARKER_SIZE = 46;
@@ -24,7 +26,7 @@ const OFFER_COLOR = '#5FBF7F';
  * e a una distanza proporzionale al raggio scelto. Non è una mappa stradale: serve a capire a colpo d'occhio
  * quanti favori ci sono e da che parte.
  */
-export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, radiusKm, selectedId, onSelect }) => {
+export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, radiusKm, selectedId, onSelect, currentUserId }) => {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   const onLayout = (event: LayoutChangeEvent) => {
@@ -53,7 +55,6 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
           </Text>
 
           <View style={[styles.userDot, { left: centerX - 7, top: centerY - 7 }]} />
-          <Text style={[styles.userLabel, { left: centerX - 40, top: centerY + 12, width: 80 }]}>{tt('Tu sei qui')}</Text>
 
           {ordered.map((favor) => {
             if (typeof favor.distance_km !== 'number') return null;
@@ -64,31 +65,47 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
             const { x, y } = radarOffset(favor.distance_km, bearing, radiusKm, radiusPx);
             const visual = getCategoryVisual(favor.category);
             const selected = favor.favor_id === selectedId;
-            const borderColor = favor.is_emergency ? colors.error : favor.type === 'offer' ? OFFER_COLOR : colors.accent;
+            const isOwn = !!currentUserId && favor.creator_id === currentUserId;
+            const borderColor = isOwn
+              ? colors.lime
+              : favor.is_emergency ? colors.error : favor.type === 'offer' ? OFFER_COLOR : colors.accent;
             return (
               <TouchableOpacity
                 key={favor.favor_id}
                 style={[styles.marker, { left: centerX + x - MARKER_SIZE / 2, top: centerY + y - MARKER_SIZE / 2, zIndex: selected ? 2 : 1 }]}
                 onPress={() => onSelect(favor.favor_id)}
                 accessibilityRole="button"
-                accessibilityLabel={`${favor.title}, ${favor.granelli_cost} ${CURRENCY_SYMBOL}`}
+                accessibilityLabel={`${isOwn ? tt('Il tuo favore') + ': ' : ''}${favor.title}, ${favor.granelli_cost} ${CURRENCY_SYMBOL}`}
                 data-testid={`map-favor-${favor.favor_id}`}
               >
                 <View
                   style={[
                     styles.markerCircle,
                     { backgroundColor: visual.color, borderColor: selected ? '#fff' : borderColor },
+                    isOwn && styles.markerCircleOwn,
                     selected && styles.markerCircleSelected,
                   ]}
                 >
                   <Text style={styles.markerEmoji}>{visual.emoji}</Text>
                 </View>
+                {isOwn && (
+                  <View style={styles.ownTag}>
+                    <Text style={styles.ownTagText}>{tt('TUO')}</Text>
+                  </View>
+                )}
                 <View style={styles.markerPill}>
                   <Text style={styles.markerPillText}>{CURRENCY_SYMBOL} {favor.granelli_cost}</Text>
                 </View>
               </TouchableOpacity>
             );
           })}
+          <View style={styles.legend} pointerEvents="none">
+            <View style={styles.legendItem}>
+              <View style={styles.legendDot} />
+              <Text style={styles.legendText}>{tt('Tu sei qui')}</Text>
+            </View>
+            <Text style={styles.legendText}>{tt('Cerchio esterno')} = {formatRadius(radiusKm)}</Text>
+          </View>
         </>
       )}
     </View>
@@ -128,7 +145,27 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
+  legend: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#3B82F6',
+    borderWidth: 1.5,
+    borderColor: '#fff',
+  },
+  legendText: { color: colors.textPrimary, fontSize: 11, fontWeight: '600' },
   userDot: {
+    zIndex: 3,
     position: 'absolute',
     width: 14,
     height: 14,
@@ -136,13 +173,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     borderWidth: 2,
     borderColor: '#fff',
-  },
-  userLabel: {
-    position: 'absolute',
-    textAlign: 'center',
-    color: colors.textSecondary,
-    fontSize: 10,
-    fontWeight: '600',
   },
   marker: {
     position: 'absolute',
@@ -156,6 +186,27 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  markerCircleOwn: {
+    borderWidth: 4,
+    shadowColor: colors.lime,
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  ownTag: {
+    position: 'absolute',
+    top: -12,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 999,
+    backgroundColor: colors.lime,
+  },
+  ownTagText: {
+    color: colors.background,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
   markerCircleSelected: {
     transform: [{ scale: 1.18 }],

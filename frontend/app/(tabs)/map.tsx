@@ -144,6 +144,7 @@ export default function MapScreen() {
                 radiusKm={radiusKm}
                 selectedId={selectedId}
                 onSelect={handleSelect}
+                currentUserId={user.user_id}
               />
             )}
             <Text style={styles.privacyText}>

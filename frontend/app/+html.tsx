@@ -24,6 +24,15 @@ export default function Root({ children }: PropsWithChildren) {
               body > div:first-child { position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; }
               [role="tablist"] [role="tab"] * { overflow: visible !important; }
               [role="heading"], [role="heading"] * { overflow: visible !important; }
+              input, textarea, div:focus, div:focus-visible { outline: none !important; }
+              input:-webkit-autofill,
+              input:-webkit-autofill:hover,
+              input:-webkit-autofill:focus {
+                -webkit-box-shadow: 0 0 0 1000px #1A2E22 inset !important;
+                -webkit-text-fill-color: #FFFFFF !important;
+                caret-color: #FFFFFF;
+                transition: background-color 9999s ease-in-out 0s;
+              }
             `,
           }}
         />
