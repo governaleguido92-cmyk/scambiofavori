@@ -253,3 +253,98 @@ async def test_reviewer_account_is_exempt(client, app_db, monkeypatch):
     response = await client.post("/api/favors", json=_favor_payload(), headers=auth("rev"))
 
     assert response.status_code == 200
+
+
+# ---------- Twilio Verify (il codice lo genera e lo controlla Twilio) ----------
+
+@pytest.fixture
+def verify_service(monkeypatch):
+    """Attiva la modalità Verify con un finto servizio Twilio."""
+    calls = {"start": [], "check": [], "approved": True}
+
+    async def fake_start(to: str) -> bool:
+        calls["start"].append(to)
+        return True
+
+    async def fake_check(to: str, code: str) -> bool:
+        calls["check"].append((to, code))
+        return calls["approved"]
+
+    monkeypatch.setattr(sms, "verify_enabled", lambda: True)
+    monkeypatch.setattr(sms, "verify_start", fake_start)
+    monkeypatch.setattr(sms, "verify_check", fake_check)
+    return calls
+
+
+def test_verify_enabled_needs_all_three_settings(monkeypatch):
+    for name in ("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID"):
+        monkeypatch.delenv(name, raising=False)
+    assert sms.verify_enabled() is False
+    monkeypatch.setenv("TWILIO_ACCOUNT_SID", "ACxxx")
+    monkeypatch.setenv("TWILIO_AUTH_TOKEN", "token")
+    assert sms.verify_enabled() is False
+    monkeypatch.setenv("TWILIO_VERIFY_SERVICE_SID", "VAxxx")
+    assert sms.verify_enabled() is True
+
+
+async def test_verify_request_uses_twilio_and_stores_no_code(client, app_db, sent, verify_service):
+    await app_db.users.insert_one(make_user("me"))
+
+    response = await _request(client)
+
+    assert response.status_code == 200
+    assert verify_service["start"] == [PHONE]
+    assert sent == []
+    stored = await app_db.users.find_one({"user_id": "me"})
+    assert "phone_code" not in stored
+    assert PHONE not in str(stored)
+
+
+async def test_verify_correct_code_verifies_the_phone(client, app_db, sent, verify_service):
+    await app_db.users.insert_one(make_user("me"))
+    await _request(client)
+
+    response = await client.post(
+        "/api/auth/phone/verify", json={"code": "123456", "phone": PHONE}, headers=auth("me")
+    )
+
+    assert response.status_code == 200
+    assert verify_service["check"] == [(PHONE, "123456")]
+    user = await app_db.users.find_one({"user_id": "me"})
+    assert user["phone_verified"] is True
+    assert user["phone_masked"].endswith("0166")
+    assert PHONE not in str(user)
+
+
+async def test_verify_wrong_code_is_refused(client, app_db, sent, verify_service):
+    await app_db.users.insert_one(make_user("me"))
+    await _request(client)
+    verify_service["approved"] = False
+
+    response = await client.post(
+        "/api/auth/phone/verify", json={"code": "000000", "phone": PHONE}, headers=auth("me")
+    )
+
+    assert response.status_code == 400
+    assert not (await app_db.users.find_one({"user_id": "me"})).get("phone_verified")
+
+
+async def test_verify_with_a_different_phone_is_refused(client, app_db, sent, verify_service):
+    await app_db.users.insert_one(make_user("me"))
+    await _request(client)
+
+    response = await client.post(
+        "/api/auth/phone/verify", json={"code": "123456", "phone": "+393331112222"}, headers=auth("me")
+    )
+
+    assert response.status_code == 400
+    assert verify_service["check"] == []
+
+
+async def test_verify_without_phone_in_body_is_refused(client, app_db, sent, verify_service):
+    await app_db.users.insert_one(make_user("me"))
+    await _request(client)
+
+    response = await client.post("/api/auth/phone/verify", json={"code": "123456"}, headers=auth("me"))
+
+    assert response.status_code == 400

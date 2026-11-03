@@ -993,11 +993,11 @@ export const api = {
     return handleResponse(response);
   },
 
-  verifyPhoneCode: async (code: string, token: string): Promise<User> => {
+  verifyPhoneCode: async (code: string, phone: string, token: string): Promise<User> => {
     const response = await fetch(`${API_URL}/api/auth/phone/verify`, {
       method: 'POST',
       headers: getHeaders(token),
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, phone }),
     });
     return handleResponse(response);
   },

@@ -29,6 +29,45 @@ def normalize_phone(raw: Optional[str]) -> Optional[str]:
     return compact if _E164.match(compact) else None
 
 
+VERIFY_BASE_URL = "https://verify.twilio.com/v2/Services"
+VERIFY_TIMEOUT_SECONDS = 10
+
+
+def verify_enabled() -> bool:
+    """True se è configurato il servizio Twilio Verify (codice generato e controllato da Twilio)."""
+    return all(os.environ.get(n) for n in ("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID"))
+
+
+async def _verify_call(endpoint: str, data: dict) -> Optional[dict]:
+    account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+    service_sid = os.environ["TWILIO_VERIFY_SERVICE_SID"]
+    try:
+        async with httpx.AsyncClient(timeout=VERIFY_TIMEOUT_SECONDS) as client:
+            response = await client.post(
+                f"{VERIFY_BASE_URL}/{service_sid}/{endpoint}",
+                auth=(account_sid, os.environ["TWILIO_AUTH_TOKEN"]),
+                data=data,
+            )
+    except httpx.HTTPError:
+        logger.exception("Twilio Verify: network error on %s", endpoint)
+        return None
+    if response.status_code not in (200, 201):
+        logger.error("Twilio Verify %s answered %s", endpoint, response.status_code)
+        return None
+    return response.json()
+
+
+async def verify_start(to: str) -> bool:
+    """Chiede a Twilio di inviare il codice SMS a `to`."""
+    return await _verify_call("Verifications", {"To": to, "Channel": "sms", "Locale": "it"}) is not None
+
+
+async def verify_check(to: str, code: str) -> bool:
+    """True se Twilio conferma che `code` è corretto per `to`."""
+    result = await _verify_call("VerificationCheck", {"To": to, "Code": code})
+    return bool(result) and result.get("status") == "approved"
+
+
 async def send_sms(to: str, body: str) -> bool:
     """Invia un SMS con Twilio. Senza credenziali scrive il testo nei log (sviluppo) e restituisce False."""
     account_sid = os.environ.get("TWILIO_ACCOUNT_SID")

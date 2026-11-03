@@ -92,10 +92,26 @@ class PhoneRequestBody(BaseModel):
 
 class PhoneVerifyBody(BaseModel):
     code: str
+    phone: Optional[str] = None
 
 
 def _aware(value: datetime) -> datetime:
     return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+
+
+async def _check_code_with_twilio(user_doc: dict, data: PhoneVerifyBody) -> None:
+    """Controlla il codice con Twilio Verify, con tentativi limitati e solo per il numero richiesto."""
+    user_id = user_doc["user_id"]
+    attempts = user_doc.get("phone_attempts", 0)
+    phone = sms.normalize_phone(data.phone)
+    pending_hash = user_doc.get("phone_pending_hash")
+    if attempts >= MAX_CODE_ATTEMPTS or not pending_hash:
+        raise HTTPException(status_code=400, detail="Codice non valido. Richiedi un nuovo codice.")
+    if not phone or hash_secret_value(phone) != pending_hash:
+        raise HTTPException(status_code=400, detail="Numero non corrispondente. Richiedi un nuovo codice.")
+    if not await sms.verify_check(phone, data.code.strip()):
+        await db.users.update_one({"user_id": user_id}, {"$inc": {"phone_attempts": 1}})
+        raise HTTPException(status_code=400, detail="Codice non valido")
 
 
 @api_router.post("/auth/phone/request")
@@ -121,18 +137,25 @@ async def request_phone_code(request: Request, data: PhoneRequestBody, current_u
     if recent and now - max(_aware(r["created_at"]) for r in recent) < timedelta(seconds=PHONE_RESEND_SECONDS):
         raise HTTPException(status_code=429, detail="Aspetta un minuto prima di chiedere un nuovo codice.")
 
+    use_verify = sms.verify_enabled()
+    pending = {
+        "phone_code_expires": now + timedelta(minutes=PHONE_CODE_TTL_MINUTES),
+        "phone_attempts": 0,
+        "phone_pending_hash": phone_hash,
+        "phone_pending_masked": mask_phone(phone),
+        "phone_via_verify": use_verify,
+    }
     code = generate_numeric_code()
+    if not use_verify:
+        pending["phone_code"] = hash_secret_value(code)
     await db.users.update_one(
         {"user_id": current_user.user_id},
-        {"$set": {
-            "phone_code": hash_secret_value(code),
-            "phone_code_expires": now + timedelta(minutes=PHONE_CODE_TTL_MINUTES),
-            "phone_attempts": 0,
-            "phone_pending_hash": phone_hash,
-            "phone_pending_masked": mask_phone(phone),
-        }},
+        {"$set": pending, **({"$unset": {"phone_code": ""}} if use_verify else {})},
     )
     await db.phone_requests.insert_one({"user_id": current_user.user_id, "created_at": now})
+    if use_verify:
+        started = await sms.verify_start(phone)
+        return {"message": "Codice inviato", "sms_sent": started}
     sent = await sms.send_sms(phone, f"Scambio Favori - codice di verifica: {code} (vale {PHONE_CODE_TTL_MINUTES} minuti)")
     return {"message": "Codice inviato", "sms_sent": sent}
 
@@ -142,13 +165,16 @@ async def request_phone_code(request: Request, data: PhoneRequestBody, current_u
 async def verify_phone_code(request: Request, data: PhoneVerifyBody, current_user: User = Depends(get_current_user)):
     """Conferma il codice ricevuto via SMS: il profilo diventa "telefono verificato"."""
     user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
-    await check_one_time_code(
-        user_doc,
-        user_doc.get("phone_code"),
-        hash_secret_value(data.code.strip()),
-        "phone_attempts",
-        ["phone_code", "phone_code_expires"],
-    )
+    if user_doc.get("phone_via_verify"):
+        await _check_code_with_twilio(user_doc, data)
+    else:
+        await check_one_time_code(
+            user_doc,
+            user_doc.get("phone_code"),
+            hash_secret_value(data.code.strip()),
+            "phone_attempts",
+            ["phone_code", "phone_code_expires"],
+        )
     expires = user_doc.get("phone_code_expires")
     if not expires or datetime.now(timezone.utc) > _aware(expires):
         raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice.")
@@ -167,7 +193,7 @@ async def verify_phone_code(request: Request, data: PhoneVerifyBody, current_use
             },
             "$unset": {
                 "phone_code": "", "phone_code_expires": "", "phone_attempts": "",
-                "phone_pending_hash": "", "phone_pending_masked": "",
+                "phone_pending_hash": "", "phone_pending_masked": "", "phone_via_verify": "",
             },
         },
     )
