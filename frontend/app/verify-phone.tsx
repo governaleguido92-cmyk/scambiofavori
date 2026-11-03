@@ -74,7 +74,7 @@ export default function VerifyPhoneScreen() {
     setBusy(true);
     setError(null);
     try {
-      await api.verifyPhoneCode(code, token);
+      await api.verifyPhoneCode(code, buildPhoneNumber(prefix, phone), token);
       await refreshUser();
       notify(tt('Telefono verificato'), tt('Ora puoi pubblicare e accettare favori.'));
       goBack();
