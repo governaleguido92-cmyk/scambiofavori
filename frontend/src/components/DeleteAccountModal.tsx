@@ -73,7 +73,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible,
           </View>
 
           <Text style={styles.warning}>{tt('Questa azione è definitiva e non si può annullare.')}</Text>
-          <Text style={styles.body}>{tt('• Il tuo profilo, i tuoi messaggi e le tue notifiche vengono cancellati.')}{'\n'}{tt('• La foto profilo viene rimossa.')}{'\n'}{tt('• I favori e le recensioni che hai scritto restano per gli altri utenti, ma senza i tuoi dati personali (il tuo nome diventa "Utente eliminato").')}{'\n'}{tt('• I tuoi Granelli andranno persi.')}{'\n'}{tt('• I dati dei pagamenti sono conservati per gli obblighi di legge.')}</Text>
+          <Text style={styles.body}>{tt('• Il tuo profilo, i tuoi messaggi e le tue notifiche vengono cancellati.')}{'\n'}{tt('• La foto profilo viene rimossa.')}{'\n'}{tt('• I favori che hai creato vengono eliminati, con tutti i messaggi scambiati in quelle chat.')}{'\n'}{tt('• Le recensioni che hai scritto restano in forma anonima ("Utente eliminato").')}{'\n'}{tt('• I tuoi Granelli andranno persi.')}{'\n'}{tt('• I dati dei pagamenti sono conservati per gli obblighi di legge.')}</Text>
 
           <Text style={styles.label}>{tt('Per confermare, scrivi la tua email:')}</Text>
           <Text style={styles.emailHint}>{email}</Text>

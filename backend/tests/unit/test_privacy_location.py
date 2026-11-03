@@ -11,8 +11,15 @@ def _distance_m(lat1, lon1, lat2, lon2):
     return core.calculate_distance(lat1, lon1, lat2, lon2) * 1000
 
 
-def test_privacy_radius_is_at_least_500_meters():
-    assert core.PRIVACY_RADIUS_METERS >= 500
+def test_other_users_see_a_position_between_100_and_300_meters_away():
+    for _ in range(SAMPLES):
+        lat, lon = core.approximate_location(LAT, LON)
+        distance = _distance_m(LAT, LON, lat, lon)
+        assert 100 * 0.99 <= distance <= 300 * 1.01
+
+
+def test_privacy_radius_is_at_least_300_meters():
+    assert core.PRIVACY_RADIUS_METERS >= 300
 
 
 def test_approximate_location_stays_within_privacy_radius():
@@ -22,7 +29,8 @@ def test_approximate_location_stays_within_privacy_radius():
 
 
 def test_approximate_location_is_never_close_to_the_real_point():
-    minimum = core.PRIVACY_RADIUS_METERS * 0.3 * 0.99
+    minimum = core.PRIVACY_RADIUS_METERS * core.PRIVACY_MIN_OFFSET_RATIO * 0.99
+    assert minimum >= 100 * 0.99
     for _ in range(SAMPLES):
         lat, lon = core.approximate_location(LAT, LON)
         assert _distance_m(LAT, LON, lat, lon) >= minimum

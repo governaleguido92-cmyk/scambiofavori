@@ -6,6 +6,7 @@ import { Favor, CURRENCY_SYMBOL } from '../../services/api';
 import { tt, tx } from '../../i18n/tt';
 import { getCategoryVisual } from '../../utils/favorVisual';
 import { roleText, statusOf } from '../../utils/favorLabels';
+import { BrandLogo } from '../BrandLogo';
 
 interface ChatHeaderProps {
   favor: Favor | null;
@@ -40,6 +41,7 @@ export function ChatHeader({ favor, currentUserId, otherName, canComplete, onBac
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
+        <BrandLogo size={26} />
         <Text style={styles.emoji}>{visual.emoji}</Text>
 
         <View style={styles.titleBlock}>

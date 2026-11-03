@@ -46,6 +46,16 @@ export const getExpiryInfo = (expiresAt: string | undefined, now: number = Date.
   return { label: tx('scade tra {0} g', [days]), isSoon: days <= 1 };
 };
 
-// La posizione mostrata è volutamente sfocata, quindi la distanza è arrotondata per eccesso.
-export const formatDistance = (km: number): string =>
-  km < 1 ? tt('meno di 1 km') : tx('circa {0} km', [Math.ceil(km)]);
+const DISTANCE_STEP_M = 50;
+const MIN_SHOWN_M = 50;
+
+// La posizione mostrata è volutamente sfocata (100-300 m), quindi la distanza è solo indicativa: sotto il chilometro
+// si arrotonda ai 50 metri, oltre si mostra un decimale fino a 10 km e poi i chilometri interi.
+export const formatDistance = (km: number): string => {
+  if (km < 1) {
+    const meters = Math.max(MIN_SHOWN_M, Math.round((km * 1000) / DISTANCE_STEP_M) * DISTANCE_STEP_M);
+    return tx('circa {0} m', [meters]);
+  }
+  if (km < 10) return tx('circa {0} km', [km.toFixed(1).replace('.', ',')]);
+  return tx('circa {0} km', [Math.round(km)]);
+};

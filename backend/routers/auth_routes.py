@@ -1,6 +1,7 @@
 """HTTP routes: auth."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+import sms
 
 api_router = APIRouter(prefix="/api")
 
@@ -84,6 +85,98 @@ async def register(request: Request, user_data: UserCreate):
         "userId": user_id,
         "message": "Codice di verifica inviato alla tua email" if email_sent else "Registrazione completata. Verifica la tua email.",
     }
+
+class PhoneRequestBody(BaseModel):
+    phone: str
+
+
+class PhoneVerifyBody(BaseModel):
+    code: str
+
+
+def _aware(value: datetime) -> datetime:
+    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+
+
+@api_router.post("/auth/phone/request")
+@limiter.limit("10/minute")
+async def request_phone_code(request: Request, data: PhoneRequestBody, current_user: User = Depends(get_current_user)):
+    """Invia un codice via SMS per verificare il telefono (richiesto prima del primo favore)."""
+    if current_user.phone_verified:
+        raise HTTPException(status_code=400, detail="Telefono già verificato")
+    phone = sms.normalize_phone(data.phone)
+    if not phone:
+        raise HTTPException(status_code=400, detail="Numero di telefono non valido")
+    phone_hash = hash_secret_value(phone)
+
+    if await db.users.find_one({"phone_hash": phone_hash, "user_id": {"$ne": current_user.user_id}}, {"_id": 1}):
+        raise HTTPException(status_code=409, detail="Questo numero è già usato da un altro account")
+
+    now = datetime.now(timezone.utc)
+    recent = await db.phone_requests.find(
+        {"user_id": current_user.user_id, "created_at": {"$gt": now - timedelta(hours=1)}}, {"_id": 0}
+    ).to_list(100)
+    if len(recent) >= PHONE_MAX_REQUESTS_PER_HOUR:
+        raise HTTPException(status_code=429, detail="Troppi codici richiesti. Riprova tra un'ora.")
+    if recent and now - max(_aware(r["created_at"]) for r in recent) < timedelta(seconds=PHONE_RESEND_SECONDS):
+        raise HTTPException(status_code=429, detail="Aspetta un minuto prima di chiedere un nuovo codice.")
+
+    code = generate_numeric_code()
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {
+            "phone_code": hash_secret_value(code),
+            "phone_code_expires": now + timedelta(minutes=PHONE_CODE_TTL_MINUTES),
+            "phone_attempts": 0,
+            "phone_pending_hash": phone_hash,
+            "phone_pending_masked": mask_phone(phone),
+        }},
+    )
+    await db.phone_requests.insert_one({"user_id": current_user.user_id, "created_at": now})
+    sent = await sms.send_sms(phone, f"Scambio Favori - codice di verifica: {code} (vale {PHONE_CODE_TTL_MINUTES} minuti)")
+    return {"message": "Codice inviato", "sms_sent": sent}
+
+
+@api_router.post("/auth/phone/verify", response_model=User)
+@limiter.limit("10/minute")
+async def verify_phone_code(request: Request, data: PhoneVerifyBody, current_user: User = Depends(get_current_user)):
+    """Conferma il codice ricevuto via SMS: il profilo diventa "telefono verificato"."""
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    await check_one_time_code(
+        user_doc,
+        user_doc.get("phone_code"),
+        hash_secret_value(data.code.strip()),
+        "phone_attempts",
+        ["phone_code", "phone_code_expires"],
+    )
+    expires = user_doc.get("phone_code_expires")
+    if not expires or datetime.now(timezone.utc) > _aware(expires):
+        raise HTTPException(status_code=400, detail="Codice scaduto. Richiedi un nuovo codice.")
+
+    phone_hash = user_doc.get("phone_pending_hash")
+    if await db.users.find_one({"phone_hash": phone_hash, "user_id": {"$ne": current_user.user_id}}, {"_id": 1}):
+        raise HTTPException(status_code=409, detail="Questo numero è già usato da un altro account")
+
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$set": {
+                "phone_verified": True,
+                "phone_hash": phone_hash,
+                "phone_masked": user_doc.get("phone_pending_masked"),
+            },
+            "$unset": {
+                "phone_code": "", "phone_code_expires": "", "phone_attempts": "",
+                "phone_pending_hash": "", "phone_pending_masked": "",
+            },
+        },
+    )
+    updated = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0, "password_hash": 0})
+    updated["title"] = get_user_title(updated)
+    if "credits" in updated:
+        updated["granelli"] = updated.pop("credits")
+    return User(**updated)
+
 
 @api_router.post("/auth/verify-email", response_model=AuthResponse)
 @limiter.limit("10/minute")

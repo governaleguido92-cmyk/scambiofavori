@@ -21,6 +21,8 @@ import jwt
 import httpx
 import math
 import secrets
+import hashlib
+import hmac
 import random
 import base64
 import qrcode
@@ -98,8 +100,8 @@ CURRENCY_NAME = "Granelli"  # "Ogni favore fatto è un granello di sabbia che co
 CURRENCY_SYMBOL = "🌾"
 
 # Privacy: approximate location radius in meters
-PRIVACY_RADIUS_METERS = 1000
-PRIVACY_MIN_OFFSET_RATIO = 0.3  # never show a point closer than 30% of the radius
+PRIVACY_RADIUS_METERS = 300
+PRIVACY_MIN_OFFSET_RATIO = 1 / 3  # never show a point closer than a third of the radius (100 m)
 
 # Geofencing: max distance for QR exchange
 MAX_EXCHANGE_DISTANCE_METERS = 100
@@ -435,6 +437,8 @@ class User(BaseModel):
     badges: List[str] = []
     title: str = "Nuovo Vicino"
     is_vulnerable: bool = False
+    phone_verified: bool = False  # telefono confermato con il codice via SMS
+    phone_masked: Optional[str] = None  # solo le ultime cifre, mai il numero intero
     identity_verified: bool = False
     community_score: int = 0
     social_impact_score: int = 0  # New: Social Impact Bar
@@ -1294,6 +1298,35 @@ async def get_blocked_user_ids(user_id: str) -> set:
             blocked_ids.add(block["blocker_id"])
     
     return blocked_ids
+
+# ========================
+# TELEFONO VERIFICATO (SMS)
+# ========================
+# Spento finché non è configurato un servizio SMS: poi PHONE_VERIFICATION_REQUIRED=true lo rende obbligatorio.
+PHONE_VERIFICATION_REQUIRED = os.environ.get("PHONE_VERIFICATION_REQUIRED", "false").lower() == "true"
+PHONE_CODE_TTL_MINUTES = 10
+PHONE_RESEND_SECONDS = 60
+PHONE_MAX_REQUESTS_PER_HOUR = 5
+
+
+def hash_secret_value(value: str) -> str:
+    """Impronta con chiave segreta: così numeri e codici non restano in chiaro nel database."""
+    return hmac.new(JWT_SECRET.encode("utf-8"), value.encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def mask_phone(e164: str) -> str:
+    return "••••" + e164[-4:]
+
+
+def require_verified_phone(user: "User") -> None:
+    """Prima di pubblicare o accettare il primo favore serve il telefono verificato (se l'obbligo è attivo)."""
+    if PHONE_VERIFICATION_REQUIRED and not user.phone_verified and user.email != REVIEWER_EMAIL:
+        raise HTTPException(
+            status_code=403,
+            detail="Verifica il tuo telefono prima di pubblicare o accettare un favore",
+            headers={"X-Phone-Required": "true"},
+        )
+
 
 # ========================
 # PROFILE PICTURE UPLOAD

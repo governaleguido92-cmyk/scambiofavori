@@ -16,6 +16,7 @@ import { DonateModal } from '../../src/components/profile/DonateModal';
 import { ReferralModal } from '../../src/components/profile/ReferralModal';
 import { LeaderboardModal } from '../../src/components/profile/LeaderboardModal';
 import { styles } from '../../src/styles/profile.styles';
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
@@ -142,7 +143,10 @@ export default function ProfileScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#B8C868" />}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>{tt('Profilo')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <BrandLogo />
+            <Text style={styles.title}>{tt('Profilo')}</Text>
+          </View>
           <TouchableOpacity
             onPress={() => router.push('/settings' as any)}
             accessibilityRole="button"

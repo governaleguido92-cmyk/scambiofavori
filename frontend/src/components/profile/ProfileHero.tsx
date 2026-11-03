@@ -6,6 +6,7 @@ import { SupporterProfileBorder, SupporterBadge } from '../SupporterBadge';
 import { styles } from '../../styles/profile.styles';
 import { tt } from '../../i18n/tt';
 import { communityProgress, hasRatings, socialImpact } from '../../utils/profileProgress';
+import { PhoneStatus } from './PhoneStatus';
 
 const NAME_MIN = 2;
 const NAME_MAX = 50;
@@ -130,6 +131,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
       </View>
       <Text style={styles.userTitle}>{tt(user?.title || 'Nuovo Vicino')}</Text>
       <Text style={styles.userEmail}>{user?.email}</Text>
+      <PhoneStatus verified={!!user?.phone_verified} masked={user?.phone_masked ?? null} />
 
       <View style={styles.progressSection}>
         <View style={styles.progressHeader}>

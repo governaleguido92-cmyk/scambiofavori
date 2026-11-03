@@ -9,11 +9,13 @@ import { SUPPORTED_LANGUAGES, changeLanguage } from '../src/i18n';
 import { api } from '../src/services/api';
 import { DeleteAccountModal } from '../src/components/DeleteAccountModal';
 import { BlockedUsersSection } from '../src/components/BlockedUsersSection';
+import { BrandLogo } from '../src/components/BrandLogo';
 import themeColors from '../src/theme/colors';
 import { styles } from '../src/styles/profile.styles';
 import { logger } from '../src/utils/logger';
 import { notify } from '../src/utils/notify';
 import { tt } from '../src/i18n/tt';
+import { goBackOrHome } from '../src/utils/navigation';
 
 const NOTIFICATION_OPTIONS = [
   { key: 'favor_accepted', label: 'Favore accettato', icon: 'checkmark-circle', desc: 'Quando qualcuno accetta il tuo favore' },
@@ -66,13 +68,14 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.header, { justifyContent: 'flex-start', gap: 12 }]}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => goBackOrHome(router)}
             accessibilityRole="button"
             accessibilityLabel={tt('Indietro')}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
+          <BrandLogo />
           <Text style={styles.title}>{tt('Impostazioni')}</Text>
         </View>
 

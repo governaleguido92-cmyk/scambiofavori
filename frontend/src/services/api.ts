@@ -58,6 +58,8 @@ export interface User {
   email: string;
   name: string;
   picture?: string;
+  phone_verified?: boolean;
+  phone_masked?: string | null;
   granelli: number;  // Renamed to Granelli
   total_favors_given: number;
   total_favors_received: number;
@@ -240,6 +242,8 @@ export interface FavorCreateData {
   is_emergency?: boolean;
 }
 
+export type { ConversationSummary } from '../utils/conversations';
+
 export interface ChatStatus {
   status: string;
   read_only: boolean;
@@ -332,9 +336,20 @@ export interface PlacesResponse {
   attribution: string;
 }
 
+/** Il server chiede di verificare il telefono prima di pubblicare o accettare un favore. */
+export class PhoneRequiredError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PhoneRequiredError';
+  }
+}
+
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
+    if (response.status === 403 && response.headers.get('x-phone-required') === 'true') {
+      throw new PhoneRequiredError(error.detail || 'Verifica il tuo telefono');
+    }
     throw new Error(error.detail || 'Si è verificato un errore');
   }
   return response.json();
@@ -964,6 +979,31 @@ export const api = {
 
   getUserSkills: async (token: string): Promise<{ skills: string[] }> => {
     const response = await fetch(`${API_URL}/api/user/skills`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  requestPhoneCode: async (phone: string, token: string): Promise<{ message: string; sms_sent: boolean }> => {
+    const response = await fetch(`${API_URL}/api/auth/phone/request`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ phone }),
+    });
+    return handleResponse(response);
+  },
+
+  verifyPhoneCode: async (code: string, token: string): Promise<User> => {
+    const response = await fetch(`${API_URL}/api/auth/phone/verify`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ code }),
+    });
+    return handleResponse(response);
+  },
+
+  getConversations: async (token: string): Promise<import('../utils/conversations').ConversationSummary[]> => {
+    const response = await fetch(`${API_URL}/api/conversations`, {
       headers: getHeaders(token),
     });
     return handleResponse(response);

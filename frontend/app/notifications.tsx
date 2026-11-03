@@ -16,6 +16,8 @@ import { api, Notification } from '../src/services/api';
 import colors from '../src/theme/colors';
 import { logger } from '../src/utils/logger';
 import { tt } from '../src/i18n/tt';
+import { BrandLogo } from '../src/components/BrandLogo';
+import { goBackOrHome } from '../src/utils/navigation';
 
 const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   skill_match: { name: 'star', color: colors.accent },
@@ -143,9 +145,12 @@ export default function NotificationsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)}>
+              <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <BrandLogo />
+          </View>
           <Text style={styles.headerTitle}>{tt('Notifiche')}</Text>
           <View style={styles.placeholder} />
         </View>
@@ -162,9 +167,12 @@ export default function NotificationsScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)}>
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <BrandLogo />
+        </View>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>{tt('Notifiche')}</Text>
           {unreadCount > 0 && (
