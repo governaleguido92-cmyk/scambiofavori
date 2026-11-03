@@ -34,6 +34,7 @@ import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
+import { goBackOrHome } from '../../src/utils/navigation';
 
 // Theme colors
 const colors = {
@@ -236,7 +237,7 @@ export default function ChatScreen() {
     try {
       await api.blockUser(otherUserId, undefined, token);
       notify(tt('Utente bloccato'), name);
-      router.back();
+      goBackOrHome(router);
     } catch (error: any) {
       notify(tt('Errore'), error.message || tt('Impossibile bloccare l\'utente'));
     }
@@ -373,7 +374,7 @@ export default function ChatScreen() {
         currentUserId={user?.user_id}
         otherName={otherParticipant?.name}
         canComplete={!!favor && mayCompleteFavor(favor, user?.user_id)}
-        onBack={() => router.back()}
+        onBack={() => goBackOrHome(router)}
         onMenu={() => setShowMenu(true)}
         onComplete={handleComplete}
       />

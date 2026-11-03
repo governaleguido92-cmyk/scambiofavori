@@ -17,6 +17,9 @@ import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/a
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
+import { useMessages } from '../../src/context/MessagesContext';
+import { MessagesButton } from '../../src/components/MessagesButton';
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { tt, tx } from '../../src/i18n/tt';
 import colors from '../../src/theme/colors';
 import { FavorCard } from '../../src/components/FavorCard';
@@ -101,6 +104,7 @@ export default function MyFavorsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [chosenTab, setChosenTab] = useState<MyFavorTab | null>(null);
+  const { refresh: refreshMessages } = useMessages();
 
   const loadMyFavors = useCallback(async () => {
     if (!token) return;
@@ -119,7 +123,8 @@ export default function MyFavorsScreen() {
   useFocusEffect(
     useCallback(() => {
       loadMyFavors();
-    }, [loadMyFavors])
+      refreshMessages();
+    }, [loadMyFavors, refreshMessages])
   );
 
   const groups = useMemo(() => groupByTab(favors), [favors]);
@@ -307,7 +312,11 @@ export default function MyFavorsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('tabs.myFavors')}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <BrandLogo />
+          <Text style={styles.title}>{t('tabs.myFavors')}</Text>
+        </View>
+        <MessagesButton />
       </View>
 
       <SummaryStrip
@@ -358,7 +367,14 @@ export default function MyFavorsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
   title: { fontSize: 28, fontWeight: 'bold', color: colors.textPrimary },
   summary: {
     flexDirection: 'row',

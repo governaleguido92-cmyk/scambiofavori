@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { openPhoneVerificationIfNeeded } from '../../src/utils/phoneRequired';
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
@@ -23,6 +25,7 @@ import { styles } from '../../src/styles/favorDetail.styles';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
+import { goBackOrHome } from '../../src/utils/navigation';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -106,7 +109,7 @@ export default function FavorDetailScreen() {
         logger.debug('LoadFavor error:', error);
         if (mounted) {
           notify(tt('Errore'), error.message || tt('Impossibile caricare il favore'));
-          router.back();
+          goBackOrHome(router);
         }
       } finally {
         if (mounted) {
@@ -334,7 +337,9 @@ export default function FavorDetailScreen() {
               // Naviga direttamente alla chat sostituendo la pagina corrente
               router.replace(`/chat/${favor.favor_id}` as any);
             } catch (error: any) {
-              notify(t('common.error'), error.message || t('favor.errorAccept'));
+              if (!openPhoneVerificationIfNeeded(error, router)) {
+                notify(t('common.error'), error.message || t('favor.errorAccept'));
+              }
               setActionLoading(false);
             }
           },
@@ -434,7 +439,9 @@ export default function FavorDetailScreen() {
   const canChat = () => {
     if (!user || !favor) return false;
     if (favor.status === 'cancelled' || favor.status === 'completed') return false;
-    return favor.creator_id === user.user_id || favor.accepted_by === user.user_id;
+    // Nel proprio favore l'icona non serve: la chat si apre da "I Miei" e dai Messaggi
+    if (favor.creator_id === user.user_id) return false;
+    return favor.accepted_by === user.user_id;
   };
 
   const getStatusColor = (status: string) => {
@@ -505,9 +512,12 @@ export default function FavorDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)}>
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <BrandLogo />
+        </View>
         <Text style={styles.headerTitle}>{tt('Dettagli Favore')}</Text>
         <View style={styles.headerActions}>
           {canChat() && (

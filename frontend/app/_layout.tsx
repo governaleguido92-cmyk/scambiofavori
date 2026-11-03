@@ -8,6 +8,7 @@ import OnboardingSlides from '../src/components/OnboardingSlides';
 import { OfflineNotice } from '../src/components/OfflineNotice';
 import { ToastHost } from '../src/components/ToastHost';
 import { usePushNotifications } from '../src/hooks/usePushNotifications';
+import { MessagesProvider } from '../src/context/MessagesContext';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { initI18n } from '../src/i18n';
 import i18n from '../src/i18n';
@@ -31,7 +32,7 @@ function RootLayoutNav() {
   if (!i18nReady) return null;
 
   return (
-    <>
+    <MessagesProvider token={token}>
       <StatusBar style="light" />
       {/* Global Offline Notice */}
       <OfflineNotice />
@@ -50,6 +51,8 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="favor/[id]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="chat/[favorId]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="conversations" options={{ presentation: 'card' }} />
+        <Stack.Screen name="verify-phone" options={{ presentation: 'card' }} />
         <Stack.Screen name="settings" options={{ presentation: 'card' }} />
         <Stack.Screen name="legal" options={{ presentation: 'modal' }} />
         <Stack.Screen name="supporter" options={{ presentation: 'modal' }} />
@@ -70,7 +73,7 @@ function RootLayoutNav() {
           onComplete={completeOnboarding}
         />
       )}
-    </>
+    </MessagesProvider>
   );
 }
 

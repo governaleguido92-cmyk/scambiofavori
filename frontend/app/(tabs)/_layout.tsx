@@ -5,10 +5,12 @@ import { Platform, View, StyleSheet } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import colors from '../../src/theme/colors';
 import { tt } from '../../src/i18n/tt';
+import { useMessages } from '../../src/context/MessagesContext';
 
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();
+  const { unread } = useMessages();
   const router = useRouter();
 
   // Redirect to login when user logs out
@@ -76,6 +78,8 @@ export default function TabsLayout() {
         name="my-favors"
         options={{
           title: tt('I Miei'),
+          tabBarBadge: unread > 0 ? (unread > 99 ? '99+' : unread) : undefined,
+          tabBarBadgeStyle: { backgroundColor: colors.accent, color: colors.background, fontWeight: '900' },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart-half" size={size} color={color} />
           ),

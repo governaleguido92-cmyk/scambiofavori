@@ -12,6 +12,8 @@ api_router = APIRouter(prefix="/api")
 @api_router.post("/favors", response_model=Favor, response_model_exclude={"qr_code"})
 async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get_current_user)):
     """Create a new favor"""
+    require_verified_phone(current_user)
+
     if favor_data.type not in ["offer", "request"]:
         raise HTTPException(status_code=400, detail="Tipo deve essere 'offer' o 'request'")
     
@@ -357,6 +359,7 @@ async def get_favor(favor_id: str, current_user: User = Depends(get_current_user
 @api_router.post("/favors/accept", response_model=Favor, response_model_exclude={"qr_code"})
 async def accept_favor(data: FavorAccept, current_user: User = Depends(get_current_user)):
     """Accept a favor (reveals exact location)"""
+    require_verified_phone(current_user)
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")
@@ -784,6 +787,69 @@ async def get_favor_reviews(favor_id: str, current_user: User = Depends(get_curr
 # CHAT MESSAGES
 # ========================
 
+CLOSED_CHAT_STATUSES = ("completed", "cancelled")
+LAST_MESSAGE_PREVIEW_CHARS = 120
+MAX_CONVERSATIONS = 200
+
+
+def _as_utc(value: datetime) -> datetime:
+    """Mongo restituisce a volte date senza fuso: le trattiamo come UTC."""
+    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+
+
+@api_router.get("/conversations")
+async def get_conversations(current_user: User = Depends(get_current_user)):
+    """Le conversazioni dell'utente, dalla più recente: una per favore con almeno un messaggio."""
+    me = current_user.user_id
+    blocked_ids = await get_blocked_user_ids(me)
+    favors = await db.favors.find(
+        {"$or": [{"creator_id": me}, {"accepted_by": me}]}, {"_id": 0}
+    ).limit(MAX_CONVERSATIONS).to_list(MAX_CONVERSATIONS)
+
+    reads = {
+        doc["favor_id"]: _as_utc(doc["last_read_at"])
+        async for doc in db.chat_reads.find({"user_id": me}, {"_id": 0})
+    }
+
+    conversations = []
+    for favor in favors:
+        is_creator = favor["creator_id"] == me
+        other_id = favor.get("accepted_by") if is_creator else favor["creator_id"]
+        if not other_id or other_id in blocked_ids:
+            continue
+
+        shown = {"favor_id": favor["favor_id"], "blocked": False, "is_system": False}
+        last = await db.messages.find(shown, {"_id": 0}).sort("created_at", -1).limit(1).to_list(1)
+        if not last:
+            continue
+
+        last_read = reads.get(favor["favor_id"])
+        incoming = {**shown, "sender_id": {"$ne": me}}
+        if last_read:
+            incoming["created_at"] = {"$gt": last_read}
+        unread = await db.messages.count_documents(incoming)
+
+        message = last[0]
+        conversations.append({
+            "favor_id": favor["favor_id"],
+            "favor_title": favor["title"],
+            "favor_status": favor["status"],
+            "other_user_id": other_id,
+            "other_user_name": (favor.get("accepted_by_name") if is_creator else favor.get("creator_name")) or "Vicino",
+            "last_message": {
+                "content": message["content"][:LAST_MESSAGE_PREVIEW_CHARS],
+                "sender_id": message["sender_id"],
+                "message_type": message.get("message_type", "text"),
+                "created_at": _as_utc(message["created_at"]),
+            },
+            "unread": unread,
+            "can_write": favor["status"] not in CLOSED_CHAT_STATUSES,
+        })
+
+    conversations.sort(key=lambda c: c["last_message"]["created_at"], reverse=True)
+    return conversations
+
+
 @api_router.get("/messages/{favor_id}", response_model=List[Message])
 async def get_messages(favor_id: str, current_user: User = Depends(get_current_user)):
     """Get all messages for a favor - only participants can see"""
@@ -801,6 +867,13 @@ async def get_messages(favor_id: str, current_user: User = Depends(get_current_u
     
     messages_cursor = db.messages.find({"favor_id": favor_id}, {"_id": 0}).sort("created_at", 1)
     messages = await messages_cursor.to_list(500)
+
+    # Aprire la chat segna come letti i messaggi ricevuti fino a ora
+    await db.chat_reads.update_one(
+        {"user_id": current_user.user_id, "favor_id": favor_id},
+        {"$set": {"last_read_at": datetime.now(timezone.utc)}},
+        upsert=True,
+    )
     return [Message(**m) for m in messages]
 
 @api_router.post("/messages")
@@ -823,18 +896,14 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
         raise HTTPException(status_code=403, detail="Non puoi scrivere a questo utente")
     
     # ========================
-    # CHECK READ-ONLY STATUS
+    # CHAT CHIUSA A FAVORE CONCLUSO
     # ========================
-    # Chat becomes read-only 24h after completion or cancellation
-    if favor["status"] in ["completed", "cancelled"]:
-        completed_at = favor.get("completed_at") or favor.get("created_at")
-        if completed_at:
-            time_since = datetime.now(timezone.utc) - completed_at.replace(tzinfo=timezone.utc)
-            if time_since.total_seconds() > 24 * 3600:  # 24 hours
-                raise HTTPException(
-                    status_code=403, 
-                    detail="Chat in sola lettura - il favore è stato completato/annullato da più di 24 ore"
-                )
+    # Dopo il completamento o l'annullamento non si può più scrivere; i messaggi restano leggibili.
+    if favor["status"] in CLOSED_CHAT_STATUSES:
+        raise HTTPException(
+            status_code=403,
+            detail="Il favore è concluso: non puoi più scrivere in questa chat"
+        )
     
     # Check if favor is in a state that allows messaging
     if favor["status"] not in ["accepted", "active", "completed", "cancelled"]:
@@ -1108,14 +1177,10 @@ async def get_chat_status(favor_id: str, current_user: User = Depends(get_curren
     read_only = False
     read_only_reason = None
     
-    if favor["status"] in ["completed", "cancelled"]:
-        completed_at = favor.get("completed_at") or favor.get("created_at")
-        if completed_at:
-            time_since = datetime.now(timezone.utc) - completed_at.replace(tzinfo=timezone.utc)
-            if time_since.total_seconds() > 24 * 3600:
-                status = "read_only"
-                read_only = True
-                read_only_reason = "Il favore è stato completato/annullato da più di 24 ore"
+    if favor["status"] in CLOSED_CHAT_STATUSES:
+        status = "read_only"
+        read_only = True
+        read_only_reason = "Il favore è concluso: non puoi più scrivere in questa chat"
     
     return {
         "status": status,

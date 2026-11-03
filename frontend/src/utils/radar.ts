@@ -1,4 +1,4 @@
-/** Posizionamento dei favori attorno all'utente (vista "radar"): direzione reale, distanza in scala radice. */
+/** Posizionamento dei favori attorno all'utente (vista "radar"): direzione reale, distanza in scala lineare. */
 
 const toRad = (deg: number): number => (deg * Math.PI) / 180;
 
@@ -26,8 +26,8 @@ export interface RadarPoint {
 }
 
 /**
- * Sposta un favore dal centro. La distanza è in scala radice quadrata, così i favori vicini non si
- * ammassano al centro: l'anello a metà corsa vale un quarto del raggio.
+ * Sposta un favore dal centro. La scala è lineare: un favore a 1 km su un raggio di 10 km sta a un decimo
+ * della corsa, e l'anello a metà corsa vale metà del raggio.
  */
 export const radarOffset = (
   distanceKm: number,
@@ -36,7 +36,7 @@ export const radarOffset = (
   radiusPx: number
 ): RadarPoint => {
   const ratio = Math.min(1, Math.max(0, distanceKm / radiusKm));
-  const r = Math.sqrt(ratio) * radiusPx;
+  const r = ratio * radiusPx;
   const angle = toRad(bearing);
   return { x: r * Math.sin(angle), y: -r * Math.cos(angle) };
 };

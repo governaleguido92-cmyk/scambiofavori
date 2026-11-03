@@ -383,23 +383,29 @@ async def delete_account(
     # 1. Elimina tutti i messaggi dell'utente
     await db.messages.delete_many({"sender_id": user_id})
     
-    # 2. Elimina notifiche
+    # 2. Elimina notifiche, blocchi (in entrambe le direzioni), stato di lettura e richieste di codici SMS
     await db.notifications.delete_many({"user_id": user_id})
+    await db.blocked_users.delete_many({"$or": [{"blocker_id": user_id}, {"blocked_id": user_id}]})
+    await db.chat_reads.delete_many({"user_id": user_id})
+    await db.phone_requests.delete_many({"user_id": user_id})
     
-    # 3. Anonimizza i favori creati (mantieni per storico ma rimuovi dati personali)
-    await db.favors.update_many(
-        {"creator_id": user_id},
-        {
-            "$set": {
-                "creator_name": "[Utente Eliminato]",
-                "creator_id": "deleted_user",
-                "exact_latitude": None,
-                "exact_longitude": None,
-                "address": None
-            }
-        }
-    )
-    
+    # 3. Elimina i favori creati dall'utente con tutto ciò che li riguarda: i messaggi scambiati (anche
+    #    quelli dell'altra persona), recensioni, ringraziamenti, notifiche e stato di lettura delle chat.
+    created_ids = [doc["favor_id"] async for doc in db.favors.find({"creator_id": user_id}, {"_id": 0, "favor_id": 1})]
+    if created_ids:
+        await db.messages.delete_many({"favor_id": {"$in": created_ids}})
+        await db.reviews.delete_many({"favor_id": {"$in": created_ids}})
+        await db.thanks.delete_many({"favor_id": {"$in": created_ids}})
+        await db.chat_reads.delete_many({"favor_id": {"$in": created_ids}})
+        await db.notifications.delete_many(
+            {"$or": [{"related_id": {"$in": created_ids}}, {"favor_id": {"$in": created_ids}}]}
+        )
+        await db.favors.delete_many({"favor_id": {"$in": created_ids}})
+
+    # Recensioni e ringraziamenti ricevuti dall'utente: sono dati che lo riguardano
+    await db.reviews.delete_many({"reviewed_id": user_id})
+    await db.thanks.delete_many({"receiver_id": user_id})
+
     # 4. Anonimizza favori accettati
     await db.favors.update_many(
         {"accepted_by": user_id},

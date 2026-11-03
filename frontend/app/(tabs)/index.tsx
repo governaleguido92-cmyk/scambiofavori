@@ -19,6 +19,7 @@ import { api, Favor, Category, ThanksEntry, CURRENCY_SYMBOL } from '../../src/se
 import colors from '../../src/theme/colors';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { ReportModal } from '../../src/components/ReportModal';
+import { MessagesButton } from '../../src/components/MessagesButton';
 import { FavorsGridSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
 import { offlineCache } from '../../src/utils/offlineCache';
@@ -305,6 +306,7 @@ export default function HomeScreen() {
               </View>
             )}
           </TouchableOpacity>
+          <MessagesButton size={36} />
           {/* Granelli Display */}
           <View style={styles.soliDisplay}>
             <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>

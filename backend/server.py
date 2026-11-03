@@ -23,6 +23,7 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Phone-Required", "X-Debt-Block", "X-Debt-Limit"],
 )
 
 @app.on_event("shutdown")

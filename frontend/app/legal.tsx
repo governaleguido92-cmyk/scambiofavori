@@ -11,6 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../src/theme/colors';
+import { BrandLogo } from '../src/components/BrandLogo';
+import { goBackOrHome } from '../src/utils/navigation';
 
 export default function LegalScreen() {
   const router = useRouter();
@@ -19,9 +21,12 @@ export default function LegalScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)}>
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <BrandLogo />
+        </View>
         <Text style={styles.headerTitle}>Note Legali</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -111,9 +116,10 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               Raccogliamo i seguenti dati:{'\n'}
               • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata); con l&apos;accesso tramite Google o Apple, nome ed email forniti dal servizio (l&apos;accesso con Google passa dal servizio di autenticazione di Emergent){'\n'}
-              • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione del dispositivo (solo su consenso){'\n'}
+              • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione del dispositivo (solo su consenso); chi crea un favore lo vede nel punto esatto, gli altri solo in una posizione approssimata{'\n'}
               • <Text style={styles.bold}>Profilo:</Text> foto profilo (se la carichi), competenze, punteggi e badge{'\n'}
-              • <Text style={styles.bold}>Dati di utilizzo:</Text> favori creati, messaggi, notifiche, recensioni{'\n'}
+              • <Text style={styles.bold}>Dati di utilizzo:</Text> favori creati, messaggi, notifiche, recensioni, elenco degli utenti che blocchi e quando hai aperto l&apos;ultima volta ogni chat (per i messaggi non letti){'\n'}
+              • <Text style={styles.bold}>Telefono:</Text> se verifichi il numero (prima di pubblicare o accettare un favore) lo usiamo solo per inviarti un SMS con un codice; non lo conserviamo, teniamo solo un&apos;impronta cifrata e le ultime 4 cifre. Gli altri vedono soltanto il segno &quot;Telefono verificato&quot;{'\n'}
               • <Text style={styles.bold}>Notifiche push:</Text> un identificativo del dispositivo, se le attivi{'\n'}
               • <Text style={styles.bold}>Pagamenti:</Text> il contributo opzionale è gestito da Stripe; non conserviamo il numero della carta{'\n'}
               • <Text style={styles.bold}>Dati tecnici:</Text> indirizzo IP e registri del server, per sicurezza
@@ -164,10 +170,12 @@ export default function LegalScreen() {
               • Email, nome, password e dati del profilo{'\n'}
               • La foto profilo{'\n'}
               • Messaggi inviati e notifiche{'\n'}
+              • Impronta del telefono, richieste di codici SMS, stato di lettura delle chat ed elenco dei blocchi{'\n'}
               • Granelli accumulati{'\n\n'}
-              I favori e le recensioni che hai scritto restano per lo storico degli altri utenti, ma senza 
-              i tuoi dati personali (il tuo nome diventa &quot;Utente eliminato&quot;). I dati dei pagamenti sono 
-              conservati per gli obblighi di legge. Se non riesci ad accedere all&apos;app, scrivi all&apos;indirizzo 
+              I favori che hai creato vengono eliminati insieme a tutti i messaggi scambiati in quelle chat, 
+              alle recensioni e ai ringraziamenti collegati. Le recensioni che hai scritto restano in forma 
+              anonima (&quot;Utente eliminato&quot;); quelle che hai ricevuto vengono cancellate. I dati dei 
+              pagamenti sono conservati per gli obblighi di legge. Se non riesci ad accedere all&apos;app, scrivi all&apos;indirizzo 
               indicato nei contatti.
             </Text>
           </View>
@@ -187,7 +195,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               Non vendiamo i tuoi dati. Usiamo fornitori che li trattano per nostro conto: Render (hosting), 
               MongoDB Atlas (database), Cloudflare R2 (foto profilo), Resend (email di verifica), Stripe 
-              (pagamenti), Expo (notifiche push), Emergent (autenticazione per l&apos;accesso con Google) e, se li scegli, Google o Apple per l&apos;accesso. Alcuni possono 
+              (pagamenti), Twilio (SMS con il codice di verifica del telefono), Expo (notifiche push), Emergent (autenticazione per l&apos;accesso con Google) e, se li scegli, Google o Apple per l&apos;accesso. Alcuni possono 
               trattare dati anche fuori dall&apos;Unione Europea, con le garanzie previste dal GDPR. L&apos;app non 
               contiene pubblicità.
             </Text>

@@ -5,6 +5,7 @@ import { Favor, CURRENCY_SYMBOL } from '../services/api';
 import { tt } from '../i18n/tt';
 import { getCategoryVisual } from '../utils/favorVisual';
 import { formatRadius } from '../utils/radius';
+import { formatDistance } from '../utils/favorVisual';
 import { bearingDeg, fallbackBearing, radarOffset } from '../utils/radar';
 
 interface FavorRadarProps {
@@ -51,7 +52,7 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
             {formatRadius(radiusKm)}
           </Text>
           <Text style={[styles.ringLabel, { left: centerX + 6, top: centerY - radiusPx / 2 - 16 }]}>
-            {formatRadius(radiusKm / 4)}
+            {formatRadius(radiusKm / 2)}
           </Text>
 
           <View style={[styles.userDot, { left: centerX - 7, top: centerY - 7 }]} />
@@ -96,6 +97,9 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
                 <View style={styles.markerPill}>
                   <Text style={styles.markerPillText}>{CURRENCY_SYMBOL} {favor.granelli_cost}</Text>
                 </View>
+                {!isOwn && selected && (
+                  <Text style={styles.markerDistance} numberOfLines={1}>{formatDistance(favor.distance_km)}</Text>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -222,6 +226,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#1B1500',
     borderWidth: 1,
     borderColor: 'rgba(255,215,0,0.5)',
+  },
+  markerDistance: {
+    marginTop: 2,
+    color: colors.textPrimary,
+    fontSize: 10,
+    fontWeight: '700',
+    width: 80,
+    textAlign: 'center',
   },
   markerPillText: {
     color: colors.granelli,

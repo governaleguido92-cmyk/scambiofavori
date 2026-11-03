@@ -19,6 +19,8 @@ import colors from '../src/theme/colors';
 import { logger } from '../src/utils/logger';
 import { SUPPORTER_PURCHASE_ENABLED } from '../src/utils/features';
 import { notify } from '../src/utils/notify';
+import { BrandLogo } from '../src/components/BrandLogo';
+import { goBackOrHome } from '../src/utils/navigation';
 
 function SupporterContent() {
   const { user, token, refreshUser } = useAuth();
@@ -157,9 +159,12 @@ function SupporterContent() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <TouchableOpacity onPress={() => goBackOrHome(router)} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <BrandLogo />
+          </View>
           <Text style={styles.headerTitle}>Sostieni il Progetto</Text>
         </View>
 

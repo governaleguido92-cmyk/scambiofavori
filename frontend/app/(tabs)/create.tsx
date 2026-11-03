@@ -14,6 +14,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { openPhoneVerificationIfNeeded } from '../../src/utils/phoneRequired';
+import { BrandLogo } from '../../src/components/BrandLogo';
+import { DescriptionPrompts, DurationSuggestion, PrePublishCheck, SafetyTips } from '../../src/components/create/FavorHelp';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
@@ -294,7 +297,9 @@ export default function CreateFavorScreen() {
         ]
       );
     } catch (error: any) {
-      notify(t('common.error'), error.message || t('create.errorTitle'));
+      if (!openPhoneVerificationIfNeeded(error, router)) {
+        notify(t('common.error'), error.message || t('create.errorTitle'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -338,7 +343,10 @@ export default function CreateFavorScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.header}>
-            <Text style={styles.title}>{editing ? tt('Modifica il favore') : t('create.title')}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <BrandLogo />
+              <Text style={styles.title}>{editing ? tt('Modifica il favore') : t('create.title')}</Text>
+            </View>
             <View style={styles.soliDisplay}>
               <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
               <Text style={[styles.soliValue, isInDebt && styles.soliValueDebt]}>{user?.granelli || 0}</Text>
@@ -476,6 +484,7 @@ export default function CreateFavorScreen() {
               maxLength={DESCRIPTION_MAX}
             />
             <Text style={styles.charCounter}>{description.length}/{DESCRIPTION_MAX}</Text>
+            <DescriptionPrompts category={category} description={description} max={DESCRIPTION_MAX} onChange={setDescription} />
           </View>
 
           {/* Category Selector */}
@@ -539,6 +548,7 @@ export default function CreateFavorScreen() {
               <Ionicons name="information-circle" size={16} color="#B8C868" />
               <Text style={styles.parityText}>{tt('1 ora = 1')}{' '}{granelliWord(1)}{' '}{tt('(Parità di Valore)')}</Text>
             </View>
+            <DurationSuggestion category={category} hours={currentHours} onAccept={(hours) => setDurationHours(String(hours))} />
           </View>
 
           {/* Granelli Preview */}
@@ -587,6 +597,10 @@ export default function CreateFavorScreen() {
               <FavorCard item={previewFavor} onPress={() => undefined} style={styles.previewCard} />
             </View>
           </View>
+
+          {/* Consigli e promemoria prima di pubblicare */}
+          <SafetyTips category={category} />
+          <PrePublishCheck title={title} description={description} />
 
           {/* Submit Button */}
           <TouchableOpacity

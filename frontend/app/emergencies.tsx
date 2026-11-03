@@ -13,6 +13,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { openPhoneVerificationIfNeeded } from '../src/utils/phoneRequired';
+import { BrandLogo } from '../src/components/BrandLogo';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../src/context/AuthContext';
@@ -20,6 +22,7 @@ import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../src/services/api'
 import { logger } from '../src/utils/logger';
 import { notify } from '../src/utils/notify';
 import { tt } from '../src/i18n/tt';
+import { goBackOrHome } from '../src/utils/navigation';
 
 export default function EmergenciesScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -97,7 +100,7 @@ export default function EmergenciesScreen() {
               notify(tt('Grazie!'), tt('Hai risposto all\'emergenza. Contatta la persona per aiutarla.'));
               router.push(`/favor/${favorId}` as any);
             } catch (error: any) {
-              notify(tt('Errore'), error.message);
+              if (!openPhoneVerificationIfNeeded(error, router)) notify(tt('Errore'), error.message);
             }
           },
         },
@@ -143,7 +146,7 @@ export default function EmergenciesScreen() {
         ]
       );
     } catch (error: any) {
-      notify(tt('Errore'), error.message);
+      if (!openPhoneVerificationIfNeeded(error, router)) notify(tt('Errore'), error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -192,12 +195,15 @@ export default function EmergenciesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: 10 }}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => goBackOrHome(router)}
+          >
+            <Ionicons name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
+          <BrandLogo />
+        </View>
         <View style={styles.headerText}>
           <Text style={styles.title}>{tt('Emergenze Gentilezza')}</Text>
           <Text style={styles.subtitle}>{tt('Aiuta chi ha bisogno vicino a te')}</Text>

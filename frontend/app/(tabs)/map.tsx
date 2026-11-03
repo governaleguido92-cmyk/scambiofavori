@@ -9,6 +9,7 @@ import { api, Favor } from '../../src/services/api';
 import { offlineCache } from '../../src/utils/offlineCache';
 import colors from '../../src/theme/colors';
 import { MapMarkersSkeleton } from '../../src/components/Skeleton';
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
 import { tt } from '../../src/i18n/tt';
@@ -107,11 +108,14 @@ export default function MapScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>{t('map.title')}</Text>
-            <Text style={styles.subtitle}>
-              {visibleFavors.length}{' '}{tt('favori nelle vicinanze')}
-            </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <BrandLogo />
+            <View>
+              <Text style={styles.title}>{t('map.title')}</Text>
+              <Text style={styles.subtitle}>
+                {visibleFavors.length}{' '}{tt('favori nelle vicinanze')}
+              </Text>
+            </View>
           </View>
           <TouchableOpacity style={styles.refreshButton} onPress={loadFavors} accessibilityRole="button" accessibilityLabel={tt('Aggiorna')}>
             <Ionicons name="refresh" size={24} color={colors.lime} />
