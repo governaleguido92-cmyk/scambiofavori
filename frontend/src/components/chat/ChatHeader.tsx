@@ -1,8 +1,9 @@
+import { GranelloIcon } from '../GranelloIcon';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
-import { Favor, CURRENCY_SYMBOL } from '../../services/api';
+import { Favor } from '../../services/api';
 import { tt, tx } from '../../i18n/tt';
 import { getCategoryVisual } from '../../utils/favorVisual';
 import { roleText, statusOf } from '../../utils/favorLabels';
@@ -67,7 +68,7 @@ export function ChatHeader({ favor, currentUserId, otherName, canComplete, onBac
             <Text style={styles.statusText}>{status.label}</Text>
           </View>
           <View style={styles.granelliPill}>
-            <Text style={styles.granelliText}>{CURRENCY_SYMBOL} {favor.granelli_cost}</Text>
+            <Text style={styles.granelliText}><GranelloIcon size={14} /> {favor.granelli_cost}</Text>
           </View>
         </View>
       )}
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   statusText: { color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
   granelliPill: {
     borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3,
-    backgroundColor: '#1B1500', borderWidth: 1, borderColor: 'rgba(255,215,0,0.5)',
+    backgroundColor: '#0C0E09', borderWidth: 1, borderColor: 'rgba(152,170,74,0.5)',
   },
   granelliText: { color: colors.granelli, fontSize: 12, fontWeight: '800' },
   completeButton: {

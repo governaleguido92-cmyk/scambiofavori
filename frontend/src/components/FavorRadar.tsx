@@ -1,7 +1,8 @@
+import { GranelloIcon } from './GranelloIcon';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutChangeEvent } from 'react-native';
 import colors from '../theme/colors';
-import { Favor, CURRENCY_SYMBOL } from '../services/api';
+import { Favor, CURRENCY_NAME } from '../services/api';
 import { tt } from '../i18n/tt';
 import { getCategoryVisual } from '../utils/favorVisual';
 import { formatRadius } from '../utils/radius';
@@ -20,7 +21,7 @@ interface FavorRadarProps {
 
 const MARKER_SIZE = 46;
 const EDGE_MARGIN = MARKER_SIZE / 2 + 22;
-const OFFER_COLOR = '#5FBF7F';
+const OFFER_COLOR = '#98AA4A';
 
 /**
  * Vista "radar": l'utente al centro, i favori attorno nella direzione reale (posizioni già sfocate dal server)
@@ -76,7 +77,7 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
                 style={[styles.marker, { left: centerX + x - MARKER_SIZE / 2, top: centerY + y - MARKER_SIZE / 2, zIndex: selected ? 2 : 1 }]}
                 onPress={() => onSelect(favor.favor_id)}
                 accessibilityRole="button"
-                accessibilityLabel={`${isOwn ? tt('Il tuo favore') + ': ' : ''}${favor.title}, ${favor.granelli_cost} ${CURRENCY_SYMBOL}`}
+                accessibilityLabel={`${isOwn ? tt('Il tuo favore') + ': ' : ''}${favor.title}, ${favor.granelli_cost} ${CURRENCY_NAME}`}
                 data-testid={`map-favor-${favor.favor_id}`}
               >
                 <View
@@ -95,7 +96,7 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
                   </View>
                 )}
                 <View style={styles.markerPill}>
-                  <Text style={styles.markerPillText}>{CURRENCY_SYMBOL} {favor.granelli_cost}</Text>
+                  <Text style={styles.markerPillText}><GranelloIcon size={14} /> {favor.granelli_cost}</Text>
                 </View>
                 {!isOwn && selected && (
                   <Text style={styles.markerDistance} numberOfLines={1}>{formatDistance(favor.distance_km)}</Text>
@@ -137,11 +138,11 @@ const styles = StyleSheet.create({
   ring: {
     position: 'absolute',
     borderWidth: 1,
-    borderColor: 'rgba(184, 200, 104, 0.45)',
+    borderColor: 'rgba(152, 170, 74, 0.45)',
   },
   ringInner: {
     borderStyle: 'dashed',
-    borderColor: 'rgba(184, 200, 104, 0.25)',
+    borderColor: 'rgba(152, 170, 74, 0.25)',
   },
   ringLabel: {
     position: 'absolute',
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#98AA4A',
     borderWidth: 1.5,
     borderColor: '#fff',
   },
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#98AA4A',
     borderWidth: 2,
     borderColor: '#fff',
   },
@@ -223,9 +224,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 999,
-    backgroundColor: '#1B1500',
+    backgroundColor: '#0C0E09',
     borderWidth: 1,
-    borderColor: 'rgba(255,215,0,0.5)',
+    borderColor: 'rgba(152,170,74,0.5)',
   },
   markerDistance: {
     marginTop: 2,

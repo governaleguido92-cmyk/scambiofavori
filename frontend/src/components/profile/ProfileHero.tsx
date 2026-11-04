@@ -24,7 +24,7 @@ interface ProfileHeroProps {
 const Stars = ({ value }: { value: number }) => (
   <View style={styles.starsRow}>
     {[1, 2, 3, 4, 5].map((star) => (
-      <Ionicons key={star} name={star <= value ? 'star' : 'star-outline'} size={16} color="#ffd700" />
+      <Ionicons key={star} name={star <= value ? 'star' : 'star-outline'} size={16} color="#98AA4A" />
     ))}
   </View>
 );
@@ -102,9 +102,9 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               {savingName ? (
-                <ActivityIndicator size="small" color="#B8C868" />
+                <ActivityIndicator size="small" color="#98AA4A" />
               ) : (
-                <Ionicons name="checkmark-circle" size={26} color={canSaveName ? '#B8C868' : '#4B6354'} />
+                <Ionicons name="checkmark-circle" size={26} color={canSaveName ? '#98AA4A' : '#8A8C80'} />
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -113,7 +113,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
               accessibilityLabel={tt('Annulla')}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="close-circle" size={26} color="#8FA595" />
+              <Ionicons name="close-circle" size={26} color="#A5A89B" />
             </TouchableOpacity>
           </View>
         ) : (
@@ -124,7 +124,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
             accessibilityLabel={`${user?.name ?? ''}, ${tt('Modifica il nome')}`}
           >
             <Text style={styles.userName}>{user?.name}</Text>
-            <Ionicons name="pencil" size={14} color="#8FA595" />
+            <Ionicons name="pencil" size={14} color="#A5A89B" />
           </TouchableOpacity>
         )}
         {user?.is_supporter && <SupporterBadge size="medium" showLabel style={{ marginLeft: 8 }} />}
@@ -147,7 +147,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
       <View style={styles.socialImpactSection}>
         <View style={styles.socialImpactHeader}>
           <View style={styles.socialImpactTitle}>
-            <Ionicons name="heart-circle" size={20} color="#ff6b6b" />
+            <Ionicons name="heart-circle" size={20} color="#F87828" />
             <Text style={styles.socialImpactLabel}>{tt('Impatto Sociale')}</Text>
           </View>
           <Text style={styles.socialImpactLevel}>{tt('Lv.')}{' '}{impact.level}</Text>
@@ -186,6 +186,6 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
 const local = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   nameEdit: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nameInput: { borderBottomWidth: 1, borderBottomColor: '#B8C868', minWidth: 140, color: '#fff' },
-  noRatings: { color: '#8FA595', fontSize: 12, textAlign: 'center', marginTop: 12 },
+  nameInput: { borderBottomWidth: 1, borderBottomColor: '#98AA4A', minWidth: 140, color: '#fff' },
+  noRatings: { color: '#A5A89B', fontSize: 12, textAlign: 'center', marginTop: 12 },
 });

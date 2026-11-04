@@ -216,13 +216,13 @@ const styles = StyleSheet.create({
   disclaimerBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: 'rgba(255, 152, 0, 0.15)',
+    backgroundColor: 'rgba(248, 120, 40, 0.15)',
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
     gap: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 152, 0, 0.3)',
+    borderColor: 'rgba(248, 120, 40, 0.3)',
   },
   disclaimerText: {
     flex: 1,

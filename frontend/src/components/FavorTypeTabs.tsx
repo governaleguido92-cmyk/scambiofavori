@@ -41,7 +41,7 @@ export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange })
       <Ionicons
         name={value === 'offer' ? 'search' : 'hand-left'}
         size={20}
-        color={value === 'offer' ? '#5FBF7F' : colors.accentLight}
+        color={value === 'offer' ? '#98AA4A' : colors.accentLight}
       />
       <Text style={styles.typeHintText}>
         {value === 'request'

@@ -1,7 +1,8 @@
+import { GranelloIcon } from '../GranelloIcon';
 import React from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CURRENCY_SYMBOL, User } from '../../services/api';
+import { User } from '../../services/api';
 import { styles } from '../../styles/profile.styles';
 import { tt } from '../../i18n/tt';
 import { granelliWord } from '../../utils/granelli';
@@ -16,17 +17,17 @@ export function ProfileStats({ user }: ProfileStatsProps) {
   return (
     <View style={styles.statsGrid}>
       <View style={styles.statCard} accessible accessibilityLabel={`${balance} ${granelliWord(balance)}`}>
-        <Text style={styles.statSymbol}>{CURRENCY_SYMBOL}</Text>
+        <GranelloIcon size={18} />
         <Text style={styles.statValue}>{balance}</Text>
         <Text style={styles.statLabel}>{granelliWord(balance)}</Text>
       </View>
       <View style={styles.statCard} accessible accessibilityLabel={`${tt('Hai aiutato')} ${user?.total_favors_given || 0}`}>
-        <Ionicons name="gift" size={32} color="#B8C868" />
+        <Ionicons name="gift" size={32} color="#98AA4A" />
         <Text style={styles.statValue}>{user?.total_favors_given || 0}</Text>
         <Text style={styles.statLabel}>{tt('Hai aiutato')}</Text>
       </View>
       <View style={styles.statCard} accessible accessibilityLabel={`${tt('Hai ricevuto')} ${user?.total_favors_received || 0}`}>
-        <Ionicons name="hand-left" size={32} color="#ff6b6b" />
+        <Ionicons name="hand-left" size={32} color="#F87828" />
         <Text style={styles.statValue}>{user?.total_favors_received || 0}</Text>
         <Text style={styles.statLabel}>{tt('Hai ricevuto')}</Text>
       </View>

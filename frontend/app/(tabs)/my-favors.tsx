@@ -1,3 +1,4 @@
+import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useRef, useState, useCallback, useMemo } from 'react';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 import {
@@ -14,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Favor, CURRENCY_NAME } from '../../src/services/api';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
 import { notify, showRefusal } from '../../src/utils/notify';
@@ -50,7 +51,7 @@ function SummaryStrip({ helped, received, balance }: SummaryProps) {
         <Text style={styles.summaryLabel}>{tt('Hai ricevuto')}</Text>
       </View>
       <View style={styles.summaryItem}>
-        <Text style={[styles.summaryValue, styles.summaryGold]}>{CURRENCY_SYMBOL} {balance}</Text>
+        <Text style={[styles.summaryValue, styles.summaryGold]}><GranelloIcon size={14} /> {balance}</Text>
         <Text style={styles.summaryLabel}>{tt('Il tuo saldo')}</Text>
       </View>
     </View>

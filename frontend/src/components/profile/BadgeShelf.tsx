@@ -51,10 +51,10 @@ export function BadgeShelf({ badges, onPress }: BadgeShelfProps) {
             accessibilityLabel={`${tt(badge.name)}, ${badge.earned ? tt('Ottenuto!') : tt('Non ancora ottenuto')}`}
           >
             <View style={[styles.badgeIcon, { backgroundColor: badge.earned ? badge.color : '#333' }]}>
-              <Ionicons name={badgeIconName(badge.icon) as any} size={24} color={badge.earned ? '#fff' : '#8FA595'} />
+              <Ionicons name={badgeIconName(badge.icon) as any} size={24} color={badge.earned ? '#fff' : '#A5A89B'} />
             </View>
             <Text style={[styles.badgeName, !badge.earned && styles.badgeNameLocked]}>{tt(badge.name)}</Text>
-            {!badge.earned && <Ionicons name="lock-closed" size={14} color="#8FA595" />}
+            {!badge.earned && <Ionicons name="lock-closed" size={14} color="#A5A89B" />}
           </TouchableOpacity>
         ))}
       </ScrollView>

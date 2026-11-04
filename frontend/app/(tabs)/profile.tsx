@@ -1,10 +1,11 @@
+import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Share, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api } from '../../src/services/api';
 import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar';
 import { ProfileHero } from '../../src/components/profile/ProfileHero';
 import { ProfileStats } from '../../src/components/profile/ProfileStats';
@@ -141,7 +142,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#B8C868" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#98AA4A" />}
       >
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -159,7 +160,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           {user?.identity_verified && (
             <View style={styles.verifiedBadge}>
-              <Ionicons name="shield-checkmark" size={16} color="#B8C868" />
+              <Ionicons name="shield-checkmark" size={16} color="#98AA4A" />
               <Text style={styles.verifiedText}>{tt('Verificato')}</Text>
             </View>
           )}
@@ -191,7 +192,7 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>{tt('Fondo Solidarietà')}</Text>
           <View style={styles.fundCard}>
             <View style={styles.fundInfo}>
-              <Ionicons name="heart" size={32} color="#ff6b6b" />
+              <Ionicons name="heart" size={32} color="#F87828" />
               <View>
                 <Text style={styles.fundAmount}>{data.fund} {granelliWord(data.fund)}</Text>
                 <Text style={styles.fundLabel}>{tt('disponibili per chi ha bisogno')}</Text>
@@ -213,7 +214,7 @@ export default function ProfileScreen() {
               <Text style={styles.referralSubtitle}>{data.referral?.successful_referrals || 0}{' '}{tt('inviti completati')}</Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#9DB3A4" />
+          <Ionicons name="chevron-forward" size={24} color="#A5A89B" />
         </TouchableOpacity>
 
         {/* "Sostieni il Progetto" è nascosto su Android (norme di Google Play Billing) */}
@@ -221,21 +222,21 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.supporterCard} onPress={() => router.push('/supporter' as any)} accessibilityRole="button" data-testid="become-supporter-button">
             <View style={styles.referralLeft}>
               <View style={styles.supporterIconWrapper}>
-                <Ionicons name="heart" size={32} color="#ffd700" />
+                <Ionicons name="heart" size={32} color="#98AA4A" />
               </View>
               <View>
                 <Text style={styles.supporterTitle}>{user?.is_supporter ? tt('Sei un Pilastro della Community') : tt('Sostieni il Progetto')}</Text>
                 <Text style={styles.supporterSubtitle}>{user?.is_supporter ? tt('Grazie! Gestisci il tuo contributo') : tt('Diventa un Pilastro della Community')}</Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#ffd700" />
+            <Ionicons name="chevron-forward" size={24} color="#98AA4A" />
           </TouchableOpacity>
         )}
 
         <TouchableOpacity style={styles.leaderboardButton} onPress={openLeaderboard} accessibilityRole="button">
-          <Ionicons name="trophy" size={24} color="#ffd700" />
+          <Ionicons name="trophy" size={24} color="#98AA4A" />
           <Text style={styles.leaderboardButtonText}>{tt('Classifica Community')}</Text>
-          <Ionicons name="chevron-forward" size={24} color="#9DB3A4" />
+          <Ionicons name="chevron-forward" size={24} color="#A5A89B" />
         </TouchableOpacity>
 
         <View style={styles.infoSection}>
@@ -243,7 +244,7 @@ export default function ProfileScreen() {
           <View style={styles.infoCard}>
             <View style={styles.infoItem}>
               <View style={[styles.infoIcon, { backgroundColor: '#B8C86820' }]}>
-                <Text style={styles.infoIconText}>{CURRENCY_SYMBOL}</Text>
+                <GranelloIcon size={18} />
               </View>
               <View style={styles.infoText}>
                 <Text style={styles.infoTitle}>{tt('1 Ora = 1 Granello')}</Text>

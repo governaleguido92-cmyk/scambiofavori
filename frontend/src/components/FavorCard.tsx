@@ -1,9 +1,10 @@
+import { GranelloIcon } from './GranelloIcon';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { Favor, CURRENCY_SYMBOL } from '../services/api';
+import { Favor } from '../services/api';
 import colors from '../theme/colors';
 import { styles } from '../styles/home.styles';
 import { tt } from '../i18n/tt';
@@ -67,7 +68,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
           <Text style={styles.gridKindText}>{kindLabel}</Text>
         </View>
         <View style={styles.gridGranelliPill}>
-          <Text style={styles.gridGranelliText}>{CURRENCY_SYMBOL} {item.granelli_cost}</Text>
+          <Text style={styles.gridGranelliText}><GranelloIcon size={14} /> {item.granelli_cost}</Text>
         </View>
         {statusLabel && (
           <View style={[styles.gridStatusPill, { backgroundColor: statusColor ?? colors.primary }]}>

@@ -1,3 +1,4 @@
+import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -22,7 +23,7 @@ import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
 import { useNetworkStatus } from '../../src/hooks/useNetworkStatus';
 import { useTranslation } from 'react-i18next';
-import { api, Category, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Category, Favor, CURRENCY_NAME } from '../../src/services/api';
 import { styles } from '../../src/styles/create.styles';
 import { FavorCard } from '../../src/components/FavorCard';
 import { getCategoryVisual } from '../../src/utils/favorVisual';
@@ -348,7 +349,7 @@ export default function CreateFavorScreen() {
               <Text style={styles.title}>{editing ? tt('Modifica il favore') : t('create.title')}</Text>
             </View>
             <View style={styles.soliDisplay}>
-              <Text style={styles.soliSymbol}>{CURRENCY_SYMBOL}</Text>
+              <GranelloIcon size={18} />
               <Text style={[styles.soliValue, isInDebt && styles.soliValueDebt]}>{user?.granelli || 0}</Text>
             </View>
           </View>
@@ -360,12 +361,12 @@ export default function CreateFavorScreen() {
               onPress={() => setShowDebtModal(true)}
               data-testid="debt-warning-banner"
             >
-              <Ionicons name="warning" size={20} color="#ff6b6b" />
+              <Ionicons name="warning" size={20} color="#F87828" />
               <View style={styles.debtBannerText}>
                 <Text style={styles.debtBannerTitle}>{tt('Sei in Debito Sociale')}</Text>
                 <Text style={styles.debtBannerSubtitle}>{tt('Non puoi fare nuove richieste. Tocca per saperne di più.')}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#ff6b6b" />
+              <Ionicons name="chevron-forward" size={20} color="#F87828" />
             </TouchableOpacity>
           )}
 
@@ -380,7 +381,7 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="gift"
                 size={24}
-                color={type === 'offer' ? '#0F1A14' : '#5FBF7F'}
+                color={type === 'offer' ? '#0C0E09' : '#98AA4A'}
               />
               <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Offro un favore')}</Text>
               <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>{tt('Guadagni')}{' '}{CURRENCY_NAME}
@@ -396,7 +397,7 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="hand-left"
                 size={24}
-                color={type === 'request' ? '#0F1A14' : '#F87828'}
+                color={type === 'request' ? '#0C0E09' : '#F87828'}
               />
               <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Chiedo un favore')}</Text>
               <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>{tt('Spendi')}{' '}{CURRENCY_NAME}
@@ -408,7 +409,7 @@ export default function CreateFavorScreen() {
           {!editing && (
           <View style={styles.inputGroup}>
             <View style={styles.locationInfoBox}>
-              <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
+              <Ionicons name="shield-checkmark" size={20} color="#98AA4A" />
               <View style={styles.locationInfoText}>
                 <Text style={styles.locationInfoTitle}>{tt('Privacy Protetta')}</Text>
                 <Text style={styles.locationInfoDescription}>{tt('Gli altri vedranno solo una zona approssimata sulla mappa, non il tuo indirizzo. L\'indirizzo esatto lo condividi tu in chat.')}</Text>
@@ -420,10 +421,10 @@ export default function CreateFavorScreen() {
               disabled={gettingLocation}
             >
               {gettingLocation ? (
-                <ActivityIndicator size="small" color="#B8C868" />
+                <ActivityIndicator size="small" color="#98AA4A" />
               ) : (
                 <>
-                  <Ionicons name="location" size={20} color="#B8C868" />
+                  <Ionicons name="location" size={20} color="#98AA4A" />
                   <Text style={styles.locationButtonText}>
                     {location ? tt('Posizione aggiunta') : tt('Aggiungi posizione (obbligatoria)')}
                   </Text>
@@ -432,7 +433,7 @@ export default function CreateFavorScreen() {
             </TouchableOpacity>
             {location && (
               <View style={styles.addressContainer}>
-                <Ionicons name="checkmark-circle" size={16} color="#B8C868" />
+                <Ionicons name="checkmark-circle" size={16} color="#98AA4A" />
                 <Text style={styles.addressText}>{tt('Posizione salvata (visibile solo sulla mappa)')}</Text>
               </View>
             )}
@@ -445,7 +446,7 @@ export default function CreateFavorScreen() {
             <TextInput
               style={styles.input}
               placeholder={tt('Es: Aiuto con la spesa')}
-              placeholderTextColor="#8FA595"
+              placeholderTextColor="#A5A89B"
               value={title}
               onChangeText={setTitle}
               maxLength={TITLE_MAX}
@@ -475,7 +476,7 @@ export default function CreateFavorScreen() {
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder={tt('Descrivi il favore in dettaglio...')}
-              placeholderTextColor="#8FA595"
+              placeholderTextColor="#A5A89B"
               value={description}
               onChangeText={setDescription}
               multiline
@@ -545,7 +546,7 @@ export default function CreateFavorScreen() {
               </TouchableOpacity>
             </View>
             <View style={styles.parityInfo}>
-              <Ionicons name="information-circle" size={16} color="#B8C868" />
+              <Ionicons name="information-circle" size={16} color="#98AA4A" />
               <Text style={styles.parityText}>{tt('1 ora = 1')}{' '}{granelliWord(1)}{' '}{tt('(Parità di Valore)')}</Text>
             </View>
             <DurationSuggestion category={category} hours={currentHours} onAccept={(hours) => setDurationHours(String(hours))} />
@@ -557,7 +558,7 @@ export default function CreateFavorScreen() {
               {type === 'offer' ? tt('Guadagnerai:') : tt('Spenderai:')}
             </Text>
             <View style={styles.granelliPreviewValue}>
-              <Text style={styles.granelliPreviewSymbol}>{CURRENCY_SYMBOL}</Text>
+              <GranelloIcon size={18} />
               <Text style={styles.granelliPreviewNumber}>{granelliPreview}</Text>
               <Text style={styles.granelliPreviewUnit}>{granelliWord(granelliPreview)}</Text>
             </View>
@@ -615,13 +616,13 @@ export default function CreateFavorScreen() {
             data-testid="create-favor-submit"
           >
             {isLoading ? (
-              <ActivityIndicator color="#0F1A14" />
+              <ActivityIndicator color="#0C0E09" />
             ) : (
               <>
                 <Ionicons
                   name={editing ? 'checkmark-circle' : type === 'offer' ? 'gift' : 'hand-left'}
                   size={20}
-                  color={blocked ? '#8FA595' : '#0F1A14'}
+                  color={blocked ? '#A5A89B' : '#0C0E09'}
                 />
                 <Text style={[styles.submitButtonText, blocked && styles.submitButtonTextDisabled]}>
                   {editing ? tt('Salva le modifiche') : t('create.publishBtn')}
@@ -638,7 +639,7 @@ export default function CreateFavorScreen() {
 
           {/* Ethical Banner */}
           <View style={styles.ethicalBanner}>
-            <Ionicons name="shield-checkmark-outline" size={16} color="#2D5A3D" />
+            <Ionicons name="shield-checkmark-outline" size={16} color="#6B7A38" />
             <Text style={styles.ethicalBannerText}>{tt('Pubblicando, confermi che il favore rispetta i nostri standard etici e di sicurezza')}</Text>
           </View>
         </ScrollView>
@@ -655,22 +656,22 @@ export default function CreateFavorScreen() {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={styles.modalIconContainer}>
-                <Ionicons name="warning" size={40} color="#ff6b6b" />
+                <Ionicons name="warning" size={40} color="#F87828" />
               </View>
               <Text style={styles.modalTitle}>{tt('Debito Sociale')}</Text>
             </View>
             
-            <Text style={styles.modalText}>{tt('Il tuo saldo di')}{' '}{CURRENCY_NAME}{' '}{tt('è sceso a')}{' '}{user?.granelli || 0} {CURRENCY_SYMBOL}{tt(', superando il limite di debito consentito (')}{DEBT_LIMIT}).
+            <Text style={styles.modalText}>{tt('Il tuo saldo di')}{' '}{CURRENCY_NAME}{' '}{tt('è sceso a')}{' '}{user?.granelli || 0}{tt(', superando il limite di debito consentito (')}{DEBT_LIMIT}).
             </Text>
 
             <View style={styles.modalInfoBox}>
               <Text style={styles.modalInfoTitle}>{tt('Come tornare in positivo:')}</Text>
               <View style={styles.modalInfoItem}>
-                <Ionicons name="gift-outline" size={20} color="#B8C868" />
+                <Ionicons name="gift-outline" size={20} color="#98AA4A" />
                 <Text style={styles.modalInfoText}>{tt('Offri favori alla community')}</Text>
               </View>
               <View style={styles.modalInfoItem}>
-                <Ionicons name="heart-outline" size={20} color="#B8C868" />
+                <Ionicons name="heart-outline" size={20} color="#98AA4A" />
                 <Text style={styles.modalInfoText}>{tt('Richiedi aiuto dal Fondo Solidarietà')}</Text>
               </View>
             </View>

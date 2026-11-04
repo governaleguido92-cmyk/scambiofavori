@@ -25,7 +25,7 @@ export function SkillsSection({ skills, onEdit }: SkillsSectionProps) {
             accessibilityLabel={tt('Modifica le competenze')}
             data-testid="edit-skills-button"
           >
-            <Ionicons name="pencil" size={16} color="#B8C868" />
+            <Ionicons name="pencil" size={16} color="#98AA4A" />
             <Text style={styles.editSkillsText}>{tt('Modifica')}</Text>
           </TouchableOpacity>
         )}
@@ -45,12 +45,12 @@ export function SkillsSection({ skills, onEdit }: SkillsSectionProps) {
         </View>
       ) : (
         <TouchableOpacity style={local.emptyCard} onPress={onEdit} accessibilityRole="button" data-testid="add-skills-button">
-          <Ionicons name="school-outline" size={28} color="#8FA595" />
+          <Ionicons name="school-outline" size={28} color="#A5A89B" />
           <View style={local.emptyText}>
             <Text style={styles.noSkillsTitle}>{tt('Nessuna competenza selezionata')}</Text>
             <Text style={local.emptyHint}>{tt('Scegli in cosa sai aiutare: ti avvisiamo quando qualcuno cerca proprio quello.')}</Text>
           </View>
-          <Ionicons name="add-circle" size={28} color="#B8C868" />
+          <Ionicons name="add-circle" size={28} color="#98AA4A" />
         </TouchableOpacity>
       )}
     </View>
@@ -137,8 +137,8 @@ const local = StyleSheet.create({
   emojiBig: { fontSize: 20 },
   emptyCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14,
-    backgroundColor: '#1A2E22', borderWidth: 1, borderColor: '#2A4A35',
+    backgroundColor: '#171A10', borderWidth: 1, borderColor: '#2E3420',
   },
   emptyText: { flex: 1 },
-  emptyHint: { color: '#9DB3A4', fontSize: 12.5, lineHeight: 17, marginTop: 2 },
+  emptyHint: { color: '#A5A89B', fontSize: 12.5, lineHeight: 17, marginTop: 2 },
 });

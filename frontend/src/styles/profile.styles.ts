@@ -4,7 +4,7 @@ import themeColors from '../theme/colors';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
   },
   scrollContent: {
     padding: 20,
@@ -30,12 +30,12 @@ export const styles = StyleSheet.create({
     gap: 4,
   },
   verifiedText: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 12,
     fontWeight: '600',
   },
   profileCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
@@ -49,7 +49,7 @@ export const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -61,32 +61,32 @@ export const styles = StyleSheet.create({
   avatarText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#B8C868',
+    color: '#98AA4A',
   },
   cameraIconContainer: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
     width: 28,
     height: 28,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#1A2E22',
+    borderColor: '#171A10',
   },
   levelBadge: {
     position: 'absolute',
     bottom: -4,
     right: -4,
-    backgroundColor: '#ffd700',
+    backgroundColor: '#98AA4A',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
   },
   levelText: {
-    color: '#0F1A14',
+    color: '#0C0E09',
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -103,13 +103,13 @@ export const styles = StyleSheet.create({
   },
   userTitle: {
     fontSize: 14,
-    color: '#B8C868',
+    color: '#98AA4A',
     fontWeight: '600',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginBottom: 16,
   },
   progressSection: {
@@ -122,27 +122,27 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   progressLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   progressValue: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 14,
     fontWeight: '600',
   },
   progressBar: {
     height: 8,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
     borderRadius: 4,
   },
   progressHint: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 12,
     marginTop: 4,
     textAlign: 'center',
@@ -151,7 +151,7 @@ export const styles = StyleSheet.create({
   socialImpactSection: {
     width: '100%',
     marginTop: 16,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     borderRadius: 12,
     padding: 12,
   },
@@ -172,7 +172,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   socialImpactLevel: {
-    color: '#ff6b6b',
+    color: '#F87828',
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -184,7 +184,7 @@ export const styles = StyleSheet.create({
   },
   socialImpactFill: {
     height: '100%',
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     borderRadius: 5,
   },
   socialImpactStats: {
@@ -194,12 +194,12 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   socialImpactScore: {
-    color: '#ff6b6b',
+    color: '#F87828',
     fontSize: 14,
     fontWeight: '600',
   },
   socialImpactHint: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 12,
   },
   ratingsContainer: {
@@ -211,7 +211,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
     marginBottom: 4,
   },
@@ -227,7 +227,7 @@ export const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
@@ -243,7 +243,7 @@ export const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginTop: 4,
   },
   section: {
@@ -263,7 +263,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   badgeCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 12,
     padding: 12,
     alignItems: 'center',
@@ -288,10 +288,10 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   badgeNameLocked: {
-    color: '#8FA595',
+    color: '#A5A89B',
   },
   fundCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -309,13 +309,13 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   fundLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
   },
   donateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
@@ -326,13 +326,13 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   fundDescription: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 12,
     marginTop: 8,
     textAlign: 'center',
   },
   referralCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -351,7 +351,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   referralSubtitle: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
   },
   supporterCard: {
@@ -374,16 +374,16 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   supporterTitle: {
-    color: '#ffd700',
+    color: '#98AA4A',
     fontSize: 16,
     fontWeight: '700',
   },
   supporterSubtitle: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
   },
   leaderboardButton: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -398,7 +398,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   oggettotecaButton: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
     flexDirection: 'row',
@@ -419,7 +419,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   oggettotecaBadgeText: {
-    color: '#889848',
+    color: '#98AA4A',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -427,7 +427,7 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   infoCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
   },
@@ -457,22 +457,22 @@ export const styles = StyleSheet.create({
   },
   infoDescription: {
     fontSize: 12,
-    color: '#9DB3A4',
+    color: '#A5A89B',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    backgroundColor: 'rgba(248, 120, 40, 0.1)',
     borderWidth: 1,
-    borderColor: '#ff6b6b',
+    borderColor: '#F87828',
     borderRadius: 12,
     padding: 16,
     gap: 8,
     marginBottom: 20,
   },
   logoutText: {
-    color: '#ff6b6b',
+    color: '#F87828',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -482,12 +482,12 @@ export const styles = StyleSheet.create({
     marginBottom: 32,
   },
   deleteAccountText: {
-    color: '#7A9F85',
+    color: '#A5A89B',
     fontSize: 14,
     textDecorationLine: 'underline',
   },
   languageSection: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -499,7 +499,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   languageLabel: {
-    color: '#A8C4B0',
+    color: '#D4D6CC',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -513,13 +513,13 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#2D5A3D',
+    borderColor: '#6B7A38',
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   languageBtnActive: {
-    backgroundColor: '#2D5A3D',
-    borderColor: '#2D5A3D',
+    backgroundColor: '#6B7A38',
+    borderColor: '#6B7A38',
   },
   languageBtnText: {
     color: '#fff',
@@ -567,7 +567,7 @@ export const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 20,
     padding: 24,
     width: '100%',
@@ -581,7 +581,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalDescription: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -592,7 +592,7 @@ export const styles = StyleSheet.create({
     gap: 20,
   },
   donateAdjust: {
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -600,8 +600,8 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   donateInput: {
-    backgroundColor: '#0F1A14',
-    color: '#ffd700',
+    backgroundColor: '#0C0E09',
+    color: '#98AA4A',
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -610,7 +610,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
   donateCreditsLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 24,
@@ -624,11 +624,11 @@ export const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#9DB3A4',
+    borderColor: '#A5A89B',
     alignItems: 'center',
   },
   modalCancelText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontWeight: '600',
   },
   modalConfirmButton: {
@@ -636,7 +636,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -646,19 +646,19 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   referralCodeBox: {
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     padding: 20,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 20,
   },
   referralCodeLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     marginBottom: 8,
   },
   referralCode: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 28,
     fontWeight: 'bold',
     letterSpacing: 4,
@@ -677,7 +677,7 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   referralStatLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
   },
   leaderboardModal: {
@@ -689,21 +689,21 @@ export const styles = StyleSheet.create({
   leaderboardItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     padding: 12,
     borderRadius: 12,
     marginBottom: 8,
   },
   leaderboardItemMe: {
     borderWidth: 2,
-    borderColor: '#B8C868',
+    borderColor: '#98AA4A',
   },
   leaderboardRank: {
     width: 40,
     alignItems: 'center',
   },
   leaderboardRankText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -717,25 +717,25 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   leaderboardTitle: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 12,
   },
   leaderboardScore: {
     alignItems: 'flex-end',
   },
   leaderboardScoreValue: {
-    color: '#ffd700',
+    color: '#98AA4A',
     fontSize: 18,
     fontWeight: 'bold',
   },
   leaderboardScoreLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
   },
   modalCloseButton: {
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     alignItems: 'center',
     marginTop: 16,
   },
@@ -754,7 +754,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
   },
   editSkillsText: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -768,7 +768,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -781,7 +781,7 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
   noSkillsCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -794,7 +794,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   noSkillsDescription: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 16,
@@ -804,7 +804,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
@@ -815,7 +815,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   skillsHint: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 12,
     textAlign: 'center',
     marginTop: 8,
@@ -831,7 +831,7 @@ export const styles = StyleSheet.create({
   skillSelectItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
@@ -839,7 +839,7 @@ export const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   skillSelectItemActive: {
-    borderColor: '#B8C868',
+    borderColor: '#98AA4A',
     backgroundColor: '#B8C86810',
   },
   skillSelectIcon: {
@@ -852,7 +852,7 @@ export const styles = StyleSheet.create({
     marginRight: 12,
   },
   skillSelectIconActive: {
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
   },
   skillSelectInfo: {
     flex: 1,
@@ -863,7 +863,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   skillSelectNameActive: {
-    color: '#B8C868',
+    color: '#98AA4A',
   },
   microBadge: {
     flexDirection: 'row',
@@ -886,15 +886,15 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   skillCheckboxActive: {
-    backgroundColor: '#B8C868',
-    borderColor: '#B8C868',
+    backgroundColor: '#98AA4A',
+    borderColor: '#98AA4A',
   },
   selectedCount: {
     alignItems: 'center',
     marginBottom: 16,
   },
   selectedCountText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   modalConfirmButtonDisabled: {
@@ -905,13 +905,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    backgroundColor: 'rgba(152, 170, 74, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   reviewsCountText: {
-    color: '#FFD700',
+    color: '#98AA4A',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -919,11 +919,11 @@ export const styles = StyleSheet.create({
     gap: 12,
   },
   reviewCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 12,
     padding: 14,
     borderLeftWidth: 3,
-    borderLeftColor: '#FFD700',
+    borderLeftColor: '#98AA4A',
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -936,11 +936,11 @@ export const styles = StyleSheet.create({
     gap: 2,
   },
   reviewDate: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 12,
   },
   reviewerName: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     marginBottom: 6,
   },
@@ -955,41 +955,41 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 8,
-    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    backgroundColor: 'rgba(248, 120, 40, 0.1)',
     padding: 8,
     borderRadius: 8,
   },
   publicThanksText: {
-    color: '#ff6b6b',
+    color: '#F87828',
     fontSize: 14,
     flex: 1,
   },
   moreReviewsText: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,
   },
   noReviewsCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
     gap: 12,
   },
   noReviewsText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
   },
   badgeHint: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
     marginBottom: 12,
   },
   badgeModalContent: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
@@ -1020,20 +1020,20 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   badgeEarned: {
-    backgroundColor: 'rgba(78, 204, 163, 0.2)',
+    backgroundColor: 'rgba(152, 170, 74, 0.2)',
   },
   badgeLocked: {
     backgroundColor: 'rgba(102, 102, 102, 0.2)',
   },
   badgeStatusText: {
     fontSize: 14,
-    color: '#8FA595',
+    color: '#A5A89B',
   },
   badgeStatusEarned: {
-    color: '#B8C868',
+    color: '#98AA4A',
   },
   badgeModalDescription: {
-    color: '#D0DDD3',
+    color: '#D4D6CC',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
@@ -1042,26 +1042,26 @@ export const styles = StyleSheet.create({
   badgeHowToGet: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    backgroundColor: 'rgba(152, 170, 74, 0.1)',
     padding: 12,
     borderRadius: 12,
     gap: 10,
     marginBottom: 20,
   },
   badgeHowToGetText: {
-    color: '#FFD700',
+    color: '#98AA4A',
     fontSize: 14,
     flex: 1,
     lineHeight: 18,
   },
   badgeModalClose: {
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 25,
   },
   badgeModalCloseText: {
-    color: '#0F1A14',
+    color: '#0C0E09',
     fontSize: 16,
     fontWeight: 'bold',
   },

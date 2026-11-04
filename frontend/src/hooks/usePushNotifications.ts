@@ -35,7 +35,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
       name: 'Scambio Favori',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#2D5A3D',
+      lightColor: '#6B7A38',
     });
   }
 

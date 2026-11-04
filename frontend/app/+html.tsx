@@ -28,7 +28,7 @@ export default function Root({ children }: PropsWithChildren) {
               input:-webkit-autofill,
               input:-webkit-autofill:hover,
               input:-webkit-autofill:focus {
-                -webkit-box-shadow: 0 0 0 1000px #1A2E22 inset !important;
+                -webkit-box-shadow: 0 0 0 1000px #171A10 inset !important;
                 -webkit-text-fill-color: #FFFFFF !important;
                 caret-color: #FFFFFF;
                 transition: background-color 9999s ease-in-out 0s;

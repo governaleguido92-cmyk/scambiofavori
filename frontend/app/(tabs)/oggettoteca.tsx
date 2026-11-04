@@ -1,3 +1,4 @@
+import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -15,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, LendableObject, ObjectCategory, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, LendableObject, ObjectCategory, CURRENCY_NAME } from '../../src/services/api';
 import { styles } from '../../src/styles/oggettoteca.styles';
 import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
@@ -241,7 +242,7 @@ export default function OggettotecaScreen() {
             <Ionicons
               name={(CATEGORY_ICONS[item.category] || 'cube') as any}
               size={16}
-              color="#A8B858"
+              color="#6B7A38"
             />
             <Text style={styles.categoryText}>{tt(item.category)}</Text>
           </View>
@@ -261,21 +262,21 @@ export default function OggettotecaScreen() {
 
         <View style={styles.objectFooter}>
           <View style={styles.ownerInfo}>
-            <Ionicons name="person-circle" size={20} color="#9DB3A4" />
+            <Ionicons name="person-circle" size={20} color="#A5A89B" />
             <Text style={styles.ownerName}>
               {isMine ? tt('Tu') : item.owner_name}
             </Text>
           </View>
           <View style={styles.depositContainer}>
             <Text style={styles.depositLabel}>{tt('Deposito:')}</Text>
-            <Text style={styles.depositSymbol}>{CURRENCY_SYMBOL}</Text>
+            <GranelloIcon size={18} />
             <Text style={styles.depositValue}>{item.deposit_granelli}</Text>
           </View>
         </View>
 
         {item.distance_km !== null && item.distance_km !== undefined && (
           <View style={styles.distanceContainer}>
-            <Ionicons name="location" size={14} color="#A8B858" />
+            <Ionicons name="location" size={14} color="#6B7A38" />
             <Text style={styles.distanceText}>{item.distance_km}{' '}{tt('km')}</Text>
           </View>
         )}
@@ -328,7 +329,7 @@ export default function OggettotecaScreen() {
           <Ionicons
             name="cube"
             size={20}
-            color={activeTab === 'available' ? '#0F1A14' : '#9DB3A4'}
+            color={activeTab === 'available' ? '#0C0E09' : '#A5A89B'}
           />
           <Text style={[styles.tabText, activeTab === 'available' && styles.tabTextActive]}>{tt('Disponibili')}</Text>
         </TouchableOpacity>
@@ -339,7 +340,7 @@ export default function OggettotecaScreen() {
           <Ionicons
             name="person"
             size={20}
-            color={activeTab === 'mine' ? '#0F1A14' : '#9DB3A4'}
+            color={activeTab === 'mine' ? '#0C0E09' : '#A5A89B'}
           />
           <Text style={[styles.tabText, activeTab === 'mine' && styles.tabTextActive]}>{tt('I Miei Oggetti')}</Text>
         </TouchableOpacity>
@@ -368,7 +369,7 @@ export default function OggettotecaScreen() {
               <Ionicons
                 name={(CATEGORY_ICONS[cat.name] || 'cube') as any}
                 size={16}
-                color={selectedCategory === cat.name ? '#0F1A14' : '#A8B858'}
+                color={selectedCategory === cat.name ? '#0C0E09' : '#6B7A38'}
               />
               <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
                 {tt(cat.name)}
@@ -380,7 +381,7 @@ export default function OggettotecaScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#A8B858" />
+          <ActivityIndicator size="large" color="#6B7A38" />
         </View>
       ) : (
         <FlatList
@@ -389,7 +390,7 @@ export default function OggettotecaScreen() {
           keyExtractor={(item) => item.object_id}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#A8B858" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6B7A38" />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
@@ -421,7 +422,7 @@ export default function OggettotecaScreen() {
               <TextInput
                 style={styles.input}
                 placeholder={tt('Es: Trapano elettrico')}
-                placeholderTextColor="#8FA595"
+                placeholderTextColor="#A5A89B"
                 value={newObject.name}
                 onChangeText={(text) => setNewObject({ ...newObject, name: text })}
                 maxLength={50}
@@ -433,7 +434,7 @@ export default function OggettotecaScreen() {
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder={tt('Descrivi l\'oggetto...')}
-                placeholderTextColor="#8FA595"
+                placeholderTextColor="#A5A89B"
                 value={newObject.description}
                 onChangeText={(text) => setNewObject({ ...newObject, description: text })}
                 multiline
@@ -457,7 +458,7 @@ export default function OggettotecaScreen() {
                     <Ionicons
                       name={(CATEGORY_ICONS[cat.name] || 'cube') as any}
                       size={16}
-                      color={newObject.category === cat.name ? '#0F1A14' : '#A8B858'}
+                      color={newObject.category === cat.name ? '#0C0E09' : '#6B7A38'}
                     />
                     <Text style={[
                       styles.categoryOptionText,
@@ -483,7 +484,7 @@ export default function OggettotecaScreen() {
                   <Ionicons name="remove" size={20} color="#fff" />
                 </TouchableOpacity>
                 <View style={styles.depositDisplay}>
-                  <Text style={styles.depositDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
+                  <GranelloIcon size={18} />
                   <Text style={styles.depositDisplayValue}>{newObject.deposit_soli}</Text>
                 </View>
                 <TouchableOpacity

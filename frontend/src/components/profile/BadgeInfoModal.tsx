@@ -21,11 +21,11 @@ export function BadgeInfoModal({ badge, onClose }: BadgeInfoModalProps) {
           {badge && (
             <>
               <View style={[styles.badgeModalIcon, { backgroundColor: badge.earned ? badge.color : '#333' }]}>
-                <Ionicons name={badgeIconName(badge.icon) as any} size={48} color={badge.earned ? '#fff' : '#8FA595'} />
+                <Ionicons name={badgeIconName(badge.icon) as any} size={48} color={badge.earned ? '#fff' : '#A5A89B'} />
               </View>
               <Text style={styles.badgeModalTitle}>{tt(badge.name)}</Text>
               <View style={[styles.badgeModalStatus, badge.earned ? styles.badgeEarned : styles.badgeLocked]}>
-                <Ionicons name={badge.earned ? 'checkmark-circle' : 'lock-closed'} size={16} color={badge.earned ? '#B8C868' : '#8FA595'} />
+                <Ionicons name={badge.earned ? 'checkmark-circle' : 'lock-closed'} size={16} color={badge.earned ? '#98AA4A' : '#A5A89B'} />
                 <Text style={[styles.badgeStatusText, badge.earned && styles.badgeStatusEarned]}>
                   {badge.earned ? tt('Ottenuto!') : tt('Non ancora ottenuto')}
                 </Text>
@@ -33,7 +33,7 @@ export function BadgeInfoModal({ badge, onClose }: BadgeInfoModalProps) {
               <Text style={styles.badgeModalDescription}>{tt(badge.description) || tt('Badge della community.')}</Text>
               {!badge.earned && (
                 <View style={styles.badgeHowToGet}>
-                  <Ionicons name="bulb" size={20} color="#FFD700" />
+                  <Ionicons name="bulb" size={20} color="#98AA4A" />
                   <Text style={styles.badgeHowToGetText}>{tx(requirement.text, [requirement.value])}</Text>
                 </View>
               )}

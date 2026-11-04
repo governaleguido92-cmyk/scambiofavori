@@ -1,52 +1,53 @@
 // Scambio di Favori - Theme Colors
-// Palette del logo: Arancio caldo, Verde lime/oliva, su fondo Verde Bosco. Oro per i Granelli.
+// Palette del logo, solo quattro colori: verde oliva, arancione, bianco e nero.
+// Tutto il resto sono sfumature di questi quattro (mai blu, rosso, oro o viola).
 
 export const colors = {
-  // Primary - Verde Bosco
-  primary: '#2D5A3D',
-  primaryLight: '#3D7A52',
-  primaryDark: '#1E3D2A',
-  primaryMuted: 'rgba(45, 90, 61, 0.2)',
+  // Primary - Verde oliva
+  primary: '#98AA4A',
+  primaryLight: '#B0C060',
+  primaryDark: '#7A8B3A',
+  primaryMuted: 'rgba(152, 170, 74, 0.2)',
 
-  // Accent - Arancio del logo (azioni principali)
+  // Accent - Arancione del logo (azioni principali)
   accent: '#F87828',
   accentLight: '#FB9A52',
   accentDark: '#BF500E',
   accentMuted: 'rgba(248, 120, 40, 0.15)',
 
-  // Secondary - Verde lime del logo (elementi attivi, icone, selezioni)
-  lime: '#B8C868',
-  limeDark: '#A8B858',
-  olive: '#889848',
-  limeMuted: 'rgba(184, 200, 104, 0.15)',
+  // Secondary - Oliva chiaro (elementi attivi, icone, selezioni)
+  lime: '#98AA4A',
+  limeDark: '#7A8B3A',
+  olive: '#98AA4A',
+  limeMuted: 'rgba(152, 170, 74, 0.15)',
 
-  // Background
-  background: '#0F1A14',
-  backgroundLight: '#223A2B',
-  backgroundCard: '#1A2E22',
+  // Background - Nero con un filo di oliva
+  background: '#0C0E09',
+  backgroundLight: '#23281A',
+  backgroundCard: '#171A10',
 
-  // Text
+  // Text - Bianco e sue sfumature
   textPrimary: '#FFFFFF',
-  textSecondary: '#C4DACB',
-  textMuted: '#9DB3A4',
+  textSecondary: '#D4D6CC',
+  textMuted: '#A5A89B',
 
-  // Status - derived from main colors
-  success: '#B8C868',
+  // Status - solo colori del logo
+  success: '#98AA4A',
   warning: '#F87828',
-  error: '#D94F4F',
-  info: '#2D5A3D',
+  error: '#E0560F',
+  info: '#98AA4A',
 
-  // Granelli (currency) - Oro
-  granelli: '#FFD700',
-  granelliMuted: 'rgba(255, 215, 0, 0.15)',
+  // Granelli (moneta) - Oliva chiaro
+  granelli: '#98AA4A',
+  granelliMuted: 'rgba(152, 170, 74, 0.15)',
 
-  // Debt
-  debt: '#D94F4F',
-  debtMuted: 'rgba(217, 79, 79, 0.15)',
+  // Debito - Arancione scuro
+  debt: '#E0560F',
+  debtMuted: 'rgba(224, 86, 15, 0.15)',
 
   // Borders
-  border: '#2A4A35',
-  borderLight: '#3D6B4D',
+  border: '#2E3420',
+  borderLight: '#434B2F',
 };
 
 export default colors;

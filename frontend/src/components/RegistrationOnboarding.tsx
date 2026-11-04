@@ -20,7 +20,7 @@ const SLIDES = [
   {
     id: '1',
     icon: 'heart-circle',
-    iconColor: '#ff6b6b',
+    iconColor: '#F87828',
     title: 'Il Senso Etico',
     subtitle: 'Una community basata sulla reciprocità',
     points: [
@@ -33,7 +33,7 @@ const SLIDES = [
   {
     id: '2',
     icon: 'diamond',
-    iconColor: '#B8C868',
+    iconColor: '#98AA4A',
     title: 'I Granelli',
     subtitle: 'La valuta del tempo',
     points: [
@@ -46,7 +46,7 @@ const SLIDES = [
   {
     id: '3',
     icon: 'rocket',
-    iconColor: '#ffd93d',
+    iconColor: '#98AA4A',
     title: 'Come Funziona',
     subtitle: 'Semplice e trasparente',
     points: [

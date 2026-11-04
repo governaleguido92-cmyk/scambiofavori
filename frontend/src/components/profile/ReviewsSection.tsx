@@ -34,7 +34,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
           accessible
           accessibilityLabel={average === null ? tt('Nessuna recensione') : tx('Media {0} su {1} recensioni', [average.toLocaleString(locale), reviews.length])}
         >
-          <Ionicons name="star" size={16} color="#FFD700" />
+          <Ionicons name="star" size={16} color="#98AA4A" />
           <Text style={styles.reviewsCountText}>
             {average === null ? '0' : `${average.toLocaleString(locale)} · ${reviews.length}`}
           </Text>
@@ -48,7 +48,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
               <View style={styles.reviewHeader}>
                 <View style={styles.reviewStars}>
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons key={star} name={star <= review.rating ? 'star' : 'star-outline'} size={16} color="#FFD700" />
+                    <Ionicons key={star} name={star <= review.rating ? 'star' : 'star-outline'} size={16} color="#98AA4A" />
                   ))}
                 </View>
                 <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString(locale)}</Text>
@@ -57,7 +57,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
               {review.comment ? <Text style={styles.reviewComment}>{`"${review.comment}"`}</Text> : null}
               {review.public_thanks ? (
                 <View style={styles.publicThanksContainer}>
-                  <Ionicons name="heart" size={14} color="#ff6b6b" />
+                  <Ionicons name="heart" size={14} color="#F87828" />
                   <Text style={styles.publicThanksText}>{review.public_thanks}</Text>
                 </View>
               ) : null}
@@ -69,7 +69,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
         </View>
       ) : (
         <View style={local.empty}>
-          <Ionicons name="chatbubble-ellipses-outline" size={26} color="#8FA595" />
+          <Ionicons name="chatbubble-ellipses-outline" size={26} color="#A5A89B" />
           <Text style={local.emptyText}>{tt('Nessuna recensione ricevuta ancora. Completa dei favori per ricevere feedback!')}</Text>
         </View>
       )}
@@ -80,7 +80,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
 const local = StyleSheet.create({
   empty: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14,
-    backgroundColor: '#1A2E22', borderWidth: 1, borderColor: '#2A4A35',
+    backgroundColor: '#171A10', borderWidth: 1, borderColor: '#2E3420',
   },
-  emptyText: { flex: 1, color: '#9DB3A4', fontSize: 13, lineHeight: 18 },
+  emptyText: { flex: 1, color: '#A5A89B', fontSize: 13, lineHeight: 18 },
 });

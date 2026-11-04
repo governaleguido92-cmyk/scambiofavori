@@ -6,22 +6,22 @@ export interface CategoryVisual {
   color: string;
 }
 
-const DEFAULT_VISUAL: CategoryVisual = { emoji: '🤝', color: '#3D7A52' };
+const DEFAULT_VISUAL: CategoryVisual = { emoji: '🤝', color: '#98AA4A' };
 
 export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
-  'Trasporto': { emoji: '🚗', color: '#B8503F' },
-  'Spesa': { emoji: '🛒', color: '#2F8F5B' },
-  'Tecnologia': { emoji: '💻', color: '#2C7FB8' },
-  'Pulizie': { emoji: '🧹', color: '#8A5FC0' },
-  'Compagnia': { emoji: '🐕', color: '#C47A1E' },
-  'Cucina': { emoji: '🍳', color: '#C25A7A' },
-  'Giardinaggio': { emoji: '🌱', color: '#6F8F26' },
-  'Consiglio': { emoji: '💡', color: '#2A9AA0' },
-  'Informazione': { emoji: 'ℹ️', color: '#4F6FB0' },
-  'Aiuto Rapido': { emoji: '⚡', color: '#C9A227' },
-  'Babysitting': { emoji: '👶', color: '#D9777F' },
-  'Animali': { emoji: '🐾', color: '#A0693C' },
-  'Ripetizioni': { emoji: '📚', color: '#4F7DC0' },
+  'Trasporto': { emoji: '🚗', color: '#E0560F' },
+  'Spesa': { emoji: '🛒', color: '#98AA4A' },
+  'Tecnologia': { emoji: '💻', color: '#98AA4A' },
+  'Pulizie': { emoji: '🧹', color: '#FFFFFF' },
+  'Compagnia': { emoji: '🐕', color: '#F87828' },
+  'Cucina': { emoji: '🍳', color: '#FB9A52' },
+  'Giardinaggio': { emoji: '🌱', color: '#98AA4A' },
+  'Consiglio': { emoji: '💡', color: '#98AA4A' },
+  'Informazione': { emoji: 'ℹ️', color: '#FB9A52' },
+  'Aiuto Rapido': { emoji: '⚡', color: '#98AA4A' },
+  'Babysitting': { emoji: '👶', color: '#FB9A52' },
+  'Animali': { emoji: '🐾', color: '#BF500E' },
+  'Ripetizioni': { emoji: '📚', color: '#6B7A38' },
   'Altro': DEFAULT_VISUAL,
 };
 

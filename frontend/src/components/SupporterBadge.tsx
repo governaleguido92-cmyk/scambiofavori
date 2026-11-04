@@ -22,7 +22,7 @@ export const SupporterBadge: React.FC<SupporterBadgeProps> = ({
   
   return (
     <View style={[styles.container, styles[`container_${size}`], style]}>
-      <Ionicons name="heart" size={iconSize} color="#ffd700" />
+      <Ionicons name="heart" size={iconSize} color="#98AA4A" />
       {showLabel && <Text style={styles.label}>{tt('Sostenitore')}</Text>}
     </View>
   );
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   label: {
-    color: '#ffd700',
+    color: '#98AA4A',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -98,9 +98,9 @@ const styles = StyleSheet.create({
   profileBorderWrapper: {
     borderRadius: 100,
     padding: 3,
-    backgroundColor: '#ffd700',
+    backgroundColor: '#98AA4A',
     // Gradient effect using shadow
-    shadowColor: '#ffd700',
+    shadowColor: '#98AA4A',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 4,

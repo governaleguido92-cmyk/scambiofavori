@@ -25,8 +25,8 @@ const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   system: { name: 'information-circle', color: colors.textSecondary },
   chat: { name: 'chatbubble-ellipses', color: colors.lime },
   new_message: { name: 'chatbubble', color: colors.accent },
-  favor_completed: { name: 'checkmark-circle', color: '#B8C868' },
-  supporter: { name: 'heart', color: '#ffd700' },
+  favor_completed: { name: 'checkmark-circle', color: '#98AA4A' },
+  supporter: { name: 'heart', color: '#98AA4A' },
 };
 
 export default function NotificationsScreen() {
