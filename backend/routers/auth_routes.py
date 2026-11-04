@@ -160,12 +160,15 @@ async def request_phone_code(request: Request, data: PhoneRequestBody, current_u
         {"user_id": current_user.user_id},
         {"$set": pending, **({"$unset": {"phone_code": ""}} if use_verify else {})},
     )
-    await db.phone_requests.insert_one({"user_id": current_user.user_id, "created_at": now})
     if use_verify:
-        started = await sms.verify_start(phone)
-        return {"message": "Codice inviato", "sms_sent": started}
-    sent = await sms.send_sms(phone, f"Scambio Favori - codice di verifica: {code} (vale {PHONE_CODE_TTL_MINUTES} minuti)")
-    return {"message": "Codice inviato", "sms_sent": sent}
+        sent = await sms.verify_start(phone)
+    else:
+        sent = await sms.send_sms(phone, f"Scambio Favori - codice di verifica: {code} (vale {PHONE_CODE_TTL_MINUTES} minuti)")
+    if not sent:
+        # Un invio fallito non conta nel limite orario e non obbliga ad aspettare un minuto per riprovare
+        raise HTTPException(status_code=503, detail="Non riesco a inviare l'SMS adesso. Riprova tra poco.")
+    await db.phone_requests.insert_one({"user_id": current_user.user_id, "created_at": now})
+    return {"message": "Codice inviato", "sms_sent": True}
 
 
 @api_router.post("/auth/phone/verify", response_model=User)
