@@ -578,6 +578,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Salutate e accordatevi su dove e quando incontrarvi. Toccate una risposta rapida qui sotto per cominciare.': 'Say hello and agree on where and when to meet. Tap a quick reply below to get started.',
   'Segnala {0}': 'Report {0}',
   'Avvisa una persona fidata': 'Tell someone you trust',
+  'Ti propone di continuare fuori dall\'app. Resta qui e non mandare soldi, codici o dati personali.': 'They suggest continuing outside the app. Stay here and do not send money, codes or personal data.',
   'Da verificare': 'To verify',
   'Nuovo vicino': 'New neighbor',
   'Vicino affidabile': 'Trusted neighbor',
