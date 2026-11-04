@@ -57,3 +57,17 @@ async def test_invalid_month_is_a_400(client, monkeypatch):
     monkeypatch.setenv("MONTHLY_REPORT_TOKEN", "giusto-e-lungo-abbastanza")
     response = await client.post(URL, json={"year": 2026, "month": 13}, headers={"X-Report-Token": "giusto-e-lungo-abbastanza"})
     assert response.status_code == 400
+
+
+async def test_token_with_stray_spaces_or_newlines_still_matches(client, monkeypatch):
+    """Copiando il codice su Render o GitHub può restare un a-capo o uno spazio: non deve impedire il rapporto."""
+    monkeypatch.setenv("MONTHLY_REPORT_TOKEN", "giusto-e-lungo-abbastanza\n")
+    monkeypatch.setattr(mr, "send_email", lambda *args: _true())
+
+    response = await client.post(URL, json={"year": 2026, "month": 10}, headers={"X-Report-Token": "  giusto-e-lungo-abbastanza "})
+
+    assert response.status_code == 200
+
+
+async def _true():
+    return True

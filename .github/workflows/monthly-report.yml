@@ -20,12 +20,15 @@ jobs:
             echo "Segreto MONTHLY_REPORT_TOKEN mancante: rapporto non richiesto."
             exit 1
           fi
+          # Un a-capo o uno spazio copiati insieme al codice romperebbero la richiesta: si tolgono
+          MONTHLY_REPORT_TOKEN=$(printf '%s' "$MONTHLY_REPORT_TOKEN" | tr -d '[:space:]')
           # Il server gratuito si addormenta e ci mette circa un minuto a svegliarsi: fino a 4 tentativi
           for attempt in 1 2 3 4; do
             code=$(curl --silent --show-error --max-time 150 --output response.json --write-out "%{http_code}" \
               -X POST -H "X-Report-Token: $MONTHLY_REPORT_TOKEN" -H "Content-Type: application/json" -d '{}' \
               https://scambio-di-favori-api.onrender.com/api/admin/monthly-report || echo 000)
             echo "Tentativo $attempt: risposta $code"
+            if [ "$code" != "200" ]; then head -c 300 response.json 2>/dev/null; echo; fi
             if [ "$code" = "200" ]; then
               python3 -c "import json; d=json.load(open('response.json')); print('Rapporto', d['period'], '- email inviata:', d['email_sent'])"
               exit 0

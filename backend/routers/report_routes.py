@@ -22,10 +22,11 @@ class MonthlyReportBody(BaseModel):
 @api_router.post("/admin/monthly-report")
 async def run_monthly_report(body: Optional[MonthlyReportBody] = None, x_report_token: Optional[str] = Header(default=None)):
     """Calcola il rapporto del mese (di default quello appena finito), lo salva e lo invia per email, una sola volta."""
-    expected = os.environ.get("MONTHLY_REPORT_TOKEN")
+    # Copiando un codice può restare uno spazio o un a-capo: non deve bastare per bloccare il rapporto
+    expected = (os.environ.get("MONTHLY_REPORT_TOKEN") or "").strip()
     if not expected:
         raise HTTPException(status_code=503, detail="Rapporto mensile non configurato")
-    if not x_report_token or not secrets.compare_digest(x_report_token, expected):
+    if not x_report_token or not secrets.compare_digest(x_report_token.strip(), expected):
         raise HTTPException(status_code=401, detail="Non autorizzato")
 
     body = body or MonthlyReportBody()
