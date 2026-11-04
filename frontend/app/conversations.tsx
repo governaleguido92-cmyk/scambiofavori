@@ -26,6 +26,7 @@ import {
 } from '../src/utils/conversations';
 import { tt } from '../src/i18n/tt';
 import { goBackOrHome } from '../src/utils/navigation';
+import { useLiveRefresh } from '../src/hooks/useLiveRefresh';
 
 const FILTERS: ReadonlyArray<{ key: ConversationFilter; label: string }> = [
   { key: 'all', label: 'Tutti' },
@@ -56,6 +57,7 @@ export default function ConversationsScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { conversations, loading, failed, refresh } = useMessages();
+  useLiveRefresh(refresh);  // elenco delle conversazioni aggiornato ogni 3 secondi
   const [filter, setFilter] = useState<ConversationFilter>('all');
   const [query, setQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -169,6 +171,21 @@ export default function ConversationsScreen() {
           <Text style={styles.title}>{tt('Messaggi')}</Text>
         </View>
 
+        <TouchableOpacity
+          style={styles.squareCard}
+          onPress={() => router.push('/quartiere' as never)}
+          accessibilityRole="button"
+          accessibilityLabel={tt('Il nostro quartiere')}
+          data-testid="open-neighborhood"
+        >
+          <Ionicons name="people" size={22} color={colors.accent} />
+          <View style={styles.squareText}>
+            <Text style={styles.squareTitle}>{tt('Il nostro quartiere')}</Text>
+            <Text style={styles.squareSubtitle}>{tt('Chatta con chi ha un favore attivo entro 30 km')}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textPrimary} />
+        </TouchableOpacity>
+
         <View style={styles.searchBox}>
           <Ionicons name="search" size={18} color={colors.textPrimary} />
           <TextInput
@@ -234,6 +251,21 @@ export default function ConversationsScreen() {
 }
 
 const styles = StyleSheet.create({
+  squareCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: colors.backgroundCard,
+    borderWidth: 1,
+    borderColor: colors.accentMuted,
+  },
+  squareText: { flex: 1 },
+  squareTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: '800' },
+  squareSubtitle: { color: colors.textSecondary, fontSize: 12.5, marginTop: 2 },
   container: { flex: 1, backgroundColor: colors.background },
   column: { width: '100%', maxWidth: 640, alignSelf: 'center' },
   header: {

@@ -10,6 +10,8 @@ FAVOR_BODY = {
     "description": "Servono due buste portate a casa",
     "category": "Spesa",
     "duration_hours": 1.0,
+    "latitude": 37.93,
+    "longitude": 12.33,
 }
 
 
@@ -86,16 +88,35 @@ async def test_emergency_is_exempt_from_new_user_limits(client, app_db):
     assert response.status_code == 200, response.text
 
 
-async def test_new_user_cannot_accept_fourth_open_favor(client, app_db):
+async def test_new_user_can_help_more_than_three_favors(client, app_db):
     await app_db.users.insert_many([make_user("me"), make_user("other")])
     await app_db.favors.insert_many([
-        make_favor("a1", creator_id="other", creator_name="other", accepted_by="me", status="accepted"),
-        make_favor("a2", creator_id="other", creator_name="other", accepted_by="me", status="accepted"),
-        make_favor("a3", creator_id="other", creator_name="other", accepted_by="me", status="accepted"),
-        _active("target", "other"),
-    ])
+        make_favor(f"a{i}", creator_id=f"c{i}", creator_name=f"c{i}", accepted_by="me", status="accepted")
+        for i in range(1, 4)
+    ] + [_active("target", "other")])
+    response = await client.post("/api/favors/accept", json={"favor_id": "target"}, headers=auth("me"))
+    # mongomock non supporta return_document=True: basta che i limiti dei nuovi utenti non blocchino (403)
+    assert response.status_code != 403, response.text
+
+
+async def test_new_user_cannot_help_more_than_five_favors(client, app_db):
+    await app_db.users.insert_many([make_user("me"), make_user("other")])
+    await app_db.favors.insert_many([
+        make_favor(f"a{i}", creator_id=f"c{i}", creator_name=f"c{i}", accepted_by="me", status="accepted")
+        for i in range(1, 6)
+    ] + [_active("target", "other")])
     response = await client.post("/api/favors/accept", json={"favor_id": "target"}, headers=auth("me"))
     assert response.status_code == 403
+
+
+async def test_helping_does_not_use_up_requesting_slots(client, app_db):
+    await app_db.users.insert_many([make_user("me"), make_user("other")])
+    await app_db.favors.insert_many([
+        make_favor(f"a{i}", creator_id="other", creator_name="other", accepted_by="me", status="accepted")
+        for i in range(1, 4)
+    ])
+    response = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
+    assert response.status_code == 200, response.text
 
 
 # ---------- coppie ripetute ----------

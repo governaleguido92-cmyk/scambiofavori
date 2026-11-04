@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { getConfirmationPosition } from '../utils/confirmPosition';
 
 // Production backend URL from environment variable
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
@@ -103,6 +104,48 @@ export interface Category {
 export interface ObjectCategory {
   name: string;
   icon: string;
+}
+
+export interface AreaMessage {
+  message_id: string;
+  author_id: string;
+  author_name: string;
+  content: string;
+  created_at: string;
+  mine: boolean;
+  /** Distanza approssimata in km (arrotondata ai 5 km); null per i propri messaggi. */
+  distance_km: number | null;
+  off_app_contact: boolean;
+}
+
+export interface WeatherDay {
+  min: number;
+  max: number;
+  rain_chance: number;
+  description: string;
+  icon: string;
+}
+
+export interface NeighborhoodWeather {
+  temperature: number;
+  feels_like: number;
+  wind_kmh: number;
+  description: string;
+  icon: string;
+  today: WeatherDay;
+  tomorrow: WeatherDay;
+  source: string;
+}
+
+export interface NeighborhoodNotice {
+  notice_id: string;
+  author_id: string;
+  author_name: string;
+  category: string;
+  text: string;
+  mine: boolean;
+  created_at: string;
+  distance_km: number | null;
 }
 
 export interface TrustStatus {
@@ -811,10 +854,15 @@ export const api = {
   },
 
   completeFavor: async (favorId: string, token: string): Promise<Favor> => {
+    // La conferma richiede di essere vicini al luogo del favore: si manda la posizione se disponibile
+    const position = await getConfirmationPosition();
     const response = await fetch(`${API_URL}/api/favors/complete`, {
       method: 'POST',
       headers: getHeaders(token),
-      body: JSON.stringify({ favor_id: favorId }),
+      body: JSON.stringify({
+        favor_id: favorId,
+        ...(position ? { latitude: position.latitude, longitude: position.longitude, accuracy_meters: position.accuracy } : {}),
+      }),
     });
     return handleResponse(response);
   },
@@ -878,6 +926,63 @@ export const api = {
   /** Impostazioni pubbliche del server (senza accesso): oggi solo se il telefono va verificato alla registrazione. */
   getAppConfig: async (): Promise<{ phone_verification_required: boolean }> => {
     const response = await fetch(`${API_URL}/api/config`);
+    return handleResponse(response);
+  },
+
+  // Quartiere: chat tra chi ha un favore attivo entro 30 km
+  getAreaChat: async (token: string): Promise<{ messages: AreaMessage[]; radius_km: number }> => {
+    const response = await fetch(`${API_URL}/api/area-chat`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  getNeighborhoodNews: async (token: string): Promise<{ notices: NeighborhoodNotice[]; reason?: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/news`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  publishNotice: async (category: string, text: string, token: string): Promise<{ notice_id: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/notices`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ category, text }),
+    });
+    return handleResponse(response);
+  },
+
+  deleteNotice: async (noticeId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/notices/${noticeId}`, { method: 'DELETE', headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  reportNotice: async (noticeId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/notices/${noticeId}/report`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
+  getNeighborhoodWeather: async (token: string): Promise<{ weather: NeighborhoodWeather | null; reason?: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/weather`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  postAreaChat: async (content: string, token: string): Promise<{ message_id: string }> => {
+    const response = await fetch(`${API_URL}/api/area-chat`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ content }),
+    });
+    return handleResponse(response);
+  },
+
+  reportAreaMessage: async (messageId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/area-chat/${messageId}/report`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({}),
+    });
     return handleResponse(response);
   },
 

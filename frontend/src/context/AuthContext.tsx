@@ -49,6 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setShowLegalModal(!status.legal_accepted);
     } catch (error) {
       logger.debug('Error checking legal status:', error);
+      // Accesso scaduto o non più valido: si torna al login, non si mostra una finestra dei termini impossibile da chiudere
+      if (error instanceof Error && /sessione non valida|non autenticato/i.test(error.message)) {
+        await clearStoredToken();
+        setToken(null);
+        setUser(null);
+        return;
+      }
       setShowLegalModal(true);
     }
   }, []);

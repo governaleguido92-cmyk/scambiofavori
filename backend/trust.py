@@ -15,7 +15,8 @@ from core import PHONE_VERIFICATION_REQUIRED, db
 
 FAVORS_FOR_LEVEL_TWO = 3
 MIN_RATING_FOR_LEVEL_TWO = 3.5
-NEW_USER_MAX_OPEN_FAVORS = 3
+NEW_USER_MAX_OPEN_FAVORS = 3  # favori che il nuovo utente chiede, aperti insieme
+NEW_USER_MAX_ACCEPTED_FAVORS = 5  # favori che il nuovo utente sta aiutando, aperti insieme
 NEW_USER_MAX_GRANELLI_COST = 3
 PAIR_WEEKLY_LIMIT = 2
 PAIR_WINDOW_DAYS = 7
@@ -51,11 +52,9 @@ async def user_doc_of(user_id: str) -> dict:
     return await db.users.find_one({"user_id": user_id}, {"_id": 0}) or {}
 
 
-async def count_open_favors(user_id: str) -> int:
-    return await db.favors.count_documents({
-        "status": {"$in": list(OPEN_STATUSES)},
-        "$or": [{"creator_id": user_id}, {"accepted_by": user_id}],
-    })
+async def count_open_favors(user_id: str, role: str) -> int:
+    """Favori aperti dell'utente: role "creator" = che ha chiesto, "accepted_by" = che sta aiutando."""
+    return await db.favors.count_documents({"status": {"$in": list(OPEN_STATUSES)}, role: user_id})
 
 
 async def ensure_not_on_hold(user_id: str) -> None:
@@ -80,12 +79,25 @@ async def ensure_new_user_can_create(user_id: str, granelli_cost: int, is_emerge
 
 
 async def ensure_new_user_open_slot(user_id: str) -> None:
+    """Limite sui favori che il nuovo utente CHIEDE: chi vuole aiutare non viene frenato da questo."""
     if not is_new_user(await user_doc_of(user_id)):
         return
-    if await count_open_favors(user_id) >= NEW_USER_MAX_OPEN_FAVORS:
+    if await count_open_favors(user_id, "creator_id") >= NEW_USER_MAX_OPEN_FAVORS:
         raise HTTPException(
             status_code=403,
             detail=f"Per i nuovi utenti al massimo {NEW_USER_MAX_OPEN_FAVORS} favori aperti alla volta. "
+                   f"Completa {FAVORS_FOR_LEVEL_TWO} favori per sbloccare tutto.",
+        )
+
+
+async def ensure_new_user_can_accept(user_id: str) -> None:
+    """Limite più largo sui favori che il nuovo utente sta aiutando, per fermare chi li accaparra senza presentarsi."""
+    if not is_new_user(await user_doc_of(user_id)):
+        return
+    if await count_open_favors(user_id, "accepted_by") >= NEW_USER_MAX_ACCEPTED_FAVORS:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Per i nuovi utenti al massimo {NEW_USER_MAX_ACCEPTED_FAVORS} favori da aiutare alla volta. "
                    f"Completa {FAVORS_FOR_LEVEL_TWO} favori per sbloccare tutto.",
         )
 

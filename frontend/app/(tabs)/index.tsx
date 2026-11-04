@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 import {
   View,
   Text,
@@ -149,10 +150,9 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadFavors();
-    // Poll favors every 20 seconds for real-time updates
-    const favorsInterval = setInterval(loadFavors, 20000);
-    return () => clearInterval(favorsInterval);
   }, [loadFavors]);
+  // Elenco dei favori aggiornato ogni 3 secondi mentre la scheda è in primo piano
+  useLiveRefresh(loadFavors);
 
   const onRefresh = () => {
     setRefreshing(true);

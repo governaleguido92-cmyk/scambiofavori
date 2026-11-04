@@ -367,7 +367,7 @@ export default function FavorDetailScreen() {
               await reloadFavor();
               notify(tt('Successo'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
             } catch (error: any) {
-              notify(t('common.error'), error.message || t('favor.errorComplete'));
+              showRefusal(t('common.error'), error.message || t('favor.errorComplete'), tt('Ho capito'));
             } finally {
               setActionLoading(false);
             }

@@ -28,6 +28,12 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
             detail=f"Contenuto non consentito: {moderation_result['reason']}. Modifica il testo e riprova."
         )
     
+    # I favori si fanno di persona: serve il luogo e non sono ammessi favori a distanza
+    if favor_data.latitude is None or favor_data.longitude is None:
+        raise HTTPException(status_code=400, detail="Indica dove si svolge il favore: i favori si fanno di persona.")
+    if contains_remote_favor(content_to_check):
+        raise HTTPException(status_code=400, detail=REMOTE_FAVOR_MESSAGE)
+
     granelli_cost = max(1, int(favor_data.duration_hours * GRANELLI_PER_HOUR))
     
     # ========================
@@ -154,6 +160,9 @@ async def update_favor(favor_id: str, update: FavorUpdate, current_user: User = 
             status_code=400,
             detail=f"Contenuto non consentito: {moderation_result['reason']}. Modifica il testo e riprova.",
         )
+
+    if contains_remote_favor(" ".join(values.get(field, "") for field in ("title", "description"))):
+        raise HTTPException(status_code=400, detail=REMOTE_FAVOR_MESSAGE)
 
     if "duration_hours" in changes:
         duration = changes["duration_hours"]
@@ -379,7 +388,7 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
 
     await trust.ensure_not_on_hold(current_user.user_id)
     if not favor.is_emergency:
-        await trust.ensure_new_user_open_slot(current_user.user_id)
+        await trust.ensure_new_user_can_accept(current_user.user_id)
     await trust.ensure_pair_not_overused(current_user.user_id, favor.creator_id)
 
     # Atomic check-and-set: filter su status="active" previene double-accept concorrente
@@ -443,21 +452,29 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
             )
     
     # ========================
-    # PROXIMITY CHECK (100m) - Geofencing
+    # PROXIMITY CHECK (30 m + tolleranza del GPS) - Geofencing
     # ========================
+    distance_m = None
+    has_place = favor.exact_latitude is not None and favor.exact_longitude is not None
+    if PROXIMITY_REQUIRED and has_place and (data.latitude is None or data.longitude is None):
+        raise HTTPException(
+            status_code=400,
+            detail="Per confermare serve la tua posizione: i favori si fanno di persona, devi essere sul posto.",
+        )
     if data.latitude is not None and data.longitude is not None:
-        # Get the other user's last known location from the favor
+        # Senza posizione (permesso negato, versioni vecchie dell'app) la conferma passa come prima
         if favor.exact_latitude is not None and favor.exact_longitude is not None:
             distance_km = calculate_distance(
                 data.latitude, data.longitude,
                 favor.exact_latitude, favor.exact_longitude
             )
             distance_m = distance_km * 1000  # Convert km to meters
-            
-            if distance_m > MAX_EXCHANGE_DISTANCE_METERS:
+            tolerance = min(max(data.accuracy_meters or 0, 0), MAX_GPS_TOLERANCE_METERS)
+
+            if distance_m > MAX_EXCHANGE_DISTANCE_METERS + tolerance:
                 raise HTTPException(
-                    status_code=400, 
-                    detail=f"Siete troppo lontani per confermare lo scambio ({int(distance_m)}m). Avvicinatevi entro {MAX_EXCHANGE_DISTANCE_METERS}m."
+                    status_code=400,
+                    detail=f"Siete troppo lontani per confermare lo scambio ({int(distance_m)} m). Avvicinatevi entro {MAX_EXCHANGE_DISTANCE_METERS} m."
                 )
     
     helper_id, _ = await settle_favor(favor)
@@ -478,9 +495,10 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
         accepted_by=favor.accepted_by,
         duration_hours=favor.duration_hours,
         granelli_cost=favor.granelli_cost,
-        latitude=data.latitude,
-        longitude=data.longitude,
-        qr_code=data.qr_code if hasattr(data, 'qr_code') else None
+        latitude=None,  # la posizione non si conserva: resta solo la distanza
+        longitude=None,
+        qr_code=data.qr_code if hasattr(data, 'qr_code') else None,
+        distance_m=distance_m,
     )
     
     # Handle referral bonus
