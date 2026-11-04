@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
   },
   filterCountActive: { backgroundColor: colors.textPrimary },
   filterCountText: { color: colors.textPrimary, fontSize: 11, fontWeight: '800' },
-  filterCountTextActive: { color: colors.accentDark },
+  filterCountTextActive: { color: colors.background },
   loader: { marginTop: 48 },
   list: { width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: 16, paddingBottom: 24, gap: 10 },
   row: {

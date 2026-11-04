@@ -74,6 +74,13 @@ export default function LoginScreen() {
     logger.debug('Google Login - Platform:', Platform.OS, 'Redirect URL:', redirectUrl);
     const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
     
+    // Sul web si accede nella stessa scheda (niente finestra a parte): Google rimanda qui con l'esito.
+    if (Platform.OS === 'web') {
+      setIsLoading(true);
+      window.location.assign(authUrl);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);

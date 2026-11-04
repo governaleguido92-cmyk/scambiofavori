@@ -69,7 +69,7 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
 
               <View style={styles.donateInputContainer}>
                 <TouchableOpacity style={styles.donateAdjust} onPress={() => change(-1)} accessibilityRole="button" accessibilityLabel={tt('Meno')}>
-                  <Ionicons name="remove" size={24} color="#fff" />
+                  <Ionicons name="remove" size={24} color="#0C0E09" />
                 </TouchableOpacity>
                 <TextInput
                   style={styles.donateInput}
@@ -81,7 +81,7 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
                   accessibilityLabel={tt('Quanti Granelli donare')}
                 />
                 <TouchableOpacity style={styles.donateAdjust} onPress={() => change(1)} accessibilityRole="button" accessibilityLabel={tt('Più')}>
-                  <Ionicons name="add" size={24} color="#fff" />
+                  <Ionicons name="add" size={24} color="#0C0E09" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.donateCreditsLabel}>{granelliWord(amount)}</Text>
@@ -99,10 +99,10 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
               accessibilityRole="button"
             >
               {donating ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color="#0C0E09" />
               ) : (
                 <>
-                  <Ionicons name="heart" size={20} color="#fff" />
+                  <Ionicons name="heart" size={20} color="#0C0E09" />
                   <Text style={styles.modalConfirmText}>{tt('Dona')}</Text>
                 </>
               )}

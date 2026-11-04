@@ -347,7 +347,7 @@ export default function HomeScreen() {
         style={styles.emergencyButton}
         onPress={() => router.push('/emergencies' as any)}
       >
-        <Ionicons name="alert-circle" size={24} color="#fff" />
+        <Ionicons name="alert-circle" size={24} color="#0C0E09" />
         <Text style={styles.emergencyButtonText}>{tt('Urgenze')}</Text>
       </TouchableOpacity>
 

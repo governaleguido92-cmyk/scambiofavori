@@ -167,10 +167,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               data-testid="submit-report-button"
             >
               {submitting ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color="#0C0E09" />
               ) : (
                 <>
-                  <Ionicons name="send" size={16} color="#fff" />
+                  <Ionicons name="send" size={16} color="#0C0E09" />
                   <Text style={styles.submitButtonText}>{tt('Invia Segnalazione')}</Text>
                 </>
               )}
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: '#fff',
+    color: '#0C0E09',
     fontWeight: '600',
   },
 });

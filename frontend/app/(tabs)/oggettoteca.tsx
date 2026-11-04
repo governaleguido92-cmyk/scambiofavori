@@ -287,7 +287,7 @@ export default function OggettotecaScreen() {
             style={styles.borrowButton}
             onPress={() => handleBorrow(item.object_id, item.deposit_granelli)}
           >
-            <Ionicons name="hand-left" size={20} color="#fff" />
+            <Ionicons name="hand-left" size={20} color="#0C0E09" />
             <Text style={styles.borrowButtonText}>{tt('Prendi in Prestito')}</Text>
           </TouchableOpacity>
         )}
@@ -297,7 +297,7 @@ export default function OggettotecaScreen() {
             style={styles.returnButton}
             onPress={() => handleReturn(item.object_id)}
           >
-            <Ionicons name="return-down-back" size={20} color="#fff" />
+            <Ionicons name="return-down-back" size={20} color="#0C0E09" />
             <Text style={styles.returnButtonText}>{tt('Restituisci')}</Text>
           </TouchableOpacity>
         )}
@@ -316,7 +316,7 @@ export default function OggettotecaScreen() {
           style={styles.addButton}
           onPress={() => setShowAddModal(true)}
         >
-          <Ionicons name="add" size={24} color="#fff" />
+          <Ionicons name="add" size={24} color="#0C0E09" />
         </TouchableOpacity>
       </View>
 
@@ -481,7 +481,7 @@ export default function OggettotecaScreen() {
                     deposit_soli: String(Math.max(1, parseInt(newObject.deposit_soli) - 1)) 
                   })}
                 >
-                  <Ionicons name="remove" size={20} color="#fff" />
+                  <Ionicons name="remove" size={20} color="#0C0E09" />
                 </TouchableOpacity>
                 <View style={styles.depositDisplay}>
                   <GranelloIcon size={18} />
@@ -494,7 +494,7 @@ export default function OggettotecaScreen() {
                     deposit_soli: String(parseInt(newObject.deposit_soli) + 1) 
                   })}
                 >
-                  <Ionicons name="add" size={20} color="#fff" />
+                  <Ionicons name="add" size={20} color="#0C0E09" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.depositHint}>{tt('Il deposito garantisce la cura dell\'oggetto')}</Text>
@@ -513,10 +513,10 @@ export default function OggettotecaScreen() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color="#0C0E09" />
                 ) : (
                   <>
-                    <Ionicons name="add-circle" size={20} color="#fff" />
+                    <Ionicons name="add-circle" size={20} color="#0C0E09" />
                     <Text style={styles.modalConfirmText}>{tt('Aggiungi')}</Text>
                   </>
                 )}

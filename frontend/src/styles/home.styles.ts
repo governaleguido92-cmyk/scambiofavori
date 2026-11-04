@@ -53,7 +53,7 @@ export const styles = StyleSheet.create({
     borderColor: colors.background,
   },
   notificationBadgeText: {
-    color: '#fff',
+    color: colors.background,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -218,7 +218,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#98AA4A',
   },
   typeButtonActiveRequest: {
-    backgroundColor: colors.accentDark,
+    backgroundColor: colors.accent,
   },
   typeButtonText: {
     color: colors.textSecondary,
@@ -226,7 +226,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   typeButtonTextActive: {
-    color: colors.textPrimary,
+    color: colors.background,
     fontWeight: '700',
   },
   categoriesContainer: {
@@ -260,7 +260,7 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
   categoryChipTextActive: {
-    color: colors.textPrimary,
+    color: colors.background,
     fontWeight: '700',
   },
   loadingContainer: {
@@ -482,7 +482,7 @@ export const styles = StyleSheet.create({
     elevation: 6,
   },
   emergencyButtonText: {
-    color: '#fff',
+    color: colors.background,
     fontSize: 14,
     fontWeight: '700',
   },

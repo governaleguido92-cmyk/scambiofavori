@@ -525,7 +525,7 @@ export default function CreateFavorScreen() {
                 style={styles.durationButton}
                 onPress={() => setDurationHours(String(Math.max(MIN_HOURS, currentHours - 1)))}
               >
-                <Ionicons name="remove" size={24} color="#fff" />
+                <Ionicons name="remove" size={24} color="#0C0E09" />
               </TouchableOpacity>
               <View style={styles.durationDisplay}>
                 <TextInput
@@ -542,7 +542,7 @@ export default function CreateFavorScreen() {
                 style={styles.durationButton}
                 onPress={() => setDurationHours(String(currentHours + 1))}
               >
-                <Ionicons name="add" size={24} color="#fff" />
+                <Ionicons name="add" size={24} color="#0C0E09" />
               </TouchableOpacity>
             </View>
             <View style={styles.parityInfo}>

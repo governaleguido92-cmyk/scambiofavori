@@ -232,7 +232,7 @@ export default function RecoveryScreen() {
                 <TextInput style={styles.input} placeholder={tt('Email')} placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" data-testid="username-email-input" />
               </View>
               <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleRecoverUsername} disabled={isLoading} data-testid="send-username-code-btn">
-                {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{tt('Invia Codice')}</Text>}
+                {isLoading ? <ActivityIndicator color="#0C0E09" /> : <Text style={styles.primaryButtonText}>{tt('Invia Codice')}</Text>}
               </TouchableOpacity>
             </>
           ) : (
@@ -241,7 +241,7 @@ export default function RecoveryScreen() {
                 <TextInput style={styles.codeInput} placeholder="000000" placeholderTextColor={colors.textMuted} value={unCode} onChangeText={setUnCode} keyboardType="number-pad" maxLength={6} textAlign="center" data-testid="username-code-input" />
               </View>
               <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleVerifyUsername} disabled={isLoading} data-testid="verify-username-btn">
-                {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>{tt('Verifica')}</Text>}
+                {isLoading ? <ActivityIndicator color="#0C0E09" /> : <Text style={styles.primaryButtonText}>{tt('Verifica')}</Text>}
               </TouchableOpacity>
               <TouchableOpacity onPress={handleRecoverUsername} disabled={isLoading} style={styles.resendLink}>
                 <Text style={styles.resendText}>{tt('Non hai ricevuto il codice?')}{' '}<Text style={styles.resendBold}>{tt('Reinvia')}</Text></Text>
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   codeInputWrapper: { marginBottom: 14 },
   codeInput: { backgroundColor: colors.backgroundLight, borderRadius: 12, height: 60, color: colors.granelli, fontSize: 28, fontWeight: 'bold', letterSpacing: 10, borderWidth: 2, borderColor: colors.accent, paddingHorizontal: 16, textAlign: 'center' },
   primaryButton: { backgroundColor: colors.accent, borderRadius: 12, height: 52, justifyContent: 'center', alignItems: 'center', marginTop: 4 },
-  primaryButtonText: { color: colors.textPrimary, fontSize: 16, fontWeight: 'bold' },
+  primaryButtonText: { color: colors.background, fontSize: 16, fontWeight: 'bold' },
   resendLink: { alignItems: 'center', marginTop: 16 },
   resendText: { color: colors.textMuted, fontSize: 14 },
   resendBold: { color: colors.accent, fontWeight: '600' },
