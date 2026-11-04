@@ -431,6 +431,8 @@ class UserCreate(BaseModel):
     name: str
     password: str
     referral_code: Optional[str] = None
+    # AAAA-MM-GG. Opzionale solo perché le versioni vecchie dell'app non la inviano: l'app attuale la chiede sempre.
+    birth_date: Optional[str] = None
 
     @field_validator("email")
     @classmethod

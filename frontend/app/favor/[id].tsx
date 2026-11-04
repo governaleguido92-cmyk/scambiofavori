@@ -24,7 +24,7 @@ import { PublicTrustInfo } from '../../src/components/profile/PublicTrustInfo';
 import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/favorDetail.styles';
 import { logger } from '../../src/utils/logger';
-import { notify } from '../../src/utils/notify';
+import { notify, showRefusal } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 import { goBackOrHome } from '../../src/utils/navigation';
 
@@ -339,7 +339,7 @@ export default function FavorDetailScreen() {
               router.replace(`/chat/${favor.favor_id}` as any);
             } catch (error: any) {
               if (!openPhoneVerificationIfNeeded(error, router)) {
-                notify(t('common.error'), error.message || t('favor.errorAccept'));
+                showRefusal(t('common.error'), error.message || t('favor.errorAccept'), tt('Ho capito'));
               }
               setActionLoading(false);
             }

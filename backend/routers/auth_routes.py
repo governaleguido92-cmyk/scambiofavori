@@ -1,6 +1,7 @@
 """HTTP routes: auth."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+import age
 import sms
 
 api_router = APIRouter(prefix="/api")
@@ -14,6 +15,12 @@ api_router = APIRouter(prefix="/api")
 async def register(request: Request, user_data: UserCreate):
     """Register a new user with email verification via Resend"""
     ensure_text_allowed(user_data.name)
+    birth_year = None
+    if user_data.birth_date is not None:
+        try:
+            birth_year = age.check_adult(user_data.birth_date)
+        except ValueError as error:
+            raise HTTPException(status_code=400, detail=str(error))
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email già registrata")
@@ -58,6 +65,7 @@ async def register(request: Request, user_data: UserCreate):
         "is_vulnerable": False,
         "identity_verified": False,
         "email_verified": False,
+        "birth_year": birth_year,  # della data di nascita si conserva solo l'anno
         "verification_code": verification_code,
         "verification_code_expires": datetime.now(timezone.utc) + timedelta(hours=1),
         "community_score": 0,

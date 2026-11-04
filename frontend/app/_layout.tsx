@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useGlobalSearchParams, usePathname } from 'expo-router';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -21,6 +21,10 @@ function RootLayoutNav() {
   // useSuspense off: i18n is initialised in the effect below, so it is not ready on first render.
   const { i18n: i18nInstance } = useTranslation(undefined, { useSuspense: false });
   const [i18nReady, setI18nReady] = useState(false);
+  // Subito dopo l'iscrizione il telefono si verifica per primo: termini e slide aspettano la fine di quel passo
+  const pathname = usePathname();
+  const { from } = useGlobalSearchParams<{ from?: string }>();
+  const inRegistrationPhoneStep = pathname === '/verify-phone' && from === 'register';
 
   useEffect(() => {
     initI18n().then(() => setI18nReady(true));
@@ -61,7 +65,7 @@ function RootLayoutNav() {
       {/* Legal Consent Modal - shows after login/register if not accepted */}
       {user && (
         <LegalConsentModal
-          visible={showLegalModal}
+          visible={showLegalModal && !inRegistrationPhoneStep}
           onAccept={acceptLegal}
         />
       )}
@@ -69,7 +73,7 @@ function RootLayoutNav() {
       {/* Onboarding Slides - shows after accepting legal terms for new users */}
       {user && (
         <OnboardingSlides
-          visible={showOnboarding}
+          visible={showOnboarding && !inRegistrationPhoneStep}
           onComplete={completeOnboarding}
         />
       )}

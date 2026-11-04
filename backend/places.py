@@ -444,3 +444,23 @@ async def search_by_name(
     result = parse_photon(features, lat, lon, NAME_SEARCH_RADIUS_M, limit=PARSED_LIMIT)
     await cache.set(key, result)
     return result
+
+
+async def search_with_fallback(lat: float, lon: float, category: str) -> list[dict[str, Any]]:
+    """Cerca per categoria con Overpass; se il servizio non risponde riprova per nome con Photon.
+
+    Overpass è un servizio pubblico spesso sovraccarico: il ripiego trova comunque le farmacie, i bar... vicini.
+    Se anche il ripiego non trova nulla si segnala l'errore originale.
+    """
+    try:
+        return await search(lat, lon, category)
+    except PlacesUnavailable as original:
+        word = CATEGORIES[category]["words"][0]
+        try:
+            fallback = await search_by_name(lat, lon, word)
+        except PlacesUnavailable:
+            raise original from None
+        matching = [place for place in fallback if place.get("category") == category]
+        if not matching:
+            raise original from None
+        return matching

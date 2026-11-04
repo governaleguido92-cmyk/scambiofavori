@@ -538,7 +538,12 @@ async def test_list_still_being_prepared_says_to_retry_shortly(client, app_db, m
     async def pending(*args, **kwargs):
         raise places.PlacesPending("in preparazione")
 
+    async def photon_down(*args):
+        raise places.PlacesUnavailable("down")
+
     monkeypatch.setattr(places, "search", pending)
+    monkeypatch.setattr(places, "fetch_photon_features", photon_down)
+    monkeypatch.setattr(places, "name_cache", places.PlacesCache(ttl_seconds=60))
 
     response = await client.get("/api/favors/favor_1/places", params={"category": "bar"}, headers=auth("creator"))
 
@@ -589,3 +594,38 @@ async def test_publishing_still_works_when_preparation_fails(client, app_db, mon
     await asyncio.sleep(0.05)
 
     assert response.status_code == 200
+
+
+async def test_category_falls_back_to_name_search_when_overpass_is_down(client, app_db, fake_osm, monkeypatch):
+    await seed(app_db)
+
+    async def overpass_down(lat, lon, radius_m):
+        raise places.PlacesUnavailable("502")
+
+    async def photon(lat, lon, text):
+        return [
+            photon_feature(20, "Farmacia Alberti", 37.9320, 12.3310, value="pharmacy"),
+            photon_feature(21, "Bar Roma Nuovo", 37.9322, 12.3310),
+        ]
+
+    monkeypatch.setattr(places, "fetch_overpass_elements", overpass_down)
+    monkeypatch.setattr(places, "fetch_photon_features", photon)
+
+    response = await client.get("/api/favors/favor_1/places", params={"q": "farmacia"}, headers=auth("creator"))
+
+    assert response.status_code == 200
+    assert [p["name"] for p in response.json()["places"]] == ["Farmacia Alberti"]
+
+
+async def test_category_still_fails_clearly_when_both_services_are_down(client, app_db, fake_osm, monkeypatch):
+    await seed(app_db)
+
+    async def down(*args):
+        raise places.PlacesUnavailable("down")
+
+    monkeypatch.setattr(places, "fetch_overpass_elements", down)
+    monkeypatch.setattr(places, "fetch_photon_features", down)
+
+    response = await client.get("/api/favors/favor_1/places", params={"category": "pharmacy"}, headers=auth("creator"))
+
+    assert response.status_code == 503
