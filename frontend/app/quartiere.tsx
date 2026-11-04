@@ -330,5 +330,5 @@ const styles = StyleSheet.create({
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: 10, borderTopWidth: 1, borderTopColor: colors.backgroundLight },
   input: { flex: 1, maxHeight: 110, minHeight: 42, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: colors.backgroundCard, color: colors.textPrimary, fontSize: 15 },
   send: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
-  sendDisabled: { opacity: 0.45 },
+  sendDisabled: { opacity: 0.85 },
 });

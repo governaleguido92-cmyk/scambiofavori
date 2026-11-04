@@ -252,6 +252,6 @@ const styles = StyleSheet.create({
   cancel: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.backgroundCard },
   cancelText: { color: colors.textPrimary, fontWeight: '700' },
   publish: { flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accent },
-  publishDisabled: { opacity: 0.45 },
+  publishDisabled: { opacity: 0.85 },
   publishText: { color: colors.background, fontWeight: '800' },
 });
