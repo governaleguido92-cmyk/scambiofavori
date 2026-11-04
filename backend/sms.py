@@ -38,6 +38,15 @@ def verify_enabled() -> bool:
     return all(os.environ.get(n) for n in ("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_VERIFY_SERVICE_SID"))
 
 
+def _twilio_error(response: httpx.Response) -> tuple:
+    """Codice e messaggio d'errore di Twilio (non contengono segreti né il numero), per capire perché un invio fallisce."""
+    try:
+        body = response.json()
+        return body.get("code"), str(body.get("message", ""))[:200]
+    except ValueError:
+        return None, ""
+
+
 async def _verify_call(endpoint: str, data: dict) -> Optional[dict]:
     account_sid = os.environ["TWILIO_ACCOUNT_SID"]
     service_sid = os.environ["TWILIO_VERIFY_SERVICE_SID"]
@@ -52,7 +61,8 @@ async def _verify_call(endpoint: str, data: dict) -> Optional[dict]:
         logger.exception("Twilio Verify: network error on %s", endpoint)
         return None
     if response.status_code not in (200, 201):
-        logger.error("Twilio Verify %s answered %s", endpoint, response.status_code)
+        code, message = _twilio_error(response)
+        logger.error("Twilio Verify %s answered %s (codice %s): %s", endpoint, response.status_code, code, message)
         return None
     return response.json()
 

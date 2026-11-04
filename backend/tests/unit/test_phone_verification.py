@@ -348,3 +348,50 @@ async def test_verify_without_phone_in_body_is_refused(client, app_db, sent, ver
     response = await client.post("/api/auth/phone/verify", json={"code": "123456"}, headers=auth("me"))
 
     assert response.status_code == 400
+
+
+# ---------- invio non riuscito ----------
+
+async def test_failed_sms_is_an_error_not_a_fake_success(client, app_db, monkeypatch):
+    await app_db.users.insert_one(make_user("me"))
+
+    async def failing_send(to: str, body: str) -> bool:
+        return False
+
+    monkeypatch.setattr(sms, "send_sms", failing_send)
+
+    response = await _request(client)
+
+    assert response.status_code == 503
+    assert "sms" in response.json()["detail"].lower()
+
+
+async def test_failed_twilio_verify_start_is_an_error(client, app_db, monkeypatch):
+    await app_db.users.insert_one(make_user("me"))
+
+    async def failing_start(to: str) -> bool:
+        return False
+
+    monkeypatch.setattr(sms, "verify_enabled", lambda: True)
+    monkeypatch.setattr(sms, "verify_start", failing_start)
+
+    response = await _request(client)
+
+    assert response.status_code == 503
+
+
+async def test_failed_send_does_not_use_up_the_wait_or_the_hourly_limit(client, app_db, monkeypatch):
+    await app_db.users.insert_one(make_user("me"))
+    results = iter([False, True])
+
+    async def flaky_send(to: str, body: str) -> bool:
+        return next(results)
+
+    monkeypatch.setattr(sms, "send_sms", flaky_send)
+
+    first = await _request(client)
+    second = await _request(client)  # subito dopo: non deve dire "aspetta un minuto"
+
+    assert first.status_code == 503
+    assert second.status_code == 200
+    assert await app_db.phone_requests.count_documents({"user_id": "me"}) == 1
