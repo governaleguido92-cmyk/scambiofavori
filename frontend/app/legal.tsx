@@ -119,6 +119,7 @@ export default function LegalScreen() {
               • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione del dispositivo (solo su consenso); chi crea un favore lo vede nel punto esatto, gli altri solo in una posizione approssimata{'\n'}
               • <Text style={styles.bold}>Profilo:</Text> foto profilo (se la carichi), competenze, punteggi e badge{'\n'}
               • <Text style={styles.bold}>Dati di utilizzo:</Text> favori creati, messaggi, notifiche, recensioni, elenco degli utenti che blocchi e quando hai aperto l&apos;ultima volta ogni chat (per i messaggi non letti){'\n'}
+              • <Text style={styles.bold}>Fiducia e sicurezza:</Text> il tuo livello di fiducia è calcolato da dati che abbiamo già; conserviamo le garanzie che dai o ricevi (gli altri vedono solo il numero), la percentuale di favori che annulli dopo l&apos;accettazione e le segnalazioni di sicurezza (chi segnala, chi è segnalato, favore, data, testo facoltativo). Se più persone segnalano lo stesso utente, l&apos;account può essere messo in revisione. I messaggi fermati dai filtri non vengono consegnati ma sono conservati con il testo originale per la moderazione{'\n'}
               • <Text style={styles.bold}>Telefono:</Text> se verifichi il numero (prima di pubblicare o accettare un favore) lo usiamo solo per inviarti un SMS con un codice; non lo conserviamo, teniamo solo un&apos;impronta cifrata e le ultime 4 cifre. Gli altri vedono soltanto il segno &quot;Telefono verificato&quot;{'\n'}
               • <Text style={styles.bold}>Notifiche push:</Text> un identificativo del dispositivo, se le attivi{'\n'}
               • <Text style={styles.bold}>Pagamenti:</Text> il contributo opzionale è gestito da Stripe; non conserviamo il numero della carta{'\n'}
@@ -145,6 +146,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               I tuoi dati vengono conservati:{'\n'}
               • Per tutta la durata dell&apos;account{'\n'}
+              • Segnalazioni di sicurezza, garanzie e messaggi fermati dai filtri: finché mantieni l&apos;account o finché servono a verificare un abuso{'\n'}
               • Dopo la cancellazione dell&apos;account i dati personali vengono eliminati subito, come descritto qui sotto{'\n'}
               • I dati dei pagamenti per il periodo richiesto dalla normativa fiscale e contabile
             </Text>
@@ -171,6 +173,7 @@ export default function LegalScreen() {
               • La foto profilo{'\n'}
               • Messaggi inviati e notifiche{'\n'}
               • Impronta del telefono, richieste di codici SMS, stato di lettura delle chat ed elenco dei blocchi{'\n'}
+              • Garanzie date e ricevute e segnalazioni fatte nei tuoi confronti (quelle che hai inviato restano, senza collegamento con te){'\n'}
               • Granelli accumulati{'\n\n'}
               I favori che hai creato vengono eliminati insieme a tutti i messaggi scambiati in quelle chat, 
               alle recensioni e ai ringraziamenti collegati. Le recensioni che hai scritto restano in forma 
@@ -235,7 +238,7 @@ export default function LegalScreen() {
         {/* Last Update */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Ultimo aggiornamento: Ottobre 2026
+            Ultimo aggiornamento: 4 novembre 2026
           </Text>
           <Text style={styles.footerText}>
             Versione: 1.1

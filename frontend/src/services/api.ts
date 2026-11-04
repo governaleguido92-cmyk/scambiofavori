@@ -104,6 +104,22 @@ export interface ObjectCategory {
   icon: string;
 }
 
+export interface TrustStatus {
+  trust_level: number;
+  is_new_user: boolean;
+  favors_to_next_level: number | null;
+  max_open_favors: number | null;
+  max_hours: number | null;
+  vouch_count: number;
+  safety_hold: boolean;
+}
+
+export interface Reputation {
+  completed: number;
+  late_cancellations: number;
+  cancel_rate: number;
+}
+
 export interface Favor {
   favor_id: string;
   creator_id: string;
@@ -853,6 +869,39 @@ export const api = {
   // Profilo pubblico di un utente (serve l'accesso)
   getUserPublicProfile: async (userId: string, token: string): Promise<any> => {
     const response = await fetch(`${API_URL}/api/users/${userId}/public`, {
+      headers: getHeaders(token),
+    });
+    return handleResponse(response);
+  },
+
+  // Fiducia e sicurezza
+  getMyTrust: async (token: string): Promise<TrustStatus> => {
+    const response = await fetch(`${API_URL}/api/users/me/trust`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  getReputation: async (userId: string, token: string): Promise<Reputation> => {
+    const response = await fetch(`${API_URL}/api/users/${userId}/reputation`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  vouchForUser: async (userId: string, token: string): Promise<{ message: string; vouch_count: number }> => {
+    const response = await fetch(`${API_URL}/api/users/${userId}/vouch`, { method: 'POST', headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  sendSafetyAlert: async (favorId: string, token: string): Promise<{ message: string; emergency_number: string }> => {
+    const response = await fetch(`${API_URL}/api/favors/${favorId}/safety-alert`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
+  remindConfirmation: async (favorId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/favors/${favorId}/remind-confirmation`, {
+      method: 'POST',
       headers: getHeaders(token),
     });
     return handleResponse(response);

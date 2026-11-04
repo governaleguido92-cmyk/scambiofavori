@@ -1,6 +1,7 @@
 """HTTP routes: users."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+import trust
 from storage import delete_profile_picture, save_profile_picture
 
 api_router = APIRouter(prefix="/api")
@@ -195,7 +196,9 @@ async def get_user_public_profile(user_id: str, current_user: User = Depends(get
         "total_favors_received": completed_received,
         "reviews_count": reviews_count,
         "created_at": user_doc.get("created_at"),
-        "is_supporter": user_doc.get("is_supporter", False)
+        "is_supporter": user_doc.get("is_supporter", False),
+        "vouch_count": await trust.vouch_count(user_id),
+        "trust_level": trust.trust_level(user_doc),
     }
 
 @api_router.get("/users/{user_id}/is-blocked")
@@ -417,6 +420,12 @@ async def delete_account(
         }
     )
     
+    # 4b. Garanzie date e ricevute, segnalazioni su di lui; quelle fatte da lui restano anonime
+    await db.vouches.delete_many({"$or": [{"voucher_id": user_id}, {"vouchee_id": user_id}]})
+    await db.general_reports.delete_many({"report_type": "user", "target_id": user_id})
+    await db.general_reports.update_many({"reporter_id": user_id}, {"$set": {"reporter_id": "deleted_user"}})
+    await db.favors.update_many({"cancelled_by": user_id}, {"$set": {"cancelled_by": "deleted_user"}})
+
     # 5. Anonimizza recensioni
     await db.reviews.update_many(
         {"reviewer_id": user_id},

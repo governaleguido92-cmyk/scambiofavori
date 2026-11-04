@@ -20,6 +20,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Review, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { QRScanner, useQRPermissions, isCameraAvailable } from '../../src/components/QRScanner';
 import { ReportModal } from '../../src/components/ReportModal';
+import { PublicTrustInfo } from '../../src/components/profile/PublicTrustInfo';
 import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/favorDetail.styles';
 import { logger } from '../../src/utils/logger';
@@ -1030,6 +1031,16 @@ export default function FavorDetailScreen() {
                     <Text style={styles.profileStatLabel}>{tt('Recensioni')}</Text>
                   </View>
                 </View>
+
+                {token && selectedUserId && (
+                  <PublicTrustInfo
+                    userId={selectedUserId}
+                    currentUserId={user?.user_id}
+                    token={token}
+                    trustLevel={userProfile.trust_level ?? 1}
+                    vouchCount={userProfile.vouch_count ?? 0}
+                  />
+                )}
 
                 {/* Ratings */}
                 {(userProfile.average_rating > 0 || userProfile.average_kindness > 0) && (
