@@ -63,34 +63,35 @@ async def test_new_user_cannot_create_expensive_favor(client, app_db):
     assert "nuovi" in response.json()["detail"].lower()
 
 
-async def test_new_user_cannot_have_more_than_two_open_favors(client, app_db):
+async def test_new_user_cannot_have_more_than_three_open_favors(client, app_db):
     await app_db.users.insert_one(make_user("me"))
-    await app_db.favors.insert_many([_active("f1", "me"), _active("f2", "me")])
+    await app_db.favors.insert_many([_active("f1", "me"), _active("f2", "me"), _active("f3", "me")])
     response = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
     assert response.status_code == 403
 
 
 async def test_experienced_user_has_no_new_user_limits(client, app_db):
     await app_db.users.insert_one(make_user("me", granelli=20, total_favors_given=5))
-    await app_db.favors.insert_many([_active("f1", "me"), _active("f2", "me"), _active("f3", "me")])
+    await app_db.favors.insert_many([_active(f"f{i}", "me") for i in range(1, 5)])
     response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 4.0}, headers=auth("me"))
     assert response.status_code == 200, response.text
 
 
 async def test_emergency_is_exempt_from_new_user_limits(client, app_db):
     await app_db.users.insert_one(make_user("me", granelli=20))
-    await app_db.favors.insert_many([_active("f1", "me"), _active("f2", "me")])
+    await app_db.favors.insert_many([_active(f"f{i}", "me") for i in range(1, 4)])
     response = await client.post(
         "/api/favors", json={**FAVOR_BODY, "duration_hours": 4.0, "is_emergency": True}, headers=auth("me")
     )
     assert response.status_code == 200, response.text
 
 
-async def test_new_user_cannot_accept_third_open_favor(client, app_db):
+async def test_new_user_cannot_accept_fourth_open_favor(client, app_db):
     await app_db.users.insert_many([make_user("me"), make_user("other")])
     await app_db.favors.insert_many([
         make_favor("a1", creator_id="other", creator_name="other", accepted_by="me", status="accepted"),
         make_favor("a2", creator_id="other", creator_name="other", accepted_by="me", status="accepted"),
+        make_favor("a3", creator_id="other", creator_name="other", accepted_by="me", status="accepted"),
         _active("target", "other"),
     ])
     response = await client.post("/api/favors/accept", json={"favor_id": "target"}, headers=auth("me"))
@@ -292,4 +293,4 @@ async def test_my_trust_endpoint_shows_level_and_limits(client, app_db):
     assert body["trust_level"] == 1
     assert body["is_new_user"] is True
     assert body["favors_to_next_level"] == 3
-    assert body["max_open_favors"] == 2
+    assert body["max_open_favors"] == 3

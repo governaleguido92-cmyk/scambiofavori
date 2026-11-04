@@ -1028,6 +1028,14 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
             "data_types": personal_data_check['types']
         })
     
+    # 5. Contatto fuori dall'app: il messaggio passa, chi lo riceve vede un avviso accanto al testo
+    is_off_app_contact = contains_off_app_contact(content)
+    if is_off_app_contact:
+        response_warnings.append({
+            "type": "off_app_contact",
+            "message": "Hai proposto di continuare fuori dall'app: per sicurezza di tutti è meglio restare in chat.",
+        })
+
     # Save valid message
     message_id = f"msg_{uuid.uuid4().hex[:12]}"
     message_doc = {
@@ -1040,6 +1048,7 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
         "is_system": False,
         "blocked": False,
         "has_personal_data": personal_data_check['has_personal_data'],
+        "off_app_contact": is_off_app_contact,
         "created_at": datetime.now(timezone.utc)
     }
     

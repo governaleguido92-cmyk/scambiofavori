@@ -381,6 +381,14 @@ export default function ChatScreen() {
               {item.content}
             </Text>
           )}
+          {!isMe && item.off_app_contact && (
+            <View style={styles.offAppNotice} data-testid="off-app-notice">
+              <Ionicons name="shield-half-outline" size={14} color={colors.warning} />
+              <Text style={styles.offAppNoticeText}>
+                {tt('Ti propone di continuare fuori dall\'app. Resta qui e non mandare soldi, codici o dati personali.')}
+              </Text>
+            </View>
+          )}
           {!meetingPoint && <Text style={styles.messageTime}>{messageTime}</Text>}
         </View>
       </View>
@@ -788,6 +796,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  offAppNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(248,120,40,0.35)' },
+  offAppNoticeText: { flex: 1, color: colors.warning, fontSize: 12, lineHeight: 16 },
   messageText: {
     color: colors.textPrimary,
     fontSize: 14,

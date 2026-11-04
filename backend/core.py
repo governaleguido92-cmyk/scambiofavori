@@ -189,6 +189,22 @@ def contains_scam_hint(text: str) -> bool:
     return any(re.search(pattern, text_lower) for pattern in SCAM_HINT_PATTERNS)
 
 
+# Inviti a continuare fuori dall'app: tipico dei truffatori, ma anche di chi vuole solo mettersi d'accordo.
+# Per questo il messaggio passa e chi lo riceve vede un avviso accanto al messaggio.
+OFF_APP_PATTERNS = [
+    r'\b(whats\s*app|watsapp|telegram|signal|instagram|messenger|facebook|skype)\b',
+    r'\b(scrivimi|contattami|chiamami|sentiamoci|parliamo)\b[^.!?\n]{0,30}\b(fuori|in privato|privat\w*)\b',
+    r'\bfuori\s+dall\W?\s*app\b',
+    r'\bin\s+privato\b',
+]
+
+
+def contains_off_app_contact(text: str) -> bool:
+    """True se il testo invita a continuare la conversazione fuori dall'app."""
+    text_lower = text.lower()
+    return any(re.search(pattern, text_lower) for pattern in OFF_APP_PATTERNS)
+
+
 def contains_offensive_language(text: str) -> bool:
     """True se il testo contiene insulti, odio e discriminazione, minacce o contenuti sessuali (vedi moderation.py)."""
     return not check_text(text).allowed
@@ -725,6 +741,7 @@ class Message(BaseModel):
     is_system: bool = False  # For system messages (blocked, etc.)
     blocked: bool = False  # If message was blocked by filter
     has_personal_data: bool = False  # If message contains phone/email
+    off_app_contact: bool = False  # Invita a continuare fuori dall'app: chi riceve vede un avviso
     created_at: datetime
 
 class AuthResponse(BaseModel):

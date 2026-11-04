@@ -34,6 +34,7 @@ export interface ChatMessage {
   content: string;
   is_system: boolean;
   blocked: boolean;
+  off_app_contact?: boolean;
   created_at: string;
 }
 
