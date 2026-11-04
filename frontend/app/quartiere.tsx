@@ -183,7 +183,10 @@ export default function NeighborhoodScreen() {
             <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <BrandLogo />
-          <Text style={styles.title}>{tt('Il nostro quartiere')}</Text>
+          <View style={styles.titleBlock}>
+            <Text style={styles.title} numberOfLines={1} accessibilityRole="header">{tt('Il quartiere parla')}</Text>
+            <Text style={styles.subtitle} numberOfLines={1}>{tt('Tutto quello che succede intorno a te')}</Text>
+          </View>
         </View>
 
         {weather && (
@@ -289,7 +292,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  title: { color: colors.textPrimary, fontSize: 20, fontWeight: '800', flex: 1 },
+  titleBlock: { flex: 1 },
+  title: { color: colors.textPrimary, fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
+  subtitle: { color: colors.textSecondary, fontSize: 12.5, marginTop: 1 },
   weatherCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 12, backgroundColor: colors.backgroundCard },
   weatherMain: { alignItems: 'center', minWidth: 74 },
   weatherTemp: { color: colors.textPrimary, fontSize: 26, fontWeight: '800' },
