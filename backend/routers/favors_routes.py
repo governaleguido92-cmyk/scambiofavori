@@ -13,7 +13,6 @@ api_router = APIRouter(prefix="/api")
 @api_router.post("/favors", response_model=Favor, response_model_exclude={"qr_code"})
 async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get_current_user)):
     """Create a new favor"""
-    require_verified_phone(current_user)
 
     if favor_data.type not in ["offer", "request"]:
         raise HTTPException(status_code=400, detail="Tipo deve essere 'offer' o 'request'")
@@ -363,7 +362,6 @@ async def get_favor(favor_id: str, current_user: User = Depends(get_current_user
 @api_router.post("/favors/accept", response_model=Favor, response_model_exclude={"qr_code"})
 async def accept_favor(data: FavorAccept, current_user: User = Depends(get_current_user)):
     """Accept a favor (reveals exact location)"""
-    require_verified_phone(current_user)
     favor_doc = await db.favors.find_one({"favor_id": data.favor_id}, {"_id": 0})
     if not favor_doc:
         raise HTTPException(status_code=404, detail="Favore non trovato")

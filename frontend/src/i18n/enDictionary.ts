@@ -719,7 +719,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Ora puoi pubblicare e accettare favori.': 'You can now publish and accept favors.',
   'Non devi fare altro.': 'There is nothing else to do.',
   'Non riesco a inviare il codice. Riprova.': 'I cannot send the code. Please try again.',
-  'Prima del tuo primo favore ti mandiamo un SMS con un codice. Il numero resta privato: gli altri vedono solo il segno "Telefono verificato".': 'Before your first favor we send you an SMS with a code. Your number stays private: others only see the "Phone verified" mark.',
+  'Ti mandiamo un SMS con un codice per confermare il tuo numero. Resta privato: gli altri vedono solo il segno "Telefono verificato".': 'We send you a text message with a code to confirm your number. It stays private: others only see the "Phone verified" mark.',
   'Ti abbiamo mandato un SMS con un codice di 6 cifre. Vale 10 minuti.': 'We sent you an SMS with a 6-digit code. It is valid for 10 minutes.',
   'Quando: ': 'When: ',
   'Dove: ': 'Where: ',

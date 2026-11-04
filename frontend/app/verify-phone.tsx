@@ -33,7 +33,7 @@ const RESEND_SECONDS = 60;
 
 type Step = 'phone' | 'code';
 
-/** Verifica del telefono: il numero, poi il codice di 6 cifre ricevuto via SMS (richiesto prima del primo favore). */
+/** Verifica del telefono: il numero, poi il codice di 6 cifre ricevuto via SMS (richiesto alla registrazione). */
 export default function VerifyPhoneScreen() {
   const { token, user, refreshUser } = useAuth();
   const router = useRouter();
@@ -143,7 +143,7 @@ export default function VerifyPhoneScreen() {
                 {step === 'phone'
                   ? isRegistration
                     ? tt('Verifichiamo il tuo numero con un SMS per tenere fuori account falsi e truffatori. Non lo conserviamo e gli altri non lo vedono: vedono solo il segno "Telefono verificato".')
-                    : tt('Prima del tuo primo favore ti mandiamo un SMS con un codice. Il numero resta privato: gli altri vedono solo il segno "Telefono verificato".')
+                    : tt('Ti mandiamo un SMS con un codice per confermare il tuo numero. Resta privato: gli altri vedono solo il segno "Telefono verificato".')
                   : tt('Ti abbiamo mandato un SMS con un codice di 6 cifre. Vale 10 minuti.')}
               </Text>
             </View>

@@ -205,18 +205,18 @@ def _favor_payload() -> dict:
     }
 
 
-async def test_creating_a_favor_needs_a_verified_phone_when_required(client, app_db, monkeypatch):
+async def test_creating_a_favor_never_asks_for_the_phone(client, app_db, monkeypatch):
+    """Il telefono si verifica solo alla registrazione: pubblicare un favore non lo chiede mai."""
     monkeypatch.setattr(core, "PHONE_VERIFICATION_REQUIRED", True)
     await app_db.users.insert_one(make_user("me"))
 
     response = await client.post("/api/favors", json=_favor_payload(), headers=auth("me"))
 
-    assert response.status_code == 403
-    assert response.headers.get("x-phone-required") == "true"
-    assert await app_db.favors.count_documents({}) == 0
+    assert response.status_code == 200
+    assert response.headers.get("x-phone-required") is None
 
 
-async def test_accepting_a_favor_needs_a_verified_phone_when_required(client, app_db, monkeypatch):
+async def test_accepting_a_favor_never_asks_for_the_phone(client, app_db, monkeypatch):
     monkeypatch.setattr(core, "PHONE_VERIFICATION_REQUIRED", True)
     await app_db.users.insert_many([make_user("me"), make_user("creator")])
     await app_db.favors.insert_one(
@@ -225,17 +225,8 @@ async def test_accepting_a_favor_needs_a_verified_phone_when_required(client, ap
 
     response = await client.post("/api/favors/accept", json={"favor_id": "f1"}, headers=auth("me"))
 
-    assert response.status_code == 403
-    assert response.headers.get("x-phone-required") == "true"
-
-
-async def test_verified_user_can_create_favors_when_required(client, app_db, monkeypatch):
-    monkeypatch.setattr(core, "PHONE_VERIFICATION_REQUIRED", True)
-    await app_db.users.insert_one(make_user("me", phone_verified=True))
-
-    response = await client.post("/api/favors", json=_favor_payload(), headers=auth("me"))
-
-    assert response.status_code == 200
+    assert response.headers.get("x-phone-required") is None
+    assert response.status_code != 403 or "telefono" not in response.text.lower()
 
 
 async def test_nothing_changes_while_the_requirement_is_off(client, app_db):

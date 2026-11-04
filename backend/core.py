@@ -1347,7 +1347,8 @@ async def get_blocked_user_ids(user_id: str) -> set:
 # ========================
 # TELEFONO VERIFICATO (SMS)
 # ========================
-# Spento finché non è configurato un servizio SMS: poi PHONE_VERIFICATION_REQUIRED=true lo rende obbligatorio.
+# Il telefono si verifica solo alla registrazione (l'app lo chiede se questo valore è true, vedi /api/config). Pubblicare o
+# accettare un favore non lo richiede mai. Spento finché non è configurato un servizio SMS.
 PHONE_VERIFICATION_REQUIRED = os.environ.get("PHONE_VERIFICATION_REQUIRED", "false").lower() == "true"
 PHONE_CODE_TTL_MINUTES = 10
 PHONE_RESEND_SECONDS = 60
@@ -1361,16 +1362,6 @@ def hash_secret_value(value: str) -> str:
 
 def mask_phone(e164: str) -> str:
     return "••••" + e164[-4:]
-
-
-def require_verified_phone(user: "User") -> None:
-    """Prima di pubblicare o accettare il primo favore serve il telefono verificato (se l'obbligo è attivo)."""
-    if PHONE_VERIFICATION_REQUIRED and not user.phone_verified and user.email != REVIEWER_EMAIL:
-        raise HTTPException(
-            status_code=403,
-            detail="Verifica il tuo telefono prima di pubblicare o accettare un favore",
-            headers={"X-Phone-Required": "true"},
-        )
 
 
 # ========================
