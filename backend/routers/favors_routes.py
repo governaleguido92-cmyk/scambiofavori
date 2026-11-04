@@ -1,6 +1,7 @@
 """HTTP routes: favors."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+import trust
 import places
 
 api_router = APIRouter(prefix="/api")
@@ -44,6 +45,9 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         if current_user.granelli < granelli_cost:
             raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
     
+    await trust.ensure_not_on_hold(current_user.user_id)
+    await trust.ensure_new_user_can_create(current_user.user_id, granelli_cost, favor_data.is_emergency)
+
     # Update last activity
     await update_last_activity(current_user.user_id)
     
@@ -375,6 +379,11 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     if favor.type == "offer" and current_user.granelli < favor.granelli_cost:
         raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti per accettare questo favore")
 
+    await trust.ensure_not_on_hold(current_user.user_id)
+    if not favor.is_emergency:
+        await trust.ensure_new_user_open_slot(current_user.user_id)
+    await trust.ensure_pair_not_overused(current_user.user_id, favor.creator_id)
+
     # Atomic check-and-set: filter su status="active" previene double-accept concorrente
     updated = await db.favors.find_one_and_update(
         {"favor_id": data.favor_id, "status": "active"},
@@ -512,7 +521,12 @@ async def cancel_favor(favor_id: str, current_user: User = Depends(get_current_u
     
     await db.favors.update_one(
         {"favor_id": favor_id},
-        {"$set": {"status": "cancelled"}}
+        {"$set": {
+            "status": "cancelled",
+            "cancelled_by": current_user.user_id,
+            "cancelled_at": datetime.now(timezone.utc),
+            "cancelled_after_accept": favor_doc["status"] == "accepted",
+        }}
     )
     
     return {"message": "Favore cancellato"}
@@ -922,6 +936,8 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
             detail="La tua capacità di inviare messaggi è stata sospesa a causa di segnalazioni multiple"
         )
     
+    await trust.ensure_not_on_hold(current_user.user_id)
+
     content = msg.content.strip()
     if not content:
         raise HTTPException(status_code=400, detail="Messaggio vuoto")
@@ -956,6 +972,25 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
             detail="⚠️ Messaggio bloccato: non sono ammessi riferimenti a denaro reale. Usa solo i Granelli!"
         )
     
+    # 1b. Scam filter: codici, anticipi, ricariche, carte, IBAN
+    if contains_scam_hint(content):
+        await db.messages.insert_one({
+            "message_id": f"msg_{uuid.uuid4().hex[:12]}",
+            "favor_id": msg.favor_id,
+            "sender_id": current_user.user_id,
+            "sender_name": current_user.name,
+            "content": "[Messaggio bloccato - possibile truffa]",
+            "original_content": content,
+            "is_system": False,
+            "blocked": True,
+            "block_reason": "scam",
+            "created_at": datetime.now(timezone.utc)
+        })
+        raise HTTPException(
+            status_code=400,
+            detail="⚠️ Messaggio bloccato: possibile truffa. Non chiedere né mandare codici, password, anticipi o dati di carte. Un favore non richiede soldi."
+        )
+
     # 2. Offensive language filter
     if contains_offensive_language(content):
         message_id = f"msg_{uuid.uuid4().hex[:12]}"

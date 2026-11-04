@@ -8,6 +8,7 @@ import { api, CURRENCY_SYMBOL } from '../../src/services/api';
 import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar';
 import { ProfileHero } from '../../src/components/profile/ProfileHero';
 import { ProfileStats } from '../../src/components/profile/ProfileStats';
+import { TrustCard } from '../../src/components/profile/TrustCard';
 import { BadgeShelf } from '../../src/components/profile/BadgeShelf';
 import { BadgeInfoModal } from '../../src/components/profile/BadgeInfoModal';
 import { SkillsSection, SkillsModal } from '../../src/components/profile/SkillsSection';
@@ -178,6 +179,7 @@ export default function ProfileScreen() {
           onSaveName={handleSaveName}
         />
         <ProfileStats user={user} />
+        {token && <TrustCard token={token} />}
 
         {token && <ProfileCompletionBar token={token} refreshKey={completionKey} onItemPress={(itemId) => itemId === 'skills' && openSkills()} />}
 

@@ -12,6 +12,7 @@ import {
   Alert,
   Modal,
   Linking,
+  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -35,6 +36,7 @@ import { logger } from '../../src/utils/logger';
 import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 import { goBackOrHome } from '../../src/utils/navigation';
+import { buildShareText } from '../../src/utils/shareFavor';
 
 // Theme colors
 const colors = {
@@ -230,6 +232,39 @@ export default function ChatScreen() {
         { text: tt('Blocca'), style: 'destructive', onPress: () => handleBlock(otherUserId, name) },
       ]
     );
+  };
+
+  const confirmSafetyAlert = () => {
+    if (!favorId) return;
+    Alert.alert(
+      tt('Non ti senti al sicuro?'),
+      tt('Il favore verrà chiuso, non vedrai più questa persona e la segnalazione arriverà subito al team. In caso di pericolo reale chiama il 112.'),
+      [
+        { text: tt('Annulla'), style: 'cancel' },
+        { text: tt('Segnala e chiudi'), style: 'destructive', onPress: handleSafetyAlert },
+      ]
+    );
+  };
+
+  const handleSafetyAlert = async () => {
+    if (!token || !favorId) return;
+    try {
+      const result = await api.sendSafetyAlert(favorId, token);
+      notify(tt('Segnalazione inviata'), tx('{0} In caso di pericolo chiama il {1}.', [result.message, result.emergency_number]));
+      goBackOrHome(router);
+    } catch (error: any) {
+      notify(tt('Errore'), error.message || tt('Impossibile inviare la segnalazione'));
+    }
+  };
+
+  const handleRemindConfirmation = async () => {
+    if (!token || !favorId) return;
+    try {
+      const result = await api.remindConfirmation(favorId, token);
+      notify(tt('Fatto'), result.message);
+    } catch (error: any) {
+      notify(tt('Errore'), error.message || tt('Impossibile inviare il promemoria'));
+    }
   };
 
   const handleBlock = async (otherUserId: string, name: string) => {
@@ -481,6 +516,22 @@ export default function ChatScreen() {
       <Modal visible={showMenu} transparent animationType="fade" onRequestClose={() => setShowMenu(false)}>
         <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setShowMenu(false)}>
           <View style={styles.menuCard}>
+            {favor && (
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  setShowMenu(false);
+                  Share.share({ message: buildShareText(favor, otherParticipant?.name) }).catch((error) =>
+                    logger.debug('Share favor failed', error)
+                  );
+                }}
+                accessibilityRole="button"
+                data-testid="share-favor-button"
+              >
+                <Ionicons name="share-outline" size={20} color={colors.textPrimary} />
+                <Text style={styles.menuItemText}>{tt('Avvisa una persona fidata')}</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.menuItem}
               onPress={() => {
@@ -493,6 +544,34 @@ export default function ChatScreen() {
               <Ionicons name="flag-outline" size={20} color={colors.error} />
               <Text style={styles.menuItemText}>{tx('Segnala {0}', [otherParticipant?.name || tt('un vicino')])}</Text>
             </TouchableOpacity>
+            {favor?.status === 'accepted' && !!user && !mayCompleteFavor(favor, user.user_id) && (
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  setShowMenu(false);
+                  handleRemindConfirmation();
+                }}
+                accessibilityRole="button"
+                data-testid="remind-confirmation-button"
+              >
+                <Ionicons name="notifications-outline" size={20} color={colors.textPrimary} />
+                <Text style={styles.menuItemText}>{tt('Ricorda di confermare il favore')}</Text>
+              </TouchableOpacity>
+            )}
+            {favor?.status === 'accepted' && (
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  setShowMenu(false);
+                  confirmSafetyAlert();
+                }}
+                accessibilityRole="button"
+                data-testid="safety-alert-button"
+              >
+                <Ionicons name="alert-circle-outline" size={20} color={colors.error} />
+                <Text style={styles.menuItemText}>{tt('Non mi sento al sicuro')}</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.menuItem}
               onPress={() => {

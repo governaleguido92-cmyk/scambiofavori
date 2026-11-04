@@ -208,3 +208,40 @@ async def test_delete_account_keeps_reviews_the_user_wrote_but_anonymous(client,
     review = await app_db.reviews.find_one({"review_id": "r1"})
     assert review["reviewer_id"] == "deleted_user"
     assert review["reviewer_name"] != "u1"
+
+
+async def test_delete_account_removes_vouches_in_both_directions(client, app_db):
+    await app_db.users.insert_many([make_user("u1", email="u1@example.com"), make_user("u2"), make_user("u3")])
+    await app_db.vouches.insert_many([
+        {"vouch_id": "v1", "voucher_id": "u1", "vouchee_id": "u2"},
+        {"vouch_id": "v2", "voucher_id": "u3", "vouchee_id": "u1"},
+        {"vouch_id": "v3", "voucher_id": "u2", "vouchee_id": "u3"},
+    ])
+
+    await _delete(client, "u1", "u1@example.com")
+
+    assert [v["vouch_id"] async for v in app_db.vouches.find({})] == ["v3"]
+
+
+async def test_delete_account_removes_reports_about_the_user_and_anonymizes_the_ones_made(client, app_db):
+    await app_db.users.insert_many([make_user("u1", email="u1@example.com"), make_user("u2")])
+    await app_db.general_reports.insert_many([
+        {"report_id": "r1", "report_type": "user", "reporter_id": "u2", "target_id": "u1", "reason": "safety_alert"},
+        {"report_id": "r2", "report_type": "user", "reporter_id": "u1", "target_id": "u2", "reason": "safety_alert"},
+    ])
+
+    await _delete(client, "u1", "u1@example.com")
+
+    remaining = {r["report_id"]: r async for r in app_db.general_reports.find({})}
+    assert set(remaining) == {"r2"}
+    assert remaining["r2"]["reporter_id"] == "deleted_user"
+
+
+async def test_delete_account_anonymizes_who_cancelled_a_favor(client, app_db):
+    await app_db.users.insert_many([make_user("u1", email="u1@example.com"), make_user("u2")])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="u2", creator_name="u2", accepted_by="u1",
+                                              status="cancelled", cancelled_by="u1"))
+
+    await _delete(client, "u1", "u1@example.com")
+
+    assert (await app_db.favors.find_one({"favor_id": "f1"}))["cancelled_by"] == "deleted_user"

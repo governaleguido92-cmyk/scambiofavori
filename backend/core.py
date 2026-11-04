@@ -163,6 +163,32 @@ def contains_money_reference(text: str) -> bool:
             return True
     return False
 
+# Frasi tipiche delle truffe: richieste di codici o credenziali, anticipi, ricariche, carte e IBAN.
+# Il testo viene normalizzato (minuscolo) prima del confronto.
+SCAM_HINT_PATTERNS = [
+    # codici ricevuti per sms / di verifica / otp
+    r'\bcodice\b[^.!?\n]{0,40}\b(sms|messaggio|verifica|otp|ricevuto|arriva|arrivato|conferma)\b',
+    r'\b(sms|verifica|otp)\b[^.!?\n]{0,40}\bcodice\b',
+    r'\b(manda|mandami|dammi|dimmi|invia|inviami|passami)\b[^.!?\n]{0,25}\b(password|pin|cvv|otp)\b',
+    r'\b(anticipo|caparra|acconto)\b',
+    r'\bricaric[ah]\w*\b',
+    r'\bwestern\s*union\b',
+    r'\bmoneygram\b',
+    r'\bgift\s*card\b',
+    r'\b(bitcoin|btc|crypto|criptovalut\w+|usdt|ethereum)\b',
+    # IBAN italiano o europeo, anche con spazi
+    r'\b[a-z]{2}\d{2}(?:\s?[a-z0-9]){11,30}\b',
+    # numero di carta: 13-19 cifre, anche a gruppi
+    r'\b(?:\d[ -]?){13,19}\b',
+]
+
+
+def contains_scam_hint(text: str) -> bool:
+    """True se il testo somiglia a una truffa (codici, anticipi, ricariche, carte, IBAN, cripto)."""
+    text_lower = text.lower()
+    return any(re.search(pattern, text_lower) for pattern in SCAM_HINT_PATTERNS)
+
+
 def contains_offensive_language(text: str) -> bool:
     """True se il testo contiene insulti, odio e discriminazione, minacce o contenuti sessuali (vedi moderation.py)."""
     return not check_text(text).allowed
