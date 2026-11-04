@@ -184,8 +184,8 @@ export const styles = StyleSheet.create({
     borderColor: 'rgba(248, 120, 40, 0.5)',
   },
   typeHintBoxOffer: {
-    backgroundColor: 'rgba(95, 191, 127, 0.14)',
-    borderColor: 'rgba(95, 191, 127, 0.5)',
+    backgroundColor: 'rgba(152, 170, 74, 0.14)',
+    borderColor: 'rgba(152, 170, 74, 0.5)',
   },
   typeHintText: {
     flex: 1,
@@ -215,7 +215,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
   },
   typeButtonActiveOffer: {
-    backgroundColor: '#2F7A4D',
+    backgroundColor: '#98AA4A',
   },
   typeButtonActiveRequest: {
     backgroundColor: colors.accentDark,
@@ -280,7 +280,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.granelliMuted,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.25)',
+    borderColor: 'rgba(152, 170, 74, 0.25)',
     overflow: 'hidden',
   },
   promoBannerContent: {
@@ -293,7 +293,7 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255, 215, 0, 0.15)',
+    backgroundColor: 'rgba(152, 170, 74, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -513,7 +513,7 @@ export const styles = StyleSheet.create({
   },
   gridCardOffer: {
     borderTopWidth: 3,
-    borderTopColor: '#5FBF7F',
+    borderTopColor: '#98AA4A',
   },
   gridCardRequest: {
     borderTopWidth: 3,
@@ -525,7 +525,7 @@ export const styles = StyleSheet.create({
   },
   gridCardOwn: {
     borderWidth: 2,
-    borderColor: 'rgba(184, 200, 104, 0.6)',
+    borderColor: 'rgba(152, 170, 74, 0.6)',
   },
   ownBadge: {
     paddingHorizontal: 8,
@@ -590,8 +590,8 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#1B1500',
-    borderColor: 'rgba(255,215,0,0.5)',
+    backgroundColor: '#0C0E09',
+    borderColor: 'rgba(152,170,74,0.5)',
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 9,

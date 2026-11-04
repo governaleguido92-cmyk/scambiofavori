@@ -171,7 +171,7 @@ function SupporterContent() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <View style={styles.heartIcon}>
-            <Ionicons name="heart" size={64} color="#ffd700" />
+            <Ionicons name="heart" size={64} color="#98AA4A" />
           </View>
           <Text style={styles.heroTitle}>Diventa un Pilastro{'\n'}della Community</Text>
           <Text style={styles.heroSubtitle}>
@@ -197,7 +197,7 @@ function SupporterContent() {
           
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="heart" size={24} color="#ffd700" />
+              <Ionicons name="heart" size={24} color="#98AA4A" />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Badge Cuore Dorato</Text>
@@ -207,7 +207,7 @@ function SupporterContent() {
 
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="sparkles" size={24} color="#ffd700" />
+              <Ionicons name="sparkles" size={24} color="#98AA4A" />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Profilo Speciale</Text>
@@ -217,7 +217,7 @@ function SupporterContent() {
 
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="map" size={24} color="#ffd700" />
+              <Ionicons name="map" size={24} color="#98AA4A" />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Visibilità sulla Mappa</Text>
@@ -227,7 +227,7 @@ function SupporterContent() {
 
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="ribbon" size={24} color="#ffd700" />
+              <Ionicons name="ribbon" size={24} color="#98AA4A" />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Riconoscimento Eterno</Text>
@@ -250,7 +250,7 @@ function SupporterContent() {
         {isSupporter ? (
           <View style={styles.supporterActive}>
             <View style={styles.supporterBadge}>
-              <Ionicons name="heart" size={32} color="#ffd700" />
+              <Ionicons name="heart" size={32} color="#98AA4A" />
               <Text style={styles.supporterActiveTitle}>Sei un Sostenitore!</Text>
             </View>
             <Text style={styles.supporterActiveText}>
@@ -273,10 +273,10 @@ function SupporterContent() {
             data-testid="subscribe-button"
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#0F1A14" />
+              <ActivityIndicator size="small" color="#0C0E09" />
             ) : (
               <>
-                <Ionicons name="heart" size={24} color="#0F1A14" />
+                <Ionicons name="heart" size={24} color="#0C0E09" />
                 <Text style={styles.subscribeButtonText}>Sostieni Ora - 1€/mese</Text>
               </>
             )}
@@ -285,7 +285,7 @@ function SupporterContent() {
 
         {/* Transparency Note */}
         <View style={styles.transparencyNote}>
-          <Ionicons name="shield-checkmark" size={20} color="#B8C868" />
+          <Ionicons name="shield-checkmark" size={20} color="#98AA4A" />
           <Text style={styles.transparencyText}>
             Pagamento sicuro con Stripe. Puoi disdire quando vuoi dal portale di gestione.
           </Text>
@@ -293,7 +293,7 @@ function SupporterContent() {
 
         {/* Privacy Note */}
         <View style={styles.privacyNote}>
-          <Ionicons name="eye-off" size={16} color="#9DB3A4" />
+          <Ionicons name="eye-off" size={16} color="#A5A89B" />
           <Text style={styles.privacyText}>
             Il tuo contributo è privato: gli altri vedranno solo che sei un Sostenitore, non l&apos;importo.
           </Text>
@@ -345,12 +345,12 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 16,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     textAlign: 'center',
     lineHeight: 22,
   },
   messageCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     marginHorizontal: 20,
     padding: 20,
     borderRadius: 16,
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   messageSubtext: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     padding: 16,
     borderRadius: 12,
     marginBottom: 10,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   },
   benefitDesc: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
   },
   pricingCard: {
     backgroundColor: '#ffd70015',
@@ -421,11 +421,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#ffd700',
+    borderColor: '#98AA4A',
   },
   planName: {
     fontSize: 14,
-    color: '#ffd700',
+    color: '#98AA4A',
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -442,19 +442,19 @@ const styles = StyleSheet.create({
   },
   priceInterval: {
     fontSize: 18,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginLeft: 4,
   },
   priceHint: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginTop: 8,
   },
   subscribeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffd700',
+    backgroundColor: '#98AA4A',
     marginHorizontal: 20,
     marginTop: 24,
     padding: 18,
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
   subscribeButtonText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F1A14',
+    color: '#0C0E09',
   },
   supporterActive: {
     backgroundColor: '#ffd70015',
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ffd700',
+    borderColor: '#98AA4A',
   },
   supporterBadge: {
     flexDirection: 'row',
@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
   supporterActiveTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#ffd700',
+    color: '#98AA4A',
   },
   supporterActiveText: {
     fontSize: 14,
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   transparencyText: {
     flex: 1,
     fontSize: 12,
-    color: '#B8C868',
+    color: '#98AA4A',
   },
   privacyNote: {
     flexDirection: 'row',
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   privacyText: {
     flex: 1,
     fontSize: 12,
-    color: '#8FA595',
+    color: '#A5A89B',
   },
   loadingContainer: {
     flex: 1,
@@ -552,7 +552,7 @@ const styles = StyleSheet.create({
   },
   loadingSubtext: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginTop: 8,
   },
 });

@@ -115,14 +115,14 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
 }
 
 const local = StyleSheet.create({
-  balance: { color: '#9DB3A4', fontSize: 12.5, textAlign: 'center', marginBottom: 12 },
-  noBalance: { color: '#C4DACB', fontSize: 14, lineHeight: 20, textAlign: 'center', marginVertical: 16 },
+  balance: { color: '#A5A89B', fontSize: 12.5, textAlign: 'center', marginBottom: 12 },
+  noBalance: { color: '#D4D6CC', fontSize: 14, lineHeight: 20, textAlign: 'center', marginVertical: 16 },
   quickRow: { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 14 },
   quick: {
     minWidth: 54, alignItems: 'center', paddingVertical: 8, borderRadius: 14,
-    backgroundColor: '#1A2E22', borderWidth: 1, borderColor: '#2A4A35',
+    backgroundColor: '#171A10', borderWidth: 1, borderColor: '#2E3420',
   },
-  quickActive: { backgroundColor: '#ff6b6b', borderColor: '#ff6b6b' },
-  quickText: { color: '#C4DACB', fontSize: 15, fontWeight: '700' },
+  quickActive: { backgroundColor: '#F87828', borderColor: '#F87828' },
+  quickText: { color: '#D4D6CC', fontSize: 15, fontWeight: '700' },
   quickTextActive: { color: '#fff' },
 });

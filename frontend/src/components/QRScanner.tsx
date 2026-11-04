@@ -36,7 +36,7 @@ export function QRScanner({ onBarcodeScanned, scanningComplete }: QRScannerProps
   if (Platform.OS === 'web' || !CameraComponent) {
     return (
       <View style={styles.placeholder}>
-        <Ionicons name="qr-code-outline" size={64} color="#8FA595" />
+        <Ionicons name="qr-code-outline" size={64} color="#A5A89B" />
         <Text style={styles.placeholderText}>{tt('Scanner QR non disponibile su questa piattaforma')}</Text>
         <Text style={styles.placeholderSubtext}>{tt('Usa l\'app su iOS o Android per scansionare')}</Text>
       </View>
@@ -68,17 +68,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     padding: 20,
   },
   placeholderText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 16,
     textAlign: 'center',
     marginTop: 16,
   },
   placeholderSubtext: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 14,
     textAlign: 'center',
     marginTop: 8,

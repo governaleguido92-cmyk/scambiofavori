@@ -61,7 +61,7 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#B8C868" />
+      <ActivityIndicator size="large" color="#98AA4A" />
       <Text style={styles.loadingText}>{tt('Caricamento...')}</Text>
     </View>
   );
@@ -72,10 +72,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
   },
   loadingText: {
-    color: '#A8C4B0',
+    color: '#D4D6CC',
     fontSize: 14,
     marginTop: 16,
   },

@@ -1,3 +1,4 @@
+import { GranelloIcon } from '../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -18,7 +19,7 @@ import { BrandLogo } from '../src/components/BrandLogo';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../src/context/AuthContext';
-import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../src/services/api';
+import { api, Favor, CURRENCY_NAME } from '../src/services/api';
 import { logger } from '../src/utils/logger';
 import { notify } from '../src/utils/notify';
 import { tt } from '../src/i18n/tt';
@@ -156,12 +157,12 @@ export default function EmergenciesScreen() {
     <View style={styles.emergencyCard}>
       <View style={styles.emergencyHeader}>
         <View style={styles.urgentBadge}>
-          <Ionicons name="alert-circle" size={16} color="#ff6b6b" />
+          <Ionicons name="alert-circle" size={16} color="#F87828" />
           <Text style={styles.urgentText}>{tt('URGENTE')}</Text>
         </View>
         {item.distance_km !== undefined && (
           <View style={styles.distanceBadge}>
-            <Ionicons name="location" size={14} color="#B8C868" />
+            <Ionicons name="location" size={14} color="#98AA4A" />
             <Text style={styles.distanceText}>{item.distance_km}{' '}{tt('km')}</Text>
           </View>
         )}
@@ -212,18 +213,18 @@ export default function EmergenciesScreen() {
 
       {/* Info Banner */}
       <View style={styles.infoBanner}>
-        <Ionicons name="information-circle" size={20} color="#B8C868" />
+        <Ionicons name="information-circle" size={20} color="#98AA4A" />
         <Text style={styles.infoBannerText}>{tt('Le emergenze sono richieste urgenti inviate a vicini affidabili e valutati positivamente.')}</Text>
       </View>
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#ff6b6b" />
+          <ActivityIndicator size="large" color="#F87828" />
         </View>
       ) : emergencies.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="heart-outline" size={64} color="#B8C868" />
+            <Ionicons name="heart-outline" size={64} color="#98AA4A" />
           </View>
           <Text style={styles.emptyText}>{tt('Nessuna emergenza nelle vicinanze')}</Text>
           <Text style={styles.emptySubtext}>{tt('Il quartiere è tranquillo! Ma se hai bisogno, puoi sempre chiedere aiuto.')}</Text>
@@ -235,7 +236,7 @@ export default function EmergenciesScreen() {
           keyExtractor={(item) => item.favor_id}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ff6b6b" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F87828" />
           }
         />
       )}
@@ -254,7 +255,7 @@ export default function EmergenciesScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Ionicons name="alert-circle" size={32} color="#ff6b6b" />
+              <Ionicons name="alert-circle" size={32} color="#F87828" />
               <Text style={styles.modalTitle}>{tt('Emergenza Gentilezza')}</Text>
             </View>
             <Text style={styles.modalSubtitle}>{tt('Le persone affidabili vicino a te riceveranno una notifica')}</Text>
@@ -264,7 +265,7 @@ export default function EmergenciesScreen() {
               <TextInput
                 style={styles.input}
                 placeholder={tt('Es: Aiuto urgente con...')}
-                placeholderTextColor="#8FA595"
+                placeholderTextColor="#A5A89B"
                 value={newEmergency.title}
                 onChangeText={(text) => setNewEmergency({ ...newEmergency, title: text })}
                 maxLength={60}
@@ -276,7 +277,7 @@ export default function EmergenciesScreen() {
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder={tt('Spiega brevemente cosa ti serve...')}
-                placeholderTextColor="#8FA595"
+                placeholderTextColor="#A5A89B"
                 value={newEmergency.description}
                 onChangeText={(text) => setNewEmergency({ ...newEmergency, description: text })}
                 multiline
@@ -287,7 +288,7 @@ export default function EmergenciesScreen() {
 
             <View style={styles.costInfo}>
               <Text style={styles.costLabel}>{tt('Costo:')}</Text>
-              <Text style={styles.costValue}>{CURRENCY_SYMBOL} 1 {CURRENCY_NAME.slice(0, -1)}e</Text>
+              <Text style={styles.costValue}><GranelloIcon size={14} /> 1 {CURRENCY_NAME.slice(0, -1)}e</Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -322,7 +323,7 @@ export default function EmergenciesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
   },
   header: {
     flexDirection: 'row',
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -350,13 +351,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginTop: 2,
   },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     marginHorizontal: 20,
     marginTop: 12,
     padding: 12,
@@ -365,7 +366,7 @@ const styles = StyleSheet.create({
   },
   infoBannerText: {
     flex: 1,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
     lineHeight: 18,
   },
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptySubtext: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
@@ -405,12 +406,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emergencyCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#ff6b6b',
+    borderLeftColor: '#F87828',
   },
   emergencyHeader: {
     flexDirection: 'row',
@@ -421,14 +422,14 @@ const styles = StyleSheet.create({
   urgentBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 107, 107, 0.2)',
+    backgroundColor: 'rgba(248, 120, 40, 0.2)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     gap: 6,
   },
   urgentText: {
-    color: '#ff6b6b',
+    color: '#F87828',
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   distanceText: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -450,7 +451,7 @@ const styles = StyleSheet.create({
   },
   emergencyDescription: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -467,12 +468,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     justifyContent: 'center',
     alignItems: 'center',
   },
   creatorAvatarText: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -482,14 +483,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   creatorTitle: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 12,
   },
   helpButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     padding: 14,
     borderRadius: 12,
     gap: 8,
@@ -503,7 +504,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     marginHorizontal: 20,
     marginBottom: 20,
     padding: 16,
@@ -521,7 +522,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   modalSubtitle: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -553,7 +554,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     borderRadius: 12,
     padding: 14,
     color: '#fff',
@@ -567,18 +568,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     padding: 12,
     borderRadius: 12,
     gap: 8,
     marginBottom: 20,
   },
   costLabel: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   costValue: {
-    color: '#ffd700',
+    color: '#98AA4A',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -591,11 +592,11 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#9DB3A4',
+    borderColor: '#A5A89B',
     alignItems: 'center',
   },
   modalCancelText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontWeight: '600',
   },
   modalConfirmButton: {
@@ -603,7 +604,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,

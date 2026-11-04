@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   errorBanner: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

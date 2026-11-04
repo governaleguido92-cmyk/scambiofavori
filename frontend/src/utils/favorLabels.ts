@@ -3,11 +3,11 @@ import { tt, tx } from '../i18n/tt';
 import { isExpired, roleOf } from './myFavors';
 
 export const STATUS_COLORS = {
-  waiting: '#C9A227',
-  expired: '#6B7F72',
-  ongoing: '#2F7A4D',
-  completed: '#2F8F5B',
-  cancelled: '#8A8A8A',
+  waiting: '#98AA4A',
+  expired: '#8A8C80',
+  ongoing: '#98AA4A',
+  completed: '#98AA4A',
+  cancelled: '#8A8C80',
 } as const;
 
 /** Etichetta e colore dello stato di un favore (In attesa, In corso, Concluso...). */

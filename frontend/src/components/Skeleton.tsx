@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#2A4A35',
-    backgroundColor: '#1A2E22',
+    borderColor: '#2E3420',
+    backgroundColor: '#171A10',
     overflow: 'hidden',
   },
   skeleton: {

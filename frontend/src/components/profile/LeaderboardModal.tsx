@@ -5,7 +5,7 @@ import type { LeaderboardUser } from '../../services/api';
 import { styles } from '../../styles/profile.styles';
 import { tt } from '../../i18n/tt';
 
-const PODIUM_COLORS = ['#ffd700', '#c0c0c0', '#cd7f32'];
+const PODIUM_COLORS = ['#F87828', '#FFFFFF', '#98AA4A'];
 
 interface LeaderboardModalProps {
   visible: boolean;
@@ -25,7 +25,7 @@ export function LeaderboardModal({ visible, loading, failed, users, currentUserI
           <Text style={styles.modalTitle}>{tt('Classifica Community')}</Text>
 
           {loading ? (
-            <ActivityIndicator style={local.state} size="large" color="#B8C868" />
+            <ActivityIndicator style={local.state} size="large" color="#98AA4A" />
           ) : failed ? (
             <Text style={local.stateText}>{tt('Non riesco a caricare la classifica adesso. Riprova tra poco.')}</Text>
           ) : users.length === 0 ? (
@@ -65,5 +65,5 @@ export function LeaderboardModal({ visible, loading, failed, users, currentUserI
 
 const local = StyleSheet.create({
   state: { marginVertical: 40 },
-  stateText: { color: '#C4DACB', fontSize: 14, lineHeight: 20, textAlign: 'center', marginVertical: 32, paddingHorizontal: 16 },
+  stateText: { color: '#D4D6CC', fontSize: 14, lineHeight: 20, textAlign: 'center', marginVertical: 32, paddingHorizontal: 16 },
 });

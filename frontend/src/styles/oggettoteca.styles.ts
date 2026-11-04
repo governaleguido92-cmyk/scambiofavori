@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
   },
   header: {
     flexDirection: 'row',
@@ -20,11 +20,11 @@ export const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginTop: 2,
   },
   addButton: {
-    backgroundColor: '#A8B858',
+    backgroundColor: '#6B7A38',
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -35,7 +35,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: 20,
     marginTop: 12,
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 12,
     padding: 4,
   },
@@ -49,10 +49,10 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   tabActive: {
-    backgroundColor: '#A8B858',
+    backgroundColor: '#6B7A38',
   },
   tabText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -72,15 +72,15 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     gap: 6,
     marginRight: 8,
   },
   categoryChipActive: {
-    backgroundColor: '#A8B858',
+    backgroundColor: '#6B7A38',
   },
   categoryChipText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   categoryChipTextActive: {
@@ -99,12 +99,12 @@ export const styles = StyleSheet.create({
     paddingTop: 60,
   },
   emptyText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 18,
     marginTop: 16,
   },
   emptySubtext: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 14,
     marginTop: 4,
   },
@@ -113,7 +113,7 @@ export const styles = StyleSheet.create({
     paddingTop: 16,
   },
   objectCard: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -130,7 +130,7 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   categoryText: {
-    color: '#A8B858',
+    color: '#6B7A38',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -140,10 +140,10 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   statusAvailable: {
-    backgroundColor: 'rgba(78, 204, 163, 0.2)',
+    backgroundColor: 'rgba(152, 170, 74, 0.2)',
   },
   statusBorrowed: {
-    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+    backgroundColor: 'rgba(248, 120, 40, 0.2)',
   },
   statusText: {
     fontSize: 12,
@@ -158,7 +158,7 @@ export const styles = StyleSheet.create({
   },
   objectDescription: {
     fontSize: 14,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -173,7 +173,7 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   ownerName: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   depositContainer: {
@@ -182,14 +182,14 @@ export const styles = StyleSheet.create({
     gap: 4,
   },
   depositLabel: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 12,
   },
   depositSymbol: {
     fontSize: 16,
   },
   depositValue: {
-    color: '#ffd700',
+    color: '#98AA4A',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -200,14 +200,14 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   distanceText: {
-    color: '#A8B858',
+    color: '#6B7A38',
     fontSize: 12,
   },
   borrowButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#A8B858',
+    backgroundColor: '#6B7A38',
     padding: 12,
     borderRadius: 12,
     marginTop: 12,
@@ -221,7 +221,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
     padding: 12,
     borderRadius: 12,
     marginTop: 12,
@@ -237,7 +237,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -250,7 +250,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalSubtitle: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -264,7 +264,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     borderRadius: 12,
     padding: 14,
     color: '#fff',
@@ -277,7 +277,7 @@ export const styles = StyleSheet.create({
   categoryOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 20,
@@ -285,10 +285,10 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   categoryOptionActive: {
-    backgroundColor: '#A8B858',
+    backgroundColor: '#6B7A38',
   },
   categoryOptionText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   categoryOptionTextActive: {
@@ -302,7 +302,7 @@ export const styles = StyleSheet.create({
     gap: 20,
   },
   depositAdjust: {
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -318,12 +318,12 @@ export const styles = StyleSheet.create({
     fontSize: 28,
   },
   depositDisplayValue: {
-    color: '#ffd700',
+    color: '#98AA4A',
     fontSize: 32,
     fontWeight: 'bold',
   },
   depositHint: {
-    color: '#8FA595',
+    color: '#A5A89B',
     fontSize: 12,
     textAlign: 'center',
     marginTop: 8,
@@ -338,11 +338,11 @@ export const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#9DB3A4',
+    borderColor: '#A5A89B',
     alignItems: 'center',
   },
   modalCancelText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontWeight: '600',
   },
   modalConfirmButton: {
@@ -350,7 +350,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#A8B858',
+    backgroundColor: '#6B7A38',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,

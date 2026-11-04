@@ -95,7 +95,7 @@ export default function SettingsScreen() {
                   value={!!notifPrefs[item.key]}
                   onValueChange={() => handleToggleNotifPref(item.key)}
                   trackColor={{ false: themeColors.backgroundLight, true: themeColors.primaryLight }}
-                  thumbColor={notifPrefs[item.key] ? themeColors.accent : '#D0DDD3'}
+                  thumbColor={notifPrefs[item.key] ? themeColors.accent : '#D4D6CC'}
                   data-testid={`notif-toggle-${item.key}`}
                 />
               </View>
@@ -105,7 +105,7 @@ export default function SettingsScreen() {
 
         <View style={styles.languageSection}>
           <View style={styles.languageLabelRow}>
-            <Ionicons name="language" size={20} color="#A8C4B0" />
+            <Ionicons name="language" size={20} color="#D4D6CC" />
             <Text style={styles.languageLabel}>{t('settings.language')}</Text>
           </View>
           <View style={styles.languageButtons}>
@@ -124,7 +124,7 @@ export default function SettingsScreen() {
         <BlockedUsersSection token={token} />
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out" size={20} color="#ff6b6b" />
+          <Ionicons name="log-out" size={20} color="#F87828" />
           <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </TouchableOpacity>
 

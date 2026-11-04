@@ -69,7 +69,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               È severamente vietato richiedere, offrire o scambiare denaro reale (contanti, bonifici, 
               pagamenti elettronici) in cambio di favori.{'\n\n'}
-              Gli scambi avvengono esclusivamente tramite la valuta virtuale &quot;Granelli&quot; (🌾).{'\n\n'}
+              Gli scambi avvengono esclusivamente tramite la valuta virtuale &quot;Granelli&quot;.{'\n\n'}
               <Text style={styles.warningText}>
                 La violazione di questa regola comporta il ban permanente dalla piattaforma.
               </Text>

@@ -284,9 +284,9 @@ const styles = StyleSheet.create({
   chipText: { color: colors.textPrimary, fontSize: 13, fontWeight: '600' },
   error: {
     flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10, marginBottom: 12,
-    backgroundColor: 'rgba(255,82,82,0.12)', borderWidth: 1, borderColor: 'rgba(255,82,82,0.4)',
+    backgroundColor: 'rgba(248,120,40,0.12)', borderWidth: 1, borderColor: 'rgba(248,120,40,0.4)',
   },
-  errorText: { flex: 1, color: '#FF8A8A', fontSize: 12.5, lineHeight: 17 },
+  errorText: { flex: 1, color: '#FB9A52', fontSize: 12.5, lineHeight: 17 },
   send: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10,
     paddingVertical: 14, borderRadius: 12, backgroundColor: colors.accent,

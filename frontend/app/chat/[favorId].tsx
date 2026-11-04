@@ -41,20 +41,20 @@ import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 
 // Theme colors
 const colors = {
-  primary: '#2D5A3D',
-  primaryLight: '#3D7A52',
+  primary: '#6B7A38',
+  primaryLight: '#98AA4A',
   accent: '#F87828',
-  lime: '#B8C868',
-  background: '#0F1A14',
-  backgroundLight: '#1A2E22',
-  backgroundCard: '#1A2E22',
+  lime: '#98AA4A',
+  background: '#0C0E09',
+  backgroundLight: '#171A10',
+  backgroundCard: '#171A10',
   textPrimary: '#FFFFFF',
-  textSecondary: '#A8C4B0',
-  textMuted: '#6B8F75',
-  border: '#2A4A35',
-  error: '#FF5252',
+  textSecondary: '#D4D6CC',
+  textMuted: '#A5A89B',
+  border: '#2E3420',
+  error: '#F87828',
   warning: '#F87828',
-  granelli: '#FFD700',
+  granelli: '#98AA4A',
 };
 
 export default function ChatScreen() {
@@ -701,11 +701,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 10,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 82, 82, 0.12)',
+    backgroundColor: 'rgba(248, 120, 40, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 82, 82, 0.4)',
+    borderColor: 'rgba(248, 120, 40, 0.4)',
   },
-  sendErrorText: { flex: 1, color: '#FF8A8A', fontSize: 12.5, lineHeight: 17 },
+  sendErrorText: { flex: 1, color: '#FB9A52', fontSize: 12.5, lineHeight: 17 },
   menuOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'flex-end', paddingTop: 70, paddingHorizontal: 12 },
   menuCard: {
     minWidth: 220,
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
   readOnlyBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 152, 0, 0.15)',
+    backgroundColor: 'rgba(248, 120, 40, 0.15)',
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 10,
@@ -784,7 +784,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
   },
   blockedBubble: {
-    backgroundColor: 'rgba(255, 82, 82, 0.15)',
+    backgroundColor: 'rgba(248, 120, 40, 0.15)',
     borderWidth: 1,
     borderColor: colors.error,
   },
@@ -947,7 +947,7 @@ const styles = StyleSheet.create({
   locationMessage: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(78, 204, 163, 0.15)',
+    backgroundColor: 'rgba(152, 170, 74, 0.15)',
     padding: 12,
     borderRadius: 12,
     gap: 12,

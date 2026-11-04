@@ -1,3 +1,4 @@
+import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState } from 'react';
 import {
   View,
@@ -167,7 +168,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={styles.codeInput}
                   placeholder="000000"
-                  placeholderTextColor="#8FA595"
+                  placeholderTextColor="#A5A89B"
                   value={verificationCode}
                   onChangeText={setVerificationCode}
                   keyboardType="number-pad"
@@ -241,11 +242,11 @@ export default function RegisterScreen() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="person-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Nome')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
@@ -253,11 +254,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Email')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -266,11 +267,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Password')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -279,17 +280,17 @@ export default function RegisterScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color="#9DB3A4"
+                  color="#A5A89B"
                 />
               </TouchableOpacity>
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Conferma Password')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showPassword}
@@ -297,11 +298,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="calendar-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="calendar-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Data di nascita (gg/mm/aaaa)')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={birthDate}
                 onChangeText={(value) => setBirthDate(formatBirthInput(value))}
                 keyboardType="number-pad"
@@ -313,11 +314,11 @@ export default function RegisterScreen() {
             <Text style={styles.birthHint}>{tx('Serve per verificare che tu sia maggiorenne ({0}+). Non la mostriamo a nessuno.', [MIN_AGE])}</Text>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="gift-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="gift-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Codice Referral (opzionale)')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={referralCode}
                 onChangeText={setReferralCode}
                 autoCapitalize="characters"
@@ -331,14 +332,14 @@ export default function RegisterScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#0F1A14" />
+                <ActivityIndicator color="#0C0E09" />
               ) : (
                 <Text style={styles.registerButtonText}>{tt('Registrati')}</Text>
               )}
             </TouchableOpacity>
 
             <View style={styles.bonusContainer}>
-              <Text style={styles.bonusIcon}>🌾</Text>
+              <GranelloIcon size={28} />
               <Text style={styles.bonusText}>{tt('Riceverai 3 Granelli di benvenuto!')}</Text>
             </View>
 
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 24,
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  birthHint: { color: '#9DB3A4', fontSize: 12, lineHeight: 16, marginTop: -8, marginBottom: 14, paddingHorizontal: 4 },
+  birthHint: { color: '#A5A89B', fontSize: 12, lineHeight: 16, marginTop: -8, marginBottom: 14, paddingHorizontal: 4 },
   registerButton: {
     backgroundColor: colors.accent,
     borderRadius: 12,
@@ -450,7 +451,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   loginText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   loginLink: {
@@ -498,7 +499,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resendText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   resendLink: {

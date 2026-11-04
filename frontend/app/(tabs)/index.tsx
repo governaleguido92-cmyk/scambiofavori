@@ -1,3 +1,4 @@
+import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 import {
@@ -16,7 +17,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Category, ThanksEntry, CURRENCY_SYMBOL } from '../../src/services/api';
+import { api, Favor, Category, ThanksEntry } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { ReportModal } from '../../src/components/ReportModal';
@@ -164,9 +165,9 @@ export default function HomeScreen() {
   const renderThanksCard = ({ item }: { item: ThanksEntry }) => (
     <View style={styles.thanksCard}>
       <View style={styles.thanksHeader}>
-        <Ionicons name="heart" size={14} color="#ff6b6b" />
+        <Ionicons name="heart" size={14} color="#F87828" />
         <Text style={styles.thanksGiver}>{item.giver_name}</Text>
-        <Ionicons name="arrow-forward" size={14} color="#9DB3A4" />
+        <Ionicons name="arrow-forward" size={14} color="#A5A89B" />
         <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
       </View>
       <Text style={styles.thanksMessage} numberOfLines={1}>{`"${item.message}"`}</Text>
@@ -194,19 +195,19 @@ export default function HomeScreen() {
         >
           <View style={styles.promoBannerContent}>
             <View style={styles.promoBannerIcon}>
-              <Ionicons name="heart" size={24} color="#FFD700" />
+              <Ionicons name="heart" size={24} color="#98AA4A" />
             </View>
             <View style={styles.promoBannerText}>
               <Text style={styles.promoBannerTitle}>{tt('Diventa Sostenitore!')}</Text>
               <Text style={styles.promoBannerSubtitle}>{tt('Solo 1€/mese per supportare la community e ottenere il badge dorato ✨')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#FFD700" />
+            <Ionicons name="chevron-forward" size={20} color="#98AA4A" />
           </View>
         </TouchableOpacity>
       ) : thanksBoard.length > 0 ? (
         <View style={styles.thanksBoardSection}>
           <View style={styles.thanksBoardHeader}>
-            <Ionicons name="heart" size={20} color="#ff6b6b" />
+            <Ionicons name="heart" size={20} color="#F87828" />
             <Text style={styles.thanksBoardTitle}>{tt('Bacheca dei Grazie')}</Text>
           </View>
           <FlatList
@@ -309,7 +310,7 @@ export default function HomeScreen() {
           <MessagesButton size={36} />
           {/* Granelli Display */}
           <View style={styles.soliDisplay}>
-            <Text style={styles.soliDisplaySymbol}>{CURRENCY_SYMBOL}</Text>
+            <GranelloIcon size={18} />
             <Text style={styles.soliDisplayValue}>{user?.granelli || 0}</Text>
           </View>
         </View>
@@ -336,7 +337,7 @@ export default function HomeScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#B8C868" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#98AA4A" />
           }
         />
       )}

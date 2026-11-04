@@ -186,11 +186,11 @@ export default function LoginScreen() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Email')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -199,11 +199,11 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Password')}
-                placeholderTextColor="#9DB3A4"
+                placeholderTextColor="#A5A89B"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -212,7 +212,7 @@ export default function LoginScreen() {
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color="#9DB3A4"
+                  color="#A5A89B"
                 />
               </TouchableOpacity>
             </View>
@@ -223,7 +223,7 @@ export default function LoginScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#0F1A14" />
+                <ActivityIndicator color="#0C0E09" />
               ) : (
                 <Text style={styles.loginButtonText}>{tt('Accedi')}</Text>
               )}
@@ -290,7 +290,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
   },
   keyboardView: {
     flex: 1,
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: '#9DB3A4',
+    color: '#A5A89B',
     marginTop: 8,
   },
   form: {
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   loginButton: {
-    backgroundColor: '#B8C868',
+    backgroundColor: '#98AA4A',
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   loginButtonText: {
-    color: '#0F1A14',
+    color: '#0C0E09',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
   dividerText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     paddingHorizontal: 16,
   },
   googleButton: {
@@ -407,11 +407,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   registerText: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
   },
   registerLink: {
-    color: '#B8C868',
+    color: '#98AA4A',
     fontSize: 14,
     fontWeight: '600',
   },

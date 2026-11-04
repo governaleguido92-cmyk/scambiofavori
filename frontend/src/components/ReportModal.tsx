@@ -95,11 +95,11 @@ export const ReportModal: React.FC<ReportModalProps> = ({
       <View style={styles.overlay}>
         <View style={styles.modalContent}>
           <View style={styles.header}>
-            <Ionicons name="flag" size={24} color="#ff6b6b" />
+            <Ionicons name="flag" size={24} color="#F87828" />
             <Text style={styles.title}>{tt('Segnala')}{' '}{reportType === 'favor' ? tt('Annuncio') : tt('Utente')}
             </Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#9DB3A4" />
+              <Ionicons name="close" size={24} color="#A5A89B" />
             </TouchableOpacity>
           </View>
 
@@ -128,7 +128,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   <Ionicons
                     name={reason.icon as any}
                     size={20}
-                    color={selectedReason === reason.id ? '#fff' : '#9DB3A4'}
+                    color={selectedReason === reason.id ? '#fff' : '#A5A89B'}
                   />
                 </View>
                 <Text style={[
@@ -138,7 +138,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   {tt(reason.label)}
                 </Text>
                 {selectedReason === reason.id && (
-                  <Ionicons name="checkmark-circle" size={20} color="#ff6b6b" />
+                  <Ionicons name="checkmark-circle" size={20} color="#F87828" />
                 )}
               </TouchableOpacity>
             ))}
@@ -148,7 +148,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           <TextInput
             style={styles.descriptionInput}
             placeholder={tt('Descrivi il problema...')}
-            placeholderTextColor="#8FA595"
+            placeholderTextColor="#A5A89B"
             value={description}
             onChangeText={setDescription}
             multiline
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#0F1A14',
+    backgroundColor: '#0C0E09',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   targetInfo: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     marginBottom: 16,
   },
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   sectionTitle: {
-    color: '#9DB3A4',
+    color: '#A5A89B',
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 12,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   reasonItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   reasonItemSelected: {
-    borderColor: '#ff6b6b',
+    borderColor: '#F87828',
     backgroundColor: '#ff6b6b15',
   },
   reasonIcon: {
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   reasonIconSelected: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
   },
   reasonLabel: {
     flex: 1,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   descriptionInput: {
-    backgroundColor: '#1A2E22',
+    backgroundColor: '#171A10',
     borderRadius: 12,
     padding: 14,
     color: '#fff',
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#F87828',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
