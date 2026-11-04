@@ -422,6 +422,8 @@ async def delete_account(
     
     # 4b. Garanzie date e ricevute, segnalazioni su di lui; quelle fatte da lui restano anonime
     await db.vouches.delete_many({"$or": [{"voucher_id": user_id}, {"vouchee_id": user_id}]})
+    await db.area_messages.delete_many({"author_id": user_id})
+    await db.neighborhood_notices.delete_many({"author_id": user_id})
     await db.general_reports.delete_many({"report_type": "user", "target_id": user_id})
     await db.general_reports.update_many({"reporter_id": user_id}, {"$set": {"reporter_id": "deleted_user"}})
     await db.favors.update_many({"cancelled_by": user_id}, {"$set": {"cancelled_by": "deleted_user"}})

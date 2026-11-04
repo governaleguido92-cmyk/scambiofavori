@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useRef, useState, useCallback, useMemo } from 'react';
+import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 import {
   View,
   Text,
@@ -16,7 +17,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, CURRENCY_NAME, CURRENCY_SYMBOL } from '../../src/services/api';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
-import { notify } from '../../src/utils/notify';
+import { notify, showRefusal } from '../../src/utils/notify';
 import { useMessages } from '../../src/context/MessagesContext';
 import { MessagesButton } from '../../src/components/MessagesButton';
 import { BrandLogo } from '../../src/components/BrandLogo';
@@ -105,15 +106,19 @@ export default function MyFavorsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [chosenTab, setChosenTab] = useState<MyFavorTab | null>(null);
   const { refresh: refreshMessages } = useMessages();
+  const loadFailed = useRef(false);
 
   const loadMyFavors = useCallback(async () => {
     if (!token) return;
     try {
       const data = await api.getMyFavors(token);
       setFavors(data);
+      loadFailed.current = false;
     } catch (error) {
       logger.debug('Error loading my favors:', error);
-      notify(t('common.error'), tt('Non riesco ad aggiornare i tuoi favori. Riprova tra poco.'));
+      // Con l'aggiornamento ogni 3 secondi l'errore si mostra una volta sola, finché la rete non torna
+      if (!loadFailed.current) notify(t('common.error'), tt('Non riesco ad aggiornare i tuoi favori. Riprova tra poco.'));
+      loadFailed.current = true;
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -126,6 +131,7 @@ export default function MyFavorsScreen() {
       refreshMessages();
     }, [loadMyFavors, refreshMessages])
   );
+  useLiveRefresh(loadMyFavors);  // aggiornamento ogni 3 secondi
 
   const groups = useMemo(() => groupByTab(favors), [favors]);
   // Finché non scegli una scheda si apre quella che richiede attenzione: i favori in corso, altrimenti i pubblicati.
@@ -153,7 +159,7 @@ export default function MyFavorsScreen() {
               loadMyFavors();
               notify(t('common.success'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
             } catch (error: any) {
-              notify(t('common.error'), error.message || t('favor.errorComplete'));
+              showRefusal(t('common.error'), error.message || t('favor.errorComplete'), tt('Ho capito'));
             }
           },
         },

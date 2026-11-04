@@ -104,7 +104,8 @@ PRIVACY_RADIUS_METERS = 300
 PRIVACY_MIN_OFFSET_RATIO = 1 / 3  # never show a point closer than a third of the radius (100 m)
 
 # Geofencing: max distance for QR exchange
-MAX_EXCHANGE_DISTANCE_METERS = 100
+MAX_EXCHANGE_DISTANCE_METERS = 30
+MAX_GPS_TOLERANCE_METERS = 50  # quanto può allargare il limite l'incertezza dichiarata dal GPS
 
 # ========================
 # SOCIAL DEBT LIMIT SYSTEM
@@ -118,7 +119,7 @@ RELIABILITY_DROP_RATE = 0.5  # How much reliability drops per check
 # CHAT MESSAGE FILTER (Anti-Money)
 # ========================
 import re
-from moderation import check_text
+from moderation import check_text, normalize
 
 # Regex patterns to block real money transactions
 MONEY_FILTER_PATTERNS = [
@@ -203,6 +204,27 @@ def contains_off_app_contact(text: str) -> bool:
     """True se il testo invita a continuare la conversazione fuori dall'app."""
     text_lower = text.lower()
     return any(re.search(pattern, text_lower) for pattern in OFF_APP_PATTERNS)
+
+
+# I favori si fanno sempre di persona: niente favori a distanza (online, videochiamata, da remoto...).
+REMOTE_FAVOR_PATTERNS = [
+    r'\bon[- ]?line\b',
+    r'\ba distanza\b',
+    r'\bda remoto\b',
+    r'\bremot[oa]\b',
+    r'\bvideo ?chiamat\w*',
+    r'\bvideo ?call\b',
+    r'\b(zoom|skype|google meet)\b',
+    r'\bper telefono\b',
+    r'\bvia chat\b',
+]
+REMOTE_FAVOR_MESSAGE = "I favori si fanno di persona: non sono ammessi favori a distanza. Scrivi dove e quando vi incontrate."
+
+
+def contains_remote_favor(text: str) -> bool:
+    """True se il testo descrive un favore a distanza (online, in videochiamata, da remoto...)."""
+    text_lower = normalize(text or "")
+    return any(re.search(pattern, text_lower) for pattern in REMOTE_FAVOR_PATTERNS)
 
 
 def contains_offensive_language(text: str) -> bool:
@@ -664,6 +686,7 @@ class FavorComplete(BaseModel):
     # User's current location for proximity check
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    accuracy_meters: Optional[float] = None  # incertezza del GPS dichiarata dal telefono
 
 class ReviewCreate(BaseModel):
     favor_id: str
@@ -894,17 +917,32 @@ def generate_qr_image(data: str, favor_id: str = None) -> str:
     return f"data:image/png;base64,{img_base64}"
 
 async def get_current_user(request: Request) -> User:
-    """Get current user from session token"""
-    session_token = request.cookies.get("session_token")
-    
-    if not session_token:
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            session_token = auth_header.split(" ")[1]
-    
-    if not session_token:
+    """Get current user from the Authorization header or the session cookie.
+
+    L'intestazione ha la precedenza e, se il suo accesso non vale, si prova il cookie (e viceversa): un cookie vecchio
+    rimasto nel browser non deve oscurare un accesso valido.
+    """
+    candidates = []
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        candidates.append(auth_header.split(" ", 1)[1])
+    cookie_token = request.cookies.get("session_token")
+    if cookie_token and cookie_token not in candidates:
+        candidates.append(cookie_token)
+
+    if not candidates:
         raise HTTPException(status_code=401, detail="Non autenticato")
-    
+
+    last_error: Optional[HTTPException] = None
+    for session_token in candidates:
+        try:
+            return await _user_from_session_token(session_token)
+        except HTTPException as error:
+            last_error = error
+    raise last_error
+
+
+async def _user_from_session_token(session_token: str) -> User:
     user_id = decode_jwt_token(session_token)
     if user_id:
         user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
@@ -1211,7 +1249,8 @@ async def log_security_transaction(
     granelli_cost: int,
     latitude: float = None,
     longitude: float = None,
-    qr_code: str = None
+    qr_code: str = None,
+    distance_m: float = None,
 ):
     """Log QR transaction for security/legal purposes (internal only)"""
     import hashlib
@@ -1229,6 +1268,7 @@ async def log_security_transaction(
         "granelli_cost": granelli_cost,
         "gps_latitude": latitude,
         "gps_longitude": longitude,
+        "distance_m": round(distance_m) if distance_m is not None else None,
         "qr_code_used": qr_code,
         "timestamp": datetime.now(timezone.utc),
         "ip_address": None,  # Can be added if needed
@@ -1350,6 +1390,10 @@ async def get_blocked_user_ids(user_id: str) -> set:
 # Il telefono si verifica solo alla registrazione (l'app lo chiede se questo valore è true, vedi /api/config). Pubblicare o
 # accettare un favore non lo richiede mai. Spento finché non è configurato un servizio SMS.
 PHONE_VERIFICATION_REQUIRED = os.environ.get("PHONE_VERIFICATION_REQUIRED", "false").lower() == "true"
+
+# Se true, per confermare un favore serve la posizione del telefono (si deve essere sul posto). Da accendere quando la maggior
+# parte degli utenti ha l'app che la invia: le versioni vecchie non la mandano e non potrebbero più confermare.
+PROXIMITY_REQUIRED = os.environ.get("PROXIMITY_REQUIRED", "false").lower() == "true"
 PHONE_CODE_TTL_MINUTES = 10
 PHONE_RESEND_SECONDS = 60
 PHONE_MAX_REQUESTS_PER_HOUR = 5

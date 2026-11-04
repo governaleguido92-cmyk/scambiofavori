@@ -33,10 +33,11 @@ import { getCategoryVisual } from '../../src/utils/favorVisual';
 import i18n from '../../src/i18n';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
-import { notify } from '../../src/utils/notify';
+import { notify, showRefusal } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 import { goBackOrHome } from '../../src/utils/navigation';
 import { buildShareText } from '../../src/utils/shareFavor';
+import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 
 // Theme colors
 const colors = {
@@ -75,6 +76,7 @@ export default function ChatScreen() {
   const [showMeeting, setShowMeeting] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
+  const loadFailed = useRef(false);
 
   const loadData = useCallback(async () => {
     if (!token || !favorId) return;
@@ -87,9 +89,12 @@ export default function ChatScreen() {
       setFavor(favorData);
       setMessages(messagesData);
       setChatStatus(statusData);
+      loadFailed.current = false;
     } catch (error: any) {
       logger.debug('Error loading chat:', error);
-      notify(t('common.error'), error.message || t('chat.title'));
+      // Con l'aggiornamento ogni 3 secondi l'errore si mostra una volta sola, finché la rete non torna
+      if (!loadFailed.current) notify(t('common.error'), error.message || t('chat.title'));
+      loadFailed.current = true;
     } finally {
       setLoading(false);
     }
@@ -97,10 +102,8 @@ export default function ChatScreen() {
 
   useEffect(() => {
     loadData();
-    // Real-time polling every 5 seconds
-    const interval = setInterval(loadData, 5000);
-    return () => clearInterval(interval);
   }, [loadData]);
+  useLiveRefresh(loadData);  // aggiornamento ogni 3 secondi
 
   const sendText = async (text: string, clearInput: boolean): Promise<boolean> => {
     if (!token || !favorId || !text.trim() || chatStatus?.read_only) return false;
@@ -158,7 +161,7 @@ export default function ChatScreen() {
               await loadData();
               notify(t('common.success'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
             } catch (error: any) {
-              notify(t('common.error'), error.message || t('favor.errorComplete'));
+              showRefusal(t('common.error'), error.message || t('favor.errorComplete'), tt('Ho capito'));
             }
           },
         },
