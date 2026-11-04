@@ -1,0 +1,25 @@
+name: Deploy Render
+
+# Dopo che i test (CI) di main sono verdi, chiede a Render di pubblicare l'ultimo commit.
+# Serve il segreto RENDER_DEPLOY_HOOK (Render > Settings > Deploy Hook). Senza segreto il passo si ferma con un messaggio.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Avvia il deploy su Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "Segreto RENDER_DEPLOY_HOOK mancante: deploy non avviato."
+            exit 1
+          fi
+          curl --fail --silent --show-error --max-time 30 -X POST "$RENDER_DEPLOY_HOOK" > /dev/null
+          echo "Deploy richiesto a Render per il commit ${{ github.event.workflow_run.head_sha }}."
