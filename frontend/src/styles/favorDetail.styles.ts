@@ -191,7 +191,7 @@ export const styles = StyleSheet.create({
     marginTop: 12,
   },
   scanQRButtonText: {
-    color: '#fff',
+    color: '#0C0E09',
     fontSize: 16,
     fontWeight: 'bold',
   },

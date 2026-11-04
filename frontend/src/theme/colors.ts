@@ -34,7 +34,7 @@ export const colors = {
   // Status - solo colori del logo
   success: '#98AA4A',
   warning: '#F87828',
-  error: '#E0560F',
+  error: '#F26A1C',
   info: '#98AA4A',
 
   // Granelli (moneta) - Oliva chiaro
@@ -42,8 +42,8 @@ export const colors = {
   granelliMuted: 'rgba(152, 170, 74, 0.15)',
 
   // Debito - Arancione scuro
-  debt: '#E0560F',
-  debtMuted: 'rgba(224, 86, 15, 0.15)',
+  debt: '#F26A1C',
+  debtMuted: 'rgba(242, 106, 28, 0.15)',
 
   // Borders
   border: '#2E3420',

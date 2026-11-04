@@ -199,7 +199,7 @@ export default function ProfileScreen() {
               </View>
             </View>
             <TouchableOpacity style={styles.donateButton} onPress={() => setShowDonate(true)} accessibilityRole="button" accessibilityLabel={tt('Dona al Fondo Solidarietà')}>
-              <Ionicons name="gift" size={20} color="#fff" />
+              <Ionicons name="gift" size={20} color="#0C0E09" />
               <Text style={styles.donateButtonText}>{tt('Dona')}</Text>
             </TouchableOpacity>
           </View>

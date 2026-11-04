@@ -826,7 +826,7 @@ export default function FavorDetailScreen() {
               disabled={actionLoading}
               data-testid="scan-qr-button"
             >
-              <Ionicons name="scan" size={20} color="#fff" />
+              <Ionicons name="scan" size={20} color="#0C0E09" />
               <Text style={styles.scanQRButtonText}>{tt('Scansiona QR per Completare')}</Text>
             </TouchableOpacity>
           )}

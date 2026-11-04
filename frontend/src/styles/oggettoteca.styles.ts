@@ -228,7 +228,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   returnButtonText: {
-    color: '#fff',
+    color: '#0C0E09',
     fontWeight: '600',
   },
   modalOverlay: {

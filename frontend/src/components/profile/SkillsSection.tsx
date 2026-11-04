@@ -117,10 +117,10 @@ export function SkillsModal({ visible, categories, selected, saving, onToggle, o
               accessibilityRole="button"
             >
               {saving ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color="#0C0E09" />
               ) : (
                 <>
-                  <Ionicons name="save" size={20} color="#fff" />
+                  <Ionicons name="save" size={20} color="#0C0E09" />
                   <Text style={styles.modalConfirmText}>{tt('Salva')}</Text>
                 </>
               )}

@@ -494,7 +494,7 @@ export const styles = StyleSheet.create({
     fontSize: 18,
   },
   categoryChipTextOnColor: {
-    color: '#fff',
+    color: '#0C0E09',
     fontWeight: '700',
   },
   validityChoices: {

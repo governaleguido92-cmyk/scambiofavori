@@ -51,7 +51,7 @@ export function ReferralModal({ visible, info, onClose, onShare }: ReferralModal
               <Text style={styles.modalCancelText}>{tt('Chiudi')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalConfirmButton} onPress={onShare} disabled={!info} accessibilityRole="button">
-              <Ionicons name="share-social" size={20} color="#fff" />
+              <Ionicons name="share-social" size={20} color="#0C0E09" />
               <Text style={styles.modalConfirmText}>{tt('Condividi')}</Text>
             </TouchableOpacity>
           </View>

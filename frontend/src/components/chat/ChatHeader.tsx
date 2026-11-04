@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   subtitle: { color: 'rgba(255,255,255,0.88)', fontSize: 13, marginTop: 1 },
   pillRow: { flexDirection: 'row', gap: 8, marginTop: 8, marginLeft: 52 },
   statusPill: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
-  statusText: { color: '#fff', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
+  statusText: { color: colors.background, fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
   granelliPill: {
     borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3,
     backgroundColor: '#0C0E09', borderWidth: 1, borderColor: 'rgba(152,170,74,0.5)',
@@ -121,6 +121,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     marginTop: 10, paddingVertical: 12, borderRadius: 12, backgroundColor: '#fff',
   },
-  completeText: { color: colors.primaryDark, fontSize: 15, fontWeight: '800' },
+  completeText: { color: colors.background, fontSize: 15, fontWeight: '800' },
   waitText: { color: 'rgba(255,255,255,0.92)', fontSize: 12.5, marginTop: 10, marginLeft: 52 },
 });

@@ -766,7 +766,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    color: colors.textPrimary,
+    color: colors.background,
     fontSize: 14,
     fontWeight: 'bold',
   },

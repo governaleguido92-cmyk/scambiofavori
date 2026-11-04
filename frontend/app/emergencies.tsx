@@ -246,7 +246,7 @@ export default function EmergenciesScreen() {
         style={styles.createButton}
         onPress={() => setShowCreateModal(true)}
       >
-        <Ionicons name="add" size={24} color="#fff" />
+        <Ionicons name="add" size={24} color="#0C0E09" />
         <Text style={styles.createButtonText}>{tt('Ho bisogno di aiuto')}</Text>
       </TouchableOpacity>
 
@@ -304,10 +304,10 @@ export default function EmergenciesScreen() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color="#0C0E09" />
                 ) : (
                   <>
-                    <Ionicons name="alert-circle" size={20} color="#fff" />
+                    <Ionicons name="alert-circle" size={20} color="#0C0E09" />
                     <Text style={styles.modalConfirmText}>{tt('Invia Emergenza')}</Text>
                   </>
                 )}
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   helpButtonText: {
-    color: '#fff',
+    color: '#0C0E09',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   createButtonText: {
-    color: '#fff',
+    color: '#0C0E09',
     fontSize: 16,
     fontWeight: 'bold',
   },

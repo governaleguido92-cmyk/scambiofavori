@@ -322,7 +322,7 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   donateButtonText: {
-    color: '#fff',
+    color: '#0C0E09',
     fontWeight: '600',
   },
   fundDescription: {
@@ -810,7 +810,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
   addSkillsButtonText: {
-    color: '#fff',
+    color: '#0C0E09',
     fontSize: 14,
     fontWeight: '600',
   },
