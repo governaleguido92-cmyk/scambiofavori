@@ -386,3 +386,14 @@ async def test_failed_send_does_not_use_up_the_wait_or_the_hourly_limit(client, 
     assert first.status_code == 503
     assert second.status_code == 200
     assert await app_db.phone_requests.count_documents({"user_id": "me"}) == 1
+
+
+async def test_verifying_the_phone_records_when_it_happened(client, app_db, sent):
+    """Serve al rapporto mensile (quanti telefoni verificati nel mese)."""
+    await app_db.users.insert_one(make_user("me"))
+    await _request(client)
+
+    await client.post("/api/auth/phone/verify", json={"code": _code(sent)}, headers=auth("me"))
+
+    stored = await app_db.users.find_one({"user_id": "me"})
+    assert stored["phone_verified_at"] is not None

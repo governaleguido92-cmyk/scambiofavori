@@ -245,3 +245,13 @@ async def test_delete_account_anonymizes_who_cancelled_a_favor(client, app_db):
     await _delete(client, "u1", "u1@example.com")
 
     assert (await app_db.favors.find_one({"favor_id": "f1"}))["cancelled_by"] == "deleted_user"
+
+
+async def test_delete_account_leaves_only_an_anonymous_counter(client, app_db):
+    await app_db.users.insert_one(make_user("u1", email="u1@example.com"))
+
+    await _delete(client, "u1", "u1@example.com")
+
+    records = [r async for r in app_db.account_deletions.find({}, {"_id": 0})]
+    assert len(records) == 1
+    assert set(records[0]) == {"deleted_at"}  # nessun id, nome o email

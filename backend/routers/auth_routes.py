@@ -199,6 +199,7 @@ async def verify_phone_code(request: Request, data: PhoneVerifyBody, current_use
         {
             "$set": {
                 "phone_verified": True,
+                "phone_verified_at": datetime.now(timezone.utc),
                 "phone_hash": phone_hash,
                 "phone_masked": user_doc.get("phone_pending_masked"),
             },

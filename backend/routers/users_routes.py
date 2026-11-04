@@ -439,6 +439,8 @@ async def delete_account(
 
     # 7. Elimina definitivamente l'account utente
     await db.users.delete_one({"user_id": user_id})
+    # Solo un contatore anonimo (la data), per il rapporto mensile: nessun id, nome o email
+    await db.account_deletions.insert_one({"deleted_at": datetime.now(timezone.utc)})
     
     return {
         "message": "Account eliminato con successo",
