@@ -57,7 +57,7 @@ async def find_meeting_places(
         if category is None:
             found = await places.search_by_name(lat, lon, text)
         else:
-            found = await places.search(lat, lon, category)
+            found = await places.search_with_fallback(lat, lon, category)
             if name_filter:
                 wanted = places.fold(name_filter)
                 found = [place for place in found if wanted in places.fold(place["name"])]

@@ -17,15 +17,18 @@ import { Image } from 'react-native';
 import { useAuth } from '../../src/context/AuthContext';
 import { api } from '../../src/services/api';
 import RegistrationOnboarding from '../../src/components/RegistrationOnboarding';
+import { routeAfterRegistration } from '../../src/utils/afterRegistration';
+import { checkBirthDate, formatBirthInput, MIN_AGE } from '../../src/utils/birthDate';
 import colors from '../../src/theme/colors';
 import { notify } from '../../src/utils/notify';
-import { tt } from '../../src/i18n/tt';
+import { tt, tx } from '../../src/i18n/tt';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +47,17 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     if (!name.trim() || !email.trim() || !password) {
       notify(tt('Errore'), tt('Compila tutti i campi'));
+      return;
+    }
+
+    const birth = checkBirthDate(birthDate);
+    if (!birth.ok) {
+      notify(
+        tt('Errore'),
+        birth.reason === 'underage'
+          ? tx('Devi avere almeno {0} anni per iscriverti.', [MIN_AGE])
+          : tt('Inserisci la tua data di nascita nel formato gg/mm/aaaa')
+      );
       return;
     }
 
@@ -66,12 +80,12 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
-      const result = await register(email.trim(), password, name.trim(), referralCode || undefined);
+      const result = await register(email.trim(), password, name.trim(), referralCode || undefined, birth.iso);
       if (result.requiresVerification && result.userId) {
         setUserId(result.userId);
         setVerificationStep(true);
       } else {
-        router.replace('/(tabs)');
+        router.replace((await routeAfterRegistration()) as never);
       }
     } catch (error: any) {
       notify(tt('Errore'), error.message || tt('Registrazione fallita'));
@@ -89,8 +103,10 @@ export default function RegisterScreen() {
     try {
       const response = await api.verifyEmailCode(userId, verificationCode);
       if (response.token && response.user) {
+        // La destinazione si decide prima dell'accesso, così termini e slide non compaiono per un attimo sopra la pagina
+        const nextRoute = await routeAfterRegistration();
         await loginWithToken(response.token, response.user);
-        router.replace('/(tabs)');
+        router.replace(nextRoute as never);
       }
     } catch (error: any) {
       notify(tt('Errore'), error.message || tt('Codice non valido'));
@@ -281,6 +297,22 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
+              <Ionicons name="calendar-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder={tt('Data di nascita (gg/mm/aaaa)')}
+                placeholderTextColor="#9DB3A4"
+                value={birthDate}
+                onChangeText={(value) => setBirthDate(formatBirthInput(value))}
+                keyboardType="number-pad"
+                maxLength={10}
+                accessibilityLabel={tt('Data di nascita')}
+                data-testid="birth-date-input"
+              />
+            </View>
+            <Text style={styles.birthHint}>{tx('Serve per verificare che tu sia maggiorenne ({0}+). Non la mostriamo a nessuno.', [MIN_AGE])}</Text>
+
+            <View style={styles.inputContainer}>
               <Ionicons name="gift-outline" size={20} color="#9DB3A4" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
@@ -383,6 +415,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  birthHint: { color: '#9DB3A4', fontSize: 12, lineHeight: 16, marginTop: -8, marginBottom: 14, paddingHorizontal: 4 },
   registerButton: {
     backgroundColor: colors.accent,
     borderRadius: 12,

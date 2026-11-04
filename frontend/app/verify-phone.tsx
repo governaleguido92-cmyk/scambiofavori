@@ -13,7 +13,7 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../src/context/AuthContext';
 import { api } from '../src/services/api';
@@ -22,6 +22,8 @@ import { notify } from '../src/utils/notify';
 import { tt } from '../src/i18n/tt';
 import { BrandLogo } from '../src/components/BrandLogo';
 import { goBackOrHome } from '../src/utils/navigation';
+import { HOME_ROUTE } from '../src/utils/afterRegistration';
+import { Linking } from 'react-native';
 import { buildPhoneNumber, DEFAULT_PHONE_PREFIX, PHONE_PREFIXES, PhonePrefix } from '../src/utils/phonePrefixes';
 
 const MIN_NATIONAL_DIGITS = 6;
@@ -35,6 +37,9 @@ type Step = 'phone' | 'code';
 export default function VerifyPhoneScreen() {
   const { token, user, refreshUser } = useAuth();
   const router = useRouter();
+  // Dalla registrazione: ultimo passo prima di entrare, con una spiegazione sulla sicurezza
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const isRegistration = from === 'register';
   const [step, setStep] = useState<Step>('phone');
   const [phone, setPhone] = useState('');
   const [prefix, setPrefix] = useState<PhonePrefix>(DEFAULT_PHONE_PREFIX);
@@ -51,7 +56,7 @@ export default function VerifyPhoneScreen() {
     return () => clearTimeout(timer);
   }, [secondsLeft]);
 
-  const goBack = () => goBackOrHome(router);
+  const goBack = () => (isRegistration ? router.replace(HOME_ROUTE as never) : goBackOrHome(router));
 
   const sendCode = async () => {
     if (!token || busy || !phoneReady) return;
@@ -69,14 +74,17 @@ export default function VerifyPhoneScreen() {
     }
   };
 
-  const confirmCode = async () => {
-    if (!token || busy || code.length !== CODE_LENGTH) return;
+  const confirmCode = async (typedCode: string = code) => {
+    if (!token || busy || typedCode.length !== CODE_LENGTH) return;
     setBusy(true);
     setError(null);
     try {
-      await api.verifyPhoneCode(code, buildPhoneNumber(prefix, phone), token);
+      await api.verifyPhoneCode(typedCode, buildPhoneNumber(prefix, phone), token);
       await refreshUser();
-      notify(tt('Telefono verificato'), tt('Ora puoi pubblicare e accettare favori.'));
+      notify(
+        tt('Telefono verificato'),
+        isRegistration ? tt('Benvenuto! Ora puoi aiutare e chiedere favori.') : tt('Ora puoi pubblicare e accettare favori.')
+      );
       goBack();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : tt('Codice non valido'));
@@ -108,6 +116,7 @@ export default function VerifyPhoneScreen() {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.column}>
             <View style={styles.topBar}>
+              {isRegistration && step === 'phone' ? <View style={styles.back} /> : (
               <TouchableOpacity
                 onPress={step === 'code' ? () => { setStep('phone'); setError(null); } : goBack}
                 accessibilityRole="button"
@@ -117,6 +126,7 @@ export default function VerifyPhoneScreen() {
               >
                 <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
               </TouchableOpacity>
+              )}
               <BrandLogo />
             </View>
 
@@ -125,11 +135,15 @@ export default function VerifyPhoneScreen() {
                 <Ionicons name={step === 'phone' ? 'call' : 'chatbubble-ellipses'} size={36} color={colors.lime} />
               </View>
               <Text style={styles.title}>
-                {step === 'phone' ? tt('Verifica il tuo telefono') : tt('Inserisci il codice')}
+                {step === 'phone'
+                  ? isRegistration ? tt('Un ultimo passo per la sicurezza di tutti') : tt('Verifica il tuo telefono')
+                  : tt('Inserisci il codice')}
               </Text>
               <Text style={styles.text}>
                 {step === 'phone'
-                  ? tt('Prima del tuo primo favore ti mandiamo un SMS con un codice. Il numero resta privato: gli altri vedono solo il segno "Telefono verificato".')
+                  ? isRegistration
+                    ? tt('Verifichiamo il tuo numero con un SMS per tenere fuori account falsi e truffatori. Non lo conserviamo e gli altri non lo vedono: vedono solo il segno "Telefono verificato".')
+                    : tt('Prima del tuo primo favore ti mandiamo un SMS con un codice. Il numero resta privato: gli altri vedono solo il segno "Telefono verificato".')
                   : tt('Ti abbiamo mandato un SMS con un codice di 6 cifre. Vale 10 minuti.')}
               </Text>
             </View>
@@ -160,6 +174,18 @@ export default function VerifyPhoneScreen() {
                     accessibilityLabel={tt('Numero di telefono')}
                   />
                 </View>
+                <Text style={styles.privacyNote}>
+                  {tt('Inviando il numero accetti che lo usiamo come spiegato nella')}{' '}
+                  <Text
+                    style={styles.privacyLink}
+                    onPress={() => router.push('/legal' as never)}
+                    accessibilityRole="link"
+                    data-testid="privacy-link"
+                  >
+                    {tt('Privacy Policy')}
+                  </Text>
+                  .
+                </Text>
                 {error && <Text style={styles.error}>{error}</Text>}
                 <TouchableOpacity
                   style={[styles.primary, (busy || !phoneReady) && styles.disabled]}
@@ -176,7 +202,11 @@ export default function VerifyPhoneScreen() {
                 <TextInput
                   style={styles.codeInput}
                   value={code}
-                  onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, CODE_LENGTH))}
+                  onChangeText={(value) => {
+                    const digits = value.replace(/\D/g, '').slice(0, CODE_LENGTH);
+                    setCode(digits);
+                    if (digits.length === CODE_LENGTH) confirmCode(digits);
+                  }}
                   placeholder="••••••"
                   placeholderTextColor={colors.textMuted}
                   keyboardType="number-pad"
@@ -189,7 +219,7 @@ export default function VerifyPhoneScreen() {
                 {error && <Text style={styles.error}>{error}</Text>}
                 <TouchableOpacity
                   style={[styles.primary, (busy || code.length !== CODE_LENGTH) && styles.disabled]}
-                  onPress={confirmCode}
+                  onPress={() => confirmCode()}
                   disabled={busy || code.length !== CODE_LENGTH}
                   accessibilityRole="button"
                 >
@@ -204,6 +234,20 @@ export default function VerifyPhoneScreen() {
                   <Text style={[styles.linkText, secondsLeft > 0 && styles.linkDisabled]}>
                     {secondsLeft > 0 ? `${tt('Rinvia il codice tra')} ${secondsLeft} s` : tt('Rinvia il codice')}
                   </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.link}
+                  onPress={() => { setStep('phone'); setCode(''); setError(null); }}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.linkText}>{tt('Cambia numero')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.link}
+                  onPress={() => Linking.openURL('mailto:infoapp@scambiofavori.it?subject=Non%20ricevo%20il%20codice')}
+                  accessibilityRole="link"
+                >
+                  <Text style={styles.linkDisabled}>{tt('Non arriva il codice? Scrivici')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -295,6 +339,8 @@ const styles = StyleSheet.create({
   },
   primaryText: { color: colors.background, fontSize: 16, fontWeight: '800' },
   disabled: { opacity: 0.5 },
+  privacyNote: { color: colors.textSecondary, fontSize: 12, lineHeight: 17, marginBottom: 14 },
+  privacyLink: { color: colors.textPrimary, fontWeight: '600', textDecorationLine: 'underline' },
   link: { alignItems: 'center', paddingVertical: 10 },
   linkText: { color: colors.textPrimary, fontSize: 14, fontWeight: '600', textDecorationLine: 'underline' },
   linkDisabled: { textDecorationLine: 'none', opacity: 0.7 },

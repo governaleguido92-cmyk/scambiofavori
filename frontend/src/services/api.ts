@@ -395,11 +395,11 @@ export const api = {
     return handleResponse(response);
   },
 
-  register: async (email: string, password: string, name: string, referralCode?: string): Promise<AuthResponse> => {
+  register: async (email: string, password: string, name: string, referralCode?: string, birthDate?: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/api/auth/register`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ email, password, name, referral_code: referralCode }),
+      body: JSON.stringify({ email, password, name, referral_code: referralCode, birth_date: birthDate }),
     });
     return handleResponse(response);
   },
@@ -872,6 +872,12 @@ export const api = {
     const response = await fetch(`${API_URL}/api/users/${userId}/public`, {
       headers: getHeaders(token),
     });
+    return handleResponse(response);
+  },
+
+  /** Impostazioni pubbliche del server (senza accesso): oggi solo se il telefono va verificato alla registrazione. */
+  getAppConfig: async (): Promise<{ phone_verification_required: boolean }> => {
+    const response = await fetch(`${API_URL}/api/config`);
     return handleResponse(response);
   },
 

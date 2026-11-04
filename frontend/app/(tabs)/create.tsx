@@ -29,7 +29,7 @@ import { getCategoryVisual } from '../../src/utils/favorVisual';
 import { getTitleExamples } from '../../src/utils/favorExamples';
 import { granelliWord } from '../../src/utils/granelli';
 import { logger } from '../../src/utils/logger';
-import { notify } from '../../src/utils/notify';
+import { notify, showRefusal } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 
 const DEBT_LIMIT = -3; // Social debt threshold
@@ -298,7 +298,7 @@ export default function CreateFavorScreen() {
       );
     } catch (error: any) {
       if (!openPhoneVerificationIfNeeded(error, router)) {
-        notify(t('common.error'), error.message || t('create.errorTitle'));
+        showRefusal(t('common.error'), error.message || t('create.errorTitle'), tt('Ho capito'));
       }
     } finally {
       setIsLoading(false);
