@@ -388,7 +388,8 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
         {"$set": {
             "status": "accepted",
             "accepted_by": current_user.user_id,
-            "accepted_by_name": current_user.name
+            "accepted_by_name": current_user.name,
+            "accepted_at": datetime.now(timezone.utc),
         }},
         return_document=True,
         projection={"_id": 0}
