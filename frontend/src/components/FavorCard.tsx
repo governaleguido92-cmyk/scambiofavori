@@ -1,6 +1,6 @@
 import { GranelloIcon } from './GranelloIcon';
 import { useRouter } from 'expo-router';
-import { favorKindLabel } from '../utils/favorKind';
+import { favorKindLabel, granelliFlowLabel } from '../utils/favorKind';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
@@ -82,7 +82,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
           <Text style={styles.gridKindText}>{kindPillLabel}</Text>
         </View>
         <View style={styles.gridGranelliPill}>
-          <Text style={styles.gridGranelliText}>{isGive ? tt('Guadagna') : tt('Spendi')} <GranelloIcon size={14} /> {item.granelli_cost}</Text>
+          <Text style={styles.gridGranelliText}>{tt(granelliFlowLabel(item, currentUserId))} <GranelloIcon size={14} /> {item.granelli_cost}</Text>
         </View>
         {statusLabel && (
           <View style={[styles.gridStatusPill, { backgroundColor: statusColor ?? colors.primary }]}>

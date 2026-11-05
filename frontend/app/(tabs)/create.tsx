@@ -1,3 +1,4 @@
+import { readableTextColor } from '../../src/utils/readableColor';
 import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
@@ -508,7 +509,7 @@ export default function CreateFavorScreen() {
                     accessibilityState={{ selected: active }}
                   >
                     <Text style={styles.categoryChipEmoji}>{visual.emoji}</Text>
-                    <Text style={[styles.categoryChipText, active && styles.categoryChipTextOnColor]}>
+                    <Text style={[styles.categoryChipText, active && styles.categoryChipTextOnColor, active && { color: readableTextColor(visual.color) }]}>
                       {tt(cat.name)}
                     </Text>
                   </TouchableOpacity>
