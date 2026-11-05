@@ -114,6 +114,8 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Presentati ai vicini di zona': 'Introduce yourself to the neighbors',
   'Un messaggio nella chat': 'A message in the chat',
   'Scrivi a chi abita vicino a te': 'Write to those who live near you',
+  'Guadagnato': 'Earned',
+  'Speso': 'Spent',
   'Dona': 'Give',
   'Dona al Fondo Solidarietà': 'Donate to the Solidarity Fund',
   'Dona un favore': 'Give a favor',

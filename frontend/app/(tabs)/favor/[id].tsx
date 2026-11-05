@@ -1,5 +1,5 @@
 import { GranelloIcon } from '../../../src/components/GranelloIcon';
-import { favorKindLabel } from '../../../src/utils/favorKind';
+import { favorKindLabel, granelliFlowLabel } from '../../../src/utils/favorKind';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -595,7 +595,7 @@ export default function FavorDetailScreen() {
           <View style={styles.infoCard}>
             <GranelloIcon size={18} />
             <Text style={styles.infoValue}>{favor.granelli_cost}</Text>
-            <Text style={styles.infoLabel}>{CURRENCY_NAME}</Text>
+            <Text style={[styles.infoLabel, { color: '#FFFFFF', fontWeight: '800', fontSize: 14 }]}>{tt(granelliFlowLabel(favor, user?.user_id))}</Text>
           </View>
           <View style={styles.infoCard}>
             <Ionicons name="time" size={24} color="#98AA4A" />
