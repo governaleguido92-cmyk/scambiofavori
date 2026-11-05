@@ -54,3 +54,13 @@ export const canComplete = (favor: Favor, userId: string | undefined): boolean =
   const receiverId = favor.type === 'request' ? favor.creator_id : favor.accepted_by;
   return receiverId === userId;
 };
+
+/**
+ * Come si completa un favore, con il QR: chi lo riceve lo mostra ("show"), chi lo esegue lo scansiona ("scan").
+ * Senza QR non si completa. Se non partecipi o il favore non è in corso: null.
+ */
+export const qrRole = (favor: Favor, userId: string | undefined): 'show' | 'scan' | null => {
+  if (favor.status !== 'accepted' || !userId || !favor.accepted_by) return null;
+  if (favor.creator_id !== userId && favor.accepted_by !== userId) return null;
+  return canComplete(favor, userId) ? 'show' : 'scan';
+};

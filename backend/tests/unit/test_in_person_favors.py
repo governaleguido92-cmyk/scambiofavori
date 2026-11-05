@@ -4,6 +4,14 @@ import pytest
 from routers import favors_routes
 from conftest import auth, make_favor, make_user
 
+
+@pytest.fixture(autouse=True)
+def manual_completion_on(monkeypatch):
+    """Questi test provano le regole del completamento (conti, distanza): usano la strada senza QR, spenta in produzione."""
+    from routers import favors_routes as _routes
+    monkeypatch.setattr(_routes, "MANUAL_COMPLETION_ENABLED", True)
+
+
 LAT, LON = 37.9300, 12.3300
 
 

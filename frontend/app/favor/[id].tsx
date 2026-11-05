@@ -45,7 +45,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 export default function FavorDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, qr: qrIntent } = useLocalSearchParams<{ id: string; qr?: string }>();
   const { user, token, refreshUser } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
@@ -219,6 +219,32 @@ export default function FavorDetailScreen() {
     }
   };
 
+  // Chi arriva dalla chat o da "I Miei" con ?qr=show / ?qr=scan trova subito il QR da mostrare o la fotocamera
+  const qrIntentHandled = useRef(false);
+  useEffect(() => {
+    if (qrIntentHandled.current || !favor || !user || !qrIntent || favor.status !== 'accepted') return;
+    qrIntentHandled.current = true;
+    if (qrIntent === 'show' && canViewQR()) loadQRCode();
+    if (qrIntent === 'scan' && canScanQR()) openScanner();
+  }, [favor, user, qrIntent]);
+
+  // Mentre il QR è sul telefono, si controlla ogni 3 secondi se l'altra persona lo ha scansionato
+  useEffect(() => {
+    if (!showQRModal) return undefined;
+    const timer = setInterval(() => { reloadFavor(); }, 3000);
+    return () => clearInterval(timer);
+  }, [showQRModal, id]);
+
+  // Appena il favore risulta completato, chi mostrava il QR passa subito alla recensione
+  useEffect(() => {
+    if (showQRModal && favor?.status === 'completed') {
+      setShowQRModal(false);
+      refreshUser();
+      notify(tt('🎉 Favore Completato!'), tt('Ora lascia una recensione.'));
+      setShowReviewForm(true);
+    }
+  }, [favor?.status, showQRModal]);
+
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrInstructions, setQrInstructions] = useState<string>('');
 
@@ -264,18 +290,14 @@ export default function FavorDetailScreen() {
       await refreshUser();
       await reloadFavor();
       
-      // Apri automaticamente il form recensione (obbligatorio)
-      Alert.alert(
+      // Subito dopo si apre in automatico il modulo della recensione
+      notify(
         tt('🎉 Favore Completato!'),
         favor.type === 'request'
-          ? tx('Grazie! Hai speso {0} {1}.\n\nOra lascia una recensione per completare!', [favor.granelli_cost, CURRENCY_NAME])
-          : tx('Grazie! Hai guadagnato {0} {1}.\n\nOra lascia una recensione per completare!', [favor.granelli_cost, CURRENCY_NAME]),
-        [{ 
-          text: tt('Lascia Recensione'), 
-          style: 'default',
-          onPress: () => setShowReviewForm(true)
-        }]
+          ? tx('Grazie! Hai speso {0} {1}.', [favor.granelli_cost, CURRENCY_NAME])
+          : tx('Grazie! Hai guadagnato {0} {1}.', [favor.granelli_cost, CURRENCY_NAME]),
       );
+      setShowReviewForm(true);
     } catch (error: any) {
       setShowScannerModal(false);
       setScanningComplete(false);
@@ -351,34 +373,6 @@ export default function FavorDetailScreen() {
     );
   };
 
-  const handleComplete = async () => {
-    if (!token || !favor) return;
-    
-    Alert.alert(
-      tt('Conferma Completamento'),
-      tx('I {0} verranno trasferiti. Sei sicuro?', [CURRENCY_NAME]),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('favor.complete'),
-          onPress: async () => {
-            setActionLoading(true);
-            try {
-              await api.completeFavor(favor.favor_id, token);
-              await refreshUser();
-              await reloadFavor();
-              notify(tt('Successo'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
-            } catch (error: any) {
-              showRefusal(t('common.error'), error.message || t('favor.errorComplete'), tt('Ho capito'));
-            } finally {
-              setActionLoading(false);
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const handleSubmitReview = async () => {
     if (!token || !favor) return;
     
@@ -409,13 +403,6 @@ export default function FavorDetailScreen() {
     if (favor.creator_id === user.user_id) return false;
     if (favor.type === 'offer' && (user.granelli || 0) < favor.granelli_cost) return false;
     return true;
-  };
-
-  const canComplete = () => {
-    if (!user || !favor) return false;
-    // Solo chi RICEVE il servizio (e paga i granelli) può confermare senza QR
-    const payerId = favor.type === 'request' ? favor.creator_id : favor.accepted_by;
-    return favor.status === 'accepted' && payerId === user.user_id;
   };
 
   const canReview = () => {
@@ -805,20 +792,16 @@ export default function FavorDetailScreen() {
             <Text style={styles.acceptHint}>{tt('Dopo l\'accettazione si apre la chat per accordarvi. All\'incontro scansionate il codice QR per completare il favore.')}</Text>
           )}
 
-          {canComplete() && (
+          {/* Si completa solo con il QR: chi riceve il favore lo mostra, chi lo esegue lo scansiona */}
+          {favor.status === 'accepted' && canViewQR() && (
             <TouchableOpacity
-              style={styles.completeButton}
-              onPress={handleComplete}
+              style={styles.scanQRButton}
+              onPress={loadQRCode}
               disabled={actionLoading}
+              data-testid="show-qr-button"
             >
-              {actionLoading ? (
-                <ActivityIndicator color="#0C0E09" />
-              ) : (
-                <>
-                  <Ionicons name="trophy" size={20} color="#0C0E09" />
-                  <Text style={styles.completeButtonText}>{tt('Segna come Completato')}</Text>
-                </>
-              )}
+              <Ionicons name="qr-code" size={20} color="#0C0E09" />
+              <Text style={styles.scanQRButtonText}>{tt('Mostra il QR per completare')}</Text>
             </TouchableOpacity>
           )}
 

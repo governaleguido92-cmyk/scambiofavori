@@ -25,7 +25,7 @@ import { BrandLogo } from '../../src/components/BrandLogo';
 import { tt, tx } from '../../src/i18n/tt';
 import colors from '../../src/theme/colors';
 import { FavorCard } from '../../src/components/FavorCard';
-import { canComplete, groupByTab, isExpired, MyFavorTab } from '../../src/utils/myFavors';
+import { qrRole, canComplete, groupByTab, isExpired, MyFavorTab } from '../../src/utils/myFavors';
 import { roleText, statusOf } from '../../src/utils/favorLabels';
 
 const TAB_ORDER: ReadonlyArray<MyFavorTab> = ['ongoing', 'published', 'closed'];
@@ -144,28 +144,9 @@ export default function MyFavorsScreen() {
     loadMyFavors();
   };
 
-  const handleComplete = (favorId: string) => {
-    if (!token) return;
-    Alert.alert(
-      t('common.confirm'),
-      tx('Sei sicuro di voler segnare questo favore come completato? I {0} verranno trasferiti.', [CURRENCY_NAME]),
-      [
-        { text: tt('Annulla'), style: 'cancel' },
-        {
-          text: tt('Completa'),
-          onPress: async () => {
-            try {
-              await api.completeFavor(favorId, token);
-              await refreshUser();
-              loadMyFavors();
-              notify(t('common.success'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
-            } catch (error: any) {
-              showRefusal(t('common.error'), error.message || t('favor.errorComplete'), tt('Ho capito'));
-            }
-          },
-        },
-      ]
-    );
+  // Il favore si completa solo con il QR: apre la schermata del favore con il QR da mostrare o la fotocamera
+  const handleComplete = (favorId: string, role: 'show' | 'scan') => {
+    router.push(`/favor/${favorId}?qr=${role}` as any);
   };
 
   const handleCancel = (favorId: string) => {
@@ -217,7 +198,7 @@ export default function MyFavorsScreen() {
     const status = statusOf(item);
     const isCreator = item.creator_id === user?.user_id;
     const expired = isExpired(item);
-    const mayComplete = canComplete(item, user?.user_id);
+    const role = qrRole(item, user?.user_id);
 
     return (
       <FavorCard
@@ -232,9 +213,9 @@ export default function MyFavorsScreen() {
         {item.status === 'accepted' && (
           <View style={styles.cardActions}>
             <Text style={styles.hint}>
-              {mayComplete
-                ? tx('A favore finito tocca Completa: i {0} passano a chi ti ha aiutato.', [CURRENCY_NAME])
-                : tt('Accordatevi in chat. Il favore lo chiude chi lo riceve.')}
+              {role === 'show'
+                ? tx('A favore finito mostra il QR a chi ti ha aiutato: i {0} passano a lui quando lo scansiona.', [CURRENCY_NAME])
+                : tt('A favore finito scansiona il QR che ti mostra chi hai aiutato.')}
             </Text>
             <View style={styles.buttonRow}>
               <TouchableOpacity
@@ -249,18 +230,18 @@ export default function MyFavorsScreen() {
                 <Ionicons name="chatbubble-ellipses" size={18} color={colors.background} />
                 <Text style={styles.primaryButtonText}>{tt('Apri la chat')}</Text>
               </TouchableOpacity>
-              {mayComplete && (
+              {role && (
                 <TouchableOpacity
                   style={[styles.secondaryButton, styles.flexButton]}
                   onPress={(e) => {
                     e.stopPropagation();
-                    handleComplete(item.favor_id);
+                    handleComplete(item.favor_id, role);
                   }}
                   accessibilityRole="button"
-                  accessibilityLabel={t('favor.complete')}
+                  accessibilityLabel={role === 'show' ? tt('Mostra il QR per completare') : tt('Scansiona il QR per completare')}
                 >
-                  <Ionicons name="checkmark-circle" size={18} color={colors.lime} />
-                  <Text style={styles.secondaryButtonText}>{t('favor.complete')}</Text>
+                  <Ionicons name={role === 'show' ? 'qr-code' : 'scan'} size={18} color={colors.lime} />
+                  <Text style={styles.secondaryButtonText}>{role === 'show' ? tt('Mostra il QR') : tt('Scansiona il QR')}</Text>
                 </TouchableOpacity>
               )}
             </View>

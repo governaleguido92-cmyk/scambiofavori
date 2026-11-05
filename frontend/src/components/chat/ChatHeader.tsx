@@ -14,15 +14,15 @@ interface ChatHeaderProps {
   currentUserId?: string;
   /** Nome dell'altra persona, per la frase "lo chiude ...". */
   otherName?: string;
-  /** Tocca a chi legge chiudere il favore. */
-  canComplete: boolean;
+  /** Come chiude il favore chi legge: mostra il QR (chi riceve) o lo scansiona (chi esegue). */
+  qrRole: 'show' | 'scan' | null;
   onBack: () => void;
   onMenu: () => void;
   onComplete: () => void;
 }
 
 /** Intestazione della chat: colore ed emoji della categoria, chi aiuta chi, stato e azione per chiudere il favore. */
-export function ChatHeader({ favor, currentUserId, otherName, canComplete, onBack, onMenu, onComplete }: ChatHeaderProps) {
+export function ChatHeader({ favor, currentUserId, otherName, qrRole, onBack, onMenu, onComplete }: ChatHeaderProps) {
   const visual = getCategoryVisual(favor?.category ?? 'Altro');
   const status = favor ? statusOf(favor) : null;
 
@@ -74,16 +74,16 @@ export function ChatHeader({ favor, currentUserId, otherName, canComplete, onBac
       )}
 
       {favor?.status === 'accepted' && (
-        canComplete ? (
+        qrRole ? (
           <TouchableOpacity
             style={styles.completeButton}
             onPress={onComplete}
             accessibilityRole="button"
-            accessibilityLabel={tt('Completa il favore')}
+            accessibilityLabel={qrRole === 'show' ? tt('Mostra il QR per completare') : tt('Scansiona il QR per completare')}
             data-testid="chat-complete-button"
           >
-            <Ionicons name="checkmark-circle" size={20} color={colors.primaryDark} />
-            <Text style={styles.completeText}>{tt('Completa il favore')}</Text>
+            <Ionicons name={qrRole === 'show' ? 'qr-code' : 'scan'} size={20} color={colors.background} />
+            <Text style={styles.completeText}>{qrRole === 'show' ? tt('Mostra il QR per completare') : tt('Scansiona il QR per completare')}</Text>
           </TouchableOpacity>
         ) : (
           <Text style={styles.waitText}>{tx('Il favore lo chiude {0}, quando è fatto.', [otherName || tt('un vicino')])}</Text>
