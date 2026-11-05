@@ -1,4 +1,7 @@
 """HTTP routes: payments."""
+import asyncio
+from typing import Optional
+
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
 from core import _stripe  # noqa: F401
@@ -159,18 +162,90 @@ async def get_checkout_status(
         logger.error(f"Stripe status check error: {e}")
         raise HTTPException(status_code=500, detail="Errore nel controllo dello stato del pagamento")
 
+def _subscription_period_end(stripe_sub) -> Optional[int]:
+    """Fine del periodo pagato: nelle API recenti sta sugli elementi dell'abbonamento, in quelle vecchie sull'abbonamento."""
+    end = getattr(stripe_sub, "cancel_at", None) if getattr(stripe_sub, "cancel_at_period_end", False) else None
+    if end:
+        return end
+    end = getattr(stripe_sub, "current_period_end", None)
+    if end:
+        return end
+    try:
+        return stripe_sub["items"]["data"][0]["current_period_end"]
+    except (KeyError, IndexError, TypeError, AttributeError):
+        return None
+
+
+def _iso_from_timestamp(timestamp: Optional[int]) -> Optional[str]:
+    return datetime.fromtimestamp(timestamp, timezone.utc).isoformat() if timestamp else None
+
+
+async def _stripe_call(function, *args, **kwargs):
+    """Chiamata Stripe (bloccante) fuori dal ciclo degli eventi, così il server non si ferma mentre aspetta."""
+    _stripe.api_key = STRIPE_API_KEY
+    return await asyncio.to_thread(function, *args, **kwargs)
+
+
 @api_router.get("/subscription/my-status")
 async def get_my_subscription_status(current_user: User = Depends(get_current_user)):
-    """Get current user's supporter subscription status"""
-    
+    """Stato dell'abbonamento Sostenitore, con data di rinnovo o di fine se disdetto."""
+
     user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
-    
-    return {
+    status = {
         "is_supporter": user_doc.get("is_supporter", False),
         "subscription_status": user_doc.get("subscription_status"),
         "supporter_since": user_doc.get("supporter_since"),
-        "subscription_id": user_doc.get("subscription_id")
+        "subscription_id": user_doc.get("subscription_id"),
+        "can_cancel": False,
+        "cancel_at_period_end": False,
+        "period_end": None,
     }
+    subscription_id = user_doc.get("stripe_subscription_id")
+    if status["is_supporter"] and subscription_id:
+        try:
+            stripe_sub = await _stripe_call(_stripe.Subscription.retrieve, subscription_id)
+            status["can_cancel"] = True
+            status["cancel_at_period_end"] = bool(getattr(stripe_sub, "cancel_at_period_end", False))
+            status["period_end"] = _iso_from_timestamp(_subscription_period_end(stripe_sub))
+        except Exception:
+            # Stripe non risponde: si mostra lo stato salvato, senza date
+            logger.exception("Stripe subscription lookup failed")
+    return status
+
+
+async def _linked_subscription_id(user_id: str) -> str:
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not user_doc.get("is_supporter"):
+        raise HTTPException(status_code=400, detail="Non sei ancora un Sostenitore")
+    subscription_id = user_doc.get("stripe_subscription_id")
+    if not subscription_id:
+        raise HTTPException(status_code=400, detail="Nessun abbonamento collegato: se hai appena pagato, riprova tra qualche minuto")
+    return subscription_id
+
+
+async def _set_cancel_at_period_end(user_id: str, cancel: bool) -> dict:
+    subscription_id = await _linked_subscription_id(user_id)
+    try:
+        stripe_sub = await _stripe_call(_stripe.Subscription.modify, subscription_id, cancel_at_period_end=cancel)
+    except Exception:
+        logger.exception("Stripe subscription update failed")
+        raise HTTPException(status_code=502, detail="Non riesco a contattare il servizio di pagamento. Riprova tra poco.")
+    return {
+        "cancel_at_period_end": bool(getattr(stripe_sub, "cancel_at_period_end", cancel)),
+        "period_end": _iso_from_timestamp(_subscription_period_end(stripe_sub)),
+    }
+
+
+@api_router.post("/subscription/cancel")
+async def cancel_subscription(current_user: User = Depends(get_current_user)):
+    """Disdice l'abbonamento a fine periodo: resta Sostenitore fino all'ultimo giorno pagato, poi niente più addebiti."""
+    return await _set_cancel_at_period_end(current_user.user_id, True)
+
+
+@api_router.post("/subscription/resume")
+async def resume_subscription(current_user: User = Depends(get_current_user)):
+    """Annulla la disdetta: l'abbonamento continua a rinnovarsi."""
+    return await _set_cancel_at_period_end(current_user.user_id, False)
 
 @api_router.get("/subscription/manage-url")
 async def get_subscription_manage_url(current_user: User = Depends(get_current_user)):

@@ -30,6 +30,10 @@ function SupporterContent() {
   const [checkingStatus, setCheckingStatus] = useState(false);
   const [isSupporter, setIsSupporter] = useState(false);
   const [supporterSince, setSupporterSince] = useState<string | null>(null);
+  const [canCancel, setCanCancel] = useState(false);
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
+  const [periodEnd, setPeriodEnd] = useState<string | null>(null);
+  const [changingPlan, setChangingPlan] = useState(false);
 
   useEffect(() => {
     loadSupporterStatus();
@@ -48,6 +52,9 @@ function SupporterContent() {
       const status = await api.getMySubscriptionStatus(token);
       setIsSupporter(status.is_supporter);
       setSupporterSince(status.supporter_since);
+      setCanCancel(!!status.can_cancel);
+      setCancelAtPeriodEnd(!!status.cancel_at_period_end);
+      setPeriodEnd(status.period_end);
     } catch (error) {
       logger.debug('Error loading supporter status:', error);
     }
@@ -127,6 +134,41 @@ function SupporterContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatLongDate = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+
+  const applyPlanChange = async (change: 'cancel' | 'resume') => {
+    if (!token) return;
+    setChangingPlan(true);
+    try {
+      const result = change === 'cancel' ? await api.cancelSubscription(token) : await api.resumeSubscription(token);
+      setCancelAtPeriodEnd(result.cancel_at_period_end);
+      setPeriodEnd(result.period_end);
+      const endText = formatLongDate(result.period_end);
+      notify(
+        change === 'cancel' ? 'Abbonamento disdetto' : 'Abbonamento riattivato',
+        change === 'cancel'
+          ? `Resti Sostenitore${endText ? ` fino al ${endText}` : ' fino alla fine del periodo pagato'}. Poi non verrà più addebitato nulla.`
+          : 'Grazie! L\'abbonamento continuerà a rinnovarsi ogni mese.',
+      );
+    } catch (error: any) {
+      notify('Errore', error.message || 'Non sono riuscito a modificare l\'abbonamento. Riprova.');
+    } finally {
+      setChangingPlan(false);
+    }
+  };
+
+  const handleCancelSubscription = () => {
+    Alert.alert(
+      'Disdire l\'abbonamento?',
+      `Resti Sostenitore${periodEnd ? ` fino al ${formatLongDate(periodEnd)}` : ' fino alla fine del periodo già pagato'}. Dopo non ti verrà addebitato più nulla.`,
+      [
+        { text: 'Non disdire', style: 'cancel' },
+        { text: 'Disdici', style: 'destructive', onPress: () => applyPlanChange('cancel') },
+      ],
+    );
   };
 
   const handleManageSubscription = async () => {
@@ -257,13 +299,46 @@ function SupporterContent() {
               Grazie per il tuo supporto alla community.
               {supporterSince && `\nSostenitore dal ${new Date(supporterSince).toLocaleDateString('it-IT')}`}
             </Text>
-            <TouchableOpacity 
-              style={styles.manageButton}
-              onPress={handleManageSubscription}
-            >
-              <Ionicons name="settings-outline" size={20} color="#fff" />
-              <Text style={styles.manageButtonText}>Gestisci Abbonamento</Text>
-            </TouchableOpacity>
+            {canCancel ? (
+              <>
+                <Text style={styles.planStatus}>
+                  {cancelAtPeriodEnd
+                    ? `Abbonamento disdetto: resti Sostenitore fino al ${formatLongDate(periodEnd) ?? 'termine del periodo pagato'}. Poi non verrà più addebitato nulla.`
+                    : `Si rinnova ${periodEnd ? `il ${formatLongDate(periodEnd)}` : 'ogni mese'}: 1 € al mese, disdicibile quando vuoi.`}
+                </Text>
+                <TouchableOpacity
+                  style={[cancelAtPeriodEnd ? styles.resumeButton : styles.cancelPlanButton, changingPlan && styles.buttonDisabled]}
+                  onPress={cancelAtPeriodEnd ? () => applyPlanChange('resume') : handleCancelSubscription}
+                  disabled={changingPlan}
+                  data-testid={cancelAtPeriodEnd ? 'resume-subscription-button' : 'cancel-subscription-button'}
+                >
+                  {changingPlan ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Ionicons name={cancelAtPeriodEnd ? 'refresh-outline' : 'close-circle-outline'} size={20} color="#fff" />
+                      <Text style={styles.manageButtonText}>{cancelAtPeriodEnd ? 'Riattiva abbonamento' : 'Annulla abbonamento'}</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleManageSubscription} style={styles.cardLink}>
+                  <Text style={styles.cardLinkText}>Cambia carta o scarica le fatture</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.manageButton}
+                  onPress={handleManageSubscription}
+                >
+                  <Ionicons name="settings-outline" size={20} color="#fff" />
+                  <Text style={styles.manageButtonText}>Gestisci Abbonamento</Text>
+                </TouchableOpacity>
+                <Text style={styles.manageHint}>
+                  Puoi disdire quando vuoi: resti Sostenitore fino alla fine del mese già pagato.
+                </Text>
+              </>
+            )}
           </View>
         ) : (
           <TouchableOpacity
@@ -508,6 +583,53 @@ const styles = StyleSheet.create({
   manageButtonText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  planStatus: {
+    color: '#fff',
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  cancelPlanButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#B3392B',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    minWidth: 220,
+  },
+  resumeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#5F7A24',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    minWidth: 220,
+  },
+  cardLink: {
+    marginTop: 14,
+    paddingVertical: 6,
+  },
+  cardLinkText: {
+    color: '#fff',
+    opacity: 0.85,
+    fontSize: 13,
+    textDecorationLine: 'underline',
+  },
+  manageHint: {
+    color: '#fff',
+    opacity: 0.85,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginTop: 12,
   },
   transparencyNote: {
     flexDirection: 'row',

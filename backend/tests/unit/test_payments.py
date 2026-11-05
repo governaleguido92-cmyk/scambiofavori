@@ -83,3 +83,91 @@ async def test_manage_url_needs_a_linked_subscription(client, app_db):
 
     assert legacy.status_code == 400
     assert not_supporter.status_code == 400
+
+
+class FakeStripeSub:
+    def __init__(self, cancel=False):
+        self.cancel_at_period_end = cancel
+        self.cancel_at = 1796000000 if cancel else None
+        self.current_period_end = 1796000000
+
+
+@pytest.fixture
+def stripe_sub(monkeypatch):
+    calls = {"modify": []}
+    state = {"cancel": False}
+    monkeypatch.setattr(payments_routes._stripe.Subscription, "retrieve", lambda sid: FakeStripeSub(state["cancel"]))
+
+    def fake_modify(sid, **kwargs):
+        calls["modify"].append((sid, kwargs))
+        state["cancel"] = kwargs["cancel_at_period_end"]
+        return FakeStripeSub(state["cancel"])
+
+    monkeypatch.setattr(payments_routes._stripe.Subscription, "modify", fake_modify)
+    return calls
+
+
+@pytest.mark.asyncio
+async def test_status_shows_renewal_date_and_cancel_state(client, app_db, stripe_sub):
+    await app_db.users.insert_one(make_user("sup", is_supporter=True, stripe_subscription_id="sub_1"))
+
+    before = (await client.get("/api/subscription/my-status", headers=auth("sup"))).json()
+    await client.post("/api/subscription/cancel", headers=auth("sup"))
+    after = (await client.get("/api/subscription/my-status", headers=auth("sup"))).json()
+
+    assert before["can_cancel"] is True and before["cancel_at_period_end"] is False
+    assert before["period_end"].startswith("2026-")
+    assert after["cancel_at_period_end"] is True
+
+
+@pytest.mark.asyncio
+async def test_cancel_and_resume_call_stripe_for_the_users_own_subscription(client, app_db, stripe_sub):
+    await app_db.users.insert_many([
+        make_user("sup", is_supporter=True, stripe_subscription_id="sub_mine"),
+        make_user("other", is_supporter=True, stripe_subscription_id="sub_other"),
+    ])
+
+    cancel = await client.post("/api/subscription/cancel", headers=auth("sup"))
+    resume = await client.post("/api/subscription/resume", headers=auth("sup"))
+
+    assert cancel.status_code == 200 and cancel.json()["cancel_at_period_end"] is True
+    assert resume.status_code == 200 and resume.json()["cancel_at_period_end"] is False
+    assert stripe_sub["modify"] == [("sub_mine", {"cancel_at_period_end": True}), ("sub_mine", {"cancel_at_period_end": False})]
+
+
+@pytest.mark.asyncio
+async def test_cancel_needs_a_linked_subscription_and_login(client, app_db, stripe_sub):
+    await app_db.users.insert_many([make_user("old", is_supporter=True), make_user("nobody")])
+
+    assert (await client.post("/api/subscription/cancel")).status_code == 401
+    assert (await client.post("/api/subscription/cancel", headers=auth("old"))).status_code == 400
+    assert (await client.post("/api/subscription/cancel", headers=auth("nobody"))).status_code == 400
+    assert stripe_sub["modify"] == []
+
+
+@pytest.mark.asyncio
+async def test_cancel_reports_stripe_errors_without_details(client, app_db, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("secret detail")
+
+    monkeypatch.setattr(payments_routes._stripe.Subscription, "modify", boom)
+    await app_db.users.insert_one(make_user("sup", is_supporter=True, stripe_subscription_id="sub_1"))
+
+    response = await client.post("/api/subscription/cancel", headers=auth("sup"))
+
+    assert response.status_code == 502
+    assert "secret detail" not in response.text
+
+
+@pytest.mark.asyncio
+async def test_status_survives_a_stripe_outage(client, app_db, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("down")
+
+    monkeypatch.setattr(payments_routes._stripe.Subscription, "retrieve", boom)
+    await app_db.users.insert_one(make_user("sup", is_supporter=True, stripe_subscription_id="sub_1"))
+
+    response = await client.get("/api/subscription/my-status", headers=auth("sup"))
+
+    assert response.status_code == 200
+    assert response.json()["is_supporter"] is True and response.json()["can_cancel"] is False

@@ -1377,10 +1377,25 @@ export const api = {
     subscription_status: string | null;
     supporter_since: string | null;
     subscription_id: string | null;
+    /** Vero solo se l'abbonamento è collegato a Stripe e si può disdire da qui. */
+    can_cancel: boolean;
+    cancel_at_period_end: boolean;
+    /** Fine del periodo pagato (se disdetto) o prossimo rinnovo. */
+    period_end: string | null;
   }> => {
     const response = await fetch(`${API_URL}/api/subscription/my-status`, {
       headers: getHeaders(token),
     });
+    return handleResponse(response);
+  },
+
+  cancelSubscription: async (token: string): Promise<{ cancel_at_period_end: boolean; period_end: string | null }> => {
+    const response = await fetch(`${API_URL}/api/subscription/cancel`, { method: 'POST', headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  resumeSubscription: async (token: string): Promise<{ cancel_at_period_end: boolean; period_end: string | null }> => {
+    const response = await fetch(`${API_URL}/api/subscription/resume`, { method: 'POST', headers: getHeaders(token) });
     return handleResponse(response);
   },
 
