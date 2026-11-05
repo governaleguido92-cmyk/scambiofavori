@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/context/AuthContext';
 import { api, AreaMessage, NeighborhoodWeather } from '../../src/services/api';
@@ -56,6 +56,18 @@ export default function NeighborhoodScreen() {
   const [sending, setSending] = useState(false);
   const [weather, setWeather] = useState<NeighborhoodWeather | null>(null);
   const [tab, setTab] = useState<NeighborhoodTab>('chat');
+  const { tab: tabParam, compose: composeParam } = useLocalSearchParams<{ tab?: string; compose?: string }>();
+
+  // Il tasto Crea può portare direttamente a una scheda e aprire la scrittura: la richiesta vale una volta sola,
+  // per quella scheda. Se poi si cambia scheda a mano, la finestra di scrittura non deve riaprirsi.
+  const [composeRequest, setComposeRequest] = useState<{ tab: NeighborhoodTab; signal: string } | null>(null);
+  useEffect(() => {
+    if (typeof tabParam !== 'string' || !(TABS as ReadonlyArray<string>).includes(tabParam)) return;
+    const target = tabParam as NeighborhoodTab;
+    setTab(target);
+    setComposeRequest(composeParam ? { tab: target, signal: composeParam } : null);
+    router.setParams({ tab: undefined, compose: undefined } as any);
+  }, [tabParam, composeParam]);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -227,7 +239,10 @@ export default function NeighborhoodScreen() {
             <TouchableOpacity
               key={key}
               style={[styles.tab, tab === key && styles.tabActive]}
-              onPress={() => setTab(key)}
+              onPress={() => {
+                setTab(key);
+                setComposeRequest(null);
+              }}
               accessibilityRole="tab"
               accessibilityState={{ selected: tab === key }}
               data-testid={`neighborhood-tab-${key}`}
@@ -238,11 +253,11 @@ export default function NeighborhoodScreen() {
         </View>
 
         {tab === 'avvisi' ? (
-          <NewsTab token={token} />
+          <NewsTab token={token} composeSignal={composeRequest?.tab === 'avvisi' ? composeRequest.signal : undefined} />
         ) : tab === 'eventi' ? (
-          <EventsTab token={token} />
+          <EventsTab token={token} composeSignal={composeRequest?.tab === 'eventi' ? composeRequest.signal : undefined} />
         ) : tab === 'vicini' ? (
-          <NeighborsTab token={token} />
+          <NeighborsTab token={token} composeSignal={composeRequest?.tab === 'vicini' ? composeRequest.signal : undefined} />
         ) : loading ? (
           <ActivityIndicator size="large" color={colors.accent} style={styles.loader} />
         ) : noAccess ? (
