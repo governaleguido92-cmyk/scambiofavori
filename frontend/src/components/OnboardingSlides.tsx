@@ -26,7 +26,7 @@ const slides: Slide[] = [
     id: '1',
     icon: 'heart-circle',
     title: 'Scambia Favori',
-    description: 'Offri e richiedi aiuto nella tua comunità. Dalla spesa al babysitting, dal giardinaggio alle ripetizioni.',
+    description: 'Dona e ricevi aiuto nella tua comunità. Dalla spesa al babysitting, dal giardinaggio alle ripetizioni.',
     highlight: 'Costruisci relazioni vere con i tuoi vicini',
   },
   {

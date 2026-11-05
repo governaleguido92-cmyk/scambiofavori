@@ -230,7 +230,7 @@ export default function CreateFavorScreen() {
     if (type === 'request' && hasZeroGranelli) {
       Alert.alert(
         tt('Granelli Insufficienti'),
-        tt('Hai 0 Granelli! Non puoi chiedere favori. Inizia offrendo aiuto agli altri per guadagnare Granelli.'),
+        tt('Hai 0 Granelli! Non puoi ricevere favori. Inizia donando un favore agli altri per guadagnare Granelli.'),
         [{ text: tt('Ho capito') }]
       );
       return;
@@ -280,8 +280,8 @@ export default function CreateFavorScreen() {
       Alert.alert(
         tt('Successo'),
         type === 'offer' 
-          ? tt('La tua offerta è stata pubblicata!') 
-          : tt('La tua richiesta è stata pubblicata!'),
+          ? tt('Il tuo favore da donare è stato pubblicato!') 
+          : tt('Il tuo favore da ricevere è stato pubblicato!'),
         [
           {
             text: tt('OK'),
@@ -373,7 +373,7 @@ export default function CreateFavorScreen() {
           {/* Type Selector */}
           <View style={styles.typeSelector}>
             <TouchableOpacity
-              style={[styles.typeButton, type === 'offer' && styles.typeButtonActive, editing && type !== 'offer' && styles.typeButtonLocked]}
+              style={[styles.typeButton, type === 'offer' && styles.typeButtonActiveRequest, editing && type !== 'offer' && styles.typeButtonLocked]}
               onPress={() => setType('offer')}
               disabled={editing}
               accessibilityState={{ selected: type === 'offer', disabled: editing }}
@@ -381,15 +381,15 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="gift"
                 size={24}
-                color={type === 'offer' ? '#0C0E09' : '#98AA4A'}
+                color={type === 'offer' ? '#0C0E09' : '#F87828'}
               />
-              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Offro un favore')}</Text>
+              <Text style={[styles.typeButtonText, type === 'offer' && styles.typeButtonTextActive]}>{tt('Dono un favore')}</Text>
               <Text style={[styles.typeButtonSubtext, type === 'offer' && styles.typeButtonSubtextActive]}>{tt('Guadagni')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.typeButton, type === 'request' && styles.typeButtonActiveRequest, editing && type !== 'request' && styles.typeButtonLocked]}
+              style={[styles.typeButton, type === 'request' && styles.typeButtonActive, editing && type !== 'request' && styles.typeButtonLocked]}
               onPress={() => setType('request')}
               disabled={editing}
               accessibilityState={{ selected: type === 'request', disabled: editing }}
@@ -397,9 +397,9 @@ export default function CreateFavorScreen() {
               <Ionicons
                 name="hand-left"
                 size={24}
-                color={type === 'request' ? '#0C0E09' : '#F87828'}
+                color={type === 'request' ? '#0C0E09' : '#98AA4A'}
               />
-              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Chiedo un favore')}</Text>
+              <Text style={[styles.typeButtonText, type === 'request' && styles.typeButtonTextActive]}>{tt('Ricevo un favore')}</Text>
               <Text style={[styles.typeButtonSubtext, type === 'request' && styles.typeButtonSubtextActive]}>{tt('Spendi')}{' '}{CURRENCY_NAME}
               </Text>
             </TouchableOpacity>
@@ -668,11 +668,11 @@ export default function CreateFavorScreen() {
               <Text style={styles.modalInfoTitle}>{tt('Come tornare in positivo:')}</Text>
               <View style={styles.modalInfoItem}>
                 <Ionicons name="gift-outline" size={20} color="#98AA4A" />
-                <Text style={styles.modalInfoText}>{tt('Offri favori alla community')}</Text>
+                <Text style={styles.modalInfoText}>{tt('Dona favori alla community')}</Text>
               </View>
               <View style={styles.modalInfoItem}>
                 <Ionicons name="heart-outline" size={20} color="#98AA4A" />
-                <Text style={styles.modalInfoText}>{tt('Richiedi aiuto dal Fondo Solidarietà')}</Text>
+                <Text style={styles.modalInfoText}>{tt('Ricevi aiuto dal Fondo Solidarietà')}</Text>
               </View>
             </View>
 

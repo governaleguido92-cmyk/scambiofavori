@@ -59,8 +59,8 @@ export default {
     activeFavors: 'Favori attivi',
     recentFavors: 'Favori recenti',
     noFavors: 'Nessun favore disponibile',
-    offers: 'Offerte',
-    requests: 'Richieste',
+    offers: 'Ricevi',
+    requests: 'Dona',
     allTypes: 'Tutti',
     refresh: 'Aggiorna',
     networkError: 'Errore di rete',
@@ -70,8 +70,8 @@ export default {
 
   // Favor
   favor: {
-    offer: 'Offerta',
-    request: 'Richiesta',
+    offer: 'Ricevi',
+    request: 'Dona',
     accept: 'Accetta',
     complete: 'Completa',
     cancel: 'Annulla',
@@ -81,8 +81,8 @@ export default {
       completed: 'Completato',
       cancelled: 'Annullato',
     },
-    confirmAccept: 'Accettando questa offerta, pagherai {{cost}} {{currency}} al completamento.',
-    confirmAcceptRequest: 'Accettando questa richiesta, riceverai {{cost}} {{currency}} al completamento.',
+    confirmAccept: 'Accettando di ricevere questo favore, pagherai {{cost}} {{currency}} al completamento.',
+    confirmAcceptRequest: 'Accettando di donare questo favore, riceverai {{cost}} {{currency}} al completamento.',
     confirmComplete: 'I {{currency}} verranno trasferiti. Sei sicuro?',
     acceptSuccess: 'Favore accettato!',
     completeSuccess: 'Favore completato! I {{currency}} sono stati trasferiti.',
@@ -163,8 +163,8 @@ export default {
     title: 'Mappa Favori',
     noFavors: 'Nessun favore nella zona',
     locationError: 'Posizione non disponibile',
-    offers: 'Offerte',
-    requests: 'Richieste',
+    offers: 'Ricevi',
+    requests: 'Dona',
   },
 
   // Notifications
