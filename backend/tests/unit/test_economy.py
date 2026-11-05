@@ -6,6 +6,14 @@ from routers import favors_routes
 from conftest import auth, make_favor, make_user
 
 
+@pytest.fixture(autouse=True)
+def manual_completion_on(monkeypatch):
+    """Questi test provano le regole del completamento (conti, distanza): usano la strada senza QR, spenta in produzione."""
+    from routers import favors_routes as _routes
+    monkeypatch.setattr(_routes, "MANUAL_COMPLETION_ENABLED", True)
+
+
+
 async def seed(db, favor=None, creator_granelli=10, helper_granelli=10):
     await db.users.insert_one(make_user("creator", granelli=creator_granelli))
     await db.users.insert_one(make_user("helper", granelli=helper_granelli))

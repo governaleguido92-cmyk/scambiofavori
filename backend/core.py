@@ -1408,6 +1408,9 @@ PHONE_VERIFICATION_REQUIRED = os.environ.get("PHONE_VERIFICATION_REQUIRED", "fal
 # Se true, per confermare un favore serve la posizione del telefono (si deve essere sul posto). Da accendere quando la maggior
 # parte degli utenti ha l'app che la invia: le versioni vecchie non la mandano e non potrebbero più confermare.
 PROXIMITY_REQUIRED = os.environ.get("PROXIMITY_REQUIRED", "false").lower() == "true"
+# I favori si completano solo con il codice QR (mostrato da chi riceve, scansionato da chi esegue). Il vecchio "Completa" senza QR
+# resta spento; si riaccende solo per i test o in emergenza con MANUAL_COMPLETION_ENABLED=true.
+MANUAL_COMPLETION_ENABLED = os.environ.get("MANUAL_COMPLETION_ENABLED", "false").lower() == "true"
 PHONE_CODE_TTL_MINUTES = 10
 PHONE_RESEND_SECONDS = 60
 PHONE_MAX_REQUESTS_PER_HOUR = 5

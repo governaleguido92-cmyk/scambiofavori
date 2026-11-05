@@ -28,7 +28,7 @@ import { MeetingPointModal } from '../../src/components/chat/MeetingPointModal';
 import { MeetingPointCard } from '../../src/components/chat/MeetingPointCard';
 import { formatMeetingPointMessage, parseMeetingPointMessage } from '../../src/utils/meetingPoint';
 import { buildRows, ChatRow } from '../../src/utils/chatDays';
-import { canComplete as mayCompleteFavor } from '../../src/utils/myFavors';
+import { qrRole as qrRoleOf } from '../../src/utils/myFavors';
 import { getCategoryVisual } from '../../src/utils/favorVisual';
 import i18n from '../../src/i18n';
 import { useTranslation } from 'react-i18next';
@@ -145,28 +145,11 @@ export default function ChatScreen() {
     if (sendError) setSendError(null);
   };
 
+  // Il favore si completa solo con il QR: si apre la schermata del favore con il QR da mostrare o la fotocamera
   const handleComplete = () => {
-    if (!token || !favorId) return;
-    Alert.alert(
-      t('common.confirm'),
-      tx('Sei sicuro di voler segnare questo favore come completato? I {0} verranno trasferiti.', [CURRENCY_NAME]),
-      [
-        { text: tt('Annulla'), style: 'cancel' },
-        {
-          text: tt('Completa'),
-          onPress: async () => {
-            try {
-              await api.completeFavor(favorId, token);
-              await refreshUser();
-              await loadData();
-              notify(t('common.success'), tx('Favore completato! I {0} sono stati trasferiti.', [CURRENCY_NAME]));
-            } catch (error: any) {
-              showRefusal(t('common.error'), error.message || t('favor.errorComplete'), tt('Ho capito'));
-            }
-          },
-        },
-      ]
-    );
+    const role = favor ? qrRoleOf(favor, user?.user_id) : null;
+    if (!favorId || !role) return;
+    router.push(`/favor/${favorId}?qr=${role}` as any);
   };
 
   const handleSendLocation = async () => {
@@ -419,7 +402,7 @@ export default function ChatScreen() {
         favor={favor}
         currentUserId={user?.user_id}
         otherName={otherParticipant?.name}
-        canComplete={!!favor && mayCompleteFavor(favor, user?.user_id)}
+        qrRole={favor ? qrRoleOf(favor, user?.user_id) : null}
         onBack={() => goBackOrHome(router)}
         onMenu={() => setShowMenu(true)}
         onComplete={handleComplete}
@@ -555,7 +538,7 @@ export default function ChatScreen() {
               <Ionicons name="flag-outline" size={20} color={colors.error} />
               <Text style={styles.menuItemText}>{tx('Segnala {0}', [otherParticipant?.name || tt('un vicino')])}</Text>
             </TouchableOpacity>
-            {favor?.status === 'accepted' && !!user && !mayCompleteFavor(favor, user.user_id) && (
+            {favor?.status === 'accepted' && !!user && qrRoleOf(favor, user.user_id) === 'scan' && (
               <TouchableOpacity
                 style={styles.menuItem}
                 onPress={() => {
