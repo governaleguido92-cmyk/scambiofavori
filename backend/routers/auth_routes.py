@@ -24,7 +24,7 @@ async def register(request: Request, user_data: UserCreate):
             birth_year = age.check_adult(user_data.birth_date)
         except ValueError as error:
             raise HTTPException(status_code=400, detail=str(error))
-    existing = await db.users.find_one({"email": user_data.email})
+    existing = await db.users.find_one(email_match(user_data.email))
     if existing:
         raise HTTPException(status_code=400, detail="Email già registrata")
     
@@ -296,7 +296,7 @@ async def resend_verification_code(request: Request, data: ResendCodeRequest):
 @limiter.limit("3/minute")
 async def forgot_password(request: Request, data: ForgotPasswordRequest):
     """Send password reset code via email"""
-    user_doc = await db.users.find_one({"email": data.email})
+    user_doc = await db.users.find_one(email_match(data.email))
     if not user_doc:
         # Don't reveal if email exists
         return {"message": "Se l'email esiste, riceverai un codice di reset"}
@@ -304,7 +304,7 @@ async def forgot_password(request: Request, data: ForgotPasswordRequest):
     code = generate_numeric_code()
 
     await db.users.update_one(
-        {"email": data.email},
+        email_match(data.email),
         {"$set": {
             "reset_code": code,
             "reset_attempts": 0,
@@ -355,7 +355,7 @@ async def forgot_password(request: Request, data: ForgotPasswordRequest):
 @limiter.limit("5/minute")
 async def reset_password(request: Request, data: ResetPasswordRequest):
     """Reset password with verification code"""
-    user_doc = await db.users.find_one({"email": data.email})
+    user_doc = await db.users.find_one(email_match(data.email))
     if not user_doc:
         raise HTTPException(status_code=400, detail="Codice non valido")
     
@@ -377,7 +377,7 @@ async def reset_password(request: Request, data: ResetPasswordRequest):
     hashed = hash_password(data.new_password)
     
     await db.users.update_one(
-        {"email": data.email},
+        email_match(data.email),
         {
             "$set": {"password_hash": hashed, "sessions_valid_after": datetime.now(timezone.utc)},
             "$unset": {"reset_code": "", "reset_code_expires": ""}
@@ -391,14 +391,14 @@ async def reset_password(request: Request, data: ResetPasswordRequest):
 @limiter.limit("3/minute")
 async def recover_username(request: Request, data: RecoverUsernameRequest):
     """Send username reminder via email"""
-    user_doc = await db.users.find_one({"email": data.email})
+    user_doc = await db.users.find_one(email_match(data.email))
     if not user_doc:
         return {"message": "Se l'email esiste, riceverai il tuo nome utente"}
     
     code = generate_numeric_code()
 
     await db.users.update_one(
-        {"email": data.email},
+        email_match(data.email),
         {"$set": {
             "username_recovery_code": code,
             "username_recovery_attempts": 0,
@@ -446,7 +446,7 @@ async def recover_username(request: Request, data: RecoverUsernameRequest):
 @limiter.limit("5/minute")
 async def verify_username_recovery(request: Request, data: VerifyUsernameRecoveryRequest):
     """Verify code and return username"""
-    user_doc = await db.users.find_one({"email": data.email})
+    user_doc = await db.users.find_one(email_match(data.email))
     if not user_doc:
         raise HTTPException(status_code=400, detail="Codice non valido")
     
@@ -464,7 +464,7 @@ async def verify_username_recovery(request: Request, data: VerifyUsernameRecover
     
     # Clean up
     await db.users.update_one(
-        {"email": data.email},
+        email_match(data.email),
         {"$unset": {"username_recovery_code": "", "username_recovery_expires": ""}}
     )
     
@@ -474,7 +474,7 @@ async def verify_username_recovery(request: Request, data: VerifyUsernameRecover
 @limiter.limit("10/minute")
 async def login(request: Request, credentials: UserLogin, response: Response):
     """Login with email/password"""
-    user_doc = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+    user_doc = await db.users.find_one(email_match(credentials.email), {"_id": 0})
     if not user_doc:
         raise HTTPException(status_code=401, detail="Email o password non validi")
     
@@ -551,7 +551,7 @@ async def google_login(request: Request, body: GoogleLoginBody, response: Respon
     email, name, picture = identity["email"], identity["name"], identity["picture"]
     session_token = secrets.token_urlsafe(32)
 
-    user_doc = await db.users.find_one({"email": email}, {"_id": 0})
+    user_doc = await db.users.find_one(email_match(email), {"_id": 0})
     
     if user_doc:
         user_id = user_doc["user_id"]
@@ -656,7 +656,7 @@ async def apple_auth(request: Request, auth_data: AppleAuthRequest, response: Re
             raise HTTPException(status_code=400, detail="Email richiesta per la registrazione")
         
         # Check if user exists
-        user_doc = await db.users.find_one({"$or": [{"email": email}, {"apple_user_id": apple_user_id}]}, {"_id": 0})
+        user_doc = await db.users.find_one({"$or": [email_match(email), {"apple_user_id": apple_user_id}]}, {"_id": 0})
         
         if user_doc:
             user_id = user_doc["user_id"]
