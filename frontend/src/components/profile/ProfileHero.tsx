@@ -1,3 +1,4 @@
+import { avatarColors } from '../../utils/avatarColor';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Image, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,8 +65,8 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
             {profileImage || user?.picture ? (
               <Image source={{ uri: profileImage || getImageUrl(user?.picture) }} style={styles.avatarImage} />
             ) : (
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase() || 'U'}</Text>
+              <View style={[styles.avatar, { backgroundColor: avatarColors(user?.name).backgroundColor }]}>
+                <Text style={[styles.avatarText, { color: avatarColors(user?.name).color }]}>{user?.name?.charAt(0).toUpperCase() || 'U'}</Text>
               </View>
             )}
           </SupporterProfileBorder>

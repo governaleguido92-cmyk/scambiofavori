@@ -32,3 +32,17 @@ export function granelliFlowLabel(
   if (favor.status === 'completed') return earns ? 'Guadagnato' : 'Speso';
   return earns ? 'Guadagni' : 'Spendi';
 }
+
+/**
+ * Come si chiama il favore per chi guarda, coerente con «Guadagni/Spendi»:
+ *  - se partecipi (l'hai creato o accettato): in prima persona, «Dono» (aiuti, guadagni) o «Ricevo» (ricevi, spendi);
+ *  - se è di altri: «Dona» (una richiesta: puoi aiutare) o «Ricevi» (un'offerta: puoi farti aiutare).
+ */
+export function favorKindFor(
+  favor: Pick<Favor, 'type' | 'creator_id' | 'accepted_by'>,
+  userId: string | undefined,
+): string {
+  const involved = !!userId && (favor.creator_id === userId || favor.accepted_by === userId);
+  if (involved) return earnsGranelli(favor, userId) ? 'Dono' : 'Ricevo';
+  return favor.type === 'offer' ? 'Ricevi' : 'Dona';
+}

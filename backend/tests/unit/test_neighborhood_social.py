@@ -220,6 +220,69 @@ async def test_welcome_toggles_and_counts(client, app_db):
     assert (await client.post(f"{INTROS}/{intro_id}/welcome", headers=auth("anna"))).json()["welcomed"] is False
 
 
+async def welcome_notifications(app_db, user_id):
+    return await app_db.notifications.find({"user_id": user_id, "type": "welcome"}).to_list(10)
+
+
+async def test_welcome_notifies_the_new_neighbor_once_a_day_and_groups_names(client, app_db):
+    await with_position(app_db, "marco")
+    for name in ("anna", "luca", "rosa"):
+        await with_position(app_db, name, 2)
+    await intro(client, "marco")
+    intro_id = (await intros(client, "anna"))[0]["intro_id"]
+
+    await client.post(f"{INTROS}/{intro_id}/welcome", headers=auth("anna"))
+    first = await welcome_notifications(app_db, "marco")
+    assert len(first) == 1 and "anna ti ha dato il benvenuto" in first[0]["message"]
+    assert first[0]["read"] is False and first[0]["related_id"] == intro_id
+
+    await client.post(f"{INTROS}/{intro_id}/welcome", headers=auth("luca"))
+    await client.post(f"{INTROS}/{intro_id}/welcome", headers=auth("rosa"))
+    grouped = await welcome_notifications(app_db, "marco")
+    assert len(grouped) == 1  # una sola notifica al giorno, non una per persona
+    assert "e altri 2" in grouped[0]["message"]
+
+
+async def test_toggling_a_welcome_does_not_notify_twice_for_the_same_person(client, app_db):
+    await with_position(app_db, "marco")
+    await with_position(app_db, "anna", 2)
+    await intro(client, "marco")
+    intro_id = (await intros(client, "anna"))[0]["intro_id"]
+
+    for _ in range(3):  # benvenuto, tolto, di nuovo dato
+        await client.post(f"{INTROS}/{intro_id}/welcome", headers=auth("anna"))
+
+    notes = await welcome_notifications(app_db, "marco")
+    assert len(notes) == 1 and notes[0]["welcome_count"] == 1
+
+
+async def test_removing_a_welcome_sends_no_notification(client, app_db):
+    await with_position(app_db, "marco")
+    await with_position(app_db, "anna", 2)
+    await intro(client, "marco")
+    intro_id = (await intros(client, "anna"))[0]["intro_id"]
+    await app_db.neighborhood_intros.update_one({"intro_id": intro_id}, {"$set": {"welcomed_by": ["anna"]}})
+
+    removed = await client.post(f"{INTROS}/{intro_id}/welcome", headers=auth("anna"))
+
+    assert removed.json()["welcomed"] is False
+    assert await welcome_notifications(app_db, "marco") == []
+
+
+async def test_a_welcome_from_someone_the_author_blocked_is_silent(client, app_db):
+    await with_position(app_db, "marco")
+    await with_position(app_db, "anna", 2)
+    await intro(client, "marco")
+    intro_id = (await intros(client, "anna"))[0]["intro_id"]
+    # il blocco arriva dopo: Anna conosce ancora l'indirizzo della presentazione
+    await app_db.blocked_users.insert_one({"block_id": "b1", "blocker_id": "marco", "blocked_id": "anna",
+                                           "created_at": datetime.now(timezone.utc)})
+
+    await client.post(f"{INTROS}/{intro_id}/welcome", headers=auth("anna"))
+
+    assert await welcome_notifications(app_db, "marco") == []
+
+
 async def test_cannot_welcome_yourself(client, app_db):
     await with_position(app_db, "marco")
     await intro(client, "marco")

@@ -1,3 +1,4 @@
+import { avatarColorsForKind } from '../../src/utils/avatarColor';
 import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -172,8 +173,8 @@ export default function EmergenciesScreen() {
       <Text style={styles.emergencyDescription}>{item.description}</Text>
 
       <View style={styles.creatorInfo}>
-        <View style={styles.creatorAvatar}>
-          <Text style={styles.creatorAvatarText}>
+        <View style={[styles.creatorAvatar, { backgroundColor: avatarColorsForKind(true).backgroundColor }]}>
+          <Text style={[styles.creatorAvatarText, { color: avatarColorsForKind(true).color }]}>
             {item.creator_name?.charAt(0).toUpperCase() || 'U'}
           </Text>
         </View>

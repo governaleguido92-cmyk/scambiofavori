@@ -1,3 +1,4 @@
+import { avatarColors } from '../../src/utils/avatarColor';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -93,8 +94,8 @@ export default function ConversationsScreen() {
         accessibilityLabel={`${item.other_user_name}, ${item.favor_title}${hasUnread ? `, ${item.unread} ${tt('non letti')}` : ''}`}
         data-testid={`conversation-${item.favor_id}`}
       >
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{item.other_user_name.charAt(0).toUpperCase()}</Text>
+        <View style={[styles.avatar, { backgroundColor: avatarColors(item.other_user_name).backgroundColor }]}>
+          <Text style={[styles.avatarText, { color: avatarColors(item.other_user_name).color }]}>{item.other_user_name.charAt(0).toUpperCase()}</Text>
         </View>
         <View style={styles.body}>
           <View style={styles.topLine}>
