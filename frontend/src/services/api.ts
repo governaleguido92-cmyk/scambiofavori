@@ -54,8 +54,41 @@ export interface Badge {
   requirement?: BadgeRequirement;
 }
 
+export interface BadgeProgress {
+  current: number;
+  target: number;
+  earned: boolean;
+  /** Per ora non si può ottenere (es. troppi annullamenti per "Puntuale"). */
+  blocked: boolean;
+}
+
+export interface PublicProfile {
+  user_id: string;
+  bio?: string | null;
+  name: string;
+  picture?: string | null;
+  title: string;
+  badge_details: Array<{ id: string; name: string; icon: string; color: string }>;
+  skills: string[];
+  average_rating: number;
+  total_favors_given: number;
+  total_favors_received: number;
+  reviews_count: number;
+  recent_reviews: Array<{ reviewer_name: string; rating: number; comment?: string | null; created_at: string }>;
+  member_since: string | null;
+  phone_verified: boolean;
+  identity_verified: boolean;
+  late_cancellations: number;
+  cancel_rate: number;
+  is_supporter: boolean;
+  vouch_count: number;
+  trust_level: number;
+}
+
 export interface User {
   user_id: string;
+  /** "Chi sono": breve presentazione pubblica. */
+  bio?: string | null;
   email: string;
   name: string;
   picture?: string;
@@ -98,11 +131,6 @@ export interface Category {
   name: string;
   icon: string;
   is_micro: boolean;
-}
-
-export interface ObjectCategory {
-  name: string;
-  icon: string;
 }
 
 export interface AreaMessage {
@@ -253,41 +281,6 @@ export interface DebtStatus {
   message?: string;
 }
 
-export interface LendableObject {
-  object_id: string;
-  owner_id: string;
-  owner_name: string;
-  owner_title: string;
-  name: string;
-  description: string;
-  category: string;
-  deposit_granelli: number;
-  status: 'available' | 'borrowed' | 'unavailable';
-  borrowed_by?: string;
-  borrowed_by_name?: string;
-  approximate_latitude?: number;
-  approximate_longitude?: number;
-  distance_km?: number;
-  borrow_date?: string;
-  return_date?: string;
-  created_at: string;
-}
-
-export interface WallPost {
-  post_id: string;
-  author_id: string;
-  author_name: string;
-  author_title: string;
-  content: string;
-  post_type: 'general' | 'thanks' | 'announcement';
-  likes: number;
-  liked_by: string[];
-  approximate_latitude?: number;
-  approximate_longitude?: number;
-  distance_km?: number;
-  created_at: string;
-}
-
 export interface ThanksEntry {
   thanks_id: string;
   favor_id: string;
@@ -358,29 +351,6 @@ export interface ChatStatus {
   favor_status: string;
   favor_title: string;
   granelli_cost: number;
-}
-
-export interface ObjectCreateData {
-  name: string;
-  description: string;
-  category: string;
-  deposit_granelli: number;
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface WallPostCreateData {
-  content: string;
-  post_type: 'general' | 'thanks' | 'announcement';
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface LeaderboardUser {
-  user_id: string;
-  name: string;
-  title: string;
-  community_score: number;
 }
 
 export interface Notification {
@@ -620,15 +590,16 @@ export const api = {
     return handleResponse(response);
   },
 
-  getObjectCategories: async (): Promise<ObjectCategory[]> => {
-    const response = await fetch(`${API_URL}/api/object-categories`);
-    return handleResponse(response);
-  },
-
   // Badges
   getAllBadges: async (): Promise<Badge[]> => {
     const response = await fetch(`${API_URL}/api/badges`);
     return handleResponse(response);
+  },
+
+  getBadgeProgress: async (token: string): Promise<Record<string, BadgeProgress>> => {
+    const response = await fetch(`${API_URL}/api/badges/progress`, { headers: getHeaders(token) });
+    const body: { progress: Record<string, BadgeProgress> } = await handleResponse(response);
+    return body.progress;
   },
 
   getMyBadges: async (token: string): Promise<Badge[]> => {
@@ -737,89 +708,6 @@ export const api = {
   // Currency Info
   getCurrencyInfo: async (): Promise<CurrencyInfo> => {
     const response = await fetch(`${API_URL}/api/currency`);
-    return handleResponse(response);
-  },
-
-  // Muro del Quartiere (Neighborhood Wall)
-  getWallPosts: async (latitude?: number, longitude?: number, radiusKm: number = 0.5, postType?: string): Promise<WallPost[]> => {
-    const params = new URLSearchParams();
-    if (latitude) params.append('latitude', String(latitude));
-    if (longitude) params.append('longitude', String(longitude));
-    params.append('radius_km', String(radiusKm));
-    if (postType) params.append('post_type', postType);
-    const response = await fetch(`${API_URL}/api/wall?${params}`);
-    return handleResponse(response);
-  },
-
-  createWallPost: async (data: WallPostCreateData, token: string): Promise<WallPost> => {
-    const response = await fetch(`${API_URL}/api/wall`, {
-      method: 'POST',
-      headers: getHeaders(token),
-      body: JSON.stringify(data),
-    });
-    return handleResponse(response);
-  },
-
-  likeWallPost: async (postId: string, token: string): Promise<{ liked: boolean }> => {
-    const response = await fetch(`${API_URL}/api/wall/${postId}/like`, {
-      method: 'POST',
-      headers: getHeaders(token),
-    });
-    return handleResponse(response);
-  },
-
-  // Oggettoteca (Object Lending)
-  getObjects: async (params?: {
-    category?: string;
-    status?: string;
-    latitude?: number;
-    longitude?: number;
-    max_distance_km?: number;
-  }): Promise<LendableObject[]> => {
-    const searchParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, String(value));
-        }
-      });
-    }
-    const url = `${API_URL}/api/objects${searchParams.toString() ? `?${searchParams}` : ''}`;
-    const response = await fetch(url);
-    return handleResponse(response);
-  },
-
-  getMyObjects: async (token: string): Promise<LendableObject[]> => {
-    const response = await fetch(`${API_URL}/api/objects/my`, {
-      headers: getHeaders(token),
-    });
-    return handleResponse(response);
-  },
-
-  createObject: async (data: ObjectCreateData, token: string): Promise<LendableObject> => {
-    const response = await fetch(`${API_URL}/api/objects`, {
-      method: 'POST',
-      headers: getHeaders(token),
-      body: JSON.stringify(data),
-    });
-    return handleResponse(response);
-  },
-
-  borrowObject: async (objectId: string, token: string): Promise<{ message: string }> => {
-    const response = await fetch(`${API_URL}/api/objects/borrow`, {
-      method: 'POST',
-      headers: getHeaders(token),
-      body: JSON.stringify({ object_id: objectId }),
-    });
-    return handleResponse(response);
-  },
-
-  returnObject: async (objectId: string, condition: 'good' | 'damaged', token: string): Promise<{ message: string }> => {
-    const response = await fetch(`${API_URL}/api/objects/return`, {
-      method: 'POST',
-      headers: getHeaders(token),
-      body: JSON.stringify({ object_id: objectId, condition }),
-    });
     return handleResponse(response);
   },
 
@@ -963,7 +851,7 @@ export const api = {
   },
 
   // Profilo pubblico di un utente (serve l'accesso)
-  getUserPublicProfile: async (userId: string, token: string): Promise<any> => {
+  getUserPublicProfile: async (userId: string, token: string): Promise<PublicProfile> => {
     const response = await fetch(`${API_URL}/api/users/${userId}/public`, {
       headers: getHeaders(token),
     });
@@ -1189,11 +1077,6 @@ export const api = {
     return handleResponse(response);
   },
 
-  getLeaderboard: async (token: string): Promise<LeaderboardUser[]> => {
-    const response = await fetch(`${API_URL}/api/leaderboard`, { headers: getHeaders(token) });
-    return handleResponse(response);
-  },
-
   // Referral
   getReferralCode: async (token: string): Promise<{ referral_code: string; successful_referrals: number; bonus_per_referral: number; currency: string }> => {
     const response = await fetch(`${API_URL}/api/referral/code`, {
@@ -1261,6 +1144,15 @@ export const api = {
   // SKILLS & NOTIFICATIONS
   // ========================
   
+  updateUserBio: async (bio: string, token: string): Promise<{ message: string; bio: string | null }> => {
+    const response = await fetch(`${API_URL}/api/user/bio`, {
+      method: 'PUT',
+      headers: getHeaders(token),
+      body: JSON.stringify({ bio }),
+    });
+    return handleResponse(response);
+  },
+
   updateUserName: async (name: string, token: string): Promise<{ message: string; name: string }> => {
     const response = await fetch(`${API_URL}/api/user/name`, {
       method: 'PUT',

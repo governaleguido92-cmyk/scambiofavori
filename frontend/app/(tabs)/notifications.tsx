@@ -11,13 +11,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/context/AuthContext';
-import { api, Notification } from '../src/services/api';
-import colors from '../src/theme/colors';
-import { logger } from '../src/utils/logger';
-import { tt } from '../src/i18n/tt';
-import { BrandLogo } from '../src/components/BrandLogo';
-import { goBackOrHome } from '../src/utils/navigation';
+import { useAuth } from '../../src/context/AuthContext';
+import { api, Notification } from '../../src/services/api';
+import colors from '../../src/theme/colors';
+import { logger } from '../../src/utils/logger';
+import { tt } from '../../src/i18n/tt';
+import { BrandLogo } from '../../src/components/BrandLogo';
+import { goBackOrHome } from '../../src/utils/navigation';
 
 const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   skill_match: { name: 'star', color: colors.accent },

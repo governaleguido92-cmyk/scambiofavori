@@ -745,7 +745,9 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
         avg_rating = sum(r["rating"] for r in reviews) / len(reviews)
         avg_kindness = sum(r.get("kindness_rating", 5) for r in reviews) / len(reviews)
         avg_impact = sum(r.get("impact_rating", 5) for r in reviews) / len(reviews)
-        perfect_count = sum(1 for r in reviews if r["rating"] == 5 and r.get("kindness_rating", 5) == 5 and r.get("impact_rating", 5) == 5)
+        # Il massimo dei voti conta una sola volta per persona: tre recensioni di fila dello stesso amico valgono una
+        perfect_count = len({r.get("reviewer_id") for r in reviews
+                             if r["rating"] == 5 and r.get("kindness_rating", 5) == 5 and r.get("impact_rating", 5) == 5})
         
         await db.users.update_one(
             {"user_id": reviewed_id},

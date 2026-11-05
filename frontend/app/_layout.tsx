@@ -53,9 +53,6 @@ function RootLayoutNav() {
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="favor/[id]" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="chat/[favorId]" options={{ presentation: 'card' }} />
-        <Stack.Screen name="conversations" options={{ presentation: 'card' }} />
         <Stack.Screen name="verify-phone" options={{ presentation: 'card' }} />
         <Stack.Screen name="settings" options={{ presentation: 'card' }} />
         <Stack.Screen name="legal" options={{ presentation: 'modal' }} />

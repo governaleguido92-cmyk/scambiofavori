@@ -1,4 +1,5 @@
 import { GranelloIcon } from './GranelloIcon';
+import { useRouter } from 'expo-router';
 import { favorKindLabel } from '../utils/favorKind';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
@@ -8,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Favor } from '../services/api';
 import colors from '../theme/colors';
 import { styles } from '../styles/home.styles';
-import { tt } from '../i18n/tt';
+import { tt, tx } from '../i18n/tt';
 import { getCategoryVisual, getExpiryInfo, formatDistance } from '../utils/favorVisual';
 import { formatGranelli } from '../utils/granelli';
 import { UserNameWithBadge, SupporterProfileBorder } from './SupporterBadge';
@@ -38,6 +39,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
   item, currentUserId, onPress, onReport, style, highlighted, statusLabel, statusColor, roleText, children,
 }) => {
   const { t } = useTranslation();
+  const router = useRouter();
   const visual = getCategoryVisual(item.category);
   const expiry = getExpiryInfo(item.expires_at);
   const isOffer = item.type === 'offer';
@@ -87,6 +89,14 @@ export const FavorCard: React.FC<FavorCardProps> = ({
 
       <View style={styles.gridBody}>
         <View style={styles.gridWhoRow}>
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}
+            disabled={isOwn}
+            onPress={(e) => { e.stopPropagation(); router.push(`/vicino/${item.creator_id}` as any); }}
+            accessibilityRole="button"
+            accessibilityLabel={tx('Profilo di {0}', [item.creator_name])}
+            data-testid={`open-profile-${item.creator_id}`}
+          >
           <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={24}>
             <View style={[styles.gridAvatar, { backgroundColor: visual.color }]}>
               <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
@@ -107,6 +117,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
               />
             )}
           </View>
+          </TouchableOpacity>
           {onReport && item.creator_id !== currentUserId && (
             <TouchableOpacity
               style={styles.reportButton}

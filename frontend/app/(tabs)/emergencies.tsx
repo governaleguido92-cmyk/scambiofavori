@@ -1,4 +1,4 @@
-import { GranelloIcon } from '../src/components/GranelloIcon';
+import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -14,16 +14,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { openPhoneVerificationIfNeeded } from '../src/utils/phoneRequired';
-import { BrandLogo } from '../src/components/BrandLogo';
+import { openPhoneVerificationIfNeeded } from '../../src/utils/phoneRequired';
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { useAuth } from '../src/context/AuthContext';
-import { api, Favor, CURRENCY_NAME } from '../src/services/api';
-import { logger } from '../src/utils/logger';
-import { notify } from '../src/utils/notify';
-import { tt } from '../src/i18n/tt';
-import { goBackOrHome } from '../src/utils/navigation';
+import { useAuth } from '../../src/context/AuthContext';
+import { api, Favor, CURRENCY_NAME } from '../../src/services/api';
+import { logger } from '../../src/utils/logger';
+import { notify } from '../../src/utils/notify';
+import { tt } from '../../src/i18n/tt';
+import { goBackOrHome } from '../../src/utils/navigation';
 
 export default function EmergenciesScreen() {
   const { user, token, refreshUser } = useAuth();

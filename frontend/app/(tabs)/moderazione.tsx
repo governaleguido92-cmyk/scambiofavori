@@ -3,12 +3,12 @@ import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, Switch,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/context/AuthContext';
-import { api, HeldUser, ModerationReport } from '../src/services/api';
-import colors from '../src/theme/colors';
-import { tt, tx } from '../src/i18n/tt';
-import { notify, showRefusal } from '../src/utils/notify';
-import { goBackOrHome } from '../src/utils/navigation';
+import { useAuth } from '../../src/context/AuthContext';
+import { api, HeldUser, ModerationReport } from '../../src/services/api';
+import colors from '../../src/theme/colors';
+import { tt, tx } from '../../src/i18n/tt';
+import { notify, showRefusal } from '../../src/utils/notify';
+import { goBackOrHome } from '../../src/utils/navigation';
 
 const REASONS: Record<string, string> = {
   safety_alert: 'Allarme di sicurezza', offensive: 'Offensivo', spam: 'Spam', fraud: 'Truffa', inappropriate: 'Inappropriato',

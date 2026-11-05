@@ -1,6 +1,6 @@
 import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Share, RefreshControl } from 'react-native';
+import { Alert, View, Text, TouchableOpacity, ScrollView, Share, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,7 +16,8 @@ import { SkillsSection, SkillsModal } from '../../src/components/profile/SkillsS
 import { ReviewsSection } from '../../src/components/profile/ReviewsSection';
 import { DonateModal } from '../../src/components/profile/DonateModal';
 import { ReferralModal } from '../../src/components/profile/ReferralModal';
-import { LeaderboardModal } from '../../src/components/profile/LeaderboardModal';
+import { BioCard } from '../../src/components/profile/BioCard';
+import { SectionTitle } from '../../src/components/profile/SectionTitle';
 import { styles } from '../../src/styles/profile.styles';
 import { BrandLogo } from '../../src/components/BrandLogo';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
@@ -25,7 +26,7 @@ import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
 import { granelliWord } from '../../src/utils/granelli';
 import { ShelfBadge, sortBadges } from '../../src/utils/profileProgress';
-import { useProfileData, useLeaderboard } from '../../src/hooks/useProfileData';
+import { useProfileData } from '../../src/hooks/useProfileData';
 import { useProfilePhoto } from '../../src/hooks/useProfilePhoto';
 
 const SITE_URL = 'https://scambiofavori.it';
@@ -34,11 +35,9 @@ export default function ProfileScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const data = useProfileData(token, user?.user_id);
-  const leaderboard = useLeaderboard(token);
   const [refreshing, setRefreshing] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -135,10 +134,41 @@ export default function ProfileScreen() {
     }
   };
 
-  const openLeaderboard = () => {
-    setShowLeaderboard(true);
-    leaderboard.load();
+  const handleSaveBio = async (bio: string) => {
+    if (!token) return;
+    await api.updateUserBio(bio, token);
+    await refreshUser();
   };
+
+  const askFundGift = () => {
+    if (!token) return;
+    Alert.alert(
+      tt('Chiedi un dono al Fondo'),
+      tt('Il Fondo Solidarietà ti dona fino a 3 Granelli per tornare in pari. Si chiede una volta, dopo aver aiutato almeno una volta.'),
+      [
+        { text: tt('Annulla'), style: 'cancel' },
+        {
+          text: tt('Chiedi il dono'),
+          onPress: async () => {
+            try {
+              const result = await api.requestDebtRecovery(token);
+              await Promise.all([refreshUser(), load()]);
+              notify(tt('Dono ricevuto'), result.message);
+            } catch (error: any) {
+              notify(tt('Errore'), error.message || tt('Impossibile chiedere il dono'));
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const explainGranelli = () =>
+    Alert.alert(
+      tt('Come Funzionano i Granelli'),
+      `${tt('1 Ora = 1 Granello')}\n${tt("Un'ora del tuo aiuto vale 1 Granello: lo guadagni aiutando e lo spendi quando hai bisogno")}\n\n${tt('Check-in QR')}\n${tt("Valida l'incontro con il codice QR")}`,
+      [{ text: tt('Ho capito') }]
+    );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -151,17 +181,6 @@ export default function ProfileScreen() {
             <BrandLogo />
             <Text style={styles.title}>{tt('Profilo')}</Text>
           </View>
-          {isModerator && (
-            <TouchableOpacity
-              onPress={() => router.push('/moderazione' as any)}
-              accessibilityRole="button"
-              accessibilityLabel={tt('Moderazione')}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              data-testid="open-moderation"
-            >
-              <Ionicons name="shield-checkmark-outline" size={24} color="#fff" />
-            </TouchableOpacity>
-          )}
           <TouchableOpacity
             onPress={() => router.push('/settings' as any)}
             accessibilityRole="button"
@@ -171,12 +190,6 @@ export default function ProfileScreen() {
           >
             <Ionicons name="settings-outline" size={24} color="#fff" />
           </TouchableOpacity>
-          {user?.identity_verified && (
-            <View style={styles.verifiedBadge}>
-              <Ionicons name="shield-checkmark" size={16} color="#98AA4A" />
-              <Text style={styles.verifiedText}>{tt('Verificato')}</Text>
-            </View>
-          )}
         </View>
 
         {data.failed && (
@@ -202,6 +215,8 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         )}
 
+        {/* IO: chi sono per gli altri */}
+        <SectionTitle>{tt('Il mio profilo')}</SectionTitle>
         <ProfileHero
           user={user}
           profileImage={photo.profileImage}
@@ -209,15 +224,30 @@ export default function ProfileScreen() {
           onPickImage={photo.pickImage}
           onSaveName={handleSaveName}
         />
+        <BioCard bio={user?.bio} onSave={handleSaveBio} />
         <ProfileStats user={user} />
+        <TouchableOpacity
+          style={styles.leaderboardButton}
+          onPress={() => user && router.push(`/vicino/${user.user_id}` as any)}
+          accessibilityRole="button"
+          accessibilityLabel={tt('Come ti vedono gli altri')}
+          data-testid="view-as-others"
+        >
+          <Ionicons name="eye-outline" size={24} color="#98AA4A" />
+          <Text style={styles.leaderboardButtonText}>{tt('Come ti vedono gli altri')}</Text>
+          <Ionicons name="chevron-forward" size={24} color="#A5A89B" />
+        </TouchableOpacity>
+
+        {/* IL MIO PERCORSO: fiducia, profilo, badge, competenze, recensioni */}
+        <SectionTitle>{tt('Il mio percorso')}</SectionTitle>
         {token && <TrustCard token={token} />}
-
         {token && <ProfileCompletionBar token={token} refreshKey={completionKey} onItemPress={(itemId) => itemId === 'skills' && openSkills()} />}
-
-        <BadgeShelf badges={shelfBadges} onPress={setSelectedBadge} />
+        <BadgeShelf badges={shelfBadges} onPress={setSelectedBadge} progress={data.badgeProgress} />
         <SkillsSection skills={data.skills} onEdit={openSkills} />
         <ReviewsSection reviews={data.reviews} />
 
+        {/* LA MIA COMUNITÀ: Fondo, inviti, sostegno */}
+        <SectionTitle>{tt('La mia comunità')}</SectionTitle>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{tt('Fondo Solidarietà')}</Text>
           <View style={styles.fundCard}>
@@ -233,7 +263,13 @@ export default function ProfileScreen() {
               <Text style={styles.donateButtonText}>{tt('Dona')}</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.fundDescription}>{tt('Il Fondo Solidarietà aiuta anziani e persone fragili a partecipare alla community')}</Text>
+          <Text style={styles.fundDescription}>{tt('Il Fondo si riempie con i Granelli donati dai vicini. Chi è in debito, dopo aver aiutato almeno una volta, può chiedere un dono di fino a 3 Granelli.')}</Text>
+          {balance < 0 && (
+            <TouchableOpacity style={[styles.donateButton, { marginTop: 10, alignSelf: 'flex-start' }]} onPress={askFundGift} accessibilityRole="button" data-testid="ask-fund-gift">
+              <Ionicons name="hand-left" size={20} color="#0C0E09" />
+              <Text style={styles.donateButtonText}>{tt('Chiedi un dono al Fondo')}</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <TouchableOpacity style={styles.referralCard} onPress={() => setShowReferral(true)} accessibilityRole="button">
@@ -263,47 +299,15 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.leaderboardButton} onPress={openLeaderboard} accessibilityRole="button">
-          <Ionicons name="trophy" size={24} color="#98AA4A" />
-          <Text style={styles.leaderboardButtonText}>{tt('Classifica Community')}</Text>
+        <TouchableOpacity style={styles.leaderboardButton} onPress={explainGranelli} accessibilityRole="button" data-testid="explain-granelli">
+          <Ionicons name="help-circle-outline" size={24} color="#98AA4A" />
+          <Text style={styles.leaderboardButtonText}>{tt('Come Funzionano i Granelli')}</Text>
           <Ionicons name="chevron-forward" size={24} color="#A5A89B" />
         </TouchableOpacity>
-
-        <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>{tt('Come Funzionano i Granelli')}</Text>
-          <View style={styles.infoCard}>
-            <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: '#B8C86820' }]}>
-                <GranelloIcon size={18} />
-              </View>
-              <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>{tt('1 Ora = 1 Granello')}</Text>
-                <Text style={styles.infoDescription}>{tt("Un'ora del tuo aiuto vale 1 Granello: lo guadagni aiutando e lo spendi quando hai bisogno")}</Text>
-              </View>
-            </View>
-            <View style={styles.infoItem}>
-              <View style={[styles.infoIcon, { backgroundColor: '#F8782820' }]}>
-                <Ionicons name="qr-code" size={20} color="#F87828" />
-              </View>
-              <View style={styles.infoText}>
-                <Text style={styles.infoTitle}>{tt('Check-in QR')}</Text>
-                <Text style={styles.infoDescription}>{tt("Valida l'incontro con il codice QR")}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
       </ScrollView>
 
       <DonateModal visible={showDonate} balance={balance} onClose={() => setShowDonate(false)} onDonate={handleDonate} />
       <ReferralModal visible={showReferral} info={data.referral} onClose={() => setShowReferral(false)} onShare={handleShareReferral} />
-      <LeaderboardModal
-        visible={showLeaderboard}
-        loading={leaderboard.loading}
-        failed={leaderboard.failed}
-        users={leaderboard.users}
-        currentUserId={user?.user_id}
-        onClose={() => setShowLeaderboard(false)}
-      />
       <SkillsModal
         visible={showSkills}
         categories={data.categories}
@@ -313,7 +317,7 @@ export default function ProfileScreen() {
         onSave={handleSaveSkills}
         onClose={() => setShowSkills(false)}
       />
-      <BadgeInfoModal badge={selectedBadge} onClose={() => setSelectedBadge(null)} />
+      <BadgeInfoModal badge={selectedBadge} onClose={() => setSelectedBadge(null)} progress={selectedBadge ? data.badgeProgress[selectedBadge.id] : undefined} />
     </SafeAreaView>
   );
 }

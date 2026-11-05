@@ -397,32 +397,6 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
-  oggettotecaButton: {
-    backgroundColor: '#171A10',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 20,
-  },
-  oggettotecaButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  oggettotecaBadge: {
-    backgroundColor: '#A8B85820',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    flex: 1,
-  },
-  oggettotecaBadgeText: {
-    color: '#98AA4A',
-    fontSize: 12,
-    fontWeight: '600',
-  },
   infoSection: {
     marginBottom: 20,
   },
