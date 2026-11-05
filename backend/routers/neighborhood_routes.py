@@ -2,10 +2,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from core import *  # noqa: F401,F403
+import moderation_notify
 import trust
 from public_text import ensure_public_text_allowed
 from routers import area_chat_routes as chat
@@ -106,7 +107,8 @@ async def delete_notice(notice_id: str, current_user: User = Depends(get_current
 
 
 @api_router.post("/neighborhood/notices/{notice_id}/report")
-async def report_notice(notice_id: str, body: ReportBody, current_user: User = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def report_notice(request: Request, notice_id: str, body: ReportBody, current_user: User = Depends(get_current_user)):
     notice = await db.neighborhood_notices.find_one({"notice_id": notice_id}, {"_id": 0})
     if not notice:
         raise HTTPException(status_code=404, detail="Avviso non trovato")
@@ -120,8 +122,10 @@ async def report_notice(notice_id: str, body: ReportBody, current_user: User = D
         "status": "pending", "created_at": datetime.now(timezone.utc),
     })
     reporters = await db.general_reports.distinct("reporter_id", {"report_type": "neighborhood_notice", "target_id": notice_id})
-    if len(reporters) >= HIDE_AFTER_REPORTS:
+    if await trust.trusted_reporter_count(reporters) >= HIDE_AFTER_REPORTS and not notice.get("hidden"):
         await db.neighborhood_notices.update_one({"notice_id": notice_id}, {"$set": {"hidden": True}})
+        await moderation_notify.notify_owner("Avviso nascosto dopo 3 segnalazioni", [
+            f"L'avviso «{notice['text'][:80]}» di {notice['author_name']} è stato nascosto automaticamente."], key=f"hide:{notice_id}")
     return {"message": "Segnalazione inviata. Grazie per aiutarci a tenere il quartiere sicuro."}
 
 

@@ -39,6 +39,7 @@ export default function ProfileScreen() {
   const [showDonate, setShowDonate] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [isModerator, setIsModerator] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [savingSkills, setSavingSkills] = useState(false);
@@ -56,7 +57,8 @@ export default function ProfileScreen() {
     useCallback(() => {
       refreshUser();
       load();
-    }, [load, refreshUser])
+      if (token) api.getModerationMe(token).then((r) => setIsModerator(r.moderator)).catch(() => setIsModerator(false));
+    }, [load, refreshUser, token])
   );
 
   const shelfBadges = useMemo(() => sortBadges(data.allBadges, data.earnedBadges), [data.allBadges, data.earnedBadges]);
@@ -149,6 +151,17 @@ export default function ProfileScreen() {
             <BrandLogo />
             <Text style={styles.title}>{tt('Profilo')}</Text>
           </View>
+          {isModerator && (
+            <TouchableOpacity
+              onPress={() => router.push('/moderazione' as any)}
+              accessibilityRole="button"
+              accessibilityLabel={tt('Moderazione')}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              data-testid="open-moderation"
+            >
+              <Ionicons name="shield-checkmark-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             onPress={() => router.push('/settings' as any)}
             accessibilityRole="button"
@@ -170,6 +183,23 @@ export default function ProfileScreen() {
           <Text style={styles.skillsHint} accessibilityLiveRegion="polite">
             {tt('Alcuni dati non si sono aggiornati. Tira giù per riprovare.')}
           </Text>
+        )}
+
+        {isModerator && (
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#F87828', borderRadius: 14, padding: 14, marginBottom: 12 }}
+            onPress={() => router.push('/moderazione' as any)}
+            accessibilityRole="button"
+            accessibilityLabel={tt('Apri il pannello di moderazione')}
+            data-testid="open-moderation-panel"
+          >
+            <Ionicons name="shield-checkmark" size={26} color="#0C0E09" />
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: '#0C0E09', fontSize: 16, fontWeight: '800' }}>{tt('Pannello di moderazione')}</Text>
+              <Text style={{ color: '#0C0E09', fontSize: 13 }}>{tt('Segnalazioni da gestire e account in revisione')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={22} color="#0C0E09" />
+          </TouchableOpacity>
         )}
 
         <ProfileHero

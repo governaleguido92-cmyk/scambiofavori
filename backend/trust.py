@@ -161,3 +161,14 @@ def next_level_hint(user_doc: dict) -> Optional[int]:
     if level == 1:
         return max(0, FAVORS_FOR_LEVEL_TWO - completed_favors_total(user_doc))
     return None
+
+
+async def trusted_reporter_count(reporter_ids: list) -> int:
+    """Quante delle persone che hanno segnalato hanno un account vero (email o telefono verificati).
+    Tre account usa e getta non devono bastare per nascondere i contenuti di qualcuno."""
+    if not reporter_ids:
+        return 0
+    return await db.users.count_documents({
+        "user_id": {"$in": list(reporter_ids)},
+        "$or": [{"email_verified": True}, {"phone_verified": True}],
+    })

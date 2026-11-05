@@ -361,6 +361,8 @@ export default function MyFavorsScreen() {
           data={visible}
           renderItem={renderFavor}
           keyExtractor={(item) => item.favor_id}
+          numColumns={2}
+          columnWrapperStyle={styles.gridRow}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <EmptyState tab={tab} onCreate={() => router.push('/create' as any)} onBrowse={() => router.push('/(tabs)' as any)} />
@@ -424,11 +426,12 @@ const styles = StyleSheet.create({
   tabCountTextActive: { color: '#fff' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   listContent: { padding: 20, paddingBottom: 100 },
-  card: { flexBasis: 'auto', alignSelf: 'stretch' },
+  gridRow: { justifyContent: 'space-between' },
+  card: { alignSelf: 'stretch' },
   cardActions: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
   hint: { color: colors.textSecondary, fontSize: 12, lineHeight: 17 },
-  buttonRow: { flexDirection: 'row', gap: 8 },
-  flexButton: { flex: 1 },
+  buttonRow: { gap: 8 },
+  flexButton: { alignSelf: 'stretch' },
   primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',

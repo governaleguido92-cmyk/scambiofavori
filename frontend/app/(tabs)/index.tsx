@@ -1,3 +1,4 @@
+import { NeighborhoodButton } from '../../src/components/NeighborhoodButton';
 import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
@@ -126,18 +127,19 @@ export default function HomeScreen() {
         params.max_distance_km = 10;
       }
       const data = await api.getFavors(params, token || undefined);
-      setFavors(data);
+      // I favori che hai pubblicato tu stanno in "I Miei": qui si vedono solo quelli degli altri.
+      setFavors(data.filter((f) => f.creator_id !== user?.user_id));
       await offlineCache.saveFavors(data);
     } catch (error) {
       logger.debug('Error loading favors:', error);
       setNetworkError(true);
       const cached = await offlineCache.loadFavors();
-      if (cached) { setFavors(cached.filter((f) => f.type === selectedType)); setNetworkError(false); }
+      if (cached) { setFavors(cached.filter((f) => f.type === selectedType && f.creator_id !== user?.user_id)); setNetworkError(false); }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedCategory, selectedType, location, token]);
+  }, [selectedCategory, selectedType, location, token, user?.user_id]);
 
   useEffect(() => {
     getLocation();
@@ -154,6 +156,7 @@ export default function HomeScreen() {
   }, [loadFavors]);
   // Elenco dei favori aggiornato ogni 3 secondi mentre la scheda è in primo piano
   useLiveRefresh(loadFavors);
+
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -308,6 +311,7 @@ export default function HomeScreen() {
             )}
           </TouchableOpacity>
           <MessagesButton size={36} />
+          <NeighborhoodButton size={36} />
           {/* Granelli Display */}
           <View style={styles.soliDisplay}>
             <GranelloIcon size={18} />
@@ -332,8 +336,8 @@ export default function HomeScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="search" size={64} color="#333" />
-              <Text style={styles.emptyText}>{t('home.noFavors')}</Text>
-              <Text style={styles.emptySubtext}>{tt('Prova a cambiare i filtri')}</Text>
+              <Text style={styles.emptyText}>{tt('Ancora nessun favore dei tuoi vicini')}</Text>
+              <Text style={styles.emptySubtext}>{tt('Pubblica tu il primo da Crea, oppure cambia i filtri')}</Text>
             </View>
           }
           refreshControl={
