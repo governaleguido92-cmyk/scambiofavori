@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Accesso in corso</title>
+<style>body{font-family:system-ui,sans-serif;background:#fdf6ec;color:#0a3d5c;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:24px}</style>
+</head>
+<body>
+<p>Ti riporto nell'app Scambio Favori…</p>
+<script>
+  // Google rimanda qui con #id_token=...: lo passo all'app tramite il suo indirizzo (il token non va mai al nostro sito)
+  (function () {
+    var hash = window.location.hash || '';
+    window.location.replace('scambiodifavori:///' + hash);
+  })();
+</script>
+</body>
+</html>

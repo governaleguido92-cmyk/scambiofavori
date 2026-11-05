@@ -266,7 +266,7 @@ async def test_safety_alert_only_for_participants(client, app_db):
 
 
 async def test_two_alerts_from_different_users_put_account_on_hold(client, app_db):
-    await app_db.users.insert_many([make_user("bad"), make_user("a"), make_user("b")])
+    await app_db.users.insert_many([make_user("bad"), make_user("a", email_verified=True), make_user("b", email_verified=True)])
     await app_db.favors.insert_many([
         make_favor("s1", creator_id="bad", creator_name="bad", accepted_by="a", status="accepted"),
         make_favor("s2", creator_id="bad", creator_name="bad", accepted_by="b", status="accepted"),
@@ -291,7 +291,7 @@ async def test_account_on_hold_cannot_create_or_message(client, app_db):
 
 
 async def test_hold_penalizes_those_who_vouched(client, app_db):
-    await app_db.users.insert_many([make_user("bad"), make_user("a"), make_user("b"), make_user("voucher")])
+    await app_db.users.insert_many([make_user("bad"), make_user("a", email_verified=True), make_user("b", email_verified=True), make_user("voucher")])
     await app_db.vouches.insert_one({
         "voucher_id": "voucher", "vouchee_id": "bad", "created_at": datetime.now(timezone.utc)
     })

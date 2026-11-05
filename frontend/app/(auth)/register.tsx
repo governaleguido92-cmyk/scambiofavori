@@ -11,7 +11,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter, Link } from 'expo-router';
+import { useRouter, Link, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'react-native';
@@ -33,9 +33,12 @@ export default function RegisterScreen() {
   const [referralCode, setReferralCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [verificationStep, setVerificationStep] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const { verify } = useLocalSearchParams<{ verify?: string }>();
+  // Se si arriva dal login con un'email da verificare, si parte direttamente dal passo del codice
+  const verifyUserId = typeof verify === 'string' && verify ? verify : null;
+  const [showOnboarding, setShowOnboarding] = useState(!verifyUserId);
+  const [verificationStep, setVerificationStep] = useState(!!verifyUserId);
+  const [userId, setUserId] = useState<string | null>(verifyUserId);
   const [verificationCode, setVerificationCode] = useState('');
   const [resending, setResending] = useState(false);
   const { register, loginWithToken } = useAuth();

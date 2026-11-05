@@ -108,7 +108,7 @@ export default function HomeScreen() {
 
   const loadThanksBoard = async () => {
     try {
-      const data = await api.getThanksBoard(5);
+      const data = await api.getThanksBoard(token || '', 5);
       setThanksBoard(data);
     } catch (error) {
       logger.debug('Error loading thanks board:', error);

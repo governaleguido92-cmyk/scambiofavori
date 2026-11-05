@@ -4,6 +4,7 @@ import html
 
 from core import *  # noqa: F401,F403
 import age
+import google_auth
 import sms
 
 api_router = APIRouter(prefix="/api")
@@ -88,7 +89,7 @@ async def register(request: Request, user_data: UserCreate):
     email_sent = await send_verification_email(user_data.email, verification_code, user_data.name)
     
     if not email_sent:
-        logger.info(f"[VERIFICATION] Code for {user_data.email}: {verification_code} (email not sent - Resend test mode)")
+        logger.warning("Verification email not sent for a new registration")
     
     return {
         "requiresVerification": True,
@@ -341,12 +342,12 @@ async def forgot_password(request: Request, data: ForgotPasswordRequest):
             }
             await asyncio.to_thread(resend.Emails.send, params)
             email_sent = True
-            logger.info(f"Password reset email sent to {data.email}")
+            logger.info("Password reset email sent")
         except Exception as e:
             logger.error(f"Failed to send reset email: {str(e)}")
     
     if not email_sent:
-        logger.info(f"[RESET] Code for {data.email}: {code}")
+        logger.warning("Password reset email not sent")
     
     return {"message": "Se l'email esiste, riceverai un codice di reset"}
 
@@ -378,12 +379,12 @@ async def reset_password(request: Request, data: ResetPasswordRequest):
     await db.users.update_one(
         {"email": data.email},
         {
-            "$set": {"password_hash": hashed},
+            "$set": {"password_hash": hashed, "sessions_valid_after": datetime.now(timezone.utc)},
             "$unset": {"reset_code": "", "reset_code_expires": ""}
         }
     )
     
-    logger.info(f"Password reset successful for {data.email}")
+    logger.info("Password reset successful")
     return {"message": "Password aggiornata con successo"}
 
 @api_router.post("/auth/recover-username")
@@ -432,12 +433,12 @@ async def recover_username(request: Request, data: RecoverUsernameRequest):
             }
             await asyncio.to_thread(resend.Emails.send, params)
             email_sent = True
-            logger.info(f"Username recovery email sent to {data.email}")
+            logger.info("Username recovery email sent")
         except Exception as e:
             logger.error(f"Failed to send username recovery email: {str(e)}")
     
     if not email_sent:
-        logger.info(f"[USERNAME RECOVERY] Code for {data.email}: {code}, username: {user_doc['name']}")
+        logger.warning("Username recovery email not sent")
     
     return {"message": "Se l'email esiste, riceverai un codice di verifica"}
 
@@ -482,7 +483,30 @@ async def login(request: Request, credentials: UserLogin, response: Response):
     
     if not verify_password(credentials.password, user_doc["password_hash"]):
         raise HTTPException(status_code=401, detail="Email o password non validi")
-    
+
+    # Si entra solo con un'email verificata. Dopo la password giusta si rimanda il codice (al massimo uno al minuto).
+    if not user_doc.get("email_verified"):
+        expires = user_doc.get("verification_code_expires")
+        if isinstance(expires, datetime) and expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        just_sent = isinstance(expires, datetime) and expires - datetime.now(timezone.utc) > timedelta(minutes=59)
+        if not just_sent:
+            new_code = generate_numeric_code()
+            await db.users.update_one(
+                {"user_id": user_doc["user_id"]},
+                {"$set": {
+                    "verification_code": new_code,
+                    "verification_attempts": 0,
+                    "verification_code_expires": datetime.now(timezone.utc) + timedelta(hours=1),
+                }},
+            )
+            await send_verification_email(user_doc["email"], new_code, user_doc.get("name", ""))
+        raise HTTPException(
+            status_code=403,
+            detail="Devi prima verificare la tua email: ti abbiamo mandato un codice.",
+            headers={"X-Email-Unverified": "true", "X-User-Id": user_doc["user_id"]},
+        )
+
     token = create_jwt_token(user_doc["user_id"])
     user_doc.pop("password_hash", None)
     user_doc["title"] = get_user_title(user_doc)
@@ -501,31 +525,32 @@ async def login(request: Request, credentials: UserLogin, response: Response):
     
     return AuthResponse(user=User(**user_doc), token=token)
 
-@api_router.post("/auth/session")
+class GoogleLoginBody(BaseModel):
+    id_token: str = Field(max_length=4096)
+    nonce: str = Field(max_length=200)
+
+
+@api_router.get("/auth/google/nonce")
+@limiter.limit("30/minute")
+async def google_nonce(request: Request):
+    """Nonce monouso da mettere nella richiesta a Google; serve a legare il token all'app che l'ha chiesto."""
+    return {"nonce": google_auth.make_nonce(JWT_SECRET), "enabled": bool(google_auth.GOOGLE_CLIENT_IDS)}
+
+
+@api_router.post("/auth/google")
 @limiter.limit("10/minute")
-async def exchange_session(request: Request, response: Response):
-    """Exchange session_id from Google OAuth"""
-    body = await request.json()
-    session_id = body.get("session_id")
-    
-    if not session_id:
-        raise HTTPException(status_code=400, detail="session_id richiesto")
-    
-    async with httpx.AsyncClient() as client:
-        auth_response = await client.get(
-            OAUTH_SESSION_URL,
-            headers={"X-Session-ID": session_id}
-        )
-    
-    if auth_response.status_code != 200:
-        raise HTTPException(status_code=401, detail="Session ID non valido")
-    
-    auth_data = auth_response.json()
-    email = auth_data.get("email")
-    name = auth_data.get("name")
-    picture = auth_data.get("picture")
-    session_token = auth_data.get("session_token")
-    
+async def google_login(request: Request, body: GoogleLoginBody, response: Response):
+    """Accesso con Google: l'ID token viene verificato qui (firma, destinatario, scadenza, nonce)."""
+    nonce = google_auth.check_nonce_format(JWT_SECRET, body.nonce)
+    await db.google_nonces.delete_many({"created_at": {"$lt": datetime.now(timezone.utc) - timedelta(hours=1)}})
+    try:
+        await db.google_nonces.insert_one({"_id": nonce, "created_at": datetime.now(timezone.utc)})
+    except Exception:  # nonce già usato
+        raise HTTPException(status_code=401, detail="Accesso con Google non valido")
+    identity = await google_auth.verify_google_id_token(body.id_token, nonce)
+    email, name, picture = identity["email"], identity["name"], identity["picture"]
+    session_token = secrets.token_urlsafe(32)
+
     user_doc = await db.users.find_one({"email": email}, {"_id": 0})
     
     if user_doc:
@@ -534,8 +559,9 @@ async def exchange_session(request: Request, response: Response):
         # prima con quell'indirizzo non deve restare valida.
         from routers.moderation_routes import is_moderator_account
         update = {"$set": {"name": name, "picture": picture, "identity_verified": True, "email_verified": True}}
-        if is_moderator_account(email, True) and (user_doc.get("password_hash") or not user_doc.get("email_verified")):
-            # Chi si era registrato prima con questa email non deve restare dentro: via la password e via le sessioni vecchie.
+        if not user_doc.get("email_verified") or (is_moderator_account(email, True) and user_doc.get("password_hash")):
+            # Account creato con questa email ma mai verificata: chi lo aveva registrato non deve restare dentro
+            # (via la password e via le sessioni vecchie). Vale per tutti, non solo per i moderatori.
             update["$set"]["sessions_valid_after"] = datetime.now(timezone.utc)
             update["$unset"] = {"password_hash": ""}
         await db.users.update_one({"user_id": user_id}, update)
@@ -636,10 +662,12 @@ async def apple_auth(request: Request, auth_data: AppleAuthRequest, response: Re
             user_id = user_doc["user_id"]
             # Update Apple user ID if not set
             if not user_doc.get("apple_user_id"):
-                await db.users.update_one(
-                    {"user_id": user_id},
-                    {"$set": {"apple_user_id": apple_user_id, "identity_verified": True}}
-                )
+                apple_update = {"$set": {"apple_user_id": apple_user_id, "identity_verified": True}}
+                if not user_doc.get("email_verified"):
+                    # Stessa difesa del login Google: email mai verificata, la vecchia password non resta valida.
+                    apple_update["$set"].update({"email_verified": True, "sessions_valid_after": datetime.now(timezone.utc)})
+                    apple_update["$unset"] = {"password_hash": ""}
+                await db.users.update_one({"user_id": user_id}, apple_update)
             user_doc["identity_verified"] = True
         else:
             # Create new user

@@ -421,9 +421,21 @@ export class PhoneRequiredError extends Error {
   }
 }
 
+export class EmailUnverifiedError extends Error {
+  userId: string;
+  constructor(message: string, userId: string) {
+    super(message);
+    this.name = 'EmailUnverifiedError';
+    this.userId = userId;
+  }
+}
+
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Errore di rete' }));
+    if (response.status === 403 && response.headers.get('x-email-unverified') === 'true') {
+      throw new EmailUnverifiedError(error.detail || 'Verifica la tua email', response.headers.get('x-user-id') || '');
+    }
     if (response.status === 403 && response.headers.get('x-phone-required') === 'true') {
       throw new PhoneRequiredError(error.detail || 'Verifica il tuo telefono');
     }
@@ -543,11 +555,17 @@ export const api = {
     return handleResponse(response);
   },
 
-  exchangeSession: async (sessionId: string): Promise<AuthResponse> => {
-    const response = await fetch(`${API_URL}/api/auth/session`, {
+  /** Nonce monouso firmato dal server da mettere nella richiesta a Google. */
+  getGoogleNonce: async (): Promise<{ nonce: string; enabled: boolean }> => {
+    const response = await fetch(`${API_URL}/api/auth/google/nonce`, { headers: getHeaders() });
+    return handleResponse(response);
+  },
+
+  googleLogin: async (idToken: string, nonce: string): Promise<AuthResponse> => {
+    const response = await fetch(`${API_URL}/api/auth/google`, {
       method: 'POST',
       headers: getHeaders(),
-      body: JSON.stringify({ session_id: sessionId }),
+      body: JSON.stringify({ id_token: idToken, nonce }),
       credentials: 'include',
     });
     return handleResponse(response);
@@ -835,8 +853,8 @@ export const api = {
     return handleResponse(response);
   },
 
-  getThanksBoard: async (limit: number = 20): Promise<ThanksEntry[]> => {
-    const response = await fetch(`${API_URL}/api/thanks?limit=${limit}`);
+  getThanksBoard: async (token: string, limit: number = 20): Promise<ThanksEntry[]> => {
+    const response = await fetch(`${API_URL}/api/thanks?limit=${limit}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 
@@ -1104,10 +1122,15 @@ export const api = {
     favor_id: string;
     granelli_earned: number;
   }> => {
+    // Chi scansiona deve essere sul posto: si manda la posizione (il server non la conserva)
+    const position = await getConfirmationPosition();
     const response = await fetch(`${API_URL}/api/favors/${favorId}/verify-qr`, {
       method: 'POST',
       headers: getHeaders(token),
-      body: JSON.stringify({ qr_code: scannedCode }),
+      body: JSON.stringify({
+        qr_code: scannedCode,
+        ...(position ? { latitude: position.latitude, longitude: position.longitude, accuracy_meters: position.accuracy } : {}),
+      }),
     });
     return handleResponse(response);
   },

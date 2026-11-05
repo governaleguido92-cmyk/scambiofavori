@@ -33,7 +33,7 @@ export function NeighborsTab({ token }: { token: string | null }) {
   const load = useCallback(async () => {
     if (!token) return;
     try {
-      const [introResult, thanksResult] = await Promise.all([api.getNeighborhoodIntros(token), api.getThanksBoard(THANKS_LIMIT)]);
+      const [introResult, thanksResult] = await Promise.all([api.getNeighborhoodIntros(token), api.getThanksBoard(token, THANKS_LIMIT)]);
       setIntros(introResult.intros);
       setNoPosition(introResult.reason === 'no_position');
       setThanks(thanksResult);

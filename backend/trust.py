@@ -144,7 +144,7 @@ async def apply_safety_hold_if_needed(target_id: str) -> bool:
     alerts = await db.general_reports.find(
         {"reason": "safety_alert", "target_id": target_id, "created_at": {"$gte": cutoff}}, {"reporter_id": 1}
     ).to_list(100)
-    if len({alert["reporter_id"] for alert in alerts}) < SAFETY_HOLD_ALERTS:
+    if await trusted_reporter_count(list({alert["reporter_id"] for alert in alerts})) < SAFETY_HOLD_ALERTS:
         return False
     if (await user_doc_of(target_id)).get("safety_hold"):
         return True

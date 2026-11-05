@@ -66,7 +66,6 @@ JWT_EXPIRATION_DAYS = 7
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', 'sk_test_emergent')
 
 # OAuth Config
-OAUTH_SESSION_URL = os.environ.get('OAUTH_SESSION_URL', 'https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data')
 
 # Resend Email Config
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
@@ -310,7 +309,7 @@ def ensure_text_allowed(*texts: Optional[str]) -> None:
 async def send_verification_email(to_email: str, code: str, user_name: str):
     """Send verification email via Resend"""
     if not RESEND_API_KEY:
-        logger.info(f"[EMAIL MOCK] Verification code for {to_email}: {code}")
+        logger.info("[EMAIL MOCK] verification email not sent (no RESEND_API_KEY)")
         return False
     
     html_content = f"""
@@ -549,15 +548,16 @@ FAVOR_CATEGORIES = [
 
 
 class FavorCreate(BaseModel):
-    type: str  # "offer" or "request"
-    title: str
-    description: str
-    category: str
-    duration_hours: float = 1.0
-    validity_days: int = 3  # Durata annuncio (1-10 giorni, default 3)
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    address: Optional[str] = None
+    type: str = Field(max_length=20)  # "offer" or "request"
+    title: str = Field(max_length=120)
+    description: str = Field(max_length=2000)
+    category: str = Field(max_length=60)
+    duration_hours: float = Field(default=1.0, gt=0, le=999, allow_inf_nan=False)
+    validity_days: int = Field(default=3, ge=0, le=365)  # Durata annuncio (1-10 giorni, default 3)
+    # Solo numeri finiti e coordinate vere: un NaN salvato romperebbe l'elenco dei favori per tutti
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
+    address: Optional[str] = Field(default=None, max_length=200)
     is_emergency: bool = False  # Emergenza Gentilezza
 
 class FavorUpdate(BaseModel):
@@ -679,15 +679,15 @@ class ThanksEntry(BaseModel):
 # ========================
 
 class MeetingPoint(BaseModel):
-    name: str
-    latitude: float
-    longitude: float
-    address: Optional[str] = None
+    name: str = Field(max_length=120)
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False)
+    address: Optional[str] = Field(default=None, max_length=200)
 
 class MessageCreate(BaseModel):
-    favor_id: str
-    content: str
-    message_type: Optional[str] = "text"  # text, meeting_point, image
+    favor_id: str = Field(max_length=64)
+    content: str = Field(max_length=2000)
+    message_type: Optional[str] = Field(default="text", max_length=20)  # text, meeting_point, image
     meeting_point: Optional[MeetingPoint] = None
 
 class Message(BaseModel):
@@ -802,14 +802,21 @@ async def check_one_time_code(user_doc: dict, stored_code, provided_code: str,
     code is invalidated so a 6-digit code cannot be brute-forced.
     """
     query = {"user_id": user_doc["user_id"]}
-    attempts = user_doc.get(attempts_field, 0)
-    if not stored_code or attempts >= MAX_CODE_ATTEMPTS:
+    if not stored_code:
         raise HTTPException(status_code=400, detail="Codice non valido. Richiedi un nuovo codice.")
-    if not secrets.compare_digest(str(stored_code), str(provided_code)):
-        update = {"$inc": {attempts_field: 1}}
-        if attempts + 1 >= MAX_CODE_ATTEMPTS:
-            update["$unset"] = {field: "" for field in code_fields}
-        await db.users.update_one(query, update)
+    # Il tentativo si prenota in modo atomico PRIMA del confronto: tentativi paralleli
+    # non possono superare il limite leggendo tutti lo stesso contatore.
+    await db.users.update_one({**query, attempts_field: {"$exists": False}}, {"$set": {attempts_field: 0}})
+    reserved = await db.users.update_one(
+        {**query, attempts_field: {"$lt": MAX_CODE_ATTEMPTS}},
+        {"$inc": {attempts_field: 1}},
+    )
+    if reserved.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Codice non valido. Richiedi un nuovo codice.")
+    if not secrets.compare_digest(str(stored_code).encode("utf-8"), str(provided_code).encode("utf-8")):
+        fresh = await db.users.find_one(query, {"_id": 0, attempts_field: 1}) or {}
+        if fresh.get(attempts_field, 0) >= MAX_CODE_ATTEMPTS:
+            await db.users.update_one(query, {"$unset": {field: "" for field in code_fields}})
         raise HTTPException(status_code=400, detail="Codice non valido")
 
 def generate_referral_code() -> str:
@@ -1293,7 +1300,11 @@ async def settle_favor(favor: "Favor", extra_fields: Optional[dict] = None) -> t
     return helper_id, payer_id
 
 class QRVerifyRequest(BaseModel):
-    qr_code: str
+    qr_code: str = Field(max_length=600)
+    # Posizione di chi scansiona: serve per essere sicuri che sia sul posto (non viene conservata)
+    latitude: Optional[float] = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
+    longitude: Optional[float] = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
+    accuracy_meters: Optional[float] = Field(default=None, ge=0, le=100000, allow_inf_nan=False)
 
 # ========================
 # CHAT REPORTING SYSTEM
@@ -1366,6 +1377,8 @@ PHONE_VERIFICATION_REQUIRED = os.environ.get("PHONE_VERIFICATION_REQUIRED", "fal
 PROXIMITY_REQUIRED = os.environ.get("PROXIMITY_REQUIRED", "false").lower() == "true"
 # I favori si completano solo con il codice QR (mostrato da chi riceve, scansionato da chi esegue). Il vecchio "Completa" senza QR
 # resta spento; si riaccende solo per i test o in emergenza con MANUAL_COMPLETION_ENABLED=true.
+# Alla scansione del QR serve la posizione di chi scansiona (deve essere sul posto). QR_LOCATION_REQUIRED=false solo in emergenza.
+QR_LOCATION_REQUIRED = os.environ.get("QR_LOCATION_REQUIRED", "true").lower() == "true"
 MANUAL_COMPLETION_ENABLED = os.environ.get("MANUAL_COMPLETION_ENABLED", "false").lower() == "true"
 PHONE_CODE_TTL_MINUTES = 10
 PHONE_RESEND_SECONDS = 60
