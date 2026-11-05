@@ -22,6 +22,8 @@ import { tt, tx } from '../src/i18n/tt';
 import { goBackOrHome } from '../src/utils/navigation';
 import { notify, showRefusal } from '../src/utils/notify';
 import { NewsTab } from '../src/components/neighborhood/NewsTab';
+import { EventsTab } from '../src/components/neighborhood/EventsTab';
+import { NeighborsTab } from '../src/components/neighborhood/NeighborsTab';
 import { useLiveRefresh } from '../src/hooks/useLiveRefresh';
 
 const WEATHER_REFRESH_MS = 10 * 60 * 1000;
@@ -37,6 +39,10 @@ const WEATHER_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 };
 const MAX_LENGTH = 300;
 
+type NeighborhoodTab = 'chat' | 'avvisi' | 'eventi' | 'vicini';
+const TABS: ReadonlyArray<NeighborhoodTab> = ['chat', 'avvisi', 'eventi', 'vicini'];
+const TAB_LABELS: Record<NeighborhoodTab, string> = { chat: 'Chat', avvisi: 'Avvisi', eventi: 'Eventi', vicini: 'Vicini' };
+
 /** Quartiere: chat tra chi ha un favore attivo entro 30 km. I messaggi durano 2 giorni. */
 export default function NeighborhoodScreen() {
   const { token } = useAuth();
@@ -49,7 +55,7 @@ export default function NeighborhoodScreen() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [weather, setWeather] = useState<NeighborhoodWeather | null>(null);
-  const [tab, setTab] = useState<'chat' | 'avvisi'>('chat');
+  const [tab, setTab] = useState<NeighborhoodTab>('chat');
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -217,7 +223,7 @@ export default function NeighborhoodScreen() {
         </View>
 
         <View style={styles.tabs} accessibilityRole="tablist">
-          {(['chat', 'avvisi'] as const).map((key) => (
+          {TABS.map((key) => (
             <TouchableOpacity
               key={key}
               style={[styles.tab, tab === key && styles.tabActive]}
@@ -226,13 +232,17 @@ export default function NeighborhoodScreen() {
               accessibilityState={{ selected: tab === key }}
               data-testid={`neighborhood-tab-${key}`}
             >
-              <Text style={[styles.tabText, tab === key && styles.tabTextActive]}>{key === 'chat' ? tt('Chat') : tt('Avvisi')}</Text>
+              <Text style={[styles.tabText, tab === key && styles.tabTextActive]}>{tt(TAB_LABELS[key])}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {tab === 'avvisi' ? (
           <NewsTab token={token} />
+        ) : tab === 'eventi' ? (
+          <EventsTab token={token} />
+        ) : tab === 'vicini' ? (
+          <NeighborsTab token={token} />
         ) : loading ? (
           <ActivityIndicator size="large" color={colors.accent} style={styles.loader} />
         ) : noAccess ? (

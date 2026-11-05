@@ -147,6 +147,54 @@ export interface NeighborhoodNotice {
   distance_km: number | null;
 }
 
+export interface NeighborhoodEvent {
+  event_id: string;
+  kind: 'evento' | 'ritrovo';
+  title: string;
+  description: string;
+  place: string;
+  starts_at: string;
+  author_id: string;
+  author_name: string;
+  mine: boolean;
+  attendees: number;
+  going: boolean;
+  distance_km: number | null;
+}
+
+export interface NeighborhoodIntro {
+  intro_id: string;
+  author_id: string;
+  author_name: string;
+  text: string;
+  mine: boolean;
+  welcomes: number;
+  welcomed: boolean;
+  created_at: string;
+  distance_km: number | null;
+}
+
+export interface ModerationReport {
+  report_id: string;
+  source: 'general' | 'chat';
+  status: string;
+  priority: 'high' | 'normal';
+  reason: string | null;
+  description: string | null;
+  created_at: string;
+  reporter_name: string;
+  favor_id: string | null;
+  target: { kind: string; type: string; id: string; summary: string };
+  reported_user: { user_id: string; name: string; safety_hold: boolean; reports_total: number } | null;
+}
+
+export interface HeldUser {
+  user_id: string;
+  name: string | null;
+  alerts: number;
+  held_at: string | null;
+}
+
 export interface TrustStatus {
   trust_level: number;
   is_new_user: boolean;
@@ -958,6 +1006,100 @@ export const api = {
       method: 'POST',
       headers: getHeaders(token),
       body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
+  getNeighborhoodEvents: async (token: string): Promise<{ events: NeighborhoodEvent[]; reason?: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/events`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  createNeighborhoodEvent: async (
+    event: { kind: string; title: string; description: string; place: string; starts_at: string },
+    token: string
+  ): Promise<{ event_id: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/events`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify(event),
+    });
+    return handleResponse(response);
+  },
+
+  joinNeighborhoodEvent: async (eventId: string, token: string): Promise<{ going: boolean }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/events/${eventId}/join`, { method: 'POST', headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  deleteNeighborhoodEvent: async (eventId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/events/${eventId}`, { method: 'DELETE', headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  reportNeighborhoodEvent: async (eventId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/events/${eventId}/report`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
+  getNeighborhoodIntros: async (token: string): Promise<{ intros: NeighborhoodIntro[]; reason?: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/intros`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  writeNeighborhoodIntro: async (text: string, token: string): Promise<{ intro_id: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/intro`, {
+      method: 'PUT',
+      headers: getHeaders(token),
+      body: JSON.stringify({ text }),
+    });
+    return handleResponse(response);
+  },
+
+  withdrawNeighborhoodIntro: async (token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/intro`, { method: 'DELETE', headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  welcomeNeighborhoodIntro: async (introId: string, token: string): Promise<{ welcomed: boolean }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/intros/${introId}/welcome`, { method: 'POST', headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  reportNeighborhoodIntro: async (introId: string, token: string): Promise<{ message: string }> => {
+    const response = await fetch(`${API_URL}/api/neighborhood/intros/${introId}/report`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({}),
+    });
+    return handleResponse(response);
+  },
+
+  // Moderazione: solo per gli account abilitati dal titolare
+  getModerationMe: async (token: string): Promise<{ moderator: boolean }> => {
+    const response = await fetch(`${API_URL}/api/admin/moderation/me`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  getModerationReports: async (token: string, includeHandled: boolean): Promise<{ reports: ModerationReport[] }> => {
+    const response = await fetch(`${API_URL}/api/admin/moderation/reports?status=${includeHandled ? 'all' : 'pending'}`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  getModerationHeldUsers: async (token: string): Promise<{ users: HeldUser[] }> => {
+    const response = await fetch(`${API_URL}/api/admin/moderation/held-users`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  moderationAction: async (reportId: string, action: string, note: string, token: string): Promise<{ status: string }> => {
+    const response = await fetch(`${API_URL}/api/admin/moderation/reports/${encodeURIComponent(reportId)}/action`, {
+      method: 'POST',
+      headers: getHeaders(token),
+      body: JSON.stringify({ action, note: note || null }),
     });
     return handleResponse(response);
   },

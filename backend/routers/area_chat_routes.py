@@ -2,10 +2,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel
 
 from core import *  # noqa: F401,F403
+import moderation_notify
 import trust
 import weather
 from public_text import ensure_public_text_allowed
@@ -138,7 +139,8 @@ async def write_area_chat(body: AreaMessageBody, current_user: User = Depends(ge
 
 
 @api_router.post("/area-chat/{message_id}/report")
-async def report_area_message(message_id: str, body: AreaReportBody, current_user: User = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def report_area_message(request: Request, message_id: str, body: AreaReportBody, current_user: User = Depends(get_current_user)):
     await _require_access(current_user.user_id)
     message = await db.area_messages.find_one({"message_id": message_id}, {"_id": 0})
     if not message:
@@ -159,8 +161,10 @@ async def report_area_message(message_id: str, body: AreaReportBody, current_use
         "created_at": datetime.now(timezone.utc),
     })
     reporters = await db.general_reports.distinct("reporter_id", {"report_type": "area_message", "target_id": message_id})
-    if len(reporters) >= HIDE_AFTER_REPORTS:
+    if await trust.trusted_reporter_count(reporters) >= HIDE_AFTER_REPORTS and not message.get("hidden"):
         await db.area_messages.update_one({"message_id": message_id}, {"$set": {"hidden": True}})
+        await moderation_notify.notify_owner("Messaggio nascosto dopo 3 segnalazioni", [
+            f"Il messaggio «{message['content'][:80]}» di {message['author_name']} è stato nascosto automaticamente."], key=f"hide:{message_id}")
     return {"message": "Segnalazione inviata. Grazie per aiutarci a tenere il quartiere sicuro."}
 
 

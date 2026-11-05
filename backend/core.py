@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import html as _html
 import tempfile
 from decimal import ROUND_HALF_UP, Decimal
 import logging
@@ -319,7 +320,7 @@ async def send_verification_email(to_email: str, code: str, user_name: str):
             <p style="color: #B8D4C0; margin-top: 8px;">Verifica il tuo account</p>
         </div>
         <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
-            <p style="color: #FFFFFF; margin: 0 0 8px 0;">Ciao <strong>{user_name}</strong>,</p>
+            <p style="color: #FFFFFF; margin: 0 0 8px 0;">Ciao <strong>{_html.escape(user_name)}</strong>,</p>
             <p style="color: #B8D4C0; margin: 0 0 20px 0;">Usa questo codice per verificare il tuo indirizzo email:</p>
             <div style="text-align: center; background-color: #0F1A14; padding: 16px; border-radius: 8px; border: 2px solid #2D5A3D;">
                 <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #FFD700;">{code}</span>
@@ -842,14 +843,16 @@ def create_jwt_token(user_id: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-def decode_jwt_token(token: str) -> Optional[str]:
+def decode_jwt_payload(token: str) -> Optional[dict]:
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload.get("user_id")
-    except jwt.ExpiredSignatureError:
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except jwt.InvalidTokenError:  # include anche i token scaduti
         return None
-    except jwt.InvalidTokenError:
-        return None
+
+
+def decode_jwt_token(token: str) -> Optional[str]:
+    payload = decode_jwt_payload(token)
+    return payload.get("user_id") if payload else None
 
 MAX_CODE_ATTEMPTS = 5
 
@@ -942,11 +945,22 @@ async def get_current_user(request: Request) -> User:
     raise last_error
 
 
+def _session_predates_cutoff(payload: dict, user_doc: dict) -> bool:
+    """True se l'accesso (JWT) è stato emesso prima che l'account venisse messo al sicuro (sessions_valid_after)."""
+    cutoff = user_doc.get("sessions_valid_after")
+    if not cutoff:
+        return False
+    cutoff = cutoff if cutoff.tzinfo else cutoff.replace(tzinfo=timezone.utc)
+    issued = payload.get("iat")
+    return issued is None or datetime.fromtimestamp(issued, timezone.utc) < cutoff
+
+
 async def _user_from_session_token(session_token: str) -> User:
-    user_id = decode_jwt_token(session_token)
+    payload = decode_jwt_payload(session_token)
+    user_id = payload.get("user_id") if payload else None
     if user_id:
         user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
-        if user_doc:
+        if user_doc and not _session_predates_cutoff(payload, user_doc):
             user_doc["title"] = get_user_title(user_doc)
             # Rename credits to soli for backwards compatibility
             if "credits" in user_doc:

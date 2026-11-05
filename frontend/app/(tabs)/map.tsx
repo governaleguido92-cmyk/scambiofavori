@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,8 +19,6 @@ import { FavorCard } from '../../src/components/FavorCard';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, formatRadius, withinRadius } from '../../src/utils/radius';
 
-const CARD_WIDTH = 190;
-const CARD_GAP = 12;
 
 type Coordinates = { latitude: number; longitude: number };
 
@@ -34,7 +32,6 @@ export default function MapScreen() {
   const [selectedType, setSelectedType] = useState<FavorType>('request');
   const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_KM);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const listRef = useRef<FlatList<Favor>>(null);
 
   const getUserLocation = async (): Promise<Coordinates | null> => {
     try {
@@ -62,16 +59,17 @@ export default function MapScreen() {
         params.max_distance_km = MAX_RADIUS_KM; // scarico fino al massimo, il raggio scelto filtra sul telefono
       }
       const data = await api.getFavors(params, token || undefined);
-      setFavors(data);
+      // I tuoi favori stanno in "I Miei": qui si vedono solo quelli dei vicini.
+      setFavors(data.filter((favor) => favor.creator_id !== user?.user_id));
       await offlineCache.saveFavors(data);
     } catch (error) {
       logger.debug('Error loading favors:', error);
       const cached = await offlineCache.loadFavors();
-      if (cached) setFavors(cached.filter((favor) => favor.type === selectedType));
+      if (cached) setFavors(cached.filter((favor) => favor.type === selectedType && favor.creator_id !== user?.user_id));
     } finally {
       setLoading(false);
     }
-  }, [selectedType, token]);
+  }, [selectedType, token, user?.user_id]);
 
   useEffect(() => {
     setSelectedId(null);
@@ -88,8 +86,6 @@ export default function MapScreen() {
 
   const handleSelect = (favorId: string) => {
     setSelectedId(favorId);
-    const index = visibleFavors.findIndex((favor) => favor.favor_id === favorId);
-    if (index >= 0) listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
   };
 
   const openFavor = (favor: Favor) => router.push(`/favor/${favor.favor_id}`);
@@ -164,24 +160,17 @@ export default function MapScreen() {
                 {userLocation ? ` (${formatRadius(radiusKm)})` : ''}
               </Text>
             ) : (
-              <FlatList
-                ref={listRef}
-                data={visibleFavors}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(item) => item.favor_id}
-                contentContainerStyle={styles.carouselContent}
-                getItemLayout={(_data, index) => ({ length: CARD_WIDTH + CARD_GAP, offset: (CARD_WIDTH + CARD_GAP) * index, index })}
-                renderItem={({ item }) => (
+              <View style={styles.grid}>
+                {visibleFavors.map((item) => (
                   <FavorCard
+                    key={item.favor_id}
                     item={item}
                     currentUserId={user.user_id}
                     onPress={openFavor}
                     highlighted={item.favor_id === selectedId}
-                    style={styles.carouselCard}
                   />
-                )}
-              />
+                ))}
+              </View>
             )}
           </>
         )}
@@ -228,6 +217,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  carouselContent: { paddingHorizontal: 20, gap: CARD_GAP },
-  carouselCard: { width: CARD_WIDTH, flexBasis: 'auto' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 20 },
 });

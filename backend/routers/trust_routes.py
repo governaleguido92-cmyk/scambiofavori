@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from core import *  # noqa: F401,F403
+import moderation_notify
 import trust
 
 api_router = APIRouter(prefix="/api")
@@ -110,6 +111,14 @@ async def safety_alert(favor_id: str, body: SafetyAlertBody, current_user: User 
             "created_at": now,
         })
     on_hold = await trust.apply_safety_hold_if_needed(other_id)
+    other = await db.users.find_one({"user_id": other_id}, {"_id": 0, "name": 1}) or {}
+    await moderation_notify.notify_owner(
+        "Account in revisione per sicurezza" if on_hold else "Allarme di sicurezza",
+        [f"{current_user.name} ha premuto «Non mi sento al sicuro» su {other.get('name') or other_id} (id {other_id}).",
+         f"Motivo scritto: {(body.description or 'nessuno')[:200]}",
+         "L'account è stato messo in revisione automatica (2 allarmi da persone diverse)." if on_hold else "Il favore è stato chiuso e le due persone non si vedono più."],
+        key=f"{'hold' if on_hold else 'alert'}:{other_id}",
+    )
     return {
         "message": "Segnalazione inviata. Il favore è chiuso e non vedrai più questa persona.",
         "emergency_number": EMERGENCY_NUMBER,

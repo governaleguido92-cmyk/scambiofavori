@@ -21,7 +21,7 @@ def open_favor(favor_id: str, user: str, km: float = 0.0, **extra) -> dict:
 
 
 async def people(app_db, *names):
-    await app_db.users.insert_many([make_user(n) for n in names])
+    await app_db.users.insert_many([make_user(n, email_verified=True) for n in names])
 
 
 async def say(client, user: str, text: str):

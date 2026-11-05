@@ -1,5 +1,7 @@
 """HTTP routes: auth."""
 from fastapi import APIRouter
+import html
+
 from core import *  # noqa: F401,F403
 import age
 import sms
@@ -317,7 +319,7 @@ async def forgot_password(request: Request, data: ForgotPasswordRequest):
             <p style="color: #B8D4C0; margin-top: 8px;">Reset Password</p>
         </div>
         <div style="background-color: #1A2E22; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
-            <p style="color: #FFFFFF; margin: 0 0 8px 0;">Ciao <strong>{user_doc['name']}</strong>,</p>
+            <p style="color: #FFFFFF; margin: 0 0 8px 0;">Ciao <strong>{html.escape(user_doc['name'])}</strong>,</p>
             <p style="color: #B8D4C0; margin: 0 0 20px 0;">Hai richiesto il reset della password. Usa questo codice:</p>
             <div style="text-align: center; background-color: #0F1A14; padding: 16px; border-radius: 8px; border: 2px solid #E07B39;">
                 <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #FFD700;">{code}</span>
@@ -528,10 +530,15 @@ async def exchange_session(request: Request, response: Response):
     
     if user_doc:
         user_id = user_doc["user_id"]
-        await db.users.update_one(
-            {"user_id": user_id},
-            {"$set": {"name": name, "picture": picture, "identity_verified": True}}
-        )
+        # Google ha verificato l'email. Se è l'email di un moderatore, una password messa da chi si era registrato
+        # prima con quell'indirizzo non deve restare valida.
+        from routers.moderation_routes import is_moderator_account
+        update = {"$set": {"name": name, "picture": picture, "identity_verified": True, "email_verified": True}}
+        if is_moderator_account(email, True) and (user_doc.get("password_hash") or not user_doc.get("email_verified")):
+            # Chi si era registrato prima con questa email non deve restare dentro: via la password e via le sessioni vecchie.
+            update["$set"]["sessions_valid_after"] = datetime.now(timezone.utc)
+            update["$unset"] = {"password_hash": ""}
+        await db.users.update_one({"user_id": user_id}, update)
         user_doc["name"] = name
         user_doc["picture"] = picture
         user_doc["identity_verified"] = True
@@ -561,6 +568,7 @@ async def exchange_session(request: Request, response: Response):
             "title": "Nuovo Vicino",
             "is_vulnerable": False,
             "identity_verified": True,
+            "email_verified": True,
             "community_score": 0,
             "social_impact_score": 0,
             "can_access_solidarity_fund": False,
