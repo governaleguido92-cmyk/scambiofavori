@@ -12,13 +12,15 @@ api_router = APIRouter(prefix="/api")
 async def get_categories():
     return FAVOR_CATEGORIES
 
-@api_router.get("/object-categories")
-async def get_object_categories():
-    return OBJECT_CATEGORIES
-
 @api_router.get("/badges")
 async def get_all_badges():
     return list(BADGES.values())
+
+@api_router.get("/badges/progress")
+async def get_badge_progress(current_user: User = Depends(get_current_user)):
+    """A che punto sei con ogni badge: valore attuale, traguardo, ottenuto, bloccato."""
+    user_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0}) or {}
+    return {"progress": await badge_progress(user_doc)}
 
 @api_router.get("/badges/my")
 async def get_my_badges(current_user: User = Depends(get_current_user)):
@@ -62,248 +64,6 @@ async def get_currency_info():
         "referral_bonus": REFERRAL_BONUS,
         "explanation": PATTO_CONTENT["currency_explanation"]
     }
-
-# ========================
-# MURO DEL QUARTIERE (Neighborhood Wall)
-# ========================
-
-@api_router.post("/wall", response_model=WallPost)
-async def create_wall_post(post_data: WallPostCreate, current_user: User = Depends(get_current_user)):
-    """Create a post on the neighborhood wall"""
-    ensure_text_allowed(post_data.content)
-    post_id = f"post_{uuid.uuid4().hex[:12]}"
-    
-    approx_lat, approx_lon = None, None
-    if post_data.latitude and post_data.longitude:
-        approx_lat, approx_lon = approximate_location(post_data.latitude, post_data.longitude)
-    
-    post_doc = {
-        "post_id": post_id,
-        "author_id": current_user.user_id,
-        "author_name": current_user.name,
-        "author_title": current_user.title,
-        "content": post_data.content,
-        "post_type": post_data.post_type,
-        "likes": 0,
-        "liked_by": [],
-        "approximate_latitude": approx_lat,
-        "approximate_longitude": approx_lon,
-        "created_at": datetime.now(timezone.utc)
-    }
-    
-    await db.wall_posts.insert_one(post_doc)
-    return WallPost(**post_doc)
-
-@api_router.get("/wall", response_model=List[WallPost])
-async def get_wall_posts(
-    latitude: Optional[float] = None,
-    longitude: Optional[float] = None,
-    radius_km: float = 0.5,  # Default 500 meters for hyper-local
-    post_type: Optional[str] = None
-):
-    """Get neighborhood wall posts (hyper-local feed)"""
-    query = {}
-    if post_type:
-        query["post_type"] = post_type
-    
-    posts_cursor = db.wall_posts.find(query, {"_id": 0}).sort("created_at", -1).limit(50)
-    posts = await posts_cursor.to_list(50)
-    
-    result = []
-    for post in posts:
-        post_obj = WallPost(**post)
-        
-        if latitude and longitude and post_obj.approximate_latitude and post_obj.approximate_longitude:
-            distance = calculate_distance(latitude, longitude, post_obj.approximate_latitude, post_obj.approximate_longitude)
-            post_obj.distance_km = round(distance, 2)
-            
-            if distance > radius_km:
-                continue
-        
-        result.append(post_obj)
-    
-    if latitude and longitude:
-        result.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
-    
-    return result
-
-@api_router.post("/wall/{post_id}/like")
-async def like_wall_post(post_id: str, current_user: User = Depends(get_current_user)):
-    """Like/unlike a wall post"""
-    post = await db.wall_posts.find_one({"post_id": post_id})
-    if not post:
-        raise HTTPException(status_code=404, detail="Post non trovato")
-    
-    liked_by = post.get("liked_by", [])
-    if current_user.user_id in liked_by:
-        # Unlike
-        await db.wall_posts.update_one(
-            {"post_id": post_id},
-            {"$pull": {"liked_by": current_user.user_id}, "$inc": {"likes": -1}}
-        )
-        return {"liked": False}
-    else:
-        # Like
-        await db.wall_posts.update_one(
-            {"post_id": post_id},
-            {"$push": {"liked_by": current_user.user_id}, "$inc": {"likes": 1}}
-        )
-        return {"liked": True}
-
-# ========================
-# OGGETTOTECA (Object Lending)
-# ========================
-
-@api_router.post("/objects", response_model=LendableObject)
-async def create_lendable_object(obj_data: ObjectCreate, current_user: User = Depends(get_current_user)):
-    """Add an object to the Oggettoteca"""
-    ensure_text_allowed(obj_data.name, obj_data.description)
-    object_id = f"obj_{uuid.uuid4().hex[:12]}"
-    
-    approx_lat, approx_lon = None, None
-    if obj_data.latitude and obj_data.longitude:
-        approx_lat, approx_lon = approximate_location(obj_data.latitude, obj_data.longitude)
-    
-    obj_doc = {
-        "object_id": object_id,
-        "owner_id": current_user.user_id,
-        "owner_name": current_user.name,
-        "owner_title": current_user.title,
-        "name": obj_data.name,
-        "description": obj_data.description,
-        "category": obj_data.category,
-        "deposit_soli": obj_data.deposit_soli,
-        "status": "available",
-        "borrowed_by": None,
-        "borrowed_by_name": None,
-        "approximate_latitude": approx_lat,
-        "approximate_longitude": approx_lon,
-        "borrow_date": None,
-        "return_date": None,
-        "created_at": datetime.now(timezone.utc)
-    }
-    
-    await db.objects.insert_one(obj_doc)
-    return LendableObject(**obj_doc)
-
-@api_router.get("/objects", response_model=List[LendableObject])
-async def get_objects(
-    category: Optional[str] = None,
-    status: str = "available",
-    latitude: Optional[float] = None,
-    longitude: Optional[float] = None,
-    max_distance_km: float = 5.0
-):
-    """Get lendable objects from Oggettoteca"""
-    query = {"status": status}
-    if category:
-        query["category"] = category
-    
-    objects_cursor = db.objects.find(query, {"_id": 0}).sort("created_at", -1).limit(100)
-    objects = await objects_cursor.to_list(100)
-    
-    result = []
-    for obj in objects:
-        obj_model = LendableObject(**obj)
-        
-        if latitude and longitude and obj_model.approximate_latitude and obj_model.approximate_longitude:
-            distance = calculate_distance(latitude, longitude, obj_model.approximate_latitude, obj_model.approximate_longitude)
-            obj_model.distance_km = round(distance, 2)
-            
-            if distance > max_distance_km:
-                continue
-        
-        result.append(obj_model)
-    
-    if latitude and longitude:
-        result.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
-    
-    return result
-
-@api_router.get("/objects/my")
-async def get_my_objects(current_user: User = Depends(get_current_user)):
-    """Get current user's objects"""
-    query = {
-        "$or": [
-            {"owner_id": current_user.user_id},
-            {"borrowed_by": current_user.user_id}
-        ]
-    }
-    objects_cursor = db.objects.find(query, {"_id": 0})
-    objects = await objects_cursor.to_list(100)
-    return [LendableObject(**obj) for obj in objects]
-
-@api_router.post("/objects/borrow")
-async def borrow_object(data: BorrowRequest, current_user: User = Depends(get_current_user)):
-    """Borrow an object (requires deposit in Soli)"""
-    obj = await db.objects.find_one({"object_id": data.object_id}, {"_id": 0})
-    if not obj:
-        raise HTTPException(status_code=404, detail="Oggetto non trovato")
-    
-    if obj["status"] != "available":
-        raise HTTPException(status_code=400, detail="Oggetto non disponibile")
-    
-    if obj["owner_id"] == current_user.user_id:
-        raise HTTPException(status_code=400, detail="Non puoi prendere in prestito il tuo oggetto")
-    
-    if current_user.granelli < obj["deposit_soli"]:
-        raise HTTPException(status_code=400, detail=f"Soli insufficienti. Servono {obj['deposit_soli']} {CURRENCY_NAME} come deposito")
-    
-    # Hold deposit
-    await db.users.update_one(
-        {"user_id": current_user.user_id},
-        {"$inc": {"granelli": -obj["deposit_soli"]}}
-    )
-    
-    await db.objects.update_one(
-        {"object_id": data.object_id},
-        {"$set": {
-            "status": "borrowed",
-            "borrowed_by": current_user.user_id,
-            "borrowed_by_name": current_user.name,
-            "borrow_date": datetime.now(timezone.utc)
-        }}
-    )
-    
-    return {"message": f"Oggetto preso in prestito. {obj['deposit_soli']} {CURRENCY_NAME} trattenuti come deposito."}
-
-@api_router.post("/objects/return")
-async def return_object(data: ReturnObject, current_user: User = Depends(get_current_user)):
-    """Return a borrowed object"""
-    obj = await db.objects.find_one({"object_id": data.object_id}, {"_id": 0})
-    if not obj:
-        raise HTTPException(status_code=404, detail="Oggetto non trovato")
-    
-    if obj["borrowed_by"] != current_user.user_id:
-        raise HTTPException(status_code=403, detail="Non hai preso in prestito questo oggetto")
-    
-    # Return deposit based on condition
-    if data.condition == "good":
-        # Full deposit back to borrower
-        await db.users.update_one(
-            {"user_id": current_user.user_id},
-            {"$inc": {"granelli": obj["deposit_soli"]}}
-        )
-        message = f"Oggetto restituito. {obj['deposit_soli']} {CURRENCY_NAME} restituiti."
-    else:
-        # Deposit goes to owner as compensation
-        await db.users.update_one(
-            {"user_id": obj["owner_id"]},
-            {"$inc": {"granelli": obj["deposit_soli"]}}
-        )
-        message = f"Oggetto restituito danneggiato. {obj['deposit_soli']} {CURRENCY_NAME} trasferiti al proprietario."
-    
-    await db.objects.update_one(
-        {"object_id": data.object_id},
-        {"$set": {
-            "status": "available",
-            "borrowed_by": None,
-            "borrowed_by_name": None,
-            "return_date": datetime.now(timezone.utc)
-        }}
-    )
-    
-    return {"message": message}
 
 # ========================
 # DONATIONS (FONDO SOLIDARIETÀ)
@@ -421,6 +181,9 @@ async def request_debt_recovery(current_user: User = Depends(get_current_user)):
     
     if granelli >= 0:
         raise HTTPException(status_code=400, detail="Non sei in debito")
+    if user_doc.get("total_favors_given", 0) < 1:
+        # Il Fondo è fatto dai Granelli donati dagli altri: si chiede dopo aver aiutato almeno una volta
+        raise HTTPException(status_code=403, detail="Il Fondo Solidarietà è per chi ha già aiutato almeno una volta: dai una mano a un vicino e poi riprova.")
     
     if user_doc.get("in_debt_recovery"):
         raise HTTPException(status_code=400, detail="Hai già una richiesta di recupero attiva")
@@ -473,26 +236,6 @@ async def request_debt_recovery(current_user: User = Depends(get_current_user)):
         "returned_positive": returned_positive,
         "message": "La community ti ha fatto un dono! Bentornato tra i sostenitori attivi!" if returned_positive else f"Hai ricevuto {recovery_amount} {CURRENCY_NAME} dalla community."
     }
-
-@api_router.get("/leaderboard")
-async def get_leaderboard(current_user: User = Depends(get_current_user)):
-    """Classifica della community: serve il login e restituisce solo ciò che l'app mostra."""
-    users_cursor = db.users.find(
-        {},
-        {"_id": 0, "user_id": 1, "name": 1, "community_score": 1, "badges": 1, "total_favors_given": 1}
-    ).sort("community_score", -1).limit(20)
-    users = await users_cursor.to_list(20)
-    
-    # Add titles
-    return [
-        {
-            "user_id": user["user_id"],
-            "name": user.get("name", "Utente"),
-            "community_score": user.get("community_score", 0),
-            "title": get_user_title(user),
-        }
-        for user in users
-    ]
 
 @api_router.get("/referral/code")
 async def get_my_referral_code(current_user: User = Depends(get_current_user)):

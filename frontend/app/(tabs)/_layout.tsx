@@ -6,6 +6,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import colors from '../../src/theme/colors';
 import { tt } from '../../src/i18n/tt';
 import { useMessages } from '../../src/context/MessagesContext';
+import { BadgeCelebration } from '../../src/components/BadgeCelebration';
 
 
 export default function TabsLayout() {
@@ -24,7 +25,9 @@ export default function TabsLayout() {
   if (!user) return null;
 
   return (
+    <>
     <Tabs
+      backBehavior="history"
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.lime,
@@ -94,13 +97,13 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="oggettoteca"
-        options={{
-          href: null, // Hide from tab bar
-        }}
-      />
+      {/* Pagine che si aprono dentro l'app ma tengono sempre visibile la barra in basso (Home, Mappa, Crea, I Miei, Profilo) */}
+      {['favor/[id]', 'vicino/[id]', 'chat/[favorId]', 'conversations', 'quartiere', 'notifications', 'emergencies', 'moderazione'].map((name) => (
+        <Tabs.Screen key={name} name={name} options={{ href: null, tabBarHideOnKeyboard: true }} />
+      ))}
     </Tabs>
+    <BadgeCelebration />
+    </>
   );
 }
 

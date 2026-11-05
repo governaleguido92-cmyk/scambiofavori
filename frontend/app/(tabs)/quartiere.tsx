@@ -14,17 +14,17 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/context/AuthContext';
-import { api, AreaMessage, NeighborhoodWeather } from '../src/services/api';
-import { BrandLogo } from '../src/components/BrandLogo';
-import colors from '../src/theme/colors';
-import { tt, tx } from '../src/i18n/tt';
-import { goBackOrHome } from '../src/utils/navigation';
-import { notify, showRefusal } from '../src/utils/notify';
-import { NewsTab } from '../src/components/neighborhood/NewsTab';
-import { EventsTab } from '../src/components/neighborhood/EventsTab';
-import { NeighborsTab } from '../src/components/neighborhood/NeighborsTab';
-import { useLiveRefresh } from '../src/hooks/useLiveRefresh';
+import { useAuth } from '../../src/context/AuthContext';
+import { api, AreaMessage, NeighborhoodWeather } from '../../src/services/api';
+import { BrandLogo } from '../../src/components/BrandLogo';
+import colors from '../../src/theme/colors';
+import { tt, tx } from '../../src/i18n/tt';
+import { goBackOrHome } from '../../src/utils/navigation';
+import { notify, showRefusal } from '../../src/utils/notify';
+import { NewsTab } from '../../src/components/neighborhood/NewsTab';
+import { EventsTab } from '../../src/components/neighborhood/EventsTab';
+import { NeighborsTab } from '../../src/components/neighborhood/NeighborsTab';
+import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 
 const WEATHER_REFRESH_MS = 10 * 60 * 1000;
 

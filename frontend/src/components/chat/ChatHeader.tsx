@@ -19,10 +19,12 @@ interface ChatHeaderProps {
   onBack: () => void;
   onMenu: () => void;
   onComplete: () => void;
+  /** Apre il profilo dell'altra persona. */
+  onOpenProfile?: () => void;
 }
 
 /** Intestazione della chat: colore ed emoji della categoria, chi aiuta chi, stato e azione per chiudere il favore. */
-export function ChatHeader({ favor, currentUserId, otherName, qrRole, onBack, onMenu, onComplete }: ChatHeaderProps) {
+export function ChatHeader({ favor, currentUserId, otherName, qrRole, onBack, onMenu, onComplete, onOpenProfile }: ChatHeaderProps) {
   const visual = getCategoryVisual(favor?.category ?? 'Altro');
   const status = favor ? statusOf(favor) : null;
 
@@ -47,7 +49,13 @@ export function ChatHeader({ favor, currentUserId, otherName, qrRole, onBack, on
 
         <View style={styles.titleBlock}>
           <Text style={styles.title} numberOfLines={1}>{favor?.title || tt('Chat')}</Text>
-          {favor && <Text style={styles.subtitle} numberOfLines={1}>{roleText(favor, currentUserId)}</Text>}
+          {favor && (
+            <TouchableOpacity onPress={onOpenProfile} disabled={!onOpenProfile} accessibilityRole="button" accessibilityLabel={tt('Vedi il profilo')} data-testid="chat-open-profile">
+              <Text style={styles.subtitle} numberOfLines={1}>
+                {roleText(favor, currentUserId)}{onOpenProfile ? ' ›' : ''}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <TouchableOpacity

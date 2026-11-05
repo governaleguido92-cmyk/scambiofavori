@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { api, Badge, Category, LeaderboardUser } from '../services/api';
+import { api, Badge, BadgeProgress, Category } from '../services/api';
 import type { ReferralInfo } from '../components/profile/ReferralModal';
 import type { ReceivedReview } from '../components/profile/ReviewsSection';
 import { logger } from '../utils/logger';
@@ -7,6 +7,7 @@ import { logger } from '../utils/logger';
 interface ProfileData {
   earnedBadges: Badge[];
   allBadges: Badge[];
+  badgeProgress: Record<string, BadgeProgress>;
   categories: Category[];
   skills: string[];
   reviews: ReceivedReview[];
@@ -14,7 +15,7 @@ interface ProfileData {
   referral: ReferralInfo | null;
 }
 
-const EMPTY: ProfileData = { earnedBadges: [], allBadges: [], categories: [], skills: [], reviews: [], fund: 0, referral: null };
+const EMPTY: ProfileData = { earnedBadges: [], allBadges: [], badgeProgress: {}, categories: [], skills: [], reviews: [], fund: 0, referral: null };
 
 const valueOf = <T,>(result: PromiseSettledResult<T>): T | undefined => (result.status === 'fulfilled' ? result.value : undefined);
 
@@ -33,6 +34,7 @@ export function useProfileData(token: string | null, userId: string | undefined)
     const needCategories = !staticLoaded.current.categories;
     const results = await Promise.allSettled([
       api.getMyBadges(token),
+      api.getBadgeProgress(token),
       api.getSolidarityFund(),
       api.getReferralCode(token),
       api.getUserSkills(token),
@@ -40,12 +42,13 @@ export function useProfileData(token: string | null, userId: string | undefined)
       needBadges ? api.getAllBadges() : Promise.resolve(undefined),
       needCategories ? api.getCategories() : Promise.resolve(undefined),
     ]);
-    const [earned, fund, referral, skills, reviews, allBadges, categories] = results;
+    const [earned, progress, fund, referral, skills, reviews, allBadges, categories] = results;
     if (allBadges.status === 'fulfilled' && allBadges.value) staticLoaded.current.badges = true;
     if (categories.status === 'fulfilled' && categories.value) staticLoaded.current.categories = true;
 
     setData((previous) => ({
       earnedBadges: valueOf(earned) ?? previous.earnedBadges,
+      badgeProgress: valueOf(progress) ?? previous.badgeProgress,
       fund: valueOf(fund)?.solidarity_fund_total ?? previous.fund,
       referral: valueOf(referral) ?? previous.referral,
       skills: valueOf(skills)?.skills ?? previous.skills,
@@ -61,27 +64,4 @@ export function useProfileData(token: string | null, userId: string | undefined)
   const setSkills = useCallback((skills: string[]) => setData((previous) => ({ ...previous, skills })), []);
 
   return { ...data, failed, load, setSkills };
-}
-
-/** La classifica si chiede solo quando serve (si apre il pannello). */
-export function useLeaderboard(token: string | null) {
-  const [users, setUsers] = useState<LeaderboardUser[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  const load = useCallback(async () => {
-    if (!token) return;
-    setLoading(true);
-    setFailed(false);
-    try {
-      setUsers(await api.getLeaderboard(token));
-    } catch (error) {
-      logger.debug('Errore nel caricare la classifica:', error);
-      setFailed(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
-
-  return { users, loading, failed, load };
 }

@@ -5,14 +5,16 @@ import { styles } from '../../styles/profile.styles';
 import { tt, tx } from '../../i18n/tt';
 import { describeRequirement, ShelfBadge } from '../../utils/profileProgress';
 import { badgeIconName } from './BadgeShelf';
+import type { BadgeProgress } from '../../services/api';
 
 interface BadgeInfoModalProps {
   badge: ShelfBadge | null;
   onClose: () => void;
+  progress?: BadgeProgress;
 }
 
 /** Descrizione del badge e cosa serve per ottenerlo, ricavato dal requisito mandato dal server. */
-export function BadgeInfoModal({ badge, onClose }: BadgeInfoModalProps) {
+export function BadgeInfoModal({ badge, onClose, progress }: BadgeInfoModalProps) {
   const requirement = describeRequirement(badge?.requirement);
   return (
     <Modal visible={badge !== null} transparent animationType="fade" onRequestClose={onClose}>
@@ -35,6 +37,18 @@ export function BadgeInfoModal({ badge, onClose }: BadgeInfoModalProps) {
                 <View style={styles.badgeHowToGet}>
                   <Ionicons name="bulb" size={20} color="#98AA4A" />
                   <Text style={styles.badgeHowToGetText}>{tx(requirement.text, [requirement.value])}</Text>
+                </View>
+              )}
+              {!badge.earned && progress && (
+                <View style={{ marginBottom: 16, width: '100%' }} accessibilityLabel={tx('{0} su {1}', [progress.current, progress.target])}>
+                  <View style={{ height: 8, borderRadius: 4, backgroundColor: '#23281A', overflow: 'hidden' }}>
+                    <View style={{ height: 8, borderRadius: 4, backgroundColor: '#F87828', width: `${Math.round((progress.current / Math.max(progress.target, 1)) * 100)}%` }} />
+                  </View>
+                  <Text style={[styles.badgeHint, { textAlign: 'center', marginTop: 6 }]}>
+                    {progress.blocked
+                      ? tt('Per ora è bloccato: troppi annullamenti o segnalazioni.')
+                      : tx('{0} su {1}', [progress.current, progress.target])}
+                  </Text>
                 </View>
               )}
               <TouchableOpacity style={styles.badgeModalClose} onPress={onClose} accessibilityRole="button">

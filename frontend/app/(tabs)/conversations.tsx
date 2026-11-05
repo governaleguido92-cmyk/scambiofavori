@@ -12,10 +12,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../src/context/AuthContext';
-import { useMessages } from '../src/context/MessagesContext';
-import { BrandLogo } from '../src/components/BrandLogo';
-import colors from '../src/theme/colors';
+import { useAuth } from '../../src/context/AuthContext';
+import { useMessages } from '../../src/context/MessagesContext';
+import { BrandLogo } from '../../src/components/BrandLogo';
+import colors from '../../src/theme/colors';
 import {
   ConversationFilter,
   ConversationSummary,
@@ -23,10 +23,10 @@ import {
   filterCounts,
   formatConversationTime,
   previewText,
-} from '../src/utils/conversations';
-import { tt } from '../src/i18n/tt';
-import { goBackOrHome } from '../src/utils/navigation';
-import { useLiveRefresh } from '../src/hooks/useLiveRefresh';
+} from '../../src/utils/conversations';
+import { tt } from '../../src/i18n/tt';
+import { goBackOrHome } from '../../src/utils/navigation';
+import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 
 const FILTERS: ReadonlyArray<{ key: ConversationFilter; label: string }> = [
   { key: 'all', label: 'Tutti' },

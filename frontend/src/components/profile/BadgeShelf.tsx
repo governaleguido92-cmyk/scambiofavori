@@ -4,31 +4,21 @@ import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../styles/profile.styles';
 import { tt, tx } from '../../i18n/tt';
 import type { ShelfBadge } from '../../utils/profileProgress';
+import type { BadgeProgress } from '../../services/api';
 
-export const BADGE_ICONS: Record<string, string> = {
-  heart: 'heart',
-  home: 'home',
-  school: 'school',
-  people: 'people',
-  flash: 'heart-sharp',
-  footsteps: 'footsteps',
-  sunny: 'heart-circle',
-  ribbon: 'heart-half',
-  star: 'heart',
-  trophy: 'heart-circle-outline',
-  medal: 'heart-outline',
-};
-
-export const badgeIconName = (icon: string): string => BADGE_ICONS[icon] || 'ribbon';
+/** Ogni badge ha la sua icona (nomi Ionicons mandati dal server); senza nome valido, un nastro. */
+export const badgeIconName = (icon: string): string => (icon in Ionicons.glyphMap ? icon : 'ribbon');
 
 interface BadgeShelfProps {
   /** Tutti i badge, già ordinati con quelli ottenuti per primi. */
   badges: ShelfBadge[];
   onPress: (badge: ShelfBadge) => void;
+  /** A che punto sei con ogni badge, per mostrare "7/20" sotto quelli non ancora ottenuti. */
+  progress?: Record<string, BadgeProgress>;
 }
 
 /** La fila dei badge con il conteggio degli ottenuti. */
-export function BadgeShelf({ badges, onPress }: BadgeShelfProps) {
+export function BadgeShelf({ badges, onPress, progress = {} }: BadgeShelfProps) {
   const earnedCount = badges.filter((badge) => badge.earned).length;
   return (
     <View style={styles.section}>
@@ -54,7 +44,11 @@ export function BadgeShelf({ badges, onPress }: BadgeShelfProps) {
               <Ionicons name={badgeIconName(badge.icon) as any} size={24} color={badge.earned ? '#fff' : '#A5A89B'} />
             </View>
             <Text style={[styles.badgeName, !badge.earned && styles.badgeNameLocked]}>{tt(badge.name)}</Text>
-            {!badge.earned && <Ionicons name="lock-closed" size={14} color="#A5A89B" />}
+            {!badge.earned && (
+              <Text style={styles.badgeHint}>
+                {progress[badge.id] ? `${progress[badge.id].current}/${progress[badge.id].target}` : ''}
+              </Text>
+            )}
           </TouchableOpacity>
         ))}
       </ScrollView>

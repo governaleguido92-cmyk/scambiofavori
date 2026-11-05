@@ -1,5 +1,5 @@
-import { GranelloIcon } from '../../src/components/GranelloIcon';
-import { favorKindLabel } from '../../src/utils/favorKind';
+import { GranelloIcon } from '../../../src/components/GranelloIcon';
+import { favorKindLabel } from '../../../src/utils/favorKind';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -15,20 +15,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { openPhoneVerificationIfNeeded } from '../../src/utils/phoneRequired';
-import { BrandLogo } from '../../src/components/BrandLogo';
+import { openPhoneVerificationIfNeeded } from '../../../src/utils/phoneRequired';
+import { BrandLogo } from '../../../src/components/BrandLogo';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Review, CURRENCY_NAME } from '../../src/services/api';
-import { QRScanner, useQRPermissions, isCameraAvailable } from '../../src/components/QRScanner';
-import { ReportModal } from '../../src/components/ReportModal';
-import { PublicTrustInfo } from '../../src/components/profile/PublicTrustInfo';
+import { useAuth } from '../../../src/context/AuthContext';
+import { api, Favor, Review, CURRENCY_NAME } from '../../../src/services/api';
+import { QRScanner, useQRPermissions, isCameraAvailable } from '../../../src/components/QRScanner';
+import { ReportModal } from '../../../src/components/ReportModal';
+import { PublicTrustInfo } from '../../../src/components/profile/PublicTrustInfo';
 import { useTranslation } from 'react-i18next';
-import { styles } from '../../src/styles/favorDetail.styles';
-import { logger } from '../../src/utils/logger';
-import { notify, showRefusal } from '../../src/utils/notify';
-import { tt, tx } from '../../src/i18n/tt';
-import { goBackOrHome } from '../../src/utils/navigation';
+import { styles } from '../../../src/styles/favorDetail.styles';
+import { logger } from '../../../src/utils/logger';
+import { notify, showRefusal } from '../../../src/utils/notify';
+import { tt, tx } from '../../../src/i18n/tt';
+import { goBackOrHome } from '../../../src/utils/navigation';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -64,12 +64,6 @@ export default function FavorDetailScreen() {
   const [permission, requestPermission] = useQRPermissions();
   
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedUserName, setSelectedUserName] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [userReviews, setUserReviews] = useState<Review[]>([]);
-  const [loadingProfile, setLoadingProfile] = useState(false);
   
   // Review form state
   const [rating, setRating] = useState(5);
@@ -150,22 +144,9 @@ export default function FavorDetailScreen() {
     }
   };
 
-  const handleViewProfile = async (userId: string, userName: string) => {
-    setSelectedUserId(userId);
-    setSelectedUserName(userName);
-    setShowProfileModal(true);
-    setLoadingProfile(true);
-    
-    try {
-      const profile = await api.getUserPublicProfile(userId, token || '');
-      setUserProfile(profile);
-      const reviews = await api.getUserReviews(userId, token || '');
-      setUserReviews(reviews);
-    } catch (error) {
-      console.error('Error loading profile:', error);
-    } finally {
-      setLoadingProfile(false);
-    }
+  // Il profilo si apre in una schermata a parte, con la barra sempre visibile
+  const handleViewProfile = (userId: string, _userName: string) => {
+    router.push(`/vicino/${userId}` as any);
   };
 
   const handleReportFavor = () => {
@@ -737,6 +718,9 @@ export default function FavorDetailScreen() {
               multiline
               numberOfLines={3}
             />
+            <Text style={{ color: '#A5A89B', fontSize: 12, marginTop: 6 }}>
+              {tt('Il commento sarà visibile sul profilo di chi recensisci, con il tuo nome. Scrivi con rispetto.')}
+            </Text>
 
             <TextInput
               style={[styles.commentInput, { marginTop: 12 }]}
@@ -963,152 +947,6 @@ export default function FavorDetailScreen() {
         token={token || ''}
       />
 
-      {/* User Profile Modal */}
-      <Modal
-        visible={showProfileModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowProfileModal(false)}
-      >
-        <View style={styles.profileModalOverlay}>
-          <View style={styles.profileModalContent}>
-            <View style={styles.profileModalHeader}>
-              <Text style={styles.profileModalTitle}>{tt('Profilo Utente')}</Text>
-              <TouchableOpacity onPress={() => setShowProfileModal(false)}>
-                <Ionicons name="close" size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
-            
-            {loadingProfile ? (
-              <ActivityIndicator size="large" color="#98AA4A" style={{ marginTop: 40 }} />
-            ) : userProfile ? (
-              <ScrollView style={styles.profileModalScroll}>
-                {/* Profile Header */}
-                <View style={styles.profileHeader}>
-                  <View style={styles.profileAvatar}>
-                    {userProfile.picture ? (
-                      <Image source={{ uri: userProfile.picture }} style={styles.profileAvatarImage} />
-                    ) : (
-                      <Text style={styles.profileAvatarText}>
-                        {userProfile.name?.charAt(0).toUpperCase() || 'U'}
-                      </Text>
-                    )}
-                  </View>
-                  <Text style={styles.profileName}>{userProfile.name}</Text>
-                  <Text style={styles.profileTitle}>{userProfile.title}</Text>
-                  {userProfile.is_supporter && (
-                    <View style={styles.supporterBadgeSmall}>
-                      <Ionicons name="heart" size={14} color="#F87828" />
-                      <Text style={styles.supporterBadgeText}>{tt('Sostenitore')}</Text>
-                    </View>
-                  )}
-                </View>
-
-                {/* Stats */}
-                <View style={styles.profileStats}>
-                  <View style={styles.profileStatItem}>
-                    <Text style={styles.profileStatValue}>{userProfile.total_favors_given}</Text>
-                    <Text style={styles.profileStatLabel}>{tt('Favori dati')}</Text>
-                  </View>
-                  <View style={styles.profileStatItem}>
-                    <Text style={styles.profileStatValue}>{userProfile.total_favors_received}</Text>
-                    <Text style={styles.profileStatLabel}>{tt('Favori ricevuti')}</Text>
-                  </View>
-                  <View style={styles.profileStatItem}>
-                    <Text style={styles.profileStatValue}>{userProfile.reviews_count}</Text>
-                    <Text style={styles.profileStatLabel}>{tt('Recensioni')}</Text>
-                  </View>
-                </View>
-
-                {token && selectedUserId && (
-                  <PublicTrustInfo
-                    userId={selectedUserId}
-                    currentUserId={user?.user_id}
-                    token={token}
-                    trustLevel={userProfile.trust_level ?? 1}
-                    vouchCount={userProfile.vouch_count ?? 0}
-                  />
-                )}
-
-                {/* Ratings */}
-                {(userProfile.average_rating > 0 || userProfile.average_kindness > 0) && (
-                  <View style={styles.profileRatings}>
-                    <View style={styles.profileRatingItem}>
-                      <Text style={styles.profileRatingLabel}>{tt('Efficienza')}</Text>
-                      <View style={styles.profileRatingStars}>
-                        {[1,2,3,4,5].map(i => (
-                          <Ionicons 
-                            key={i} 
-                            name={i <= Math.round(userProfile.average_rating) ? 'star' : 'star-outline'} 
-                            size={16} 
-                            color="#98AA4A" 
-                          />
-                        ))}
-                      </View>
-                    </View>
-                    <View style={styles.profileRatingItem}>
-                      <Text style={styles.profileRatingLabel}>{tt('Gentilezza')}</Text>
-                      <View style={styles.profileRatingStars}>
-                        {[1,2,3,4,5].map(i => (
-                          <Ionicons 
-                            key={i} 
-                            name={i <= Math.round(userProfile.average_kindness) ? 'star' : 'star-outline'} 
-                            size={16} 
-                            color="#98AA4A" 
-                          />
-                        ))}
-                      </View>
-                    </View>
-                  </View>
-                )}
-
-                {/* Skills */}
-                {userProfile.skills && userProfile.skills.length > 0 && (
-                  <View style={styles.profileSection}>
-                    <Text style={styles.profileSectionTitle}>{tt('Competenze')}</Text>
-                    <View style={styles.profileSkills}>
-                      {userProfile.skills.map((skill: string, idx: number) => (
-                        <View key={idx} style={styles.profileSkillTag}>
-                          <Text style={styles.profileSkillText}>{skill}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                )}
-
-                {/* Reviews */}
-                {userReviews.length > 0 && (
-                  <View style={styles.profileSection}>
-                    <Text style={styles.profileSectionTitle}>{tt('Recensioni ricevute')}</Text>
-                    {userReviews.slice(0, 5).map((review) => (
-                      <View key={review.review_id} style={styles.profileReviewCard}>
-                        <View style={styles.profileReviewHeader}>
-                          <Text style={styles.profileReviewerName}>{review.reviewer_name}</Text>
-                          <View style={styles.profileReviewStars}>
-                            {[1,2,3,4,5].map(i => (
-                              <Ionicons 
-                                key={i} 
-                                name={i <= review.rating ? 'star' : 'star-outline'} 
-                                size={14} 
-                                color="#98AA4A" 
-                              />
-                            ))}
-                          </View>
-                        </View>
-                        {review.comment && (
-                          <Text style={styles.profileReviewComment}>{review.comment}</Text>
-                        )}
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </ScrollView>
-            ) : (
-              <Text style={styles.profileError}>{tt('Impossibile caricare il profilo')}</Text>
-            )}
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }

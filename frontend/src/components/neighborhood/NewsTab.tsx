@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { api, NeighborhoodNotice } from '../../services/api';
 import colors from '../../theme/colors';
@@ -37,6 +37,7 @@ function ageLabel(iso: string): string {
 
 /** Avvisi del quartiere: li pubblicano gli utenti con un favore attivo e durano 3 giorni. */
 export function NewsTab({ token }: { token: string | null }) {
+  const router = useRouter();
   const [notices, setNotices] = useState<NeighborhoodNotice[]>([]);
   const [noPosition, setNoPosition] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -84,6 +85,7 @@ export function NewsTab({ token }: { token: string | null }) {
 
   const openNotice = (notice: NeighborhoodNotice) => {
     if (!token) return;
+    const profileButton = { text: tt('Vedi il profilo'), onPress: () => router.push(`/vicino/${notice.author_id}` as any) };
     const buttons = notice.mine
       ? [
           { text: tt('Annulla'), style: 'cancel' as const },
@@ -102,6 +104,7 @@ export function NewsTab({ token }: { token: string | null }) {
         ]
       : [
           { text: tt('Annulla'), style: 'cancel' as const },
+          profileButton,
           {
             text: tt('Segnala l\'avviso'),
             onPress: async () => {

@@ -36,7 +36,7 @@ async def seed(app_db):
 
 @pytest.mark.parametrize(
     "path",
-    ["/api/leaderboard", "/api/users/target", "/api/users/target/public", "/api/reviews/user/target", "/api/reviews/favor/favor_1"],
+    ["/api/users/target", "/api/users/target/public", "/api/reviews/user/target", "/api/reviews/favor/favor_1"],
 )
 async def test_these_endpoints_need_a_login(client, app_db, path):
     await seed(app_db)
@@ -44,26 +44,6 @@ async def test_these_endpoints_need_a_login(client, app_db, path):
     response = await client.get(path)
 
     assert response.status_code == 401
-
-
-async def test_leaderboard_shows_only_what_the_app_displays(client, app_db):
-    await seed(app_db)
-
-    response = await client.get("/api/leaderboard", headers=auth("me"))
-
-    assert response.status_code == 200
-    rows = response.json()
-    assert [row["user_id"] for row in rows] == ["target", "third", "me"]
-    for row in rows:
-        assert set(row) == {"user_id", "name", "community_score", "title"}
-
-
-async def test_leaderboard_never_leaks_emails(client, app_db):
-    await seed(app_db)
-
-    body = (await client.get("/api/leaderboard", headers=auth("me"))).text
-
-    assert "@example.com" not in body
 
 
 async def test_you_can_read_your_own_full_profile(client, app_db):

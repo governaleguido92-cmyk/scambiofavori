@@ -1,5 +1,5 @@
 """HTTP routes: users."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from core import *  # noqa: F401,F403
 import trust
 from storage import delete_profile_picture, save_profile_picture
@@ -149,53 +149,47 @@ async def get_blocked_users(current_user: User = Depends(get_current_user)):
     return {"blocked_users": blocked_users}
 
 @api_router.get("/users/{user_id}/public")
-async def get_user_public_profile(user_id: str, current_user: User = Depends(get_current_user)):
-    """Profilo pubblico di un utente: visibile a chi ha fatto l'accesso, senza email né posizione."""
-    
-    user_doc = await db.users.find_one(
-        {"user_id": user_id}, 
-        {
-            "_id": 0, 
-            "password_hash": 0, 
-            "email": 0,  # Privacy: no email
-            "verification_code": 0,
-            "verification_code_expires": 0,
-            "approximate_latitude": 0,  # Privacy: no location
-            "approximate_longitude": 0
-        }
-    )
-    
+@limiter.limit("60/minute")
+async def get_user_public_profile(request: Request, user_id: str, current_user: User = Depends(get_current_user)):
+    """Profilo pubblico: serve a conoscere con chi si scambia un favore (fiducia, reputazione, badge). Mai email, telefono,
+    posizione, saldo o altri dati privati. Chi si è bloccato non si vede."""
+    if user_id != current_user.user_id and user_id in await get_blocked_user_ids(current_user.user_id):
+        raise HTTPException(status_code=404, detail="Utente non trovato")
+
+    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     if not user_doc:
         raise HTTPException(status_code=404, detail="Utente non trovato")
-    
-    # Get user stats
-    completed_given = await db.favors.count_documents({
-        "accepted_by": user_id,
-        "status": "completed"
-    })
-    completed_received = await db.favors.count_documents({
-        "creator_id": user_id,
-        "type": "request",
-        "status": "completed"
-    })
-    
-    # Get reviews received by this user
-    reviews_count = await db.reviews.count_documents({"reviewed_id": user_id})
-    
+
+    recent = await db.reviews.find({"reviewed_id": user_id}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    created = user_doc.get("created_at")
+    badges = user_doc.get("badges", [])
+    reputation = await trust.reputation_stats(user_id)
     return {
         "user_id": user_doc["user_id"],
         "name": user_doc.get("name", "Utente"),
         "picture": user_doc.get("picture"),
-        "title": user_doc.get("title", "Nuovo Vicino"),
-        "badges": user_doc.get("badges", []),
+        "title": get_user_title(user_doc),
+        "bio": user_doc.get("bio"),
+        "badges": badges,
+        "badge_details": [{"id": b, "name": BADGES[b]["name"], "icon": BADGES[b]["icon"], "color": BADGES[b]["color"]}
+                          for b in badges if b in BADGES],
         "skills": user_doc.get("skills", []),
         "average_rating": user_doc.get("average_rating", 0),
         "average_kindness": user_doc.get("average_kindness", 0),
         "average_impact": user_doc.get("average_impact", 0),
-        "total_favors_given": completed_given,
-        "total_favors_received": completed_received,
-        "reviews_count": reviews_count,
-        "created_at": user_doc.get("created_at"),
+        "total_favors_given": user_doc.get("total_favors_given", 0),
+        "total_favors_received": user_doc.get("total_favors_received", 0),
+        "reviews_count": await db.reviews.count_documents({"reviewed_id": user_id}),
+        "recent_reviews": [
+            {"reviewer_name": r.get("reviewer_name", "Un vicino"), "rating": r["rating"], "comment": r.get("comment"),
+             "created_at": r["created_at"]}
+            for r in recent
+        ],
+        "member_since": created.strftime("%Y-%m") if hasattr(created, "strftime") else None,
+        "phone_verified": bool(user_doc.get("phone_verified")),
+        "identity_verified": bool(user_doc.get("identity_verified")),
+        "late_cancellations": reputation["late_cancellations"],
+        "cancel_rate": reputation["cancel_rate"],
         "is_supporter": user_doc.get("is_supporter", False),
         "vouch_count": await trust.vouch_count(user_id),
         "trust_level": trust.trust_level(user_doc),
@@ -466,6 +460,26 @@ async def update_user_name(name_data: NameUpdate, current_user: User = Depends(g
         {"$set": {"name": name}}
     )
     return {"message": "Nome aggiornato", "name": name}
+
+BIO_MAX_LENGTH = 200
+
+
+class BioUpdate(BaseModel):
+    bio: str
+
+
+@api_router.put("/user/bio")
+async def update_user_bio(data: BioUpdate, current_user: User = Depends(get_current_user)):
+    """"Chi sono": una breve presentazione che gli altri leggono nel tuo profilo. Vuota = si toglie."""
+    from public_text import ensure_public_text_allowed
+
+    bio = data.bio.strip()
+    if not bio:
+        await db.users.update_one({"user_id": current_user.user_id}, {"$unset": {"bio": ""}})
+        return {"message": "Presentazione tolta", "bio": None}
+    ensure_public_text_allowed(bio, BIO_MAX_LENGTH)  # niente soldi, truffe, offese, link, telefono, inviti a WhatsApp
+    await db.users.update_one({"user_id": current_user.user_id}, {"$set": {"bio": bio}})
+    return {"message": "Presentazione salvata", "bio": bio}
 
 @api_router.put("/user/skills")
 async def update_user_skills(skills_data: SkillsUpdate, current_user: User = Depends(get_current_user)):

@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { api, NeighborhoodIntro, ThanksEntry } from '../../services/api';
 import colors from '../../theme/colors';
@@ -21,6 +21,7 @@ function ageLabel(iso: string): string {
 
 /** "Vicini": presentazioni dei nuovi arrivati (con "Benvenuto") e bacheca dei Grazie. */
 export function NeighborsTab({ token }: { token: string | null }) {
+  const router = useRouter();
   const [intros, setIntros] = useState<NeighborhoodIntro[]>([]);
   const [thanks, setThanks] = useState<ThanksEntry[]>([]);
   const [noPosition, setNoPosition] = useState(false);
@@ -83,6 +84,7 @@ export function NeighborsTab({ token }: { token: string | null }) {
 
   const openMenu = (intro: NeighborhoodIntro) => {
     if (!token) return;
+    const profileButton = { text: tt('Vedi il profilo'), onPress: () => router.push(`/vicino/${intro.author_id}` as any) };
     const buttons = intro.mine
       ? [
           { text: tt('Annulla'), style: 'cancel' as const },
@@ -101,6 +103,7 @@ export function NeighborsTab({ token }: { token: string | null }) {
         ]
       : [
           { text: tt('Annulla'), style: 'cancel' as const },
+          profileButton,
           {
             text: tt('Segnala la presentazione'),
             onPress: async () => {

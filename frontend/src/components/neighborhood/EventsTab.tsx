@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { api, NeighborhoodEvent } from '../../services/api';
 import colors from '../../theme/colors';
@@ -20,6 +20,7 @@ const KINDS: ReadonlyArray<{ key: 'evento' | 'ritrovo'; emoji: string; label: st
 
 /** Eventi e ritrovi del quartiere: si organizzano con un giorno e un'ora, i vicini rispondono "Ci vado". */
 export function EventsTab({ token }: { token: string | null }) {
+  const router = useRouter();
   const [events, setEvents] = useState<NeighborhoodEvent[]>([]);
   const [noPosition, setNoPosition] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,7 @@ export function EventsTab({ token }: { token: string | null }) {
 
   const openMenu = (event: NeighborhoodEvent) => {
     if (!token) return;
+    const profileButton = { text: tt('Vedi il profilo'), onPress: () => router.push(`/vicino/${event.author_id}` as any) };
     const buttons = event.mine
       ? [
           { text: tt('Annulla'), style: 'cancel' as const },
@@ -107,6 +109,7 @@ export function EventsTab({ token }: { token: string | null }) {
         ]
       : [
           { text: tt('Annulla'), style: 'cancel' as const },
+          profileButton,
           {
             text: tt('Segnala l\'evento'),
             onPress: async () => {

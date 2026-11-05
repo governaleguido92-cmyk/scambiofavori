@@ -14,7 +14,7 @@ async def root():
         "message": "Scambio Favori API v3.0",
         "status": "running",
         "currency": CURRENCY_NAME,
-        "features": ["Muro del Quartiere", "Oggettoteca", "Emergenze Gentilezza", "Bacheca dei Grazie"]
+        "features": ["Emergenze Gentilezza", "Bacheca dei Grazie"]
     }
 
 @api_router.get("/health")

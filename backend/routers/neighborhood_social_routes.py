@@ -159,6 +159,11 @@ async def toggle_join(request: Request, event_id: str, current_user: User = Depe
     going = current_user.user_id not in event.get("attendees", [])
     operator = "$addToSet" if going else "$pull"
     await db.neighborhood_events.update_one({"event_id": event_id}, {operator: {"attendees": current_user.user_id}})
+    if going and not event.get("counted_for_badge") and not event.get("attendees"):
+        # Il primo ospite fa valere l'evento per il badge dell'organizzatore (una volta sola per evento)
+        await db.neighborhood_events.update_one({"event_id": event_id}, {"$set": {"counted_for_badge": True}})
+        await db.users.update_one({"user_id": event["author_id"]}, {"$inc": {"events_with_guests": 1}})
+        await check_and_award_badges(event["author_id"])
     return {"going": going}
 
 
@@ -253,6 +258,11 @@ async def toggle_welcome(request: Request, intro_id: str, current_user: User = D
     welcomed = current_user.user_id not in intro.get("welcomed_by", [])
     operator = "$addToSet" if welcomed else "$pull"
     await db.neighborhood_intros.update_one({"intro_id": intro_id}, {operator: {"welcomed_by": current_user.user_id}})
+    # Il conteggio dei benvenuti dati sale e scende con il tasto, ma non va sotto zero
+    await db.users.update_one({"user_id": current_user.user_id}, {"$inc": {"welcomes_given": 1 if welcomed else -1}})
+    await db.users.update_one({"user_id": current_user.user_id, "welcomes_given": {"$lt": 0}}, {"$set": {"welcomes_given": 0}})
+    if welcomed:
+        await check_and_award_badges(current_user.user_id)
     return {"welcomed": welcomed}
 
 

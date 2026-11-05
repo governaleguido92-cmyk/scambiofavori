@@ -191,23 +191,6 @@ async def test_favor_address_is_moderated_too(client, app_db):
     assert response.status_code == 400
 
 
-async def test_wall_post_with_threat_is_rejected(client, app_db):
-    await app_db.users.insert_one(make_user("u1"))
-
-    response = await client.post("/api/wall", json={"content": "ti ammazzo domani"}, headers=auth("u1"))
-
-    assert response.status_code == 400
-    assert await app_db.wall_posts.count_documents({}) == 0
-
-
-async def test_wall_post_normal_text_is_accepted(client, app_db):
-    await app_db.users.insert_one(make_user("u1"))
-
-    response = await client.post("/api/wall", json={"content": "Grazie a tutti per la festa di quartiere"}, headers=auth("u1"))
-
-    assert response.status_code == 200
-
-
 async def test_review_comment_and_public_thanks_are_moderated(client, app_db):
     await app_db.users.insert_many([make_user("creator"), make_user("helper")])
     await app_db.favors.insert_one(make_favor())
@@ -227,18 +210,6 @@ async def test_review_comment_and_public_thanks_are_moderated(client, app_db):
     assert bad_thanks.status_code == 400
     assert await app_db.reviews.count_documents({}) == 0
     assert await app_db.thanks.count_documents({}) == 0
-
-
-async def test_object_name_and_description_are_moderated(client, app_db):
-    await app_db.users.insert_one(make_user("u1"))
-
-    response = await client.post(
-        "/api/objects",
-        json={"name": "Trapano", "description": "ti spacco la testa se lo rompi", "category": "Bricolage", "deposit_soli": 1},
-        headers=auth("u1"),
-    )
-
-    assert response.status_code == 400
 
 
 async def test_name_change_is_moderated(client, app_db):

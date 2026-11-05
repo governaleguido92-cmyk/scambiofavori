@@ -348,80 +348,80 @@ async def send_verification_email(to_email: str, code: str, user_name: str):
 
 
 # Badge definitions
+# Colori dei badge: solo la palette del logo (oliva, arancione e le loro sfumature)
 BADGES = {
-    "cuore_oro": {
-        "id": "cuore_oro",
-        "name": "Cuore d'Oro",
-        "description": f"Hai donato almeno 10 {CURRENCY_NAME} al Fondo Solidarietà",
-        "icon": "heart",
-        "color": "#ffd700",
-        "requirement": {"type": "donations", "value": 10}
-    },
-    "pilastro_quartiere": {
-        "id": "pilastro_quartiere",
-        "name": "Pilastro del Quartiere",
-        "description": "Hai completato 20 favori nella tua zona",
-        "icon": "home",
-        "color": "#4ecca3",
-        "requirement": {"type": "favors_completed", "value": 20}
-    },
-    "saggio_community": {
-        "id": "saggio_community",
-        "name": "Saggio della Community",
-        "description": "Hai ricevuto 10 recensioni con valutazione massima",
-        "icon": "school",
-        "color": "#9c27b0",
-        "requirement": {"type": "perfect_reviews", "value": 10}
-    },
-    "mentore": {
-        "id": "mentore",
-        "name": "Mentore",
-        "description": "Hai invitato 5 persone che hanno completato il primo favore",
-        "icon": "people",
-        "color": "#2196f3",
-        "requirement": {"type": "referrals", "value": 5}
-    },
-    "fulmine": {
-        "id": "fulmine",
-        "name": "Fulmine",
-        "description": "Hai completato 10 micro-favori",
-        "icon": "flash",
-        "color": "#ff9800",
-        "requirement": {"type": "micro_favors", "value": 10}
-    },
     "primo_passo": {
-        "id": "primo_passo",
-        "name": "Primo Passo",
-        "description": "Hai completato il tuo primo favore",
-        "icon": "footsteps",
-        "color": "#4caf50",
-        "requirement": {"type": "first_favor", "value": 1}
-    },
-    "angelo_quartiere": {
-        "id": "angelo_quartiere",
-        "name": "Angelo del Quartiere",
-        "description": "Hai risposto a 5 Emergenze Gentilezza",
-        "icon": "sunny",
-        "color": "#e91e63",
-        "requirement": {"type": "emergencies_helped", "value": 5}
-    },
-    "vicino_virtuoso": {
-        "id": "vicino_virtuoso",
-        "name": "Vicino Virtuoso",
-        "description": "Rating medio superiore a 4.5 stelle con almeno 10 recensioni",
-        "icon": "ribbon",
-        "color": "#00bcd4",
-        "requirement": {"type": "high_rating", "value": 4.5}
+        "id": "primo_passo", "name": "Primo Passo", "description": "Hai completato il tuo primo favore",
+        "icon": "footsteps", "color": "#98AA4A", "requirement": {"type": "first_favor", "value": 1},
     },
     "eroe_quartiere": {
-        "id": "eroe_quartiere",
-        "name": "Eroe di Quartiere",
-        "description": "Hai completato 5 favori - Accesso al Fondo Solidarietà sbloccato!",
-        "icon": "sunny",
-        "color": "#ffd700",
-        "requirement": {"type": "favors_completed", "value": 5}
-    }
+        "id": "eroe_quartiere", "name": "Eroe di Quartiere",
+        "description": "Hai aiutato 5 volte: il Fondo Solidarietà si sblocca per te!",
+        "icon": "trophy", "color": "#F87828", "requirement": {"type": "favors_given", "value": 5},
+    },
+    "pilastro_quartiere": {
+        "id": "pilastro_quartiere", "name": "Pilastro del Quartiere", "description": "Hai aiutato 20 volte",
+        "icon": "home", "color": "#7A8B3A", "requirement": {"type": "favors_given", "value": 20},
+    },
+    "fulmine": {
+        "id": "fulmine", "name": "Fulmine", "description": "Hai dato una mano in 10 favori brevi (fino a un'ora)",
+        "icon": "flash", "color": "#FB9A52", "requirement": {"type": "micro_favors", "value": 10},
+    },
+    "vicino_di_casa": {
+        "id": "vicino_di_casa", "name": "Vicino di Casa", "description": "Hai aiutato 5 persone diverse",
+        "icon": "people-circle", "color": "#98AA4A", "requirement": {"type": "distinct_neighbors", "value": 5},
+    },
+    "puntuale": {
+        "id": "puntuale", "name": "Puntuale",
+        "description": "Hai aiutato 10 volte e quasi mai hai annullato dopo aver accettato",
+        "icon": "time", "color": "#F87828", "requirement": {"type": "punctual", "value": 10},
+    },
+    "angelo_quartiere": {
+        "id": "angelo_quartiere", "name": "Angelo del Quartiere", "description": "Hai risposto a 5 Urgenze",
+        "icon": "medkit", "color": "#FB9A52", "requirement": {"type": "emergencies_helped", "value": 5},
+    },
+    "saggio_community": {
+        "id": "saggio_community", "name": "Saggio della Community",
+        "description": "Hai ricevuto il massimo dei voti da 10 persone diverse",
+        "icon": "school", "color": "#7A8B3A", "requirement": {"type": "perfect_reviews", "value": 10},
+    },
+    "vicino_virtuoso": {
+        "id": "vicino_virtuoso", "name": "Vicino Virtuoso",
+        "description": "Media superiore a 4,5 stelle con almeno 10 recensioni",
+        "icon": "ribbon", "color": "#98AA4A", "requirement": {"type": "high_rating", "value": 4.5},
+    },
+    "garante_fidato": {
+        "id": "garante_fidato", "name": "Garante Fidato",
+        "description": "Hai garantito per 3 vicini e nessuno di loro è stato messo in revisione",
+        "icon": "shield-checkmark", "color": "#F87828", "requirement": {"type": "vouches", "value": 3},
+    },
+    "mentore": {
+        "id": "mentore", "name": "Mentore", "description": "Hai invitato 5 persone che hanno completato il primo favore",
+        "icon": "people", "color": "#7A8B3A", "requirement": {"type": "referrals", "value": 5},
+    },
+    "organizzatore": {
+        "id": "organizzatore", "name": "Organizzatore",
+        "description": "Hai organizzato 3 eventi o ritrovi del quartiere a cui qualcuno ha partecipato",
+        "icon": "calendar", "color": "#FB9A52", "requirement": {"type": "events_with_guests", "value": 3},
+    },
+    "benvenuto": {
+        "id": "benvenuto", "name": "Benvenuto!", "description": "Hai dato il benvenuto a 10 nuovi vicini",
+        "icon": "hand-right", "color": "#98AA4A", "requirement": {"type": "welcomes_given", "value": 10},
+    },
+    "cuore_oro": {
+        "id": "cuore_oro", "name": "Cuore Generoso", "description": f"Hai donato almeno 10 {CURRENCY_NAME} al Fondo Solidarietà",
+        "icon": "heart", "color": "#F87828", "requirement": {"type": "donations", "value": 10},
+    },
+    "profilo_completo": {
+        "id": "profilo_completo", "name": "Profilo Completo", "description": "Hai completato il tuo profilo",
+        "icon": "checkmark-circle", "color": "#7A8B3A", "requirement": {"type": "profile_complete", "value": 1},
+    },
 }
+
+# Quanti annullamenti dopo l'accettazione si tollerano per "Puntuale" (sul totale di favori dati più annullati)
+PUNCTUAL_MAX_LATE_RATE = 0.10
+# Un favore "breve" per Fulmine: fino a un'ora
+MICRO_FAVOR_MAX_HOURS = 1.0
 
 # User role titles based on stats
 def get_user_title(user_doc: dict) -> str:
@@ -432,7 +432,7 @@ def get_user_title(user_doc: dict) -> str:
     
     if "angelo_quartiere" in badges:
         return "Angelo del Quartiere"
-    elif "vicino_virtuoso" in badges or rating >= 4.5:
+    elif "vicino_virtuoso" in badges:
         return "Vicino Virtuoso"
     elif len(badges) >= 3:
         return "Membro Attivo"
@@ -487,6 +487,7 @@ class User(BaseModel):
     email: str
     name: str
     picture: Optional[str] = None
+    bio: Optional[str] = None  # "Chi sono": breve presentazione pubblica
     granelli: int = WELCOME_GRANELLI  # Currency renamed to Granelli
     total_favors_given: int = 0
     total_favors_received: int = 0
@@ -546,17 +547,6 @@ FAVOR_CATEGORIES = [
     {"name": "Altro", "icon": "ellipsis-horizontal"},
 ]
 
-# Object categories for Oggettoteca
-OBJECT_CATEGORIES = [
-    {"name": "Utensili", "icon": "heart-circle"},
-    {"name": "Cucina", "icon": "heart-circle-outline"},
-    {"name": "Giardino", "icon": "leaf"},
-    {"name": "Sport", "icon": "heart-half"},
-    {"name": "Elettronica", "icon": "heart"},
-    {"name": "Bambini", "icon": "people"},
-    {"name": "Fai da te", "icon": "home"},
-    {"name": "Altro", "icon": "heart-outline"},
-]
 
 class FavorCreate(BaseModel):
     type: str  # "offer" or "request"
@@ -609,62 +599,6 @@ class Favor(BaseModel):
     checkin_completed: bool = False
     created_at: datetime
     completed_at: Optional[datetime] = None
-
-# Oggettoteca Models
-class ObjectCreate(BaseModel):
-    name: str
-    description: str
-    category: str
-    deposit_soli: int = 2  # Deposito cauzionale in Soli
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-
-class LendableObject(BaseModel):
-    object_id: str
-    owner_id: str
-    owner_name: str
-    owner_title: str = "Nuovo Vicino"
-    name: str
-    description: str
-    category: str
-    deposit_soli: int
-    status: str = "available"  # available, borrowed, unavailable
-    borrowed_by: Optional[str] = None
-    borrowed_by_name: Optional[str] = None
-    approximate_latitude: Optional[float] = None
-    approximate_longitude: Optional[float] = None
-    distance_km: Optional[float] = None
-    borrow_date: Optional[datetime] = None
-    return_date: Optional[datetime] = None
-    created_at: datetime
-
-class BorrowRequest(BaseModel):
-    object_id: str
-
-class ReturnObject(BaseModel):
-    object_id: str
-    condition: str = "good"  # good, damaged
-
-# Wall Post (Muro del Quartiere)
-class WallPostCreate(BaseModel):
-    content: str
-    post_type: str = "general"  # general, thanks, announcement
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-
-class WallPost(BaseModel):
-    post_id: str
-    author_id: str
-    author_name: str
-    author_title: str = "Nuovo Vicino"
-    content: str
-    post_type: str
-    likes: int = 0
-    liked_by: List[str] = []
-    approximate_latitude: Optional[float] = None
-    approximate_longitude: Optional[float] = None
-    distance_km: Optional[float] = None
-    created_at: datetime
 
 # Ethical tags for reviews
 ETHICAL_TAGS = [
@@ -1023,61 +957,82 @@ def approximate_location(lat: float, lon: float, radius_meters: int = PRIVACY_RA
     
     return (lat + offset_lat, lon + offset_lon)
 
+async def _distinct_neighbors_helped(user_id: str) -> int:
+    """Quante persone diverse hai aiutato (favori completati in cui tu eri chi aiuta)."""
+    favors = await db.favors.find(
+        {"status": "completed", "$or": [{"creator_id": user_id}, {"accepted_by": user_id}]},
+        {"_id": 0, "type": 1, "creator_id": 1, "accepted_by": 1},
+    ).to_list(1000)
+    receivers = set()
+    for favor in favors:
+        helper, receiver = (favor["creator_id"], favor.get("accepted_by")) if favor.get("type") == "offer" else (favor.get("accepted_by"), favor["creator_id"])
+        if helper == user_id and receiver:
+            receivers.add(receiver)
+    return len(receivers)
+
+
+async def badge_progress(user_doc: dict) -> dict:
+    """Per ogni badge: a che punto sei (current), il traguardo (target), se è ottenuto e se per ora è bloccato."""
+    user_id = user_doc["user_id"]
+    owned = set(user_doc.get("badges", []))
+    given = user_doc.get("total_favors_given", 0)
+    received = user_doc.get("total_favors_received", 0)
+    rating = user_doc.get("average_rating", 0) or 0
+
+    late = await db.favors.count_documents({"status": "cancelled", "cancelled_by": user_id, "cancelled_after_accept": True})
+    review_count = await db.reviews.count_documents({"reviewed_id": user_id})
+    vouches = await db.vouches.find({"voucher_id": user_id}, {"_id": 0, "vouchee_id": 1}).to_list(100)
+    vouchees_on_hold = await db.users.count_documents(
+        {"user_id": {"$in": [v["vouchee_id"] for v in vouches]}, "safety_hold": True}) if vouches else 0
+    needs_neighbors = any(b["requirement"]["type"] == "distinct_neighbors" and bid not in owned for bid, b in BADGES.items())
+    neighbors = await _distinct_neighbors_helped(user_id) if needs_neighbors else 0
+
+    current = {
+        "first_favor": given + received, "favors_given": given, "micro_favors": user_doc.get("micro_favors_completed", 0),
+        "distinct_neighbors": neighbors, "punctual": given, "emergencies_helped": user_doc.get("emergencies_helped", 0),
+        "perfect_reviews": user_doc.get("perfect_reviews_count", 0), "high_rating": review_count,
+        "vouches": len(vouches), "referrals": user_doc.get("successful_referrals", 0),
+        "events_with_guests": user_doc.get("events_with_guests", 0), "welcomes_given": user_doc.get("welcomes_given", 0),
+        "donations": user_doc.get("total_donations", 0), "profile_complete": 1 if "profilo_completo" in owned else 0,
+    }
+    late_rate = late / (given + late) if (given + late) else 0
+
+    result = {}
+    for badge_id, info in BADGES.items():
+        req = info["requirement"]
+        kind = req["type"]
+        target = 10 if kind == "high_rating" else req["value"]
+        value = current[kind]
+        blocked = (
+            (kind == "punctual" and late_rate > PUNCTUAL_MAX_LATE_RATE)
+            or (kind == "high_rating" and review_count >= 10 and rating < req["value"])
+            or (kind == "vouches" and vouchees_on_hold > 0)
+        )
+        done = badge_id in owned or (value >= target and not blocked)
+        result[badge_id] = {"current": min(value, target), "target": target, "earned": done, "blocked": bool(blocked and not done)}
+    return result
+
+
 async def check_and_award_badges(user_id: str):
-    """Check if user earned new badges"""
+    """Assegna i badge nuovi (e avvisa chi li ottiene)."""
     user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     if not user_doc:
         return
-    
-    current_badges = user_doc.get("badges", [])
-    new_badges = []
-    
-    # Get review count for high_rating badge
-    review_count = await db.reviews.count_documents({"reviewed_id": user_id})
-    
-    for badge_id, badge_info in BADGES.items():
-        if badge_id in current_badges:
-            continue
-        
-        req = badge_info["requirement"]
-        earned = False
-        
-        if req["type"] == "donations" and user_doc.get("total_donations", 0) >= req["value"]:
-            earned = True
-        elif req["type"] == "favors_completed":
-            total = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
-            if total >= req["value"]:
-                earned = True
-                # GAMIFICATION: Eroe di Quartiere unlocks Solidarity Fund access
-                if badge_id == "eroe_quartiere":
-                    await db.users.update_one(
-                        {"user_id": user_id},
-                        {"$set": {"can_access_solidarity_fund": True}}
-                    )
-        elif req["type"] == "perfect_reviews" and user_doc.get("perfect_reviews_count", 0) >= req["value"]:
-            earned = True
-        elif req["type"] == "referrals" and user_doc.get("successful_referrals", 0) >= req["value"]:
-            earned = True
-        elif req["type"] == "micro_favors" and user_doc.get("micro_favors_completed", 0) >= req["value"]:
-            earned = True
-        elif req["type"] == "first_favor":
-            total = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
-            if total >= req["value"]:
-                earned = True
-        elif req["type"] == "emergencies_helped" and user_doc.get("emergencies_helped", 0) >= req["value"]:
-            earned = True
-        elif req["type"] == "high_rating":
-            if review_count >= 10 and user_doc.get("average_rating", 0) >= req["value"]:
-                earned = True
-        
-        if earned:
-            new_badges.append(badge_id)
-    
-    if new_badges:
-        await db.users.update_one(
-            {"user_id": user_id},
-            {"$push": {"badges": {"$each": new_badges}}}
-        )
+    owned = set(user_doc.get("badges", []))
+    new_badges = [bid for bid, state in (await badge_progress(user_doc)).items()
+                  if state["earned"] and bid not in owned and BADGES[bid]["requirement"]["type"] != "profile_complete"]
+    if not new_badges:
+        return
+    await db.users.update_one({"user_id": user_id}, {"$push": {"badges": {"$each": new_badges}}})
+    if "eroe_quartiere" in new_badges:
+        # Il Fondo Solidarietà si sblocca aiutando gli altri, non solo ricevendo aiuto
+        await db.users.update_one({"user_id": user_id}, {"$set": {"can_access_solidarity_fund": True}})
+    for badge_id in new_badges:
+        await db.notifications.insert_one({
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "badge_earned",
+            "title": "Nuovo badge! 🏅", "message": f"Hai ottenuto «{BADGES[badge_id]['name']}»: {BADGES[badge_id]['description']}",
+            "related_id": badge_id, "read": False, "created_at": datetime.now(timezone.utc),
+        })
 
 async def update_community_score(user_id: str):
     """Update user's community score"""
@@ -1331,7 +1286,8 @@ async def settle_favor(favor: "Favor", extra_fields: Optional[dict] = None) -> t
         {"$inc": {
             "granelli": favor.granelli_cost,
             "total_favors_given": 1,
-            "total_hours_helped": favor.duration_hours
+            "total_hours_helped": favor.duration_hours,
+            **({"micro_favors_completed": 1} if favor.duration_hours <= MICRO_FAVOR_MAX_HOURS else {}),
         }}
     )
     return helper_id, payer_id

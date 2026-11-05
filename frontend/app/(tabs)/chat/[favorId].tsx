@@ -18,26 +18,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { useAuth } from '../../src/context/AuthContext';
-import { api, ChatMessage, Favor, CURRENCY_NAME } from '../../src/services/api';
-import { SupporterProfileBorder } from '../../src/components/SupporterBadge';
-import { ChatHeader } from '../../src/components/chat/ChatHeader';
-import { ChatQuickReplies } from '../../src/components/chat/ChatQuickReplies';
-import { ChatActionsBar } from '../../src/components/chat/ChatActionsBar';
-import { MeetingPointModal } from '../../src/components/chat/MeetingPointModal';
-import { MeetingPointCard } from '../../src/components/chat/MeetingPointCard';
-import { formatMeetingPointMessage, parseMeetingPointMessage } from '../../src/utils/meetingPoint';
-import { buildRows, ChatRow } from '../../src/utils/chatDays';
-import { qrRole as qrRoleOf } from '../../src/utils/myFavors';
-import { getCategoryVisual } from '../../src/utils/favorVisual';
-import i18n from '../../src/i18n';
+import { useAuth } from '../../../src/context/AuthContext';
+import { api, ChatMessage, Favor, CURRENCY_NAME } from '../../../src/services/api';
+import { SupporterProfileBorder } from '../../../src/components/SupporterBadge';
+import { ChatHeader } from '../../../src/components/chat/ChatHeader';
+import { ChatQuickReplies } from '../../../src/components/chat/ChatQuickReplies';
+import { ChatActionsBar } from '../../../src/components/chat/ChatActionsBar';
+import { MeetingPointModal } from '../../../src/components/chat/MeetingPointModal';
+import { MeetingPointCard } from '../../../src/components/chat/MeetingPointCard';
+import { formatMeetingPointMessage, parseMeetingPointMessage } from '../../../src/utils/meetingPoint';
+import { buildRows, ChatRow } from '../../../src/utils/chatDays';
+import { qrRole as qrRoleOf } from '../../../src/utils/myFavors';
+import { getCategoryVisual } from '../../../src/utils/favorVisual';
+import i18n from '../../../src/i18n';
 import { useTranslation } from 'react-i18next';
-import { logger } from '../../src/utils/logger';
-import { notify, showRefusal } from '../../src/utils/notify';
-import { tt, tx } from '../../src/i18n/tt';
-import { goBackOrHome } from '../../src/utils/navigation';
-import { buildShareText } from '../../src/utils/shareFavor';
-import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
+import { logger } from '../../../src/utils/logger';
+import { notify, showRefusal } from '../../../src/utils/notify';
+import { tt, tx } from '../../../src/i18n/tt';
+import { goBackOrHome } from '../../../src/utils/navigation';
+import { buildShareText } from '../../../src/utils/shareFavor';
+import { useLiveRefresh } from '../../../src/hooks/useLiveRefresh';
 
 // Theme colors
 const colors = {
@@ -406,6 +406,7 @@ export default function ChatScreen() {
         onBack={() => goBackOrHome(router)}
         onMenu={() => setShowMenu(true)}
         onComplete={handleComplete}
+        onOpenProfile={otherParticipant?.id ? () => router.push(`/vicino/${otherParticipant.id}` as any) : undefined}
       />
 
       <View style={styles.safetyNote}>
