@@ -1,6 +1,8 @@
+import { avatarColorsForKind } from '../utils/avatarColor';
 import { GranelloIcon } from './GranelloIcon';
 import { useRouter } from 'expo-router';
-import { favorKindLabel, granelliFlowLabel } from '../utils/favorKind';
+import { readableTextColor } from '../utils/readableColor';
+import { earnsGranelli, favorKindFor, granelliFlowLabel } from '../utils/favorKind';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
@@ -35,9 +37,6 @@ interface FavorCardProps {
 }
 
 /** Scheda di un favore con banda colorata per categoria. Usata nella home (griglia) e nella mappa (fila scorrevole). */
-/** Larghezza minima della banda colorata per scrivere «Dona un favore» senza toccare il badge dei Granelli. */
-const WIDE_BAND_PX = 300;
-
 export const FavorCard: React.FC<FavorCardProps> = ({
   item, currentUserId, onPress, onReport, style, highlighted, statusLabel, statusColor, roleText, children,
 }) => {
@@ -47,12 +46,12 @@ export const FavorCard: React.FC<FavorCardProps> = ({
   const expiry = getExpiryInfo(item.expires_at);
   const isOffer = item.type === 'offer';
   const isOwn = !!currentUserId && item.creator_id === currentUserId && !roleText;
-  const kindLabel = tt(favorKindLabel(item.type, isOwn));
-  // Nelle schede larghe l'etichetta dice per esteso «Dona un favore»; in quelle strette (telefono, due colonne) resta «Dona».
-  const [bandWidth, setBandWidth] = useState(0);
-  const kindPillLabel = bandWidth >= WIDE_BAND_PX ? tt(`${favorKindLabel(item.type, isOwn)} un favore`) : kindLabel;
+  const kindKey = favorKindFor(item, currentUserId);
+  const kindLabel = tt(kindKey);
+  // L'etichetta dice sempre per esteso «Dona un favore» / «Ricevi un favore»
+  const kindPillLabel = tt(`${kindKey} un favore`);
   // Dono: la richiesta di un altro che puoi soddisfare, o un'offerta tua. Ricevo: l'offerta di un altro, o una richiesta tua.
-  const isGive = isOwn ? isOffer : !isOffer;
+  const isGive = earnsGranelli(item, currentUserId);
 
   return (
     <TouchableOpacity
@@ -70,31 +69,28 @@ export const FavorCard: React.FC<FavorCardProps> = ({
       accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
       data-testid={`favor-card-${item.favor_id}`}
     >
-      {/* Banda colorata per tipo: arancione = dona, verde oliva = ricevi (l'emoji dice la categoria) */}
-      <View
-        style={[styles.gridBand, { backgroundColor: isGive ? colors.accent : colors.lime }]}
-        onLayout={(event) => setBandWidth(event.nativeEvent.layout.width)}
-      >
-        <View style={styles.gridBandCircleA} />
-        <View style={styles.gridBandCircleB} />
-        <Text style={styles.gridBandEmoji}>{visual.emoji}</Text>
-        <View style={styles.gridKindPill}>
-          <Text style={styles.gridKindText}>{kindPillLabel}</Text>
+      {/* Intestazione pulita: il tipo (arancione = dono, oliva = ricevo) e cosa succede ai Granelli. Niente fasce piene. */}
+      <View style={styles.cleanHead}>
+        <Text style={[styles.cleanKind, { color: isGive ? colors.accent : colors.lime }]} numberOfLines={1}>{kindPillLabel}</Text>
+        <View style={styles.cleanFlow}>
+          <GranelloIcon size={11} />
+          <Text style={styles.cleanFlowText}>{tt(granelliFlowLabel(item, currentUserId))} {item.granelli_cost}</Text>
         </View>
-        <View style={styles.gridGranelliPill}>
-          <Text style={styles.gridGranelliText}>{tt(granelliFlowLabel(item, currentUserId))} <GranelloIcon size={14} /> {item.granelli_cost}</Text>
-        </View>
-        {statusLabel && (
-          <View style={[styles.gridStatusPill, { backgroundColor: statusColor ?? colors.primary }]}>
-            <Text style={styles.gridStatusText}>{statusLabel}</Text>
-          </View>
-        )}
-        {item.is_emergency && (
-          <View style={styles.gridUrgentPill}>
-            <Text style={styles.gridUrgentText}>{tt('URGENTE')}</Text>
-          </View>
-        )}
       </View>
+      {(statusLabel || item.is_emergency) && (
+        <View style={styles.cleanTags}>
+          {statusLabel && (
+            <View style={[styles.gridStatusTag, { backgroundColor: statusColor ?? colors.primary }]}>
+              <Text style={[styles.gridStatusText, { color: readableTextColor(statusColor ?? colors.primary) }]}>{statusLabel}</Text>
+            </View>
+          )}
+          {item.is_emergency && (
+            <View style={styles.gridUrgentTag}>
+              <Text style={styles.gridUrgentText}>{tt('URGENTE')}</Text>
+            </View>
+          )}
+        </View>
+      )}
 
       <View style={styles.gridBody}>
         <View style={styles.gridWhoRow}>
@@ -107,8 +103,8 @@ export const FavorCard: React.FC<FavorCardProps> = ({
             data-testid={`open-profile-${item.creator_id}`}
           >
           <SupporterProfileBorder isSupporter={item.creator_is_supporter} size={24}>
-            <View style={[styles.gridAvatar, { backgroundColor: visual.color }]}>
-              <Text style={styles.authorInitial}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+            <View style={[styles.gridAvatar, { backgroundColor: avatarColorsForKind(isGive).backgroundColor }]}>
+              <Text style={[styles.authorInitial, { color: avatarColorsForKind(isGive).color }]}>{item.creator_name.charAt(0).toUpperCase()}</Text>
             </View>
           </SupporterProfileBorder>
           <View style={styles.headerContent}>
@@ -143,7 +139,10 @@ export const FavorCard: React.FC<FavorCardProps> = ({
             </TouchableOpacity>
           )}
         </View>
-        <Text style={styles.gridTitle} numberOfLines={2}>{item.title}</Text>
+        <View style={styles.cleanTitleRow}>
+          <Text style={styles.cleanEmoji}>{visual.emoji}</Text>
+          <Text style={[styles.gridTitle, styles.cleanTitle]} numberOfLines={2}>{item.title}</Text>
+        </View>
         <Text style={styles.gridDescription} numberOfLines={2}>{item.description}</Text>
       </View>
 

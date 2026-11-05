@@ -1,3 +1,5 @@
+import { avatarColorsForKind } from '../../../src/utils/avatarColor';
+import { earnsGranelli } from '../../../src/utils/favorKind';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
@@ -333,8 +335,8 @@ export default function ChatScreen() {
         {!isMe && (
           <View style={{ marginRight: 8 }}>
             <SupporterProfileBorder isSupporter={senderIsSupporter} size={32}>
-              <View style={[styles.avatarContainer, { backgroundColor: categoryColor }]}>
-                <Text style={styles.avatarText}>{item.sender_name?.charAt(0).toUpperCase()}</Text>
+              <View style={[styles.avatarContainer, { backgroundColor: avatarColorsForKind(favor ? earnsGranelli(favor, user?.user_id) : false).backgroundColor }]}>
+                <Text style={[styles.avatarText, { color: avatarColorsForKind(favor ? earnsGranelli(favor, user?.user_id) : false).color }]}>{item.sender_name?.charAt(0).toUpperCase()}</Text>
               </View>
             </SupporterProfileBorder>
           </View>

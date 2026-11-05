@@ -27,6 +27,8 @@ const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   new_message: { name: 'chatbubble', color: colors.accent },
   favor_completed: { name: 'checkmark-circle', color: '#98AA4A' },
   supporter: { name: 'heart', color: '#98AA4A' },
+  welcome: { name: 'hand-right', color: colors.accent },
+  badge_earned: { name: 'ribbon', color: colors.lime },
 };
 
 export default function NotificationsScreen() {
@@ -72,6 +74,16 @@ export default function NotificationsScreen() {
       }
     }
     
+    // Benvenuto e badge non hanno una pagina favore: si va alla scheda Vicini del quartiere o al profilo
+    if (notification.type === 'welcome') {
+      router.push({ pathname: '/quartiere', params: { tab: 'vicini' } } as any);
+      return;
+    }
+    if (notification.type === 'badge_earned') {
+      router.push('/profile' as any);
+      return;
+    }
+
     // Navigate to related content if available
     if (notification.related_id) {
       // If it's a message notification, navigate to chat

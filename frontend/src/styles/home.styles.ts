@@ -502,7 +502,7 @@ export const styles = StyleSheet.create({
     flexBasis: '48.5%',
     flexGrow: 0,
     flexShrink: 0,
-    minHeight: 236,
+    minHeight: 190,
     backgroundColor: colors.backgroundCard,
     borderRadius: 18,
     marginBottom: 12,
@@ -543,10 +543,12 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.lime,
   },
+  // L'emoji sta nella parte bassa della banda: le pillole (tipo, Granelli) occupano la riga alta e non la coprono mai
   gridBand: {
-    height: 74,
+    height: 106,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 6,
     overflow: 'hidden',
   },
   gridBandCircleA: {
@@ -568,16 +570,44 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.07)',
   },
   gridBandEmoji: {
-    fontSize: 38,
+    fontSize: 36,
   },
   gridKindPill: {
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    maxWidth: '94%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(12,14,9,0.82)',
     borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+  },
+  // Scheda stretta: due righe nella stessa pillola
+  gridKindPillStacked: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 2,
+    borderRadius: 14,
+    paddingVertical: 5,
+  },
+  gridFlowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  gridPillDot: {
+    color: '#FFFFFF',
+    opacity: 0.7,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  gridFlowText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '800',
   },
   gridKindText: {
     color: '#fff',
@@ -599,7 +629,7 @@ export const styles = StyleSheet.create({
   },
   gridGranelliText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
   },
   gridStatusPill: {
@@ -630,6 +660,69 @@ export const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.4,
+  },
+  // Scheda pulita: niente fascia piena, solo tipo e Granelli in testa
+  cleanHead: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingTop: 11,
+  },
+  cleanKind: {
+    flexShrink: 1,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  cleanFlow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  cleanFlowText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
+  cleanTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+  },
+  gridStatusTag: {
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+  },
+  gridUrgentTag: {
+    backgroundColor: colors.error,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+  },
+  cleanTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 4,
+  },
+  cleanEmoji: {
+    fontSize: 20,
+    lineHeight: 22,
+  },
+  cleanTitle: {
+    flex: 1,
+    marginBottom: 0,
   },
   gridBody: {
     paddingHorizontal: 12,

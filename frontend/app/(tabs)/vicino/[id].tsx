@@ -1,3 +1,4 @@
+import { avatarColors } from '../../../src/utils/avatarColor';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -119,8 +120,8 @@ export default function NeighborProfileScreen() {
             {profile.picture ? (
               <Image source={{ uri: profile.picture }} style={styles.avatar} />
             ) : (
-              <View style={[styles.avatar, styles.avatarFallback]}>
-                <Text style={styles.avatarInitial}>{profile.name.charAt(0).toUpperCase()}</Text>
+              <View style={[styles.avatar, styles.avatarFallback, { backgroundColor: avatarColors(profile.name).backgroundColor }]}>
+                <Text style={[styles.avatarInitial, { color: avatarColors(profile.name).color }]}>{profile.name.charAt(0).toUpperCase()}</Text>
               </View>
             )}
             <Text style={styles.name}>{profile.name}</Text>

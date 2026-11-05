@@ -263,7 +263,50 @@ async def toggle_welcome(request: Request, intro_id: str, current_user: User = D
     await db.users.update_one({"user_id": current_user.user_id, "welcomes_given": {"$lt": 0}}, {"$set": {"welcomes_given": 0}})
     if welcomed:
         await check_and_award_badges(current_user.user_id)
+        await _notify_welcome(intro, current_user)
     return {"welcomed": welcomed}
+
+
+def _welcome_message(first_name: str, count: int) -> str:
+    if count <= 1:
+        return f"{first_name} ti ha dato il benvenuto 👋"
+    return f"{first_name} e altri {count - 1} ti hanno dato il benvenuto 👋"
+
+
+async def _notify_welcome(intro: dict, welcomer: User) -> None:
+    """Avvisa chi si è presentato che qualcuno gli ha dato il benvenuto.
+
+    Una sola notifica al giorno per presentazione: i benvenuti dello stesso giorno si raggruppano ("Anna e altri 2"), e chi
+    toglie e rimette il benvenuto non conta due volte. Il telefono suona solo per il primo del giorno. Chi è stato bloccato
+    dall'autore (o l'ha bloccato) non genera nessun avviso.
+    """
+    author_id = intro["author_id"]
+    if welcomer.user_id in await get_blocked_user_ids(author_id):
+        return
+    now = datetime.now(timezone.utc)
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    first_name = (welcomer.name or "Un vicino").split()[0]
+    existing = await db.notifications.find_one(
+        {"user_id": author_id, "type": "welcome", "related_id": intro["intro_id"], "created_at": {"$gte": day_start}}, {"_id": 0}
+    )
+    if existing:
+        welcomers = existing.get("welcomer_ids", [])
+        if welcomer.user_id in welcomers:
+            return
+        count = len(welcomers) + 1
+        await db.notifications.update_one(
+            {"notification_id": existing["notification_id"]},
+            {"$set": {"message": _welcome_message(existing.get("first_welcomer", first_name), count), "welcome_count": count, "read": False},
+             "$addToSet": {"welcomer_ids": welcomer.user_id}},
+        )
+        return
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": author_id, "type": "welcome",
+        "title": "Benvenuto nel quartiere!", "message": _welcome_message(first_name, 1),
+        "related_id": intro["intro_id"], "welcome_count": 1, "welcomer_ids": [welcomer.user_id],
+        "first_welcomer": first_name, "read": False, "created_at": now,
+    })
+    await send_push_notification(author_id, "Benvenuto nel quartiere!", _welcome_message(first_name, 1), {"type": "welcome"})
 
 
 @api_router.post("/neighborhood/intros/{intro_id}/report")

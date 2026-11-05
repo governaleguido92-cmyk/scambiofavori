@@ -1,5 +1,6 @@
+import { avatarColorsForKind } from '../../../src/utils/avatarColor';
 import { GranelloIcon } from '../../../src/components/GranelloIcon';
-import { favorKindLabel, granelliFlowLabel } from '../../../src/utils/favorKind';
+import { earnsGranelli, favorKindFor, granelliFlowLabel } from '../../../src/utils/favorKind';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -542,7 +543,7 @@ export default function FavorDetailScreen() {
               color="#fff"
             />
             <Text style={styles.typeText}>
-              {tt(favorKindLabel(favor.type, favor.creator_id === user?.user_id))}
+              {tt(`${favorKindFor(favor, user?.user_id)} un favore`)}
             </Text>
           </View>
           {favor.is_emergency && (
@@ -610,8 +611,8 @@ export default function FavorDetailScreen() {
           onPress={() => handleViewProfile(favor.creator_id, favor.creator_name || 'Utente')}
           activeOpacity={0.7}
         >
-          <View style={styles.userAvatar}>
-            <Text style={styles.userAvatarText}>
+          <View style={[styles.userAvatar, { backgroundColor: avatarColorsForKind(earnsGranelli(favor, user?.user_id)).backgroundColor }]}>
+            <Text style={[styles.userAvatarText, { color: avatarColorsForKind(earnsGranelli(favor, user?.user_id)).color }]}>
               {favor.creator_name?.charAt(0).toUpperCase() || 'U'}
             </Text>
           </View>
@@ -636,8 +637,8 @@ export default function FavorDetailScreen() {
             onPress={() => handleViewProfile(favor.accepted_by!, favor.accepted_by_name || 'Utente')}
             activeOpacity={0.7}
           >
-            <View style={[styles.userAvatar, { backgroundColor: '#98AA4A' }]}>
-              <Text style={[styles.userAvatarText, { color: '#0C0E09' }]}>
+            <View style={[styles.userAvatar, { backgroundColor: avatarColorsForKind(earnsGranelli(favor, user?.user_id)).backgroundColor }]}>
+              <Text style={[styles.userAvatarText, { color: avatarColorsForKind(earnsGranelli(favor, user?.user_id)).color }]}>
                 {favor.accepted_by_name.charAt(0).toUpperCase()}
               </Text>
             </View>
