@@ -1,4 +1,5 @@
 import { GranelloIcon } from '../../src/components/GranelloIcon';
+import { favorKindLabel } from '../../src/utils/favorKind';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -326,8 +327,8 @@ export default function FavorDetailScreen() {
     Alert.alert(
       tt('Conferma'),
       favor.type === 'offer'
-        ? tx('Accettando questa offerta, pagherai {0} {1} al completamento.', [favor.granelli_cost, CURRENCY_NAME])
-        : tx('Accettando questa richiesta, riceverai {0} {1} al completamento.', [favor.granelli_cost, CURRENCY_NAME]),
+        ? tx('Accettando di ricevere questo favore, pagherai {0} {1} al completamento.', [favor.granelli_cost, CURRENCY_NAME])
+        : tx('Accettando di donare questo favore, riceverai {0} {1} al completamento.', [favor.granelli_cost, CURRENCY_NAME]),
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
@@ -511,6 +512,9 @@ export default function FavorDetailScreen() {
     );
   }
 
+  // Arancione e regalo = dono, oliva e mano = ricevo (come nelle schede della Home)
+  const isGiveKind = favor.creator_id === user?.user_id ? favor.type === 'offer' : favor.type === 'request';
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -563,14 +567,14 @@ export default function FavorDetailScreen() {
               {getStatusText(favor.status)}
             </Text>
           </View>
-          <View style={[styles.typeBadge, favor.type === 'offer' ? styles.offerBadge : styles.requestBadge]}>
+          <View style={[styles.typeBadge, isGiveKind ? styles.requestBadge : styles.offerBadge]}>
             <Ionicons
-              name={favor.type === 'offer' ? 'gift' : 'hand-left'}
+              name={isGiveKind ? 'gift' : 'hand-left'}
               size={16}
               color="#fff"
             />
             <Text style={styles.typeText}>
-              {favor.type === 'offer' ? t('favor.offer') : t('favor.request')}
+              {tt(favorKindLabel(favor.type, favor.creator_id === user?.user_id))}
             </Text>
           </View>
           {favor.is_emergency && (
@@ -645,7 +649,7 @@ export default function FavorDetailScreen() {
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.userLabel}>
-              {favor.type === 'offer' ? tt('Donatore') : tt('Richiedente')}
+              {favor.type === 'offer' ? tt('Donatore') : tt('Ricevente')}
             </Text>
             <View style={styles.userNameRow}>
               <Text style={styles.userName}>{favor.creator_name}</Text>

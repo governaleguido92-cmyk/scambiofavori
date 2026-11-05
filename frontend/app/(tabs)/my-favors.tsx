@@ -75,7 +75,7 @@ function EmptyState({ tab, onCreate, onBrowse }: EmptyProps) {
     tab === 'ongoing'
       ? tt('Quando accetti un favore, o qualcuno accetta il tuo, compare qui.')
       : tab === 'published'
-      ? tt('Pubblica una richiesta o un\'offerta: i tuoi vicini la vedranno subito.')
+      ? tt('Pubblica un favore da donare o da ricevere: i tuoi vicini lo vedranno subito.')
       : tt('I favori finiti restano qui, per ricordare quanto aiuto avete scambiato.');
   return (
     <View style={styles.emptyContainer}>

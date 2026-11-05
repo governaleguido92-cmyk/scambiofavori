@@ -1,4 +1,5 @@
 import { GranelloIcon } from './GranelloIcon';
+import { favorKindLabel } from '../utils/favorKind';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
@@ -40,14 +41,16 @@ export const FavorCard: React.FC<FavorCardProps> = ({
   const visual = getCategoryVisual(item.category);
   const expiry = getExpiryInfo(item.expires_at);
   const isOffer = item.type === 'offer';
-  const kindLabel = isOffer ? t('favor.offer') : t('favor.request');
   const isOwn = !!currentUserId && item.creator_id === currentUserId && !roleText;
+  const kindLabel = tt(favorKindLabel(item.type, isOwn));
+  // Dono: la richiesta di un altro che puoi soddisfare, o un'offerta tua. Ricevo: l'offerta di un altro, o una richiesta tua.
+  const isGive = isOwn ? isOffer : !isOffer;
 
   return (
     <TouchableOpacity
       style={[
         styles.gridCard,
-        isOffer ? styles.gridCardOffer : styles.gridCardRequest,
+        isGive ? styles.gridCardRequest : styles.gridCardOffer, // arancione = dono, oliva = ricevo (come nelle schede della Home)
         item.is_emergency && styles.gridCardUrgent,
         item.creator_in_debt && isOffer && styles.favorCardDebtHighlight,
         isOwn && styles.gridCardOwn,
@@ -59,8 +62,8 @@ export const FavorCard: React.FC<FavorCardProps> = ({
       accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
       data-testid={`favor-card-${item.favor_id}`}
     >
-      {/* Banda colorata per categoria */}
-      <View style={[styles.gridBand, { backgroundColor: visual.color }]}>
+      {/* Banda colorata per tipo: arancione = dona, verde oliva = ricevi (l'emoji dice la categoria) */}
+      <View style={[styles.gridBand, { backgroundColor: isGive ? colors.accent : colors.lime }]}>
         <View style={styles.gridBandCircleA} />
         <View style={styles.gridBandCircleB} />
         <Text style={styles.gridBandEmoji}>{visual.emoji}</Text>

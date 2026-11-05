@@ -55,8 +55,8 @@ export default {
     activeFavors: 'Active favors',
     recentFavors: 'Recent favors',
     noFavors: 'No favors available',
-    offers: 'Offers',
-    requests: 'Requests',
+    offers: 'Receive',
+    requests: 'Give',
     allTypes: 'All',
     refresh: 'Refresh',
     networkError: 'Network error',
@@ -65,8 +65,8 @@ export default {
   },
 
   favor: {
-    offer: 'Offer',
-    request: 'Request',
+    offer: 'Receive',
+    request: 'Give',
     accept: 'Accept',
     complete: 'Complete',
     cancel: 'Cancel',
@@ -154,8 +154,8 @@ export default {
     title: 'Favor Map',
     noFavors: 'No favors in this area',
     locationError: 'Location unavailable',
-    offers: 'Offers',
-    requests: 'Requests',
+    offers: 'Receive',
+    requests: 'Give',
   },
 
   notifications: {

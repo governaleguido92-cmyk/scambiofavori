@@ -1577,7 +1577,7 @@ async def create_skill_match_notifications(favor_doc: dict):
             "user_id": user["user_id"],
             "type": "skill_match",
             "title": "Nuovo favore per te!",
-            "message": f"C'è una nuova richiesta di '{favor_doc['title']}' nella categoria {favor_doc['category']}",
+            "message": f"C'è un favore da donare vicino a te: '{favor_doc['title']}' nella categoria {favor_doc['category']}",
             "favor_id": favor_doc["favor_id"],
             "read": False,
             "created_at": datetime.now(timezone.utc)

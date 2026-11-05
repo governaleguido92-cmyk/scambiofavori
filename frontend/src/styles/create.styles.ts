@@ -310,7 +310,7 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   submitButtonRequest: {
-    backgroundColor: '#F87828',
+    backgroundColor: '#98AA4A',
   },
   submitButtonDisabled: {
     backgroundColor: '#333',

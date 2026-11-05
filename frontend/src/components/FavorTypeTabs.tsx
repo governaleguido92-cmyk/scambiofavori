@@ -12,7 +12,7 @@ interface FavorTypeTabsProps {
   onChange: (type: FavorType) => void;
 }
 
-/** Due schede grandi, Richieste e Offerte di favori, sempre separate, con la riga che spiega cosa fare. */
+/** Due schede grandi, Dona un favore e Ricevi un favore, sempre separate, con la riga che spiega cosa fare. */
 export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange }) => (
   <>
     <View style={styles.typeFilter}>
@@ -30,7 +30,7 @@ export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange })
             accessibilityState={{ selected: active }}
           >
             <Text style={[styles.typeButtonText, active && styles.typeButtonTextActive]}>
-              {type === 'offer' ? tt('Offerte di favori') : tt('Richieste di favori')}
+              {type === 'offer' ? tt('Ricevi un favore') : tt('Dona un favore')}
             </Text>
           </TouchableOpacity>
         );
@@ -39,14 +39,14 @@ export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange })
 
     <View style={[styles.typeHintBox, value === 'offer' ? styles.typeHintBoxOffer : styles.typeHintBoxRequest]}>
       <Ionicons
-        name={value === 'offer' ? 'search' : 'hand-left'}
+        name={value === 'offer' ? 'hand-left' : 'gift'}
         size={20}
         color={value === 'offer' ? '#98AA4A' : colors.accentLight}
       />
       <Text style={styles.typeHintText}>
         {value === 'request'
-          ? tt('Aiuta un vicino e guadagni Granelli')
-          : tt('Trova chi ha tempo per te e usa i tuoi Granelli')}
+          ? tt('Aiuta un vicino (es. portare la spesa) e guadagni Granelli')
+          : tt('Chiedi una mano a chi ha tempo (es. un passaggio) con i tuoi Granelli')}
       </Text>
     </View>
   </>
