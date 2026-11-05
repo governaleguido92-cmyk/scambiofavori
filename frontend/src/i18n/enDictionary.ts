@@ -116,6 +116,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Scrivi a chi abita vicino a te': 'Write to those who live near you',
   'Guadagnato': 'Earned',
   'Speso': 'Spent',
+  '{0} favori in questa zona': '{0} favors in this area',
   'Dona': 'Give',
   'Dona al Fondo Solidarietà': 'Donate to the Solidarity Fund',
   'Dona un favore': 'Give a favor',
