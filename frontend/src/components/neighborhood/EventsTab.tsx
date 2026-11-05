@@ -1,3 +1,4 @@
+import { PlacePicker } from './PlacePicker';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -33,6 +34,7 @@ export function EventsTab({ token, composeSignal }: { token: string | null; comp
   const [kind, setKind] = useState<'evento' | 'ritrovo'>('ritrovo');
   const [title, setTitle] = useState('');
   const [place, setPlace] = useState('');
+  const [placePickerOpen, setPlacePickerOpen] = useState(false);
   const [description, setDescription] = useState('');
   const [dayOffset, setDayOffset] = useState(1);
   const [hour, setHour] = useState(18);
@@ -217,6 +219,10 @@ export function EventsTab({ token, composeSignal }: { token: string | null; comp
 
             <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder={tt('Titolo (es. Caffè in piazza)')} placeholderTextColor={colors.textMuted} maxLength={TITLE_MAX} data-testid="event-title" />
             <TextInput style={styles.input} value={place} onChangeText={setPlace} placeholder={tt('Dove (es. Piazza principale, zona porto)')} placeholderTextColor={colors.textMuted} maxLength={PLACE_MAX} data-testid="event-place" />
+            <TouchableOpacity style={styles.placeButton} onPress={() => setPlacePickerOpen(true)} accessibilityRole="button" data-testid="event-pick-place">
+              <Ionicons name="location" size={16} color="#FFFFFF" />
+              <Text style={styles.placeButtonText}>{tt('Scegli un luogo vicino (entro 20 km)')}</Text>
+            </TouchableOpacity>
 
             <Text style={styles.label}>{tt('Quando')}</Text>
             <View style={styles.chips}>
@@ -248,6 +254,8 @@ export function EventsTab({ token, composeSignal }: { token: string | null; comp
           </ScrollView>
         </View>
       </Modal>
+
+      <PlacePicker visible={placePickerOpen} token={token} onPick={(name) => setPlace(name.slice(0, PLACE_MAX))} onClose={() => setPlacePickerOpen(false)} />
     </View>
   );
 }
@@ -264,6 +272,8 @@ const styles = StyleSheet.create({
   kind: { color: colors.lime, fontSize: 12, fontWeight: '700' },
   title: { color: colors.textPrimary, fontSize: 16, fontWeight: '800' },
   place: { color: colors.textSecondary, fontSize: 13.5 },
+  placeButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.backgroundCard, borderRadius: 12, paddingVertical: 11, borderWidth: 1, borderColor: colors.border },
+  placeButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
   description: { color: colors.textPrimary, fontSize: 14, lineHeight: 19, marginTop: 2 },
   meta: { color: colors.textMuted, fontSize: 11.5, marginTop: 2 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingBottom: 12 },

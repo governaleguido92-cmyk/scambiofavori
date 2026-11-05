@@ -29,6 +29,7 @@ ATTRIBUTION = "© OpenStreetMap contributors"
 OVERPASS_TIMEOUT_SECONDS = 60.0  # il servizio pubblico a volte impiega decine di secondi
 PHOTON_TIMEOUT_SECONDS = 8.0
 NAME_SEARCH_RADIUS_M = 3000
+NEIGHBORHOOD_RADIUS_M = 20000  # luoghi per eventi e avvisi del quartiere: fino a 20 km da chi organizza
 DEFAULT_RADIUS_M = 1000
 MAX_RESULTS = 20
 AREA_LIMIT = 400  # quanti luoghi tenere in copia per zona
@@ -60,6 +61,8 @@ CATEGORIES: dict[str, dict[str, Any]] = {
     "church": {"words": ("chiesa", "parrocchia"), "selectors": (("amenity", "^place_of_worship$"),)},
     "supermarket": {"words": ("supermercato", "market", "alimentari"), "selectors": (("shop", "^(supermarket|convenience)$"),)},
     "station": {"words": ("stazione", "fermata"), "selectors": (("railway", "^station$"), ("amenity", "^bus_station$"))},
+    "beach": {"words": ("spiaggia", "lido", "cala"), "selectors": (("natural", "^beach$"),)},
+    "harbour": {"words": ("porto", "molo", "marina"), "selectors": (("leisure", "^marina$"), ("harbour", "^yes$"), ("man_made", "^pier$"))},
 }
 
 
@@ -80,12 +83,13 @@ def resolve_category(text: Optional[str]) -> Optional[str]:
     return None
 
 
-def build_query(lat: float, lon: float, radius_m: int) -> str:
-    """Interrogazione Overpass per tutte le categorie. Dentro entrano solo numeri e le coppie fisse qui sopra."""
+def build_query(lat: float, lon: float, radius_m: int, only_category: Optional[str] = None) -> str:
+    """Interrogazione Overpass per tutte le categorie (o per una sola). Dentro entrano solo numeri e le coppie fisse qui sopra."""
     area = f"around:{int(radius_m)},{round(lat, 3)},{round(lon, 3)}"
+    categories = [CATEGORIES[only_category]] if only_category else list(CATEGORIES.values())
     clauses = [
         f'nwr["{tag}"~"{pattern}"]({area});'
-        for category in CATEGORIES.values()
+        for category in categories
         for tag, pattern in category["selectors"]
     ]
     return f"[out:json][timeout:50];({''.join(clauses)});out center tags {AREA_LIMIT * 2};"
@@ -107,6 +111,10 @@ def _category_of_tags(tags: dict[str, str]) -> str:
         return "supermarket"
     if place == "square":
         return "square"
+    if tags.get("natural") == "beach":
+        return "beach"
+    if leisure == "marina" or tags.get("harbour") == "yes" or tags.get("man_made") == "pier":
+        return "harbour"
     return "other"
 
 
@@ -252,9 +260,10 @@ async def fetch_overpass_elements(
     radius_m: int = DEFAULT_RADIUS_M,
     transport: Optional[httpx.AsyncBaseTransport] = None,
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+    only_category: Optional[str] = None,
 ) -> list[Any]:
     """Chiede a Overpass i luoghi della zona. Se il servizio è occupato riprova una volta."""
-    query = build_query(lat, lon, radius_m)
+    query = build_query(lat, lon, radius_m, only_category)
     try:
         async with httpx.AsyncClient(timeout=OVERPASS_TIMEOUT_SECONDS, headers={"User-Agent": USER_AGENT}, transport=transport) as client:
             for attempt in range(OVERPASS_ATTEMPTS):
@@ -320,6 +329,60 @@ async def search_area(
         raise PlacesPending("Elenco dei luoghi in preparazione") from None
 
 
+CategoryFetcher = Callable[[float, float, int, str], Awaitable[list[Any]]]
+NEIGHBORHOOD_RADII_M = (5000, NEIGHBORHOOD_RADIUS_M)  # prima vicino (veloce), poi fino a 20 km se servono altri risultati
+NEIGHBORHOOD_ENOUGH = 6
+
+
+async def _fetch_category(lat: float, lon: float, radius_m: int, category: str) -> list[Any]:
+    return await fetch_overpass_elements(lat, lon, radius_m, only_category=category)
+
+
+async def _fill_category(lat: float, lon: float, radius_m: int, category: str, fetch: CategoryFetcher, cache: Any, key: Any) -> list[dict[str, Any]]:
+    elements = await fetch(lat, lon, radius_m, category)
+    result = parse_places(elements, lat, lon, category, limit=AREA_LIMIT)
+    await cache.set(key, result)
+    return result
+
+
+async def search_category_nearby(
+    lat: float,
+    lon: float,
+    category: str,
+    radii: tuple = NEIGHBORHOOD_RADII_M,
+    enough: int = NEIGHBORHOOD_ENOUGH,
+    fetch: Optional[CategoryFetcher] = None,
+    cache: Any = None,
+    max_wait_seconds: Optional[float] = MAX_WAIT_SECONDS,
+) -> list[dict[str, Any]]:
+    """I luoghi di una categoria entro 20 km: una interrogazione leggera per categoria, prima entro 5 km e solo se i risultati
+    sono pochi anche fino a 20 km. Ogni risposta resta in copia per zona e categoria; richieste uguali condividono il lavoro."""
+    fetch = fetch or _fetch_category
+    cache = cache or default_cache
+    lat, lon = round(lat, 3), round(lon, 3)
+    found: list[dict[str, Any]] = []
+    for radius_m in radii:
+        key = ("category", lat, lon, category, radius_m)
+        cached = await cache.get(key)
+        if cached is not None:
+            found = cached
+        else:
+            task = _inflight.get(key)
+            if task is None:
+                task = asyncio.ensure_future(_fill_category(lat, lon, radius_m, category, fetch, cache, key))
+                _inflight[key] = task
+                task.add_done_callback(lambda finished, k=key: _log_background_failure(k, finished))
+            try:
+                found = await asyncio.wait_for(asyncio.shield(task), max_wait_seconds)
+            except asyncio.TimeoutError:
+                if found:
+                    return found  # meglio mostrare i luoghi vicini già trovati che niente
+                raise PlacesPending("Elenco dei luoghi in preparazione") from None
+        if len(found) >= enough:
+            break
+    return found
+
+
 async def search(
     lat: float,
     lon: float,
@@ -373,6 +436,12 @@ def _photon_is_meeting_place(properties: dict[str, Any]) -> bool:
     key, value = properties.get("osm_key"), properties.get("osm_value")
     if key == "place":
         return value == "square"
+    if key == "natural":
+        return value == "beach"
+    if key == "man_made":
+        return value == "pier"
+    if key == "harbour":
+        return True
     return key in _PHOTON_PLACE_KEYS
 
 
@@ -429,21 +498,47 @@ PhotonFetcher = Callable[[float, float, str], Awaitable[list[Any]]]
 
 
 async def search_by_name(
-    lat: float, lon: float, text: str, fetch: Optional[PhotonFetcher] = None, cache: Any = None
+    lat: float,
+    lon: float,
+    text: str,
+    fetch: Optional[PhotonFetcher] = None,
+    cache: Any = None,
+    max_distance_m: int = NAME_SEARCH_RADIUS_M,
 ) -> list[dict[str, Any]]:
     """Luoghi il cui nome corrisponde al testo, vicino al punto. Maiuscole e spazi attorno non contano."""
     fetch = fetch or fetch_photon_features
     cache = cache or name_cache
     lat, lon = round(lat, 3), round(lon, 3)
     wanted = fold(text)
-    key = ("name", lat, lon, wanted)
+    key = ("name", lat, lon, wanted) if max_distance_m == NAME_SEARCH_RADIUS_M else ("name", lat, lon, wanted, max_distance_m)
     cached = await cache.get(key)
     if cached is not None:
         return cached
     features = await fetch(lat, lon, wanted)
-    result = parse_photon(features, lat, lon, NAME_SEARCH_RADIUS_M, limit=PARSED_LIMIT)
+    result = parse_photon(features, lat, lon, max_distance_m, limit=PARSED_LIMIT)
     await cache.set(key, result)
     return result
+
+
+async def search_category_neighborhood(lat: float, lon: float, category: str) -> list[dict[str, Any]]:
+    """Luoghi di una categoria entro 20 km: Overpass (completo) e, se è occupato o lento, Photon per nome (veloce).
+
+    Il ripiego cerca le parole della categoria («spiaggia», «porto»...) e tiene solo i luoghi della categoria giusta.
+    Se anche il ripiego non trova nulla si segnala l'errore originale.
+    """
+    try:
+        return await search_category_nearby(lat, lon, category)
+    except PlacesUnavailable as original:
+        matching: list[dict[str, Any]] = []
+        for word in CATEGORIES[category]["words"][:2]:
+            try:
+                found = await search_by_name(lat, lon, word, max_distance_m=NEIGHBORHOOD_RADIUS_M)
+            except PlacesUnavailable:
+                continue
+            matching += [place for place in found if place.get("category") == category and place not in matching]
+        if not matching:
+            raise original from None
+        return sorted(matching, key=lambda place: place["distance_m"])
 
 
 async def search_with_fallback(lat: float, lon: float, category: str) -> list[dict[str, Any]]:

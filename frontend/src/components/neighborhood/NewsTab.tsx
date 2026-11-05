@@ -1,3 +1,4 @@
+import { PlacePicker } from './PlacePicker';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -49,6 +50,7 @@ export function NewsTab({ token, composeSignal }: { token: string | null; compos
   }, [composeSignal]);
   const [category, setCategory] = useState('lavori');
   const [text, setText] = useState('');
+  const [placePickerOpen, setPlacePickerOpen] = useState(false);
   const [sending, setSending] = useState(false);
 
   const load = useCallback(async () => {
@@ -208,6 +210,10 @@ export function NewsTab({ token, composeSignal }: { token: string | null; compos
               multiline
               data-testid="notice-input"
             />
+            <TouchableOpacity style={styles.placeButton} onPress={() => setPlacePickerOpen(true)} accessibilityRole="button" data-testid="notice-pick-place">
+              <Ionicons name="location" size={16} color="#FFFFFF" />
+              <Text style={styles.placeButtonText}>{tt('Aggiungi un luogo (entro 20 km)')}</Text>
+            </TouchableOpacity>
             <Text style={styles.counter}>{text.length}/{NOTICE_MAX}  ·  {tt('Resta 3 giorni. Niente soldi, telefono, email o link.')}</Text>
             <View style={styles.sheetButtons}>
               <TouchableOpacity style={styles.cancel} onPress={() => setComposerOpen(false)} accessibilityRole="button">
@@ -226,6 +232,13 @@ export function NewsTab({ token, composeSignal }: { token: string | null; compos
           </View>
         </View>
       </Modal>
+
+      <PlacePicker
+        visible={placePickerOpen}
+        token={token}
+        onPick={(name) => setText((previous) => (previous.startsWith(`${name}:`) ? previous : `${name}: ${previous}`).slice(0, NOTICE_MAX))}
+        onClose={() => setPlacePickerOpen(false)}
+      />
     </View>
   );
 }
@@ -245,6 +258,8 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '800' },
   emptyText: { color: colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   fab: { position: 'absolute', right: 16, bottom: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999 },
+  placeButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.backgroundCard, borderRadius: 12, paddingVertical: 11, borderWidth: 1, borderColor: colors.border },
+  placeButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
   fabText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 18, gap: 12 },
