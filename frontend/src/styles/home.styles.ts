@@ -598,7 +598,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   gridGranelliText: {
-    color: colors.granelli,
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '800',
   },
@@ -679,7 +679,7 @@ export const styles = StyleSheet.create({
   },
   gridNear: {
     flexShrink: 1,
-    color: colors.lime,
+    color: '#FFFFFF',
     fontSize: 11.5,
     fontWeight: '700',
   },
