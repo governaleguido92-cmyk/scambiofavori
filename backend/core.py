@@ -870,8 +870,10 @@ async def get_current_user(request: Request) -> User:
     auth_header = request.headers.get("Authorization")
     if auth_header and auth_header.startswith("Bearer "):
         candidates.append(auth_header.split(" ", 1)[1])
+    # Il cookie vale solo per richieste di lettura: un sito terzo può far partire una richiesta che modifica dati
+    # (CSRF) solo se il browser allega da solo il cookie, quindi per scrivere serve sempre l'intestazione Authorization.
     cookie_token = request.cookies.get("session_token")
-    if cookie_token and cookie_token not in candidates:
+    if cookie_token and request.method in ("GET", "HEAD", "OPTIONS") and cookie_token not in candidates:
         candidates.append(cookie_token)
 
     if not candidates:

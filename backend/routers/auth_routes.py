@@ -518,7 +518,7 @@ async def login(request: Request, credentials: UserLogin, response: Response):
         value=token,
         httponly=True,
         secure=True,
-        samesite="none",
+        samesite="lax",
         path="/",
         max_age=JWT_EXPIRATION_DAYS * 24 * 60 * 60
     )
@@ -617,7 +617,7 @@ async def google_login(request: Request, body: GoogleLoginBody, response: Respon
         value=session_token,
         httponly=True,
         secure=True,
-        samesite="none",
+        samesite="lax",
         path="/",
         max_age=7 * 24 * 60 * 60
     )

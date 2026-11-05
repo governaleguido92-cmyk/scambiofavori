@@ -279,3 +279,64 @@ async def test_google_id_token_checks_audience_issuer_nonce_and_email(monkeypatc
                 token(email_verified=False), token(exp=int(time.time()) - 3600), token(email=None)):
         with pytest.raises(HTTPException):
             await google_auth.verify_google_id_token(bad, "n1")
+
+
+# ---------- Cookie solo in lettura (CSRF) e webhook Stripe ----------
+
+async def test_cookie_alone_cannot_change_data_but_bearer_can(client, app_db):
+    await app_db.users.insert_one(make_user("me"))
+    token = core.create_jwt_token("me")
+
+    cookie_read = await client.get("/api/auth/me", cookies={"session_token": token})
+    cookie_write = await client.put("/api/user/bio", json={"bio": "ciao"}, cookies={"session_token": token})
+    bearer_write = await client.put("/api/user/bio", json={"bio": "ciao"}, headers={"Authorization": f"Bearer {token}"})
+
+    assert cookie_read.status_code == 200
+    assert cookie_write.status_code == 401
+    assert bearer_write.status_code == 200
+
+
+def stripe_event(monkeypatch, event):
+    import stripe
+
+    monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "whsec_test")
+    monkeypatch.setattr(stripe.Webhook, "construct_event", staticmethod(lambda body, sig, secret: event))
+
+
+async def test_stripe_revoke_events_find_the_user_by_stripe_ids(client, app_db, monkeypatch):
+    await app_db.users.insert_many([
+        make_user("sub_user", is_supporter=True, subscription_status="active", badges=["supporter"], stripe_subscription_id="sub_123"),
+        make_user("cust_user", is_supporter=True, subscription_status="active", badges=["supporter"], stripe_customer_id="cus_456"),
+    ])
+
+    stripe_event(monkeypatch, {"type": "customer.subscription.deleted", "data": {"object": {"id": "sub_123", "customer": "cus_x"}}})
+    assert (await client.post("/api/webhook/stripe", content=b"{}", headers={"Stripe-Signature": "t"})).status_code == 200
+    stripe_event(monkeypatch, {"type": "invoice.payment_failed", "data": {"object": {"id": "in_1", "subscription": "sub_zzz", "customer": "cus_456"}}})
+    assert (await client.post("/api/webhook/stripe", content=b"{}", headers={"Stripe-Signature": "t"})).status_code == 200
+
+    for user_id in ("sub_user", "cust_user"):
+        doc = await app_db.users.find_one({"user_id": user_id})
+        assert doc["is_supporter"] is False and doc["subscription_status"] == "cancelled"
+        assert "supporter" not in doc["badges"]
+
+
+async def test_stripe_checkout_completed_saves_ids_for_later_revokes(client, app_db, monkeypatch):
+    await app_db.users.insert_one(make_user("payer"))
+    stripe_event(monkeypatch, {"type": "checkout.session.completed", "data": {"object": {
+        "id": "cs_1", "metadata": {"user_id": "payer"}, "payment_status": "paid", "subscription": "sub_9", "customer": "cus_9"}}})
+
+    assert (await client.post("/api/webhook/stripe", content=b"{}", headers={"Stripe-Signature": "t"})).status_code == 200
+
+    doc = await app_db.users.find_one({"user_id": "payer"})
+    assert doc["is_supporter"] is True
+    assert doc["stripe_subscription_id"] == "sub_9" and doc["stripe_customer_id"] == "cus_9"
+    assert "supporter" in doc["badges"]
+
+
+async def test_stripe_webhook_error_returns_500_without_details(client, app_db, monkeypatch):
+    stripe_event(monkeypatch, {"type": "checkout.session.completed", "data": None})
+
+    response = await client.post("/api/webhook/stripe", content=b"{}", headers={"Stripe-Signature": "t"})
+
+    assert response.status_code == 500
+    assert "NoneType" not in response.text
