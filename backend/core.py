@@ -448,6 +448,10 @@ class UserBase(BaseModel):
 
 MIN_PASSWORD_LENGTH = 8
 
+def email_match(email: str) -> dict:
+    """Filtro Mongo che trova l'email senza badare alle maiuscole (vecchi account inclusi)."""
+    return {"email": {"$regex": f"^{re.escape(email.strip())}$", "$options": "i"}}
+
 class UserCreate(BaseModel):
     email: str
     name: str
@@ -459,7 +463,7 @@ class UserCreate(BaseModel):
     @field_validator("email")
     @classmethod
     def strip_email(cls, value: str) -> str:
-        return value.strip()
+        return value.strip().lower()
 
     @field_validator("name")
     @classmethod
@@ -948,9 +952,11 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     
     return R * c
 
-def approximate_location(lat: float, lon: float, radius_meters: int = PRIVACY_RADIUS_METERS) -> tuple:
+def approximate_location(lat: float, lon: float, radius_meters: int = PRIVACY_RADIUS_METERS, seed: Optional[str] = None) -> tuple:
     """
-    Add random offset to create approximate location for privacy.
+    Add an offset to create approximate location for privacy.
+    With a seed (the user id) the offset is always the same for that user,
+    so publishing many favors from one spot cannot be averaged to find it.
     Returns (approx_lat, approx_lon)
     """
     # Convert radius from meters to degrees (approximately)
@@ -958,8 +964,14 @@ def approximate_location(lat: float, lon: float, radius_meters: int = PRIVACY_RA
     
     # Random angle and distance; the minimum offset keeps the shown point
     # from landing right on top of the real one.
-    angle = random.uniform(0, 2 * math.pi)
-    distance = random.uniform(radius_deg * PRIVACY_MIN_OFFSET_RATIO, radius_deg)
+    if seed:
+        digest = hmac.new(JWT_SECRET.encode(), f"approx-location:{seed}".encode(), hashlib.sha256).digest()
+        unit_a = int.from_bytes(digest[:8], "big") / 2**64
+        unit_d = int.from_bytes(digest[8:16], "big") / 2**64
+    else:
+        unit_a, unit_d = random.random(), random.random()
+    angle = unit_a * 2 * math.pi
+    distance = radius_deg * (PRIVACY_MIN_OFFSET_RATIO + unit_d * (1 - PRIVACY_MIN_OFFSET_RATIO))
     
     offset_lat = distance * math.cos(angle)
     offset_lon = distance * math.sin(angle) / math.cos(math.radians(lat))

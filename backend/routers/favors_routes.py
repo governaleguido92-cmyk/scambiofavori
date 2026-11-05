@@ -62,7 +62,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     # Privacy: create approximate location
     approx_lat, approx_lon = None, None
     if favor_data.latitude and favor_data.longitude:
-        approx_lat, approx_lon = approximate_location(favor_data.latitude, favor_data.longitude)
+        approx_lat, approx_lon = approximate_location(favor_data.latitude, favor_data.longitude, seed=current_user.user_id)
     
     # Check if user is in debt (for priority highlighting)
     creator_in_debt = current_user.granelli < 0

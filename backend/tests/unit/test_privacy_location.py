@@ -34,3 +34,22 @@ def test_approximate_location_is_never_close_to_the_real_point():
     for _ in range(SAMPLES):
         lat, lon = core.approximate_location(LAT, LON)
         assert _distance_m(LAT, LON, lat, lon) >= minimum
+
+
+def test_same_user_always_gets_the_same_offset():
+    first = core.approximate_location(LAT, LON, seed="user_a")
+    for _ in range(50):
+        assert core.approximate_location(LAT, LON, seed="user_a") == first
+
+
+def test_different_users_get_different_offsets():
+    points = {core.approximate_location(LAT, LON, seed=f"user_{i}") for i in range(20)}
+    assert len(points) > 15
+
+
+def test_seeded_offset_stays_in_the_privacy_band():
+    minimum = core.PRIVACY_RADIUS_METERS * core.PRIVACY_MIN_OFFSET_RATIO * 0.99
+    for i in range(300):
+        lat, lon = core.approximate_location(LAT, LON, seed=f"user_{i}")
+        distance = _distance_m(LAT, LON, lat, lon)
+        assert minimum <= distance <= core.PRIVACY_RADIUS_METERS * 1.01
