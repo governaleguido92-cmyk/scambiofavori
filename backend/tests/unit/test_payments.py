@@ -44,3 +44,42 @@ async def test_create_checkout_sends_integer_cents_to_stripe(client, app_db, str
     unit_amount = stripe_create[0]["line_items"][0]["price_data"]["unit_amount"]
     assert unit_amount == 100
     assert isinstance(unit_amount, int)
+
+
+@pytest.mark.asyncio
+async def test_checkout_is_a_real_monthly_subscription_with_metadata_on_it(client, app_db, stripe_create):
+    await app_db.users.insert_one(make_user("payer"))
+
+    await client.post("/api/subscription/create-checkout", json={"origin_url": "https://app.example.com"}, headers=auth("payer"))
+
+    call = stripe_create[0]
+    assert call["mode"] == "subscription"
+    assert call["line_items"][0]["price_data"]["recurring"] == {"interval": "month"}
+    assert call["subscription_data"]["metadata"]["user_id"] == "payer"
+
+
+@pytest.mark.asyncio
+async def test_manage_url_opens_the_stripe_portal_for_the_saved_customer(client, app_db, monkeypatch):
+    class Portal:
+        url = "https://billing.stripe.com/p/session/test_abc"
+
+    calls = []
+    monkeypatch.setattr(payments_routes._stripe.billing_portal.Session, "create", lambda **kw: calls.append(kw) or Portal())
+    await app_db.users.insert_one(make_user("sup", is_supporter=True, stripe_customer_id="cus_77"))
+
+    response = await client.get("/api/subscription/manage-url", headers=auth("sup"))
+
+    assert response.status_code == 200
+    assert response.json()["manage_url"] == Portal.url
+    assert calls[0]["customer"] == "cus_77"
+
+
+@pytest.mark.asyncio
+async def test_manage_url_needs_a_linked_subscription(client, app_db):
+    await app_db.users.insert_many([make_user("old", is_supporter=True), make_user("nobody")])
+
+    legacy = await client.get("/api/subscription/manage-url", headers=auth("old"))
+    not_supporter = await client.get("/api/subscription/manage-url", headers=auth("nobody"))
+
+    assert legacy.status_code == 400
+    assert not_supporter.status_code == 400

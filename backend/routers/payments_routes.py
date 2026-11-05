@@ -40,13 +40,17 @@ async def create_subscription_checkout(
                     "currency": SUPPORTER_PLAN["currency"],
                     "unit_amount": to_minor_units(SUPPORTER_PLAN["amount"]),
                     "product_data": {"name": "Scambio Favori — Sostenitore"},
+                    "recurring": {"interval": SUPPORTER_PLAN["interval"]},
                 },
                 "quantity": 1,
             }],
-            mode="payment",
+            # Abbonamento mensile vero: si rinnova da solo e si disdice dal portale Stripe.
+            # I metadata vanno anche sull'abbonamento, così gli eventi di Stripe riconoscono l'utente.
+            mode="subscription",
             success_url=success_url,
             cancel_url=cancel_url,
             metadata=metadata,
+            subscription_data={"metadata": metadata},
         )
 
         # Create payment transaction record
@@ -117,15 +121,20 @@ async def get_checkout_status(
 
         # If payment successful, update user as supporter
         if payment_status == "paid":
-            await db.users.update_one(
-                {"user_id": current_user.user_id},
-                {"$set": {
-                    "is_supporter": True,
-                    "subscription_status": "active",
-                    "subscription_id": session_id,
-                    "supporter_since": datetime.now(timezone.utc)
-                }}
-            )
+            supporter_fields = {
+                "is_supporter": True,
+                "subscription_status": "active",
+                "subscription_id": session_id,
+                "supporter_since": datetime.now(timezone.utc)
+            }
+            # I codici Stripe servono per disdire, per il portale e per riconoscere gli eventi di revoca
+            stripe_subscription = getattr(session_obj, "subscription", None)
+            stripe_customer = getattr(session_obj, "customer", None)
+            if isinstance(stripe_subscription, str):
+                supporter_fields["stripe_subscription_id"] = stripe_subscription
+            if isinstance(stripe_customer, str):
+                supporter_fields["stripe_customer_id"] = stripe_customer
+            await db.users.update_one({"user_id": current_user.user_id}, {"$set": supporter_fields})
 
             # Add supporter badge
             await db.users.update_one(
@@ -172,10 +181,19 @@ async def get_subscription_manage_url(current_user: User = Depends(get_current_u
     if not user_doc.get("is_supporter"):
         raise HTTPException(status_code=400, detail="Non sei ancora un Sostenitore")
     
-    # For test mode, return Stripe test portal or a placeholder
-    # In production, this would create a real Customer Portal session
+    customer_id = user_doc.get("stripe_customer_id")
+    if not customer_id:
+        raise HTTPException(status_code=400, detail="Nessun abbonamento collegato: se hai appena pagato, riprova tra qualche minuto")
+
+    # Portale cliente di Stripe: da lì il Sostenitore cambia carta o disdice l'abbonamento
+    _stripe.api_key = STRIPE_API_KEY
+    try:
+        portal = _stripe.billing_portal.Session.create(customer=customer_id, return_url="https://scambiofavori.it")
+    except Exception:
+        logger.exception("Stripe portal error")
+        raise HTTPException(status_code=502, detail="Portale abbonamento non disponibile al momento")
     return {
-        "manage_url": "https://billing.stripe.com/p/login/test",
+        "manage_url": portal.url,
         "message": "Usa il portale Stripe per gestire il tuo abbonamento"
     }
 
@@ -199,11 +217,10 @@ async def handle_stripe_webhook(request: Request):
         raise HTTPException(status_code=400, detail="Firma non valida")
 
     try:
-
         event_type = event["type"]
         session_obj = event["data"]["object"]
         session_id = session_obj.get("id", "")
-        metadata = session_obj.get("metadata", {})
+        metadata = session_obj.get("metadata") or {}
         payment_status = session_obj.get("payment_status", "")
 
         logger.info(f"Stripe webhook: {event_type} - {session_id}")
@@ -211,34 +228,30 @@ async def handle_stripe_webhook(request: Request):
         if event_type == "checkout.session.completed":
             user_id = metadata.get("user_id")
             if user_id:
-                await db.users.update_one(
-                    {"user_id": user_id},
-                    {"$set": {
-                        "is_supporter": True,
-                        "subscription_status": "active",
-                        "subscription_id": session_id,
-                        "supporter_since": datetime.now(timezone.utc)
-                    }}
-                )
-                await db.users.update_one(
-                    {"user_id": user_id},
-                    {"$addToSet": {"badges": "supporter"}}
-                )
+                update = {
+                    "is_supporter": True,
+                    "subscription_status": "active",
+                    "subscription_id": session_id,
+                    "supporter_since": datetime.now(timezone.utc),
+                }
+                # Gli eventi di revoca (disdetta, pagamento fallito) non portano i nostri metadata:
+                # si ritrova l'utente tramite i codici Stripe di abbonamento e cliente salvati qui.
+                if session_obj.get("subscription"):
+                    update["stripe_subscription_id"] = session_obj["subscription"]
+                if session_obj.get("customer"):
+                    update["stripe_customer_id"] = session_obj["customer"]
+                await db.users.update_one({"user_id": user_id}, {"$set": update, "$addToSet": {"badges": "supporter"}})
 
         elif event_type in ["customer.subscription.deleted", "invoice.payment_failed"]:
-            user_id = metadata.get("user_id")
+            user_id = await find_supporter_user_id(event_type, session_obj, metadata)
             if user_id:
                 await db.users.update_one(
                     {"user_id": user_id},
-                    {"$set": {
-                        "is_supporter": False,
-                        "subscription_status": "cancelled"
-                    }}
+                    {"$set": {"is_supporter": False, "subscription_status": "cancelled"},
+                     "$pull": {"badges": "supporter"}},
                 )
-                await db.users.update_one(
-                    {"user_id": user_id},
-                    {"$pull": {"badges": "supporter"}}
-                )
+            else:
+                logger.warning(f"Stripe webhook {event_type}: nessun utente collegato")
 
         # Update payment transaction
         await db.payment_transactions.update_one(
@@ -252,6 +265,21 @@ async def handle_stripe_webhook(request: Request):
 
         return {"status": "success"}
 
-    except Exception as e:
-        logger.error(f"Stripe webhook error: {e}")
-        return {"status": "error", "message": str(e)}
+    except Exception:
+        # Errore vero (non 200): così Stripe riprova l'evento. Il dettaglio resta nei log, non nella risposta.
+        logger.exception("Stripe webhook error")
+        raise HTTPException(status_code=500, detail="Errore nell'elaborazione dell'evento")
+
+
+async def find_supporter_user_id(event_type: str, stripe_object: dict, metadata: dict):
+    """L'utente di un evento di revoca: prima i metadata, poi l'abbonamento, poi il cliente Stripe."""
+    if metadata.get("user_id"):
+        return metadata["user_id"]
+    subscription_id = stripe_object.get("id") if event_type == "customer.subscription.deleted" else stripe_object.get("subscription")
+    customer_id = stripe_object.get("customer")
+    for field, value in (("stripe_subscription_id", subscription_id), ("stripe_customer_id", customer_id)):
+        if value:
+            user = await db.users.find_one({field: value}, {"_id": 0, "user_id": 1})
+            if user:
+                return user["user_id"]
+    return None
