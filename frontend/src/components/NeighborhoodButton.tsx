@@ -10,7 +10,7 @@ interface NeighborhoodButtonProps {
   size?: number;
 }
 
-/** Pulsante tondo "Il quartiere parla": una casetta con un fumetto arancione. */
+/** Pulsante tondo "Il Nostro Quartiere": una casetta con un fumetto arancione. */
 export function NeighborhoodButton({ size = 36 }: NeighborhoodButtonProps) {
   const router = useRouter();
 
@@ -19,7 +19,7 @@ export function NeighborhoodButton({ size = 36 }: NeighborhoodButtonProps) {
       style={[styles.button, { width: size, height: size, borderRadius: size / 2 }]}
       onPress={() => router.push('/quartiere' as never)}
       accessibilityRole="button"
-      accessibilityLabel={tt('Il quartiere parla')}
+      accessibilityLabel={tt('Il Nostro Quartiere')}
       data-testid="open-neighborhood-header"
     >
       <Ionicons name="home" size={Math.round(size * 0.5)} color={colors.textPrimary} />

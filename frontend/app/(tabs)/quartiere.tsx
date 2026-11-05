@@ -202,7 +202,7 @@ export default function NeighborhoodScreen() {
           </TouchableOpacity>
           <BrandLogo />
           <View style={styles.titleBlock}>
-            <Text style={styles.title} numberOfLines={1} accessibilityRole="header">{tt('Il quartiere parla')}</Text>
+            <Text style={styles.title} numberOfLines={1} accessibilityRole="header">{tt('Il Nostro Quartiere')}</Text>
             <Text style={styles.subtitle} numberOfLines={1}>{tt('Tutto quello che succede intorno a te')}</Text>
           </View>
         </View>

@@ -411,6 +411,7 @@ export interface PlaceSuggestion {
 export interface PlacesResponse {
   places: PlaceSuggestion[];
   attribution: string;
+  radius_km?: number;
 }
 
 /** Il server chiede di verificare il telefono prima di pubblicare o accettare un favore. */
@@ -687,6 +688,19 @@ export const api = {
       headers: getHeaders(token),
       signal,
     });
+    return handleResponse(response);
+  },
+
+  /** Luoghi pubblici entro 20 km dalla tua zona (OpenStreetMap), per eventi e avvisi del quartiere. */
+  getNeighborhoodPlaces: async (
+    search: { category?: string; q?: string },
+    token: string,
+    signal?: AbortSignal
+  ): Promise<PlacesResponse> => {
+    const params = new URLSearchParams();
+    if (search.category) params.set('category', search.category);
+    if (search.q) params.set('q', search.q);
+    const response = await fetch(`${API_URL}/api/neighborhood/places?${params.toString()}`, { headers: getHeaders(token), signal });
     return handleResponse(response);
   },
 

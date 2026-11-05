@@ -21,7 +21,7 @@ const OPTIONS: ReadonlyArray<Option> = [
   { key: 'chat', icon: 'chatbubbles-outline', title: 'Un messaggio nella chat', hint: 'Scrivi a chi abita vicino a te' },
 ];
 
-/** Cosa si può creare dal tasto «Crea»: un favore oppure qualcosa nel «quartiere parla». */
+/** Cosa si può creare dal tasto «Crea»: un favore oppure qualcosa nel «Il Nostro Quartiere». */
 export function CreateMenu({ visible, onClose, onChoose }: { visible: boolean; onClose: () => void; onChoose: (choice: CreateChoice) => void }) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>

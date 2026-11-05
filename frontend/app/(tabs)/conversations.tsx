@@ -176,12 +176,12 @@ export default function ConversationsScreen() {
           style={styles.squareCard}
           onPress={() => router.push('/quartiere' as never)}
           accessibilityRole="button"
-          accessibilityLabel={tt('Il quartiere parla')}
+          accessibilityLabel={tt('Il Nostro Quartiere')}
           data-testid="open-neighborhood"
         >
           <Ionicons name="people" size={22} color={colors.accent} />
           <View style={styles.squareText}>
-            <Text style={styles.squareTitle}>{tt('Il quartiere parla')}</Text>
+            <Text style={styles.squareTitle}>{tt('Il Nostro Quartiere')}</Text>
             <Text style={styles.squareSubtitle}>{tt('Chatta con chi ha un favore attivo entro 30 km')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textPrimary} />

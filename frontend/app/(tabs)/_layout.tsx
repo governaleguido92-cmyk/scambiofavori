@@ -16,7 +16,7 @@ export default function TabsLayout() {
   const router = useRouter();
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
 
-  // Il tasto Crea apre un menu: un favore, oppure qualcosa nel «quartiere parla»
+  // Il tasto Crea apre un menu: un favore, oppure qualcosa nel «Il Nostro Quartiere»
   const handleCreateChoice = (choice: CreateChoice) => {
     setCreateMenuOpen(false);
     if (choice === 'favore') {
