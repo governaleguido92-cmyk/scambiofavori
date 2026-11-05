@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -36,12 +36,17 @@ function ageLabel(iso: string): string {
 }
 
 /** Avvisi del quartiere: li pubblicano gli utenti con un favore attivo e durano 3 giorni. */
-export function NewsTab({ token }: { token: string | null }) {
+export function NewsTab({ token, composeSignal }: { token: string | null; composeSignal?: string }) {
   const router = useRouter();
   const [notices, setNotices] = useState<NeighborhoodNotice[]>([]);
   const [noPosition, setNoPosition] = useState(false);
   const [loading, setLoading] = useState(true);
   const [composerOpen, setComposerOpen] = useState(false);
+
+  // Il tasto Crea può aprire direttamente la finestra di scrittura
+  useEffect(() => {
+    if (composeSignal) setComposerOpen(true);
+  }, [composeSignal]);
   const [category, setCategory] = useState('lavori');
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -240,7 +245,7 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '800' },
   emptyText: { color: colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   fab: { position: 'absolute', right: 16, bottom: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999 },
-  fabText: { color: colors.background, fontSize: 14, fontWeight: '800' },
+  fabText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 18, gap: 12 },
   sheetTitle: { color: colors.textPrimary, fontSize: 17, fontWeight: '800' },
@@ -248,7 +253,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.backgroundCard },
   chipActive: { backgroundColor: colors.accent },
   chipText: { color: colors.textPrimary, fontSize: 13 },
-  chipTextActive: { color: colors.background, fontWeight: '800' },
+  chipTextActive: { color: '#FFFFFF', fontWeight: '800' },
   input: { minHeight: 90, borderRadius: 12, backgroundColor: colors.backgroundCard, color: colors.textPrimary, padding: 12, fontSize: 15, textAlignVertical: 'top' },
   counter: { color: colors.textMuted, fontSize: 12 },
   sheetButtons: { flexDirection: 'row', gap: 10 },
@@ -256,5 +261,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontWeight: '700' },
   publish: { flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accent },
   publishDisabled: { opacity: 0.85 },
-  publishText: { color: colors.background, fontWeight: '800' },
+  publishText: { color: '#FFFFFF', fontWeight: '800' },
 });

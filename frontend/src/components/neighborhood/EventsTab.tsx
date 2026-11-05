@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,12 +19,17 @@ const KINDS: ReadonlyArray<{ key: 'evento' | 'ritrovo'; emoji: string; label: st
 ];
 
 /** Eventi e ritrovi del quartiere: si organizzano con un giorno e un'ora, i vicini rispondono "Ci vado". */
-export function EventsTab({ token }: { token: string | null }) {
+export function EventsTab({ token, composeSignal }: { token: string | null; composeSignal?: string }) {
   const router = useRouter();
   const [events, setEvents] = useState<NeighborhoodEvent[]>([]);
   const [noPosition, setNoPosition] = useState(false);
   const [loading, setLoading] = useState(true);
   const [composerOpen, setComposerOpen] = useState(false);
+
+  // Il tasto Crea può aprire direttamente la finestra di scrittura
+  useEffect(() => {
+    if (composeSignal) setComposerOpen(true);
+  }, [composeSignal]);
   const [kind, setKind] = useState<'evento' | 'ritrovo'>('ritrovo');
   const [title, setTitle] = useState('');
   const [place, setPlace] = useState('');
@@ -175,7 +180,7 @@ export function EventsTab({ token }: { token: string | null }) {
                     data-testid={`event-go-${event.event_id}`}
                   >
                     <Ionicons name={event.going ? 'checkmark-circle' : 'add-circle-outline'} size={16} color={colors.background} />
-                    <Text style={styles.goText}>{event.going ? tt('Ci vado!') : tt('Ci vado')}</Text>
+                    <Text style={[styles.goText, event.going && styles.goTextOn]}>{event.going ? tt('Ci vado!') : tt('Ci vado')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -265,12 +270,14 @@ const styles = StyleSheet.create({
   count: { color: colors.textSecondary, fontSize: 13 },
   goButton: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, opacity: 0.85 },
   goButtonOn: { backgroundColor: colors.lime, opacity: 1 },
-  goText: { color: colors.background, fontSize: 13.5, fontWeight: '800' },
+  goText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '800' },
+  // sul verde oliva (già «Ci vado!») il testo scuro si legge meglio del bianco
+  goTextOn: { color: colors.background },
   empty: { alignItems: 'center', gap: 8, marginTop: 40, paddingHorizontal: 24 },
   emptyTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '800' },
   emptyText: { color: colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   fab: { position: 'absolute', right: 16, bottom: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999 },
-  fabText: { color: colors.background, fontSize: 14, fontWeight: '800' },
+  fabText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%' },
   sheetContent: { padding: 18, gap: 12 },
@@ -281,7 +288,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.backgroundCard },
   chipActive: { backgroundColor: colors.accent },
   chipText: { color: colors.textPrimary, fontSize: 13 },
-  chipTextActive: { color: colors.background, fontWeight: '800' },
+  chipTextActive: { color: '#FFFFFF', fontWeight: '800' },
   input: { borderRadius: 12, backgroundColor: colors.backgroundCard, color: colors.textPrimary, padding: 12, fontSize: 15 },
   inputBig: { minHeight: 70, textAlignVertical: 'top' },
   counter: { color: colors.textMuted, fontSize: 12 },
@@ -290,5 +297,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontWeight: '700' },
   publish: { flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accent },
   publishDisabled: { opacity: 0.85 },
-  publishText: { color: colors.background, fontWeight: '800' },
+  publishText: { color: '#FFFFFF', fontWeight: '800' },
 });

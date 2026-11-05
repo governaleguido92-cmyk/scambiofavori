@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, View, StyleSheet } from 'react-native';
@@ -7,12 +7,26 @@ import colors from '../../src/theme/colors';
 import { tt } from '../../src/i18n/tt';
 import { useMessages } from '../../src/context/MessagesContext';
 import { BadgeCelebration } from '../../src/components/BadgeCelebration';
+import { CreateMenu, CreateChoice } from '../../src/components/CreateMenu';
 
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();
   const { unread } = useMessages();
   const router = useRouter();
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
+
+  // Il tasto Crea apre un menu: un favore, oppure qualcosa nel «quartiere parla»
+  const handleCreateChoice = (choice: CreateChoice) => {
+    setCreateMenuOpen(false);
+    if (choice === 'favore') {
+      router.push('/create' as any);
+      return;
+    }
+    const tab = { avviso: 'avvisi', evento: 'eventi', presentazione: 'vicini', chat: 'chat' }[choice];
+    // `compose` cambia a ogni scelta, così la finestra di scrittura si riapre anche se si sceglie due volte la stessa voce
+    router.push({ pathname: '/quartiere', params: { tab, compose: choice === 'chat' ? '' : String(Date.now()) } } as any);
+  };
 
   // Redirect to login when user logs out
   useEffect(() => {
@@ -68,6 +82,12 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="create"
+        listeners={{
+          tabPress: (event) => {
+            event.preventDefault();
+            setCreateMenuOpen(true);
+          },
+        }}
         options={{
           title: tt('Crea'),
           tabBarIcon: ({ color, size }) => (
@@ -103,6 +123,7 @@ export default function TabsLayout() {
       ))}
     </Tabs>
     <BadgeCelebration />
+    <CreateMenu visible={createMenuOpen} onClose={() => setCreateMenuOpen(false)} onChoose={handleCreateChoice} />
     </>
   );
 }

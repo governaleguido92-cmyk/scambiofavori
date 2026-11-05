@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,13 +20,18 @@ function ageLabel(iso: string): string {
 }
 
 /** "Vicini": presentazioni dei nuovi arrivati (con "Benvenuto") e bacheca dei Grazie. */
-export function NeighborsTab({ token }: { token: string | null }) {
+export function NeighborsTab({ token, composeSignal }: { token: string | null; composeSignal?: string }) {
   const router = useRouter();
   const [intros, setIntros] = useState<NeighborhoodIntro[]>([]);
   const [thanks, setThanks] = useState<ThanksEntry[]>([]);
   const [noPosition, setNoPosition] = useState(false);
   const [loading, setLoading] = useState(true);
   const [composerOpen, setComposerOpen] = useState(false);
+
+  // Il tasto Crea può aprire direttamente la finestra di scrittura
+  useEffect(() => {
+    if (composeSignal) setComposerOpen(true);
+  }, [composeSignal]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -163,7 +168,7 @@ export function NeighborsTab({ token }: { token: string | null }) {
                   accessibilityState={{ selected: intro.welcomed }}
                   data-testid={`welcome-${intro.intro_id}`}
                 >
-                  <Text style={styles.welcomeText}>{intro.welcomed ? tt('Benvenuto! ✓') : tt('Dai il benvenuto')}</Text>
+                  <Text style={[styles.welcomeText, intro.welcomed && styles.welcomeTextOn]}>{intro.welcomed ? tt('Benvenuto! ✓') : tt('Dai il benvenuto')}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -240,10 +245,12 @@ const styles = StyleSheet.create({
   count: { color: colors.textSecondary, fontSize: 13 },
   welcomeButton: { backgroundColor: colors.accent, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, opacity: 0.85 },
   welcomeButtonOn: { backgroundColor: colors.lime, opacity: 1 },
-  welcomeText: { color: colors.background, fontSize: 13.5, fontWeight: '800' },
+  welcomeText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '800' },
+  // sul verde oliva (già dato il benvenuto) il testo scuro si legge meglio del bianco
+  welcomeTextOn: { color: colors.background },
   emptyLine: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
   introButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.accent, paddingVertical: 12, borderRadius: 12 },
-  introButtonText: { color: colors.background, fontSize: 14.5, fontWeight: '800' },
+  introButtonText: { color: '#FFFFFF', fontSize: 14.5, fontWeight: '800' },
   thanksCard: { flexDirection: 'row', gap: 10, backgroundColor: colors.backgroundCard, borderRadius: 12, padding: 12 },
   thanksText: { color: colors.textPrimary, fontSize: 14, lineHeight: 19 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
@@ -256,5 +263,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontWeight: '700' },
   publish: { flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accent },
   publishDisabled: { opacity: 0.85 },
-  publishText: { color: colors.background, fontWeight: '800' },
+  publishText: { color: '#FFFFFF', fontWeight: '800' },
 });
