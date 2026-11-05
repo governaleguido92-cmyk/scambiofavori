@@ -4,7 +4,7 @@ Tests cover:
 - POST /api/auth/register - User registration
 - POST /api/auth/login - Email/password login
 - GET /api/auth/me - Get current user with token
-- POST /api/auth/session - Exchange session_id for Google OAuth
+- POST /api/auth/google - Google login with a verified ID token
 - POST /api/auth/apple - Apple Sign In authentication
 - JWT token generation and validation
 """
@@ -268,44 +268,13 @@ class TestGetCurrentUser:
         print("PASSED: Invalid token correctly rejected")
 
 
-class TestGoogleOAuthSession:
-    """Tests for POST /api/auth/session - Google OAuth session exchange"""
-    
-    def test_session_exchange_missing_session_id(self):
-        """Test session exchange fails without session_id"""
-        response = requests.post(
-            f"{BASE_URL}/api/auth/session",
-            json={}
-        )
-        
-        assert response.status_code == 400, f"Expected 400, got {response.status_code}"
-        data = response.json()
-        assert "session_id" in data.get("detail", "").lower()
-        print("PASSED: Missing session_id correctly rejected with 400")
-    
-    def test_session_exchange_invalid_session_id(self):
-        """Test session exchange fails with invalid session_id"""
-        response = requests.post(
-            f"{BASE_URL}/api/auth/session",
-            json={"session_id": "invalid_session_12345"}
-        )
-        
-        # Should return 401 because the session is invalid
-        assert response.status_code == 401, f"Expected 401, got {response.status_code}"
-        data = response.json()
-        assert "non valido" in data.get("detail", "").lower() or "invalid" in data.get("detail", "").lower()
-        print("PASSED: Invalid session_id correctly rejected with 401")
-    
-    def test_session_exchange_empty_session_id(self):
-        """Test session exchange fails with empty session_id"""
-        response = requests.post(
-            f"{BASE_URL}/api/auth/session",
-            json={"session_id": ""}
-        )
-        
-        # Empty string should be treated as missing
-        assert response.status_code in [400, 401], f"Expected 400/401, got {response.status_code}"
-        print("PASSED: Empty session_id correctly rejected")
+class TestGoogleLogin:
+    """Tests for POST /api/auth/google - accesso con Google (ID token verificato dal server)"""
+
+    def test_google_login_rejects_invalid_nonce(self):
+        response = requests.post(f"{BASE_URL}/api/auth/google", json={"id_token": "x", "nonce": "abc.123.def"})
+        assert response.status_code in [401, 503], f"Expected 401/503, got {response.status_code}"
+
 
 
 class TestAppleAuth:

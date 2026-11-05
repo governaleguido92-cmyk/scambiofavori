@@ -80,3 +80,15 @@ def auth(user_id: str) -> dict:
 @pytest.fixture
 def new_id():
     return lambda prefix="id": f"{prefix}_{uuid.uuid4().hex[:8]}"
+
+
+async def google_login(client, monkeypatch, email, name="Guido"):
+    """Accesso con Google con la verifica del token finta (la firma di Google non si può produrre nei test)."""
+    import google_auth
+
+    async def fake_verify(id_token, nonce):
+        return {"email": email, "name": name, "picture": None}
+
+    monkeypatch.setattr(google_auth, "verify_google_id_token", fake_verify)
+    nonce = (await client.get("/api/auth/google/nonce")).json()["nonce"]
+    return await client.post("/api/auth/google", json={"id_token": "finto", "nonce": nonce})

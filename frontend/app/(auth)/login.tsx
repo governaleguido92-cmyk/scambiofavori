@@ -18,8 +18,15 @@ import { useAuth } from '../../src/context/AuthContext';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { api } from '../../src/services/api';
+import { api, EmailUnverifiedError } from '../../src/services/api';
 import { logger } from '../../src/utils/logger';
+import {
+  GOOGLE_NATIVE_CALLBACK,
+  buildGoogleAuthUrl,
+  isGoogleLoginConfigured,
+  readIdTokenFromUrl,
+  rememberNonce,
+} from '../../src/utils/googleAuth';
 import { notify } from '../../src/utils/notify';
 import { tt } from '../../src/i18n/tt';
 
@@ -29,7 +36,7 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
-  const { login, exchangeSessionId, loginWithToken } = useAuth();
+  const { login, loginWithGoogleToken, loginWithToken } = useAuth();
   const router = useRouter();
 
   // Check if Apple Sign In is available (iOS only)
@@ -54,6 +61,11 @@ export default function LoginScreen() {
       await login(email, password);
       router.replace('/(tabs)');
     } catch (error: any) {
+      if (error instanceof EmailUnverifiedError && error.userId) {
+        // Email non ancora verificata: si va al passo del codice (il server ne ha appena mandato uno nuovo)
+        router.push({ pathname: '/(auth)/register', params: { verify: error.userId } });
+        return;
+      }
       notify(tt('Errore'), error.message || tt('Login fallito'));
     } finally {
       setIsLoading(false);
@@ -61,57 +73,39 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
-    // Platform-specific redirect URL handling for OAuth
-    let redirectUrl: string;
-    if (Platform.OS === 'web') {
-      // On web, use the current origin for proper OAuth callback
-      redirectUrl = window.location.origin;
-    } else {
-      // On native (iOS/Android), use deep linking
-      redirectUrl = Linking.createURL('/');
-    }
-    
-    logger.debug('Google Login - Platform:', Platform.OS, 'Redirect URL:', redirectUrl);
-    const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
-    
-    // Sul web si accede nella stessa scheda (niente finestra a parte): Google rimanda qui con l'esito.
-    if (Platform.OS === 'web') {
-      setIsLoading(true);
-      window.location.assign(authUrl);
+    if (!isGoogleLoginConfigured()) {
+      notify(tt('Errore'), tt('Accesso con Google non ancora attivo'));
       return;
     }
-
     try {
       setIsLoading(true);
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
+      // Il nonce lo dà il server: lega il token di Google a questa richiesta
+      const { nonce, enabled } = await api.getGoogleNonce();
+      if (!enabled) {
+        notify(tt('Errore'), tt('Accesso con Google non ancora attivo'));
+        setIsLoading(false);
+        return;
+      }
+      rememberNonce(nonce);
+
+      // Sul web si accede nella stessa scheda (niente finestra a parte): Google rimanda qui con l'ID token.
+      if (Platform.OS === 'web') {
+        window.location.assign(buildGoogleAuthUrl(window.location.origin, nonce));
+        return;
+      }
+
+      // Sul telefono Google ritorna alla pagina del sito, che riapre l'app con il token
+      const appUrl = Linking.createURL('/');
+      const result = await WebBrowser.openAuthSessionAsync(buildGoogleAuthUrl(GOOGLE_NATIVE_CALLBACK, nonce), appUrl);
       logger.debug('Google Login - Result:', result.type);
-      
       if (result.type === 'success' && result.url) {
-        // Extract session_id from URL fragment
-        const url = result.url;
-        logger.debug('Google Login - Callback URL:', url);
-        const hashIndex = url.indexOf('#');
-        if (hashIndex !== -1) {
-          const fragment = url.substring(hashIndex + 1);
-          const params = new URLSearchParams(fragment);
-          const sessionId = params.get('session_id');
-          
-          if (sessionId) {
-            logger.debug('Google Login - Session ID found, exchanging...');
-            await exchangeSessionId(sessionId);
-            router.replace('/(tabs)');
-          } else {
-            logger.debug('Google Login - No session_id in fragment');
-            notify(tt('Errore'), tt('Sessione non trovata nella risposta'));
-          }
+        const idToken = readIdTokenFromUrl(result.url);
+        if (idToken) {
+          await loginWithGoogleToken(idToken);
+          router.replace('/(tabs)');
         } else {
-          logger.debug('Google Login - No hash fragment in URL');
           notify(tt('Errore'), tt('Risposta non valida dal server di autenticazione'));
         }
-      } else if (result.type === 'cancel') {
-        logger.debug('Google Login - Cancelled by user');
-      } else {
-        logger.debug('Google Login - Unexpected result type:', result.type);
       }
     } catch (error: any) {
       console.error('Google Login Error:', error);

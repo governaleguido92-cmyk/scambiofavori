@@ -85,7 +85,7 @@ async def send_sms(to: str, body: str) -> bool:
     sender = os.environ.get("TWILIO_FROM")
     messaging_service = os.environ.get("TWILIO_MESSAGING_SERVICE_SID")
     if not (account_sid and auth_token and (sender or messaging_service)):
-        logger.info("[SMS MOCK] to=%s body=%s", to, body)
+        logger.info("[SMS MOCK] SMS non inviato (Twilio non configurato)")
         return False
 
     payload = {"To": to, "Body": body}

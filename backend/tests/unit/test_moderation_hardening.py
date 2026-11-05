@@ -6,7 +6,7 @@ import pytest
 
 import core
 import moderation_notify
-from conftest import auth, make_favor, make_user
+from conftest import auth, google_login, make_favor, make_user
 
 BASE = "/api/admin/moderation"
 NOW = datetime.now(timezone.utc)
@@ -17,24 +17,6 @@ def moderators(monkeypatch):
     monkeypatch.setenv("MODERATOR_EMAILS", "guido@example.com")
 
 
-def google(monkeypatch, email, session_token):
-    import httpx
-
-    class FakeResp:
-        status_code = 200
-
-        def json(self):
-            return {"email": email, "name": "Guido", "picture": None, "session_token": session_token}
-
-    original = httpx.AsyncClient.get
-
-    async def fake_get(self, url, *a, **k):
-        # solo la chiamata al servizio di accesso è finta: le richieste del test passano normalmente
-        return FakeResp() if "oauth" in str(url) else await original(self, url, *a, **k)
-
-    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
-
-
 # ---------- HIGH: la sessione dell'impostore non sopravvive all'accesso con Google del vero moderatore ----------
 
 async def test_attacker_session_dies_when_the_real_moderator_signs_in_with_google(client, app_db, moderators, monkeypatch):
@@ -42,23 +24,32 @@ async def test_attacker_session_dies_when_the_real_moderator_signs_in_with_googl
     attacker_jwt = {"Authorization": f"Bearer {core.create_jwt_token('guido')}"}
     assert (await client.get(f"{BASE}/me", headers=attacker_jwt)).status_code == 200  # prima vale
 
-    google(monkeypatch, "guido@example.com", "sessione-google-vera")
-    assert (await client.post("/api/auth/session", json={"session_id": "x"})).status_code == 200
+    login = await google_login(client, monkeypatch, "guido@example.com")
+    assert login.status_code == 200
     client.cookies.clear()  # il cookie del vero moderatore non deve aiutare l'impostore
 
     assert (await client.get(f"{BASE}/me", headers=attacker_jwt)).status_code == 401
     assert (await client.get(f"{BASE}/reports", headers=attacker_jwt)).status_code == 401
-    real = {"Authorization": "Bearer sessione-google-vera"}
+    real = {"Authorization": f"Bearer {login.json()['token']}"}
     assert (await client.get(f"{BASE}/me", headers=real)).json() == {"moderator": True}
 
 
-async def test_sessions_of_normal_users_survive_google_login(client, app_db, moderators, monkeypatch):
-    await app_db.users.insert_one(make_user("ann", email="ann@example.com", email_verified=False, password_hash="hash-ann"))
+async def test_sessions_of_verified_users_survive_google_login(client, app_db, moderators, monkeypatch):
+    await app_db.users.insert_one(make_user("ann", email="ann@example.com", email_verified=True, password_hash="hash-ann"))
     ann_jwt = {"Authorization": f"Bearer {core.create_jwt_token('ann')}"}
-    google(monkeypatch, "ann@example.com", "sessione-ann")
-    await client.post("/api/auth/session", json={"session_id": "x"})
+    await google_login(client, monkeypatch, "ann@example.com", "Ann")
     client.cookies.clear()
     assert (await client.get(f"{BASE}/me", headers=ann_jwt)).status_code == 200
+
+
+async def test_unverified_account_loses_password_and_sessions_on_google_login(client, app_db, moderators, monkeypatch):
+    """Chi si registra con l'email di un altro senza verificarla non resta dentro quando il vero proprietario entra con Google."""
+    await app_db.users.insert_one(make_user("bob", email="bob@example.com", email_verified=False, password_hash="hash-impostore"))
+    attacker_jwt = {"Authorization": f"Bearer {core.create_jwt_token('bob')}"}
+    await google_login(client, monkeypatch, "bob@example.com", "Bob")
+    client.cookies.clear()
+    assert (await client.get(f"{BASE}/me", headers=attacker_jwt)).status_code == 401
+    assert "password_hash" not in await app_db.users.find_one({"user_id": "bob"})
 
 
 # ---------- MEDIO: solo account veri fanno nascondere i contenuti ----------

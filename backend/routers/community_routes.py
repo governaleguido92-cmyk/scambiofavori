@@ -95,23 +95,30 @@ async def create_donation(donation_data: DonationCreate, current_user: User = De
         )
     
     recipient_name = None
-    
+
     if donation_data.recipient_id:
+        if donation_data.recipient_id == current_user.user_id:
+            raise HTTPException(status_code=400, detail="Non puoi donare a te stesso")
         recipient = await db.users.find_one({"user_id": donation_data.recipient_id}, {"_id": 0})
         if not recipient:
             raise HTTPException(status_code=404, detail="Destinatario non trovato")
         recipient_name = recipient["name"]
-        
+
+    # Addebito atomico: il saldo si controlla nella stessa operazione che lo scala,
+    # così richieste parallele non possono spendere due volte gli stessi Granelli.
+    debited = await db.users.update_one(
+        {"user_id": current_user.user_id, "granelli": {"$gte": donation_data.amount}},
+        {"$inc": {"granelli": -donation_data.amount, "total_donations": donation_data.amount}}
+    )
+    if debited.modified_count == 0:
+        raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
+
+    if donation_data.recipient_id:
         await db.users.update_one(
             {"user_id": donation_data.recipient_id},
             {"$inc": {"granelli": donation_data.amount}}
         )
-    
-    await db.users.update_one(
-        {"user_id": current_user.user_id},
-        {"$inc": {"granelli": -donation_data.amount, "total_donations": donation_data.amount}}
-    )
-    
+
     donation_id = f"donation_{uuid.uuid4().hex[:12]}"
     
     donation_doc = {
@@ -203,13 +210,16 @@ async def request_debt_recovery(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="Fondo Solidarietà insufficiente. Riprova più tardi.")
     
     # Transfer from solidarity fund to user
-    await db.users.update_one(
-        {"user_id": current_user.user_id},
+    # Richiesta atomica: una sola richiesta attiva, anche con chiamate parallele
+    claimed = await db.users.update_one(
+        {"user_id": current_user.user_id, "granelli": {"$lt": 0}, "in_debt_recovery": {"$ne": True}},
         {
             "$inc": {"granelli": recovery_amount},
             "$set": {"in_debt_recovery": True, "debt_start_date": None}
         }
     )
+    if claimed.modified_count == 0:
+        raise HTTPException(status_code=400, detail="Hai già una richiesta di recupero attiva")
     
     # Record the gift from community
     gift_doc = {

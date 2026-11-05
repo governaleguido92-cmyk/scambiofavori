@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 import moderation_notify
-from conftest import auth, make_favor, make_user
+from conftest import auth, google_login, make_favor, make_user
 
 BASE = "/api/admin/moderation"
 TOKEN = "codice-moderazione-molto-lungo-123"
@@ -244,7 +244,7 @@ async def test_safety_alert_emails_the_owner(client, app_db, emails):
 
 
 async def test_second_alert_reports_that_the_account_went_on_hold(client, app_db, emails):
-    await app_db.users.insert_many([make_user("a"), make_user("b"), make_user("bad")])
+    await app_db.users.insert_many([make_user("a", email_verified=True), make_user("b", email_verified=True), make_user("bad")])
     await app_db.favors.insert_many([
         make_favor("f1", creator_id="a", creator_name="a", accepted_by="bad", status="accepted"),
         make_favor("f2", creator_id="b", creator_name="b", accepted_by="bad", status="accepted"),
@@ -335,57 +335,19 @@ async def test_actions_by_a_moderator_are_logged_with_who_did_them(client, app_d
 
 
 async def test_google_login_verifies_the_email(client, app_db, monkeypatch):
-    import httpx
-
-    class FakeResp:
-        status_code = 200
-
-        def json(self):
-            return {"email": "nuovo@example.com", "name": "Nuovo", "picture": None, "session_token": "tok1"}
-
-    async def fake_get(self, *a, **k):
-        return FakeResp()
-
-    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
-    assert (await client.post("/api/auth/session", json={"session_id": "x"})).status_code == 200
+    assert (await google_login(client, monkeypatch, "nuovo@example.com", "Nuovo")).status_code == 200
     assert (await app_db.users.find_one({"email": "nuovo@example.com"}))["email_verified"] is True
 
 
 async def test_google_login_removes_a_password_planted_on_a_moderator_email(client, app_db, moderators, monkeypatch):
     """Chi si è registrato con l'email del moderatore prima di lui non deve restare con una password valida."""
-    import httpx
-
     await app_db.users.insert_one(make_user("guido", email="guido@example.com", email_verified=False, password_hash="hash-di-un-estraneo"))
-
-    class FakeResp:
-        status_code = 200
-
-        def json(self):
-            return {"email": "guido@example.com", "name": "Guido", "picture": None, "session_token": "tok2"}
-
-    async def fake_get(self, *a, **k):
-        return FakeResp()
-
-    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
-    assert (await client.post("/api/auth/session", json={"session_id": "x"})).status_code == 200
+    assert (await google_login(client, monkeypatch, "guido@example.com")).status_code == 200
     stored = await app_db.users.find_one({"user_id": "guido"})
     assert stored["email_verified"] is True and "password_hash" not in stored
 
 
 async def test_google_login_keeps_passwords_of_normal_users(client, app_db, moderators, monkeypatch):
-    import httpx
-
-    await app_db.users.insert_one(make_user("ann", email="ann@example.com", email_verified=False, password_hash="hash-di-ann"))
-
-    class FakeResp:
-        status_code = 200
-
-        def json(self):
-            return {"email": "ann@example.com", "name": "Ann", "picture": None, "session_token": "tok3"}
-
-    async def fake_get(self, *a, **k):
-        return FakeResp()
-
-    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
-    await client.post("/api/auth/session", json={"session_id": "x"})
+    await app_db.users.insert_one(make_user("ann", email="ann@example.com", email_verified=True, password_hash="hash-di-ann"))
+    await google_login(client, monkeypatch, "ann@example.com", "Ann")
     assert (await app_db.users.find_one({"user_id": "ann"}))["password_hash"] == "hash-di-ann"

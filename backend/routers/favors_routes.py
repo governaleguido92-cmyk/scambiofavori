@@ -1,5 +1,5 @@
 """HTTP routes: favors."""
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from core import *  # noqa: F401,F403
 import trust
 import places
@@ -208,6 +208,10 @@ async def get_favors(
             {"expires_at": {"$exists": False}}  # Compatibilità con dati esistenti
         ]
     
+    else:
+        # Favori già presi, conclusi o nascosti li vedono solo le persone coinvolte
+        query["$or"] = [{"creator_id": current_user.user_id}, {"accepted_by": current_user.user_id}]
+
     if type:
         query["type"] = type
     if category:
@@ -258,6 +262,9 @@ async def get_favors(
     
     result = []
     for favor in favors:
+        # L'indirizzo scritto a mano lo vedono solo le persone coinvolte
+        if current_user.user_id not in (favor.get("creator_id"), favor.get("accepted_by")):
+            favor["address"] = None
         # Imposta valori di default per campi nuovi
         favor.setdefault("validity_days", 3)
         favor.setdefault("expires_at", None)
@@ -363,8 +370,11 @@ async def get_favor(favor_id: str, current_user: User = Depends(get_current_user
     # La posizione esatta la vedono solo chi ha creato il favore e chi lo ha accettato
     is_involved = favor_doc["creator_id"] == current_user.user_id or favor_doc.get("accepted_by") == current_user.user_id
     if not is_involved:
+        if favor_doc.get("status") != "active":
+            raise HTTPException(status_code=404, detail="Favore non trovato")
         favor_doc["exact_latitude"] = None
         favor_doc["exact_longitude"] = None
+        favor_doc["address"] = None
 
     return Favor(**favor_doc)
 
@@ -585,6 +595,24 @@ async def verify_and_complete_qr(
 
     if not favor.qr_code or not secrets.compare_digest(scanned_code, favor.qr_code):
         raise HTTPException(status_code=400, detail="QR code non valido")
+
+    # Chi scansiona deve essere sul posto: il QR girato a distanza tra due account non basta più
+    has_place = favor.exact_latitude is not None and favor.exact_longitude is not None
+    if has_place:
+        if data.latitude is None or data.longitude is None:
+            if QR_LOCATION_REQUIRED:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Per completare serve la tua posizione: i favori si fanno di persona. Attiva la posizione e riprova.",
+                )
+        else:
+            distance_m = calculate_distance(data.latitude, data.longitude, favor.exact_latitude, favor.exact_longitude) * 1000
+            tolerance = min(max(data.accuracy_meters or 0, 0), MAX_GPS_TOLERANCE_METERS)
+            if distance_m > MAX_EXCHANGE_DISTANCE_METERS + tolerance:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Siete troppo lontani per completare ({int(distance_m)} m). Avvicinatevi entro {MAX_EXCHANGE_DISTANCE_METERS} m.",
+                )
     
     # ========================
     # ANTI-FRAUD: Daily Hours Limit Check
@@ -803,20 +831,26 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
     return Review(**review_doc)
 
 @api_router.get("/thanks", response_model=List[ThanksEntry])
-async def get_thanks_board(limit: int = 20):
-    """Get Bacheca dei Grazie (public thanks board)"""
+async def get_thanks_board(limit: int = Query(20, ge=1, le=50), current_user: User = Depends(get_current_user)):
+    """Bacheca dei Grazie (solo per chi ha fatto il login)"""
     thanks_cursor = db.thanks.find({}, {"_id": 0}).sort("created_at", -1).limit(limit)
     thanks = await thanks_cursor.to_list(limit)
     return [ThanksEntry(**t) for t in thanks]
 
 @api_router.get("/reviews/user/{user_id}", response_model=List[Review])
 async def get_user_reviews(user_id: str, current_user: User = Depends(get_current_user)):
+    # Commenti e tag privati: li legge solo la persona recensita. Gli altri vedono il profilo pubblico.
+    if user_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Non puoi vedere queste recensioni")
     reviews_cursor = db.reviews.find({"reviewed_id": user_id}, {"_id": 0}).sort("created_at", -1)
     reviews = await reviews_cursor.to_list(100)
     return [Review(**review) for review in reviews]
 
 @api_router.get("/reviews/favor/{favor_id}", response_model=List[Review])
 async def get_favor_reviews(favor_id: str, current_user: User = Depends(get_current_user)):
+    favor_doc = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0, "creator_id": 1, "accepted_by": 1})
+    if not favor_doc or current_user.user_id not in (favor_doc.get("creator_id"), favor_doc.get("accepted_by")):
+        raise HTTPException(status_code=404, detail="Favore non trovato")
     reviews_cursor = db.reviews.find({"favor_id": favor_id}, {"_id": 0})
     reviews = await reviews_cursor.to_list(10)
     return [Review(**review) for review in reviews]
@@ -1187,7 +1221,12 @@ async def report_user_in_chat(report: ReportCreate, current_user: User = Depends
     # Cannot report yourself
     if report.reported_user_id == current_user.user_id:
         raise HTTPException(status_code=400, detail="Non puoi segnalare te stesso")
-    
+
+    # Si può segnalare solo l'altra persona di questo favore, mai un utente qualsiasi
+    counterpart = favor.get("accepted_by") if favor["creator_id"] == current_user.user_id else favor["creator_id"]
+    if not counterpart or report.reported_user_id != counterpart:
+        raise HTTPException(status_code=400, detail="Puoi segnalare solo l'altra persona di questo favore")
+
     # Check if already reported this user for this favor
     existing = await db.reports.find_one({
         "favor_id": report.favor_id,
@@ -1211,9 +1250,11 @@ async def report_user_in_chat(report: ReportCreate, current_user: User = Depends
     await db.reports.insert_one(report_doc)
     
     # Check for shadow ban threshold
-    total_reports = await db.reports.count_documents({
-        "reported_user_id": report.reported_user_id
+    reporter_ids = await db.reports.distinct("reporter_id", {
+        "reported_user_id": report.reported_user_id,
+        "status": {"$ne": "dismissed"},
     })
+    total_reports = await trust.trusted_reporter_count(reporter_ids)
     
     # Auto-confirm if user has 5+ reports (shadow ban threshold)
     if total_reports >= 5:
@@ -1262,7 +1303,9 @@ async def get_chat_status(favor_id: str, current_user: User = Depends(get_curren
 @api_router.get("/messages/{favor_id}/unread")
 async def get_unread_count(favor_id: str, current_user: User = Depends(get_current_user)):
     """Get unread message count for a favor"""
-    # Simple implementation - count messages not from current user
+    favor_doc = await db.favors.find_one({"favor_id": favor_id}, {"_id": 0, "creator_id": 1, "accepted_by": 1})
+    if not favor_doc or current_user.user_id not in (favor_doc.get("creator_id"), favor_doc.get("accepted_by")):
+        raise HTTPException(status_code=404, detail="Favore non trovato")
     count = await db.messages.count_documents({
         "favor_id": favor_id,
         "sender_id": {"$ne": current_user.user_id},

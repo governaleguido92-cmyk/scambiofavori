@@ -115,7 +115,7 @@ export default function LegalScreen() {
             <Text style={styles.articleTitle}>1. Dati Raccolti</Text>
             <Text style={styles.articleText}>
               Raccogliamo i seguenti dati:{'\n'}
-              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata) e data di nascita, usata solo per verificare che tu sia maggiorenne (conserviamo soltanto l&apos;anno di nascita, che nessun altro vede); con l&apos;accesso tramite Google o Apple, nome ed email forniti dal servizio (l&apos;accesso con Google passa dal servizio di autenticazione di Emergent){'\n'}
+              • <Text style={styles.bold}>Dati di registrazione:</Text> email, nome, password (conservata solo cifrata) e data di nascita, usata solo per verificare che tu sia maggiorenne (conserviamo soltanto l&apos;anno di nascita, che nessun altro vede); con l&apos;accesso tramite Google o Apple, nome ed email forniti dal servizio{'\n'}
               • <Text style={styles.bold}>Dati di localizzazione:</Text> posizione del dispositivo (solo su consenso); chi crea un favore lo vede nel punto esatto, gli altri solo in una posizione approssimata; per completare un favore non serve: ci si incontra di persona e chi riceve mostra un codice QR che chi aiuta scansiona con la fotocamera (l&apos;immagine non viene salvata){'\n'}
               • <Text style={styles.bold}>Profilo:</Text> foto profilo (se la carichi), competenze, punteggi e badge{'\n'}
               • <Text style={styles.bold}>Profilo pubblico:</Text> gli altri utenti possono aprire il tuo profilo per conoscerti: nome, foto, la presentazione «Chi sono» che scrivi tu (max 200 caratteri, puoi cambiarla o toglierla), titolo, mese di iscrizione, telefono e identità verificati, garanzie ricevute (solo il numero), favori dati e ricevuti, voto medio, puntualità, competenze, badge e le ultime 5 recensioni con il nome di chi le ha scritte. Mai email, telefono, data di nascita, posizione, saldo o segnalazioni. Chi blocchi non lo vede{'\n'}
@@ -202,7 +202,7 @@ export default function LegalScreen() {
             <Text style={styles.articleText}>
               Non vendiamo i tuoi dati. Usiamo fornitori che li trattano per nostro conto: Render (hosting), 
               MongoDB Atlas (database), Cloudflare R2 (foto profilo), Resend (email di verifica), Stripe 
-              (pagamenti), Twilio (SMS con il codice di verifica del telefono), Expo (notifiche push), Emergent (autenticazione per l&apos;accesso con Google) e, se li scegli, Google o Apple per l&apos;accesso. Alcuni possono 
+              (pagamenti), Twilio (SMS con il codice di verifica del telefono), Expo (notifiche push) e, se li scegli, Google o Apple per l&apos;accesso. Alcuni possono 
               trattare dati anche fuori dall&apos;Unione Europea, con le garanzie previste dal GDPR. L&apos;app non 
               contiene pubblicità.
             </Text>

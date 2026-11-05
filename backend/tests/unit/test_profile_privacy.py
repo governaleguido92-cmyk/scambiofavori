@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from conftest import auth, make_user
+from conftest import auth, make_favor, make_user
 
 
 def review(review_id="r1", favor_id="favor_1", reviewed_id="target", **extra):
@@ -76,19 +76,24 @@ async def test_public_profile_of_someone_else_hides_private_data(client, app_db)
     assert response.json()["name"] == "target"
 
 
-async def test_reviews_of_a_user_are_readable_when_logged_in(client, app_db):
+async def test_reviews_of_a_user_are_readable_only_by_that_user(client, app_db):
     await seed(app_db)
 
-    response = await client.get("/api/reviews/user/target", headers=auth("me"))
+    own = await client.get("/api/reviews/user/target", headers=auth("target"))
+    other = await client.get("/api/reviews/user/target", headers=auth("me"))
 
-    assert response.status_code == 200
-    assert [r["review_id"] for r in response.json()] == ["r1"]
+    assert own.status_code == 200
+    assert [r["review_id"] for r in own.json()] == ["r1"]
+    assert other.status_code == 403
 
 
-async def test_reviews_of_a_favor_are_readable_when_logged_in(client, app_db):
+async def test_reviews_of_a_favor_are_readable_only_by_its_participants(client, app_db):
     await seed(app_db)
+    await app_db.favors.insert_one(make_favor("favor_1", creator_id="me", creator_name="me", accepted_by="target"))
 
-    response = await client.get("/api/reviews/favor/favor_1", headers=auth("me"))
+    participant = await client.get("/api/reviews/favor/favor_1", headers=auth("me"))
+    stranger = await client.get("/api/reviews/favor/favor_1", headers=auth("third"))
 
-    assert response.status_code == 200
-    assert len(response.json()) == 1
+    assert participant.status_code == 200
+    assert len(participant.json()) == 1
+    assert stranger.status_code == 404

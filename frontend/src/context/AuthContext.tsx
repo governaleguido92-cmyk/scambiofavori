@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getStoredToken, setStoredToken, clearStoredToken } from '../utils/tokenStorage';
 import { api, User, CURRENCY_NAME } from '../services/api';
 import { logger } from '../utils/logger';
+import { forgetNonce, recallNonce } from '../utils/googleAuth';
 
 interface AuthContextType {
   user: User | null;
@@ -13,7 +14,7 @@ interface AuthContextType {
   showOnboarding: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, referralCode?: string, birthDate?: string) => Promise<{ requiresVerification?: boolean; userId?: string }>;
-  exchangeSessionId: (sessionId: string) => Promise<void>;
+  loginWithGoogleToken: (idToken: string) => Promise<void>;
   loginWithToken: (token: string, user: User) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -129,8 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return {};
   };
 
-  const exchangeSessionId = async (sessionId: string) => {
-    const response = await api.exchangeSession(sessionId);
+  const loginWithGoogleToken = async (idToken: string) => {
+    const nonce = recallNonce();
+    forgetNonce();
+    if (!nonce) throw new Error('Accesso con Google scaduto: riprova');
+    const response = await api.googleLogin(idToken, nonce);
     if (!response.token || !response.user) throw new Error('Invalid session response');
     await saveToken(response.token);
     setUser(response.user);
@@ -220,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         showOnboarding,
         login,
         register,
-        exchangeSessionId,
+        loginWithGoogleToken,
         loginWithToken,
         logout,
         refreshUser,

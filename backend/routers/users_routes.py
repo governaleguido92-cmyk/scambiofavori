@@ -54,11 +54,14 @@ async def report_content(report: GeneralReportCreate, current_user: User = Depen
     await db.general_reports.insert_one(report_doc)
     
     # Check for auto-moderation threshold (5+ reports)
-    total_reports = await db.general_reports.count_documents({
+    # Contano solo segnalatori distinti con account vero (email o telefono verificati):
+    # cinque account usa e getta non devono bastare per nascondere o silenziare qualcuno.
+    reporter_ids = await db.general_reports.distinct("reporter_id", {
         "target_id": report.target_id,
         "report_type": report.report_type
     })
-    
+    total_reports = await trust.trusted_reporter_count(reporter_ids)
+
     if total_reports >= 5:
         if report.report_type == "favor":
             # Hide the favor
@@ -302,7 +305,9 @@ async def upload_profile_picture(
 ):
     """Upload profile picture"""
     
-    content = await file.read()
+    # Si legge al massimo un byte oltre il limite: un file enorme non finisce tutto in memoria
+    from storage import MAX_IMAGE_BYTES
+    content = await file.read(MAX_IMAGE_BYTES + 1)
     picture_url = await save_profile_picture(current_user.user_id, content, UPLOAD_DIR)
     
     # Update user in database

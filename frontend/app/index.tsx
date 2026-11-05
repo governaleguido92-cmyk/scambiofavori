@@ -3,32 +3,31 @@ import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/context/AuthContext';
-import * as Linking from 'expo-linking';
 import { logger } from '../src/utils/logger';
 import { tt } from '../src/i18n/tt';
 import { notify } from '../src/utils/notify';
 
-/** Sul web Google rimanda alla stessa scheda con #session_id=... nell'indirizzo. */
-function readWebSessionId(): string | null {
+/** Sul web Google rimanda alla stessa scheda con #id_token=... nell'indirizzo. */
+function readWebIdToken(): string | null {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
-  return new URLSearchParams(window.location.hash.replace(/^#/, '')).get('session_id');
+  return new URLSearchParams(window.location.hash.replace(/^#/, '')).get('id_token');
 }
 
 export default function Index() {
-  const { user, loading, exchangeSessionId } = useAuth();
+  const { user, loading, loginWithGoogleToken } = useAuth();
   const router = useRouter();
-  const webSessionId = useRef(readWebSessionId()).current;
-  const [processingAuth, setProcessingAuth] = useState(Boolean(webSessionId));
+  const webIdToken = useRef(readWebIdToken()).current;
+  const [processingAuth, setProcessingAuth] = useState(Boolean(webIdToken));
   const hasNavigated = useRef(false);
   const webExchangeStarted = useRef(false);
 
   useEffect(() => {
     const handleDeepLink = async () => {
-      if (webSessionId) {
+      if (webIdToken) {
         if (webExchangeStarted.current) return;
         webExchangeStarted.current = true;
         try {
-          await exchangeSessionId(webSessionId);
+          await loginWithGoogleToken(webIdToken);
         } catch (error) {
           logger.debug('Web session exchange error:', error);
           const reason = error instanceof Error ? error.message : '';
@@ -38,20 +37,6 @@ export default function Index() {
           setProcessingAuth(false);
         }
         return;
-      }
-      try {
-        const url = await Linking.getInitialURL();
-        if (url) {
-          const { queryParams } = Linking.parse(url);
-          const sessionId = queryParams?.session_id as string;
-          if (sessionId && !processingAuth) {
-            setProcessingAuth(true);
-            await exchangeSessionId(sessionId);
-            setProcessingAuth(false);
-          }
-        }
-      } catch (error) {
-        logger.debug('Deep link error:', error);
       }
     };
 
