@@ -46,7 +46,7 @@ export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange })
       <Text style={styles.typeHintText}>
         {value === 'request'
           ? tt('Aiuta un vicino (es. portare la spesa) e guadagni Granelli')
-          : tt('Chiedi una mano a chi ha tempo (es. un passaggio) con i tuoi Granelli')}
+          : tt('Chiedi una mano a chi ha tempo (es. un passaggio): spendi i tuoi Granelli')}
       </Text>
     </View>
   </>

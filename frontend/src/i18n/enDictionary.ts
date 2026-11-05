@@ -677,7 +677,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Pannello di moderazione': 'Moderation panel',
   'Segnalazioni da gestire e account in revisione': 'Reports to handle and accounts under review',
   'Aiuta un vicino (es. portare la spesa) e guadagni Granelli': 'Help a neighbor (e.g. carrying groceries) and earn Granelli',
-  'Chiedi una mano a chi ha tempo (es. un passaggio) con i tuoi Granelli': 'Ask for a hand from someone with time (e.g. a ride) using your Granelli',
+  'Chiedi una mano a chi ha tempo (es. un passaggio): spendi i tuoi Granelli': 'Ask for a hand from someone with time (e.g. a ride): spend your Granelli',
   'Dono': 'I give',
   'Ricevo': 'I receive',
   'Ricevi': 'Receive',

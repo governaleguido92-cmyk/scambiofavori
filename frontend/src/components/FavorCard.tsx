@@ -1,7 +1,7 @@
 import { GranelloIcon } from './GranelloIcon';
 import { useRouter } from 'expo-router';
 import { favorKindLabel } from '../utils/favorKind';
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,6 +35,9 @@ interface FavorCardProps {
 }
 
 /** Scheda di un favore con banda colorata per categoria. Usata nella home (griglia) e nella mappa (fila scorrevole). */
+/** Larghezza minima della banda colorata per scrivere «Dona un favore» senza toccare il badge dei Granelli. */
+const WIDE_BAND_PX = 300;
+
 export const FavorCard: React.FC<FavorCardProps> = ({
   item, currentUserId, onPress, onReport, style, highlighted, statusLabel, statusColor, roleText, children,
 }) => {
@@ -45,6 +48,9 @@ export const FavorCard: React.FC<FavorCardProps> = ({
   const isOffer = item.type === 'offer';
   const isOwn = !!currentUserId && item.creator_id === currentUserId && !roleText;
   const kindLabel = tt(favorKindLabel(item.type, isOwn));
+  // Nelle schede larghe l'etichetta dice per esteso «Dona un favore»; in quelle strette (telefono, due colonne) resta «Dona».
+  const [bandWidth, setBandWidth] = useState(0);
+  const kindPillLabel = bandWidth >= WIDE_BAND_PX ? tt(`${favorKindLabel(item.type, isOwn)} un favore`) : kindLabel;
   // Dono: la richiesta di un altro che puoi soddisfare, o un'offerta tua. Ricevo: l'offerta di un altro, o una richiesta tua.
   const isGive = isOwn ? isOffer : !isOffer;
 
@@ -65,15 +71,18 @@ export const FavorCard: React.FC<FavorCardProps> = ({
       data-testid={`favor-card-${item.favor_id}`}
     >
       {/* Banda colorata per tipo: arancione = dona, verde oliva = ricevi (l'emoji dice la categoria) */}
-      <View style={[styles.gridBand, { backgroundColor: isGive ? colors.accent : colors.lime }]}>
+      <View
+        style={[styles.gridBand, { backgroundColor: isGive ? colors.accent : colors.lime }]}
+        onLayout={(event) => setBandWidth(event.nativeEvent.layout.width)}
+      >
         <View style={styles.gridBandCircleA} />
         <View style={styles.gridBandCircleB} />
         <Text style={styles.gridBandEmoji}>{visual.emoji}</Text>
         <View style={styles.gridKindPill}>
-          <Text style={styles.gridKindText}>{kindLabel}</Text>
+          <Text style={styles.gridKindText}>{kindPillLabel}</Text>
         </View>
         <View style={styles.gridGranelliPill}>
-          <Text style={styles.gridGranelliText}><GranelloIcon size={14} /> {item.granelli_cost}</Text>
+          <Text style={styles.gridGranelliText}>{isGive ? tt('Guadagna') : tt('Spendi')} <GranelloIcon size={14} /> {item.granelli_cost}</Text>
         </View>
         {statusLabel && (
           <View style={[styles.gridStatusPill, { backgroundColor: statusColor ?? colors.primary }]}>
