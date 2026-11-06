@@ -16,6 +16,7 @@ import { logger } from '../src/utils/logger';
 import { notify } from '../src/utils/notify';
 import { tt } from '../src/i18n/tt';
 import { goBackOrHome } from '../src/utils/navigation';
+import { TEXT_SIZES, setTextSize, useTextSize } from '../src/utils/textScale';
 
 const NOTIFICATION_OPTIONS = [
   { key: 'favor_accepted', label: 'Favore accettato', icon: 'checkmark-circle', desc: 'Quando qualcuno accetta il tuo favore' },
@@ -30,6 +31,7 @@ export default function SettingsScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const textSize = useTextSize();
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>({
     favor_accepted: true, favor_completed: true, new_message: true, new_review: true, skill_match: true,
   });
@@ -116,6 +118,27 @@ export default function SettingsScreen() {
                 onPress={() => changeLanguage(lang.code)}
               >
                 <Text style={styles.languageBtnText}>{lang.flag} {lang.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.languageSection}>
+          <View style={styles.languageLabelRow}>
+            <Ionicons name="text" size={20} color="#D4D6CC" />
+            <Text style={styles.languageLabel}>{tt('Dimensione del testo')}</Text>
+          </View>
+          <View style={styles.languageButtons}>
+            {TEXT_SIZES.map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                style={[styles.languageBtn, textSize === option.key && styles.languageBtnActive]}
+                onPress={() => setTextSize(option.key)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: textSize === option.key }}
+                data-testid={`text-size-${option.key}`}
+              >
+                <Text style={styles.languageBtnText}>{tt(option.label)}</Text>
               </TouchableOpacity>
             ))}
           </View>

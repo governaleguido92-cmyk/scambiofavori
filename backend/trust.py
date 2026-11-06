@@ -6,6 +6,7 @@ Il livello è sempre calcolato dal server, mai dal client:
   2  almeno 3 favori completati e valutazione media non bassa
   3  livello 2 + documento verificato
 """
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -15,7 +16,7 @@ from core import PHONE_VERIFICATION_REQUIRED, db
 
 FAVORS_FOR_LEVEL_TWO = 3
 MIN_RATING_FOR_LEVEL_TWO = 3.5
-NEW_USER_MAX_OPEN_FAVORS = 3  # favori che il nuovo utente chiede, aperti insieme
+NEW_USER_MAX_OPEN_FAVORS = 5  # favori che il nuovo utente chiede, aperti insieme
 NEW_USER_MAX_ACCEPTED_FAVORS = 5  # favori che il nuovo utente sta aiutando, aperti insieme
 NEW_USER_MAX_GRANELLI_COST = 3
 PAIR_WEEKLY_LIMIT = 2
@@ -27,6 +28,7 @@ SAFETY_HOLD_ALERTS = 2
 SAFETY_WINDOW_DAYS = 90
 REMINDER_COOLDOWN_HOURS = 24
 OPEN_STATUSES = ("active", "accepted")
+RELEASE_AFTER = timedelta(days=7)  # un favore accettato e mai concluso torna libero dopo questo tempo
 
 
 def completed_favors_total(user_doc: dict) -> int:
@@ -50,6 +52,37 @@ def is_new_user(user_doc: dict) -> bool:
 
 async def user_doc_of(user_id: str) -> dict:
     return await db.users.find_one({"user_id": user_id}, {"_id": 0}) or {}
+
+
+async def release_stalled_favors(user_id: str) -> int:
+    """I favori accettati da più di 7 giorni e mai conclusi tornano disponibili (o si chiudono se sono scaduti),
+    così chi li ha accettati non resta bloccato dal limite. Avvisa entrambe le persone. Ritorna quanti ne ha liberati."""
+    now = datetime.now(timezone.utc)
+    stalled = await db.favors.find({
+        "status": "accepted", "accepted_at": {"$lte": now - RELEASE_AFTER},
+        "$or": [{"creator_id": user_id}, {"accepted_by": user_id}],
+    }, {"_id": 0}).to_list(20)
+    released = 0
+    for favor in stalled:
+        expired = favor.get("expires_at") is not None and (
+            favor["expires_at"] if favor["expires_at"].tzinfo else favor["expires_at"].replace(tzinfo=timezone.utc)) <= now
+        changes = {"status": "cancelled", "released_at": now} if expired else {"status": "active", "released_at": now}
+        done = await db.favors.update_one(
+            {"favor_id": favor["favor_id"], "status": "accepted"},
+            {"$set": changes, "$unset": {"accepted_by": "", "accepted_by_name": "", "accepted_at": "", "stalled_reminded": ""}},
+        )
+        if not done.modified_count:
+            continue
+        released += 1
+        text = ("è stato chiuso perché era scaduto" if expired
+                else "è tornato disponibile: chi l'aveva accettato non l'ha concluso entro 7 giorni")
+        for target in {favor["creator_id"], favor.get("accepted_by")} - {None}:
+            await db.notifications.insert_one({
+                "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": target, "type": "favor_released",
+                "title": "Favore liberato 🔓", "message": f"\"{favor['title']}\" {text}.",
+                "related_id": favor["favor_id"], "read": False, "created_at": now,
+            })
+    return released
 
 
 async def count_open_favors(user_id: str, role: str) -> int:
@@ -82,6 +115,7 @@ async def ensure_new_user_open_slot(user_id: str) -> None:
     """Limite sui favori che il nuovo utente CHIEDE: chi vuole aiutare non viene frenato da questo."""
     if not is_new_user(await user_doc_of(user_id)):
         return
+    await release_stalled_favors(user_id)
     if await count_open_favors(user_id, "creator_id") >= NEW_USER_MAX_OPEN_FAVORS:
         raise HTTPException(
             status_code=403,
@@ -95,6 +129,7 @@ async def ensure_new_user_can_accept(user_id: str) -> None:
     """Limite più largo sui favori che il nuovo utente sta aiutando, per fermare chi li accaparra senza presentarsi."""
     if not is_new_user(await user_doc_of(user_id)):
         return
+    await release_stalled_favors(user_id)
     if await count_open_favors(user_id, "accepted_by") >= NEW_USER_MAX_ACCEPTED_FAVORS:
         raise HTTPException(
             status_code=403,

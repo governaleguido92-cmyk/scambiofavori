@@ -13,8 +13,11 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import { initI18n } from '../src/i18n';
 import i18n from '../src/i18n';
 import { installWebAlert } from '../src/utils/webAlert';
+import { installTextScaling, loadTextSize } from '../src/utils/textScale';
 
 installWebAlert();
+installTextScaling();
+void loadTextSize();
 
 function RootLayoutNav() {
   const { showLegalModal, acceptLegal, showOnboarding, completeOnboarding, user, token } = useAuth();

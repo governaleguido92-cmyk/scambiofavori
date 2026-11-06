@@ -234,6 +234,24 @@ export default function NeighborhoodScreen() {
           </Text>
         </View>
 
+        {noAccess && (
+          <View style={styles.accessBanner} accessibilityRole="alert" data-testid="neighborhood-access-banner">
+            <Ionicons name="information-circle" size={20} color={colors.accent} />
+            <View style={styles.accessBannerBody}>
+              <Text style={styles.accessBannerTitle}>{tt('Per scrivere serve un favore attivo')}</Text>
+              <Text style={styles.accessBannerText}>{tt('Pubblica o accetta un favore: così il quartiere sa dove sei e puoi entrare in chat, avvisi ed eventi.')}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.accessBannerButton}
+              onPress={() => router.push('/create' as any)}
+              accessibilityRole="button"
+              data-testid="neighborhood-access-create"
+            >
+              <Text style={styles.accessBannerButtonText}>{tt('Pubblica')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.tabs} accessibilityRole="tablist">
           {TABS.map((key) => (
             <TouchableOpacity
@@ -361,6 +379,12 @@ const styles = StyleSheet.create({
   offApp: { flexDirection: 'row', gap: 6, alignItems: 'flex-start', marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(248,120,40,0.35)' },
   offAppText: { flex: 1, color: colors.warning, fontSize: 12, lineHeight: 16 },
   rule: { color: colors.textMuted, fontSize: 12, textAlign: 'center', paddingHorizontal: 16, paddingTop: 6 },
+  accessBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 16, marginBottom: 10, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.accent, backgroundColor: colors.backgroundCard },
+  accessBannerBody: { flex: 1, gap: 2 },
+  accessBannerTitle: { color: colors.textPrimary, fontSize: 14, fontWeight: '700' },
+  accessBannerText: { color: colors.textSecondary, fontSize: 12.5, lineHeight: 17 },
+  accessBannerButton: { backgroundColor: colors.accent, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14 },
+  accessBannerButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
   askHelp: { flexDirection: 'row', alignItems: 'center', alignSelf: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 14, marginBottom: 6, borderRadius: 999, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.backgroundCard },
   askHelpText: { color: colors.textSecondary, fontSize: 12.5, fontWeight: '600' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: 10, borderTopWidth: 1, borderTopColor: colors.backgroundLight },

@@ -65,11 +65,17 @@ async def test_new_user_cannot_create_expensive_favor(client, app_db):
     assert "nuovi" in response.json()["detail"].lower()
 
 
-async def test_new_user_cannot_have_more_than_three_open_favors(client, app_db):
+async def test_new_user_cannot_have_more_than_five_open_favors(client, app_db):
+    from trust import NEW_USER_MAX_OPEN_FAVORS
+
+    assert NEW_USER_MAX_OPEN_FAVORS == 5
     await app_db.users.insert_one(make_user("me"))
-    await app_db.favors.insert_many([_active("f1", "me"), _active("f2", "me"), _active("f3", "me")])
-    response = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
-    assert response.status_code == 403
+    await app_db.favors.insert_many([_active(f"f{i}", "me") for i in range(NEW_USER_MAX_OPEN_FAVORS - 1)])
+    allowed = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
+    assert allowed.status_code == 200, allowed.text
+    refused = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
+    assert refused.status_code == 403
+    assert "5 favori aperti" in refused.json()["detail"]
 
 
 async def test_experienced_user_has_no_new_user_limits(client, app_db):
@@ -314,4 +320,4 @@ async def test_my_trust_endpoint_shows_level_and_limits(client, app_db):
     assert body["trust_level"] == 1
     assert body["is_new_user"] is True
     assert body["favors_to_next_level"] == 3
-    assert body["max_open_favors"] == 3
+    assert body["max_open_favors"] == 5

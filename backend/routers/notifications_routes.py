@@ -1,6 +1,7 @@
 """HTTP routes: notifications."""
 from fastapi import APIRouter
 from core import *  # noqa: F401,F403
+import trust
 
 api_router = APIRouter(prefix="/api")
 
@@ -32,6 +33,7 @@ async def remind_stalled_favors(user_id: str) -> None:
 
 async def remind_expiring_favors(user_id: str) -> None:
     """Avvisa (una sola volta) chi ha un favore ancora senza risposta che scade entro 24 ore."""
+    await trust.release_stalled_favors(user_id)
     await remind_stalled_favors(user_id)
     now = datetime.now(timezone.utc)
     expiring = await db.favors.find({
