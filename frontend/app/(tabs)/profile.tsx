@@ -243,7 +243,7 @@ export default function ProfileScreen() {
         <SectionTitle>{tt('Il mio percorso')}</SectionTitle>
         {token && <TrustCard token={token} />}
         <FundProgress
-          done={(user?.total_favors_given ?? 0) + (user?.total_favors_received ?? 0)}
+          done={user?.total_favors_given ?? 0}
           unlocked={!!user?.badges?.includes('eroe_quartiere')}
         />
         {token && <ProfileCompletionBar token={token} refreshKey={completionKey} onItemPress={(itemId) => itemId === 'skills' && openSkills()} />}
