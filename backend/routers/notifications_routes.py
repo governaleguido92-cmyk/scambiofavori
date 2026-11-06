@@ -5,10 +5,34 @@ from core import *  # noqa: F401,F403
 api_router = APIRouter(prefix="/api")
 
 EXPIRY_REMINDER_WINDOW = timedelta(hours=24)
+STALLED_AFTER = timedelta(hours=48)
+
+
+async def remind_stalled_favors(user_id: str) -> None:
+    """Avvisa (una sola volta a testa) chi ha un favore accettato da più di 48 ore e non ancora concluso."""
+    now = datetime.now(timezone.utc)
+    stalled = await db.favors.find({
+        "status": "accepted", "accepted_at": {"$lte": now - STALLED_AFTER},
+        "$or": [{"creator_id": user_id}, {"accepted_by": user_id}], "stalled_reminded": {"$ne": user_id},
+    }, {"_id": 0, "favor_id": 1, "title": 1, "accepted_at": 1}).to_list(20)
+    for favor in stalled:
+        claimed = await db.favors.update_one(
+            {"favor_id": favor["favor_id"], "stalled_reminded": {"$ne": user_id}}, {"$addToSet": {"stalled_reminded": user_id}})
+        if not claimed.modified_count:
+            continue
+        accepted_at = favor["accepted_at"] if favor["accepted_at"].tzinfo else favor["accepted_at"].replace(tzinfo=timezone.utc)
+        days = max(2, (now - accepted_at).days)
+        await db.notifications.insert_one({
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "favor_stalled",
+            "title": "Il favore è ancora in corso ⏳",
+            "message": f"\"{favor['title']}\" è in corso da {days} giorni: l'avete concluso? Se sì, mostrate e scansionate il QR; altrimenti scrivetevi in chat.",
+            "related_id": favor["favor_id"], "read": False, "created_at": now,
+        })
 
 
 async def remind_expiring_favors(user_id: str) -> None:
     """Avvisa (una sola volta) chi ha un favore ancora senza risposta che scade entro 24 ore."""
+    await remind_stalled_favors(user_id)
     now = datetime.now(timezone.utc)
     expiring = await db.favors.find({
         "creator_id": user_id, "status": "active", "expiry_reminded": {"$ne": True},

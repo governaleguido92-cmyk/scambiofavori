@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 export interface ToastMessage {
   id: number;
@@ -37,5 +37,11 @@ export function notify(title: string, message?: string): void {
  * L'avviso breve in alto sparisce in pochi secondi e si perde facilmente.
  */
 export function showRefusal(title: string, message: string, okLabel: string): void {
-  Alert.alert(title, message, [{ text: okLabel }]);
+  // Se il messaggio indica l'indirizzo del supporto (account in revisione) si offre di scrivere subito
+  const support = message.match(/[\w.-]+@scambiofavori\.it/);
+  const buttons = [{ text: okLabel }];
+  if (support) {
+    buttons.unshift({ text: 'Scrivi al supporto', onPress: () => { void Linking.openURL(`mailto:${support[0]}`); } } as any);
+  }
+  Alert.alert(title, message, buttons);
 }

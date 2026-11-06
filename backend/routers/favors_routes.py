@@ -1137,18 +1137,32 @@ async def send_message(msg: MessageCreate, current_user: User = Depends(get_curr
     # Determine recipient (the other participant)
     recipient_id = favor["accepted_by"] if current_user.user_id == favor["creator_id"] else favor["creator_id"]
     
-    # Create notification for the recipient
-    await db.notifications.insert_one({
-        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
-        "user_id": recipient_id,
-        "type": "new_message",
-        "title": "Nuovo messaggio 💬",
-        "message": f"{current_user.name}: {content[:50]}{'...' if len(content) > 50 else ''}",
-        "related_id": msg.favor_id,
-        "read": False,
-        "created_at": datetime.now(timezone.utc)
-    })
-    
+    # Create notification for the recipient: i messaggi non letti dello stesso favore si raggruppano in una sola voce
+    preview = f"{content[:50]}{'...' if len(content) > 50 else ''}"
+    now_utc = datetime.now(timezone.utc)
+    grouped = await db.notifications.find_one_and_update(
+        {"user_id": recipient_id, "type": "new_message", "related_id": msg.favor_id, "read": False},
+        {"$inc": {"count": 1}, "$set": {"created_at": now_utc, "last_preview": preview, "last_sender": current_user.name}},
+    )
+    if grouped:
+        total = grouped.get("count", 1) + 1
+        await db.notifications.update_one(
+            {"notification_id": grouped["notification_id"]},
+            {"$set": {"message": f"{total} nuovi messaggi da {current_user.name}. Ultimo: {preview}"}},
+        )
+    else:
+        await db.notifications.insert_one({
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+            "user_id": recipient_id,
+            "type": "new_message",
+            "title": "Nuovo messaggio 💬",
+            "message": f"{current_user.name}: {preview}",
+            "related_id": msg.favor_id,
+            "read": False,
+            "count": 1,
+            "created_at": now_utc,
+        })
+
     # Push notification for new message
     await send_push_notification(
         recipient_id,

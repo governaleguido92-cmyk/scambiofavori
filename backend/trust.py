@@ -115,8 +115,8 @@ async def ensure_pair_not_overused(user_id: str, other_id: str) -> None:
     if open_count + done_count >= PAIR_WEEKLY_LIMIT:
         raise HTTPException(
             status_code=403,
-            detail=f"Hai già fatto {PAIR_WEEKLY_LIMIT} favori con la stessa persona questa settimana. "
-                   "Aiuta anche altri vicini: riprova tra qualche giorno.",
+            detail=f"Limite raggiunto: {PAIR_WEEKLY_LIMIT} favori a settimana con la stessa persona. "
+                   "Riprova tra qualche giorno e intanto aiuta altri vicini.",
         )
 
 
