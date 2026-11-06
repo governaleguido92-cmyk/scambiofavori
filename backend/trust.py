@@ -61,7 +61,7 @@ async def ensure_not_on_hold(user_id: str) -> None:
     if (await user_doc_of(user_id)).get("safety_hold"):
         raise HTTPException(
             status_code=403,
-            detail="Il tuo account è in revisione per segnalazioni di sicurezza. Scrivi al supporto per informazioni.",
+            detail="Il tuo account è in revisione per segnalazioni di sicurezza: per ora non puoi pubblicare né accettare favori né scrivere nel quartiere. Scrivi a infoapp@scambiofavori.it, ti rispondiamo appena possibile.",
         )
 
 

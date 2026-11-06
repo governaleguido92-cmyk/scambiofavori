@@ -110,3 +110,24 @@ async def test_event_limit_message_says_when_a_slot_frees_up(client, app_db):
 
     assert response.status_code == 429
     assert "Si libera un posto dopo il" in response.json()["detail"]
+
+
+async def test_hold_message_says_what_is_blocked_and_who_to_write_to(client, app_db):
+    await app_db.users.insert_many([make_user("held", email_verified=True, safety_hold=True), make_user("owner", email_verified=True)])
+    await app_db.favors.insert_one(active_favor("qualsiasi", "owner", timedelta(days=3)))
+
+    response = await client.post("/api/favors/accept", json={"favor_id": "qualsiasi"}, headers=auth("held"))
+
+    assert response.status_code == 403
+    detail = response.json()["detail"]
+    assert "infoapp@scambiofavori.it" in detail and "pubblicare" in detail
+
+
+async def test_not_enough_granelli_message_suggests_how_to_earn_them(client, app_db, mongo_like_find_one_and_update):
+    await app_db.users.insert_many([make_user("broke", granelli=0, email_verified=True), make_user("owner", email_verified=True)])
+    await app_db.favors.insert_one({**active_favor("offer1", "owner", timedelta(days=3)), "type": "offer", "granelli_cost": 3})
+
+    response = await client.post("/api/favors/accept", json={"favor_id": "offer1"}, headers=auth("broke"))
+
+    assert response.status_code == 400
+    assert "Dona un favore" in response.json()["detail"]

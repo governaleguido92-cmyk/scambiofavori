@@ -997,6 +997,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Vicini a te': 'Near you',
   'Scade presto': 'Expiring soon',
   'Cerca un favore': 'Search a favor',
+  'In attesa da {0} g': 'Waiting for {0} d',
   'Ti serve una mano? Chiedi un favore': 'Need a hand? Ask for a favor',
   "💚 Sostieni l'app con 1 € al mese": '💚 Support the app for €1 a month',
 };
