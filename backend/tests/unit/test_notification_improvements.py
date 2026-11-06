@@ -241,3 +241,44 @@ async def test_new_helper_at_the_limit_is_freed_by_stalled_favors(client, app_db
     response = await client.post("/api/favors/accept", json={"favor_id": "new1"}, headers=auth("helper"))
 
     assert response.status_code == 200, response.text
+
+
+# ---------- la posizione mandata in chat non è una truffa ----------
+
+def test_location_link_with_long_coordinates_is_not_flagged_as_scam():
+    import core
+
+    link = "📍 La mia posizione attuale:\nhttps://maps.google.com/?q=37.930123456789012,12.330123456789012"
+    assert core.contains_scam_hint(link) is False
+
+
+def test_short_location_link_is_not_flagged():
+    import core
+
+    assert core.contains_scam_hint("https://maps.google.com/?q=37.93012,12.33012") is False
+
+
+def test_card_number_next_to_a_location_link_is_still_flagged():
+    import core
+
+    text = "https://maps.google.com/?q=37.93012,12.33012 il mio numero di carta 4111 1111 1111 1111"
+    assert core.contains_scam_hint(text) is True
+
+
+def test_long_number_without_the_app_link_is_still_flagged():
+    import core
+
+    assert core.contains_scam_hint("37.930123456789012 12.330123456789012") is True
+
+
+async def test_chat_accepts_the_location_message_the_app_sends(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted"))
+    text = "📍 La mia posizione attuale:\nhttps://maps.google.com/?q=37.930123456789012,12.330123456789012"
+
+    response = await client.post("/api/messages", json={"favor_id": "f1", "content": text}, headers=auth("helper"))
+    short = await client.post("/api/messages", json={"favor_id": "f1", "content": "📍 La mia posizione attuale:\nhttps://maps.google.com/?q=37.93012,12.33012"}, headers=auth("owner"))
+
+    assert response.status_code == 200, response.text
+    assert short.status_code == 200, short.text

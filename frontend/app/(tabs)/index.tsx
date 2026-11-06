@@ -94,7 +94,9 @@ export default function HomeScreen() {
       }
       const data = await api.getFavors(params, token || undefined);
       // I favori che hai pubblicato tu stanno in "I Miei": qui si vedono solo quelli degli altri.
-      setFavors(data.filter((f) => f.creator_id !== user?.user_id));
+      const others = data.filter((f) => f.creator_id !== user?.user_id);
+      // Se nulla è cambiato si tiene l'elenco com'è: niente nuovo disegno ogni 3 secondi
+      setFavors((previous) => (JSON.stringify(previous) === JSON.stringify(others) ? previous : others));
       await offlineCache.saveFavors(data);
     } catch (error) {
       logger.debug('Error loading favors:', error);
@@ -187,8 +189,8 @@ export default function HomeScreen() {
   };
 
 
-  // Header component for FlatList
-  const ListHeader = () => (
+  // Intestazione e fondo dell'elenco: sono elementi, non componenti, così non si ricreano a ogni aggiornamento (evita il lampeggio)
+  const listHeader = (
     <>
       {token && <FirstSteps token={token} helped={user?.total_favors_given ?? 0} onShowGive={() => setSelectedType('request')} />}
 
@@ -217,7 +219,7 @@ export default function HomeScreen() {
   );
 
   // In fondo all'elenco: i grazie recenti e un invito discreto a sostenere l'app
-  const ListFooter = () => (
+  const listFooter = (
     <View style={styles.homeFooter}>
       {thanksBoard.length > 0 && (
         <View style={styles.thanksPanel}>
@@ -303,8 +305,8 @@ export default function HomeScreen() {
           keyExtractor={(item) => item.key}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.listContent}
-          ListHeaderComponent={ListHeader}
-          ListFooterComponent={ListFooter}
+          ListHeaderComponent={listHeader}
+          ListFooterComponent={listFooter}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="search" size={64} color="#333" />
