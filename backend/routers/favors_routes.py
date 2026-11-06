@@ -48,7 +48,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
                 headers={"X-Debt-Block": "true", "X-Debt-Limit": str(DEBT_LIMIT)}
             )
         if current_user.granelli < granelli_cost:
-            raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
+            raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti. Aiuta un vicino con «Dona un favore» per guadagnarne.")
     
     await trust.ensure_not_on_hold(current_user.user_id)
     await trust.ensure_new_user_can_create(current_user.user_id, granelli_cost, favor_data.is_emergency)
@@ -170,7 +170,7 @@ async def update_favor(favor_id: str, update: FavorUpdate, current_user: User = 
             raise HTTPException(status_code=400, detail="La durata deve essere di almeno un'ora")
         granelli_cost = max(1, int(duration * GRANELLI_PER_HOUR))
         if favor["type"] == "request" and granelli_cost > current_user.granelli:
-            raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti")
+            raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti. Aiuta un vicino con «Dona un favore» per guadagnarne.")
         values["duration_hours"] = duration
         values["granelli_cost"] = granelli_cost
     if "validity_days" in changes:
@@ -394,7 +394,7 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
         raise HTTPException(status_code=403, detail="Non puoi accettare i favori di questo utente")
 
     if favor.type == "offer" and current_user.granelli < favor.granelli_cost:
-        raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti per accettare questo favore")
+        raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti per accettare questo favore. Aiuta un vicino con «Dona un favore» per guadagnarne.")
 
     await trust.ensure_not_on_hold(current_user.user_id)
     if not favor.is_emergency:

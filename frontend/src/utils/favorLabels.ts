@@ -4,6 +4,7 @@ import { isExpired, roleOf } from './myFavors';
 
 export const STATUS_COLORS = {
   waiting: '#98AA4A',
+  waitingLong: '#F87828',
   expired: '#8A8C80',
   ongoing: '#98AA4A',
   completed: '#98AA4A',
@@ -11,11 +12,23 @@ export const STATUS_COLORS = {
 } as const;
 
 /** Etichetta e colore dello stato di un favore (In attesa, In corso, Concluso...). */
-export const statusOf = (favor: Pick<Favor, 'status' | 'expires_at'>): { label: string; color: string } => {
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Giorni interi da quando il favore è pubblicato e nessuno lo ha accettato; 0 se è ancora fresco. */
+export const waitingDays = (favor: Pick<Favor, 'status' | 'created_at'>, now: number = Date.now()): number => {
+  if (favor.status !== 'active') return 0;
+  const created = new Date(favor.created_at).getTime();
+  if (Number.isNaN(created)) return 0;
+  return Math.max(0, Math.floor((now - created) / DAY_MS));
+};
+
+export const statusOf = (favor: Pick<Favor, 'status' | 'expires_at' | 'created_at'>): { label: string; color: string } => {
   if (favor.status === 'accepted') return { label: tt('In corso'), color: STATUS_COLORS.ongoing };
   if (favor.status === 'completed') return { label: tt('Concluso'), color: STATUS_COLORS.completed };
   if (favor.status === 'cancelled') return { label: tt('Annullato'), color: STATUS_COLORS.cancelled };
   if (isExpired(favor)) return { label: tt('Scaduto'), color: STATUS_COLORS.expired };
+  const waited = waitingDays(favor);
+  if (waited >= 1) return { label: tx('In attesa da {0} g', [waited]), color: STATUS_COLORS.waitingLong };
   return { label: tt('In attesa'), color: STATUS_COLORS.waiting };
 };
 
