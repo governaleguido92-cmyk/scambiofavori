@@ -127,19 +127,23 @@ async def test_helping_does_not_use_up_requesting_slots(client, app_db):
 
 # ---------- coppie ripetute ----------
 
-async def test_same_pair_cannot_exchange_more_than_two_favors_a_week(client, app_db):
+async def test_same_pair_cannot_exchange_more_than_five_favors_a_week(client, app_db):
+    from trust import PAIR_WEEKLY_LIMIT
+
+    assert PAIR_WEEKLY_LIMIT == 5
     await app_db.users.insert_many([
         make_user("me", total_favors_given=5), make_user("friend", total_favors_given=5)
     ])
     now = datetime.now(timezone.utc)
     await app_db.favors.insert_many([
-        make_favor("d1", creator_id="friend", creator_name="friend", accepted_by="me", status="completed", completed_at=now),
-        make_favor("d2", creator_id="me", creator_name="me", accepted_by="friend", status="completed", completed_at=now),
-        _active("target", "friend"),
-    ])
+        make_favor(f"d{i}", creator_id="friend" if i % 2 else "me", creator_name="x",
+                   accepted_by="me" if i % 2 else "friend", status="completed", completed_at=now)
+        for i in range(PAIR_WEEKLY_LIMIT)
+    ] + [_active("target", "friend")])
     response = await client.post("/api/favors/accept", json={"favor_id": "target"}, headers=auth("me"))
     assert response.status_code == 403
     assert "stessa persona" in response.json()["detail"].lower()
+    assert "5 favori a settimana" in response.json()["detail"]
 
 
 async def test_old_exchanges_do_not_count_for_pair_limit(app_db):

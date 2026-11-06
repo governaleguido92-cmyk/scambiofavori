@@ -33,7 +33,7 @@ export function notify(title: string, message?: string): void {
 
 /**
  * Messaggio che resta sullo schermo finché non lo chiudi: per i rifiuti che spiegano una regola
- * (limiti dei nuovi utenti, due favori a settimana con la stessa persona, utente bloccato...).
+ * (limiti dei nuovi utenti, cinque favori a settimana con la stessa persona, utente bloccato...).
  * L'avviso breve in alto sparisce in pochi secondi e si perde facilmente.
  */
 export function showRefusal(title: string, message: string, okLabel: string): void {
