@@ -470,3 +470,33 @@ async def test_not_enough_granelli_message_points_to_i_miei(client, app_db):
 
     assert refused.status_code == 400
     assert "I Miei" in refused.json()["detail"] and "Annulla o modifica" in refused.json()["detail"]
+
+
+# ---------- poche urgenze alla volta ----------
+
+async def test_a_person_cannot_have_more_than_two_active_emergencies(client, app_db):
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_one(make_user("me", granelli=50, total_favors_given=5))
+    urgent = {**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": True}
+
+    codes = [(await client.post("/api/favors", json=urgent, headers=auth("me"))).status_code for _ in range(3)]
+
+    assert codes == [200, 200, 403]
+    refused = await client.post("/api/favors", json=urgent, headers=auth("me"))
+    assert "2 urgenze" in refused.json()["detail"]
+    normal = await client.post("/api/favors", json={**urgent, "is_emergency": False}, headers=auth("me"))
+    assert normal.status_code == 200, normal.text
+
+
+async def test_answered_emergencies_free_the_slot(client, app_db):
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_one(make_user("me", granelli=50, total_favors_given=5))
+    await app_db.favors.insert_many([
+        {**active_favor(f"e{i}", "me", timedelta(days=1)), "is_emergency": True, "status": "accepted", "accepted_by": "x"}
+        for i in range(2)])
+
+    response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": True}, headers=auth("me"))
+
+    assert response.status_code == 200, response.text
