@@ -72,21 +72,21 @@ async def test_only_the_sent_fields_change(client, app_db):
 async def test_new_validity_restarts_the_expiry_from_now(client, app_db):
     await seed(app_db)
 
-    response = await client.put("/api/favors/favor_1", json={"validity_days": 7}, headers=auth("creator"))
+    response = await client.put("/api/favors/favor_1", json={"validity_days": 5}, headers=auth("creator"))
 
     assert response.status_code == 200
     stored = await app_db.favors.find_one({"favor_id": "favor_1"})
-    expected = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7)
+    expected = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=5)
     assert abs((naive_utc(stored["expires_at"]) - expected).total_seconds()) < 10
-    assert stored["validity_days"] == 7
+    assert stored["validity_days"] == 5
 
 
-async def test_validity_is_kept_between_1_and_10_days(client, app_db):
+async def test_validity_is_kept_between_1_and_5_days(client, app_db):
     await seed(app_db)
 
     await client.put("/api/favors/favor_1", json={"validity_days": 99}, headers=auth("creator"))
 
-    assert (await app_db.favors.find_one({"favor_id": "favor_1"}))["validity_days"] == 10
+    assert (await app_db.favors.find_one({"favor_id": "favor_1"}))["validity_days"] == 5
 
 
 async def test_type_owner_and_position_never_change(client, app_db):

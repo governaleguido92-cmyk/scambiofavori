@@ -166,7 +166,7 @@ async def test_both_parties_are_reminded_once_when_a_favor_is_stalled(client, ap
     await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
     await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
                                               accepted_by_name="helper", status="accepted",
-                                              accepted_at=datetime.now(timezone.utc) - timedelta(days=3)))
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(hours=40)))
 
     for _ in range(2):
         for user in ("owner", "helper"):
@@ -174,7 +174,7 @@ async def test_both_parties_are_reminded_once_when_a_favor_is_stalled(client, ap
 
     for user in ("owner", "helper"):
         stalled = [n for n in await notifications(client, user) if n["type"] == "favor_stalled"]
-        assert len(stalled) == 1 and "3 giorni" in stalled[0]["message"]
+        assert len(stalled) == 1 and "1 giorno" in stalled[0]["message"]
 
 
 async def test_no_stalled_reminder_for_a_recent_accepted_favor(client, app_db):
@@ -219,7 +219,7 @@ async def test_recently_accepted_favor_is_not_released(client, app_db):
     await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
     await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
                                               accepted_by_name="helper", status="accepted",
-                                              accepted_at=datetime.now(timezone.utc) - timedelta(days=3)))
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(hours=20)))
 
     await notifications(client, "owner")
 
@@ -389,7 +389,8 @@ async def test_committed_granelli_count_requests_and_accepted_offers_only(app_db
     import trust
 
     await app_db.favors.insert_many([
-        make_favor("r1", creator_id="u", type="request", status="active", granelli_cost=2, accepted_by=None),
+        make_favor("r1", creator_id="u", type="request", status="active", granelli_cost=2, accepted_by=None,
+                   expires_at=datetime.now(timezone.utc) + timedelta(days=1)),
         make_favor("r2", creator_id="u", type="request", status="accepted", granelli_cost=1),
         make_favor("done", creator_id="u", type="request", status="completed", granelli_cost=5),
         make_favor("o_mine", creator_id="u", type="offer", status="active", granelli_cost=4, accepted_by=None),
@@ -498,5 +499,57 @@ async def test_answered_emergencies_free_the_slot(client, app_db):
         for i in range(2)])
 
     response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": True}, headers=auth("me"))
+
+    assert response.status_code == 200, response.text
+
+
+# ---------- i favori durano al massimo 5 giorni ----------
+
+async def test_a_favor_cannot_last_more_than_five_days(client, app_db):
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_one(make_user("me", granelli=50, total_favors_given=5))
+
+    response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": False, "validity_days": 10}, headers=auth("me"))
+
+    assert response.status_code == 200, response.text
+    stored = await app_db.favors.find_one({"favor_id": response.json()["favor_id"]})
+    assert stored["validity_days"] == 5
+    left = stored["expires_at"].replace(tzinfo=timezone.utc) - datetime.now(timezone.utc)
+    assert timedelta(days=5) - timedelta(hours=1) < left <= timedelta(days=5)
+
+
+async def test_default_validity_is_three_days():
+    import core
+
+    assert core.FavorCreate(type="request", title="t", description="d", category="Spesa").validity_days == 3
+
+
+async def test_expired_request_no_longer_holds_granelli(app_db):
+    import trust
+
+    await app_db.favors.insert_many([
+        make_favor("alive", creator_id="u", type="request", status="active", granelli_cost=2, accepted_by=None,
+                   expires_at=datetime.now(timezone.utc) + timedelta(hours=5)),
+        make_favor("gone", creator_id="u", type="request", status="active", granelli_cost=3, accepted_by=None,
+                   expires_at=datetime.now(timezone.utc) - timedelta(minutes=5)),
+    ])
+
+    assert await trust.committed_granelli("u") == 2
+
+
+async def test_new_user_can_publish_again_when_old_requests_expire(client, app_db):
+    from trust import NEW_USER_MAX_OPEN_FAVORS
+
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_one(make_user("me", granelli=100))
+    await app_db.favors.insert_many([
+        make_favor(f"old{i}", creator_id="me", creator_name="me", type="request", status="active", granelli_cost=1, accepted_by=None,
+                   expires_at=datetime.now(timezone.utc) - timedelta(hours=1))
+        for i in range(NEW_USER_MAX_OPEN_FAVORS)
+    ])
+
+    response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": False}, headers=auth("me"))
 
     assert response.status_code == 200, response.text
