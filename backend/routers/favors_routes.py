@@ -805,16 +805,18 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
     # ========================
     # NOTIFICATION: Review received
     # ========================
-    await db.notifications.insert_one({
-        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
-        "user_id": reviewed_id,
-        "type": "review_received",
-        "title": "Nuova Recensione! ⭐",
-        "message": f"{current_user.name} ti ha lasciato una recensione per \"{favor_doc['title']}\"",
-        "related_id": review_data.favor_id,
-        "read": False,
-        "created_at": datetime.now(timezone.utc)
-    })
+    review_line = f"⭐ {current_user.name} ti ha lasciato una recensione"
+    if not await merge_into_completion_notification(reviewed_id, review_line, favor_id=review_data.favor_id):
+        await db.notifications.insert_one({
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+            "user_id": reviewed_id,
+            "type": "review_received",
+            "title": "Nuova Recensione! ⭐",
+            "message": f"{current_user.name} ti ha lasciato una recensione per \"{favor_doc['title']}\"",
+            "related_id": review_data.favor_id,
+            "read": False,
+            "created_at": datetime.now(timezone.utc)
+        })
     
     # Push notification for review
     await send_push_notification(
@@ -829,6 +831,9 @@ async def create_review(review_data: ReviewCreate, current_user: User = Depends(
     if len(all_reviews) >= 2:
         # Both reviews are in - notify both users that the cycle is complete
         for user_id in [favor_doc["creator_id"], favor_doc["accepted_by"]]:
+            cycle_line = "🎉 Entrambe le recensioni sono state inviate: grazie per aver partecipato!"
+            if await merge_into_completion_notification(user_id, cycle_line, favor_id=review_data.favor_id):
+                continue
             await db.notifications.insert_one({
                 "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
                 "user_id": user_id,

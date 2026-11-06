@@ -1053,11 +1053,33 @@ async def check_and_award_badges(user_id: str):
         # Il Fondo Solidarietà si sblocca aiutando gli altri, non solo ricevendo aiuto
         await db.users.update_one({"user_id": user_id}, {"$set": {"can_access_solidarity_fund": True}})
     for badge_id in new_badges:
+        badge_line = f"🏅 Nuovo badge: «{BADGES[badge_id]['name']}»"
+        if await merge_into_completion_notification(user_id, badge_line, max_age_seconds=180):
+            continue
         await db.notifications.insert_one({
             "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "badge_earned",
             "title": "Nuovo badge! 🏅", "message": f"Hai ottenuto «{BADGES[badge_id]['name']}»: {BADGES[badge_id]['description']}",
             "related_id": badge_id, "read": False, "created_at": datetime.now(timezone.utc),
         })
+
+async def merge_into_completion_notification(user_id: str, line: str, favor_id: Optional[str] = None,
+                                             max_age_seconds: Optional[int] = None) -> bool:
+    """Aggiunge una riga alla notifica «Favore completato» ancora da leggere, invece di crearne un'altra:
+    recensione, ciclo completato e badge arrivano insieme in una sola voce. False se non c'è dove unirla."""
+    query = {"user_id": user_id, "type": "favor_completed", "read": False}
+    if favor_id:
+        query["related_id"] = favor_id
+    if max_age_seconds:
+        query["created_at"] = {"$gte": datetime.now(timezone.utc) - timedelta(seconds=max_age_seconds)}
+    target = await db.notifications.find_one(query, sort=[("created_at", -1)])
+    if not target:
+        return False
+    await db.notifications.update_one(
+        {"notification_id": target["notification_id"]},
+        {"$set": {"message": f"{target['message']}\n{line}", "created_at": datetime.now(timezone.utc)}},
+    )
+    return True
+
 
 async def update_community_score(user_id: str):
     """Update user's community score"""

@@ -140,7 +140,7 @@ export default function NotificationsScreen() {
             <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
             {!item.read && <View style={styles.unreadDot} />}
           </View>
-          <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
+          <Text style={styles.message} numberOfLines={item.type === 'favor_completed' ? 6 : 2}>{item.message}</Text>
           <Text style={styles.time}>{formatTimeAgo(item.created_at)}</Text>
         </View>
         

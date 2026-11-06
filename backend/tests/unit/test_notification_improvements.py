@@ -310,3 +310,61 @@ async def test_stalled_reminder_after_one_day_speaks_in_the_singular(client, app
     stalled = [n for n in await notifications(client, "owner") if n["type"] == "favor_stalled"]
 
     assert len(stalled) == 1 and "da 1 giorno:" in stalled[0]["message"]
+
+
+# ---------- una sola voce quando il favore si conclude ----------
+
+async def completed_with_notices(app_db, read_completion=False):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="completed",
+                                              completed_at=datetime.now(timezone.utc)))
+    for user in ("owner", "helper"):
+        await app_db.notifications.insert_one({
+            "notification_id": f"n_{user}", "user_id": user, "type": "favor_completed", "title": "Favore Completato! 🎉",
+            "message": "Il favore è stato completato.", "related_id": "f1", "read": read_completion,
+            "created_at": datetime.now(timezone.utc)})
+
+
+async def test_review_and_cycle_lines_are_added_to_the_completion_notification(client, app_db):
+    await completed_with_notices(app_db)
+
+    for reviewer in ("owner", "helper"):
+        response = await client.post("/api/reviews", json={"favor_id": "f1", "rating": 5}, headers=auth(reviewer))
+        assert response.status_code == 200, response.text
+
+    items = await notifications(client, "owner")
+    assert [n["type"] for n in items] == ["favor_completed"]
+    assert "recensione" in items[0]["message"] and "Entrambe le recensioni" in items[0]["message"]
+
+
+async def test_review_after_the_completion_was_read_is_a_separate_notification(client, app_db):
+    await completed_with_notices(app_db, read_completion=True)
+
+    response = await client.post("/api/reviews", json={"favor_id": "f1", "rating": 5}, headers=auth("owner"))
+    assert response.status_code == 200, response.text
+
+    types = [n["type"] for n in await notifications(client, "helper")]
+    assert "review_received" in types and types.count("favor_completed") == 1
+
+
+async def test_badge_is_added_to_a_fresh_completion_notification(app_db):
+    import core
+
+    await app_db.users.insert_one(make_user("helper", email_verified=True, total_favors_given=1))
+    await app_db.notifications.insert_one({
+        "notification_id": "n1", "user_id": "helper", "type": "favor_completed", "title": "Favore Completato! 🎉",
+        "message": "Hai completato un favore.", "related_id": "f1", "read": False, "created_at": datetime.now(timezone.utc)})
+
+    merged = await core.merge_into_completion_notification("helper", "🏅 Nuovo badge: «Test»", max_age_seconds=180)
+
+    assert merged is True
+    stored = await app_db.notifications.find_one({"notification_id": "n1"})
+    assert "Nuovo badge" in stored["message"]
+
+
+async def test_nothing_to_merge_into_returns_false(app_db):
+    import core
+
+    await app_db.users.insert_one(make_user("helper", email_verified=True))
+    assert await core.merge_into_completion_notification("helper", "riga", max_age_seconds=180) is False
