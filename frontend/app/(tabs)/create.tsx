@@ -581,8 +581,13 @@ export default function CreateFavorScreen() {
           </View>
           {type === 'request' && availableGranelli < granelliPreview && (
             <Text style={[styles.fieldHint, { color: colors.accent }]}>
-              {tt('Non ti bastano: aiuta prima un vicino con «Dona un favore» per guadagnarne.')}
+              {tt('Non ti bastano: annulla una richiesta in attesa, oppure aiuta prima un vicino con «Dona un favore» per guadagnarne.')}
             </Text>
+          )}
+          {type === 'request' && committed > 0 && (
+            <TouchableOpacity onPress={() => router.push('/my-favors' as any)} accessibilityRole="link" data-testid="create-see-waiting">
+              <Text style={[styles.fieldHint, { color: colors.accent, fontWeight: '700' }]}>{tt('Vedi le tue richieste in attesa')}</Text>
+            </TouchableOpacity>
           )}
           {type === 'request' && (
             <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}{committed > 0 ? tx(' (liberi: {0}, {1} già impegnati in favori in corso)', [availableGranelli, committed]) : ''}.

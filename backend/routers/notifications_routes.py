@@ -9,6 +9,36 @@ EXPIRY_REMINDER_WINDOW = timedelta(hours=24)
 STALLED_AFTER = timedelta(hours=24)
 
 
+BLOCKING_REQUEST_AFTER = timedelta(hours=24)
+
+
+async def remind_blocking_requests(user_id: str) -> None:
+    """Una sola notifica (per gruppo di favori) a chi ha richieste senza risposta da più di 24 ore: tengono fermi i suoi Granelli."""
+    now = datetime.now(timezone.utc)
+    waiting = await db.favors.find({
+        "type": "request", "status": "active", "creator_id": user_id, "waiting_reminded": {"$ne": True},
+        "created_at": {"$lte": now - BLOCKING_REQUEST_AFTER}, "expires_at": {"$gt": now},
+    }, {"_id": 0, "favor_id": 1, "granelli_cost": 1}).to_list(50)
+    claimed = []
+    for favor in waiting:
+        done = await db.favors.update_one({"favor_id": favor["favor_id"], "waiting_reminded": {"$ne": True}},
+                                          {"$set": {"waiting_reminded": True}})
+        if done.modified_count:
+            claimed.append(favor)
+    if not claimed:
+        return
+    held = sum(int(favor.get("granelli_cost") or 1) for favor in claimed)
+    many = len(claimed) > 1
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "favor_waiting",
+        "title": "Richieste ancora senza risposta ⏳",
+        "message": (f"{len(claimed)} richieste sono senza risposta da più di un giorno e tengono fermi {held} Granelli."
+                    if many else f"Una tua richiesta è senza risposta da più di un giorno e tiene fermi {held} Granelli.")
+                   + " Vuoi modificarla o annullarla da «I Miei»?",
+        "related_id": claimed[0]["favor_id"], "count": len(claimed), "read": False, "created_at": now,
+    })
+
+
 async def remind_stalled_favors(user_id: str) -> None:
     """Avvisa (una sola volta a testa) chi ha un favore accettato da più di 24 ore e non ancora concluso."""
     now = datetime.now(timezone.utc)
@@ -36,6 +66,7 @@ async def remind_expiring_favors(user_id: str) -> None:
     """Avvisa (una sola volta) chi ha un favore ancora senza risposta che scade entro 24 ore."""
     await trust.release_stalled_favors(user_id)
     await remind_stalled_favors(user_id)
+    await remind_blocking_requests(user_id)
     now = datetime.now(timezone.utc)
     expiring = await db.favors.find({
         "creator_id": user_id, "status": "active", "expiry_reminded": {"$ne": True},

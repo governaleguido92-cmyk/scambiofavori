@@ -429,3 +429,44 @@ async def test_skill_match_after_reading_starts_a_new_notification(app_db):
     await core.create_skill_match_notifications({**first, "favor_id": "s2", "title": "Spesa 2"})
 
     assert await app_db.notifications.count_documents({"user_id": "giver", "type": "skill_match"}) == 2
+
+
+# ---------- richieste che bloccano i Granelli ----------
+
+async def test_one_reminder_for_requests_waiting_more_than_a_day(client, app_db):
+    await app_db.users.insert_one(make_user("owner", email_verified=True))
+    old = datetime.now(timezone.utc) - timedelta(hours=30)
+    await app_db.favors.insert_many([
+        {**active_favor(f"w{i}", "owner", timedelta(days=2)), "type": "request", "granelli_cost": 1, "created_at": old}
+        for i in range(3)
+    ] + [{**active_favor("fresh", "owner", timedelta(days=2)), "type": "request", "granelli_cost": 1}])
+
+    first = [n for n in await notifications(client, "owner") if n["type"] == "favor_waiting"]
+    again = [n for n in await notifications(client, "owner") if n["type"] == "favor_waiting"]
+
+    assert len(first) == 1 and first[0]["count"] == 3 and "3 richieste" in first[0]["message"] and "3 Granelli" in first[0]["message"]
+    assert len(again) == 1
+
+
+async def test_no_waiting_reminder_for_offers_or_recent_requests(client, app_db):
+    await app_db.users.insert_one(make_user("owner", email_verified=True))
+    old = datetime.now(timezone.utc) - timedelta(hours=30)
+    await app_db.favors.insert_many([
+        {**active_favor("offer1", "owner", timedelta(days=2)), "type": "offer", "created_at": old},
+        {**active_favor("new1", "owner", timedelta(days=2)), "type": "request"},
+    ])
+
+    assert [n for n in await notifications(client, "owner") if n["type"] == "favor_waiting"] == []
+
+
+async def test_not_enough_granelli_message_points_to_i_miei(client, app_db):
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_one(make_user("me", granelli=1))
+    one_hour = {**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": False}
+    await client.post("/api/favors", json=one_hour, headers=auth("me"))
+
+    refused = await client.post("/api/favors", json=one_hour, headers=auth("me"))
+
+    assert refused.status_code == 400
+    assert "I Miei" in refused.json()["detail"] and "Annulla o modifica" in refused.json()["detail"]

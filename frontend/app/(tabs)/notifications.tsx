@@ -29,6 +29,7 @@ const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   favor_accepted: { name: 'hand-left', color: colors.accent },
   favor_expiring: { name: 'hourglass', color: colors.accentLight },
   favor_stalled: { name: 'time', color: colors.accentLight },
+  favor_waiting: { name: 'hourglass-outline', color: colors.accentLight },
   supporter: { name: 'heart', color: '#98AA4A' },
   welcome: { name: 'hand-right', color: colors.accent },
   badge_earned: { name: 'ribbon', color: colors.lime },
