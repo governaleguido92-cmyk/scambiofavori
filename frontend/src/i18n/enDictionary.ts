@@ -989,4 +989,12 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Prima di pubblicare': 'Before you publish',
   'Hai lasciato senza risposta: {0}. Completa o cancella queste righe.': 'You left these unanswered: {0}. Fill them in or delete those lines.',
   'circa {0} m': 'about {0} m',
+  'Urgenti': 'Urgent',
+  'Vedi tutti': 'See all',
+  'Mostra meno': 'Show less',
+  'Cancella': 'Clear',
+  'Altri favori': 'Other favors',
+  'Vicini a te': 'Near you',
+  'Scade presto': 'Expiring soon',
+  'Cerca un favore': 'Search a favor',
 };
