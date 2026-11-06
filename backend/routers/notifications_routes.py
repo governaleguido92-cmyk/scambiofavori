@@ -6,11 +6,11 @@ import trust
 api_router = APIRouter(prefix="/api")
 
 EXPIRY_REMINDER_WINDOW = timedelta(hours=24)
-STALLED_AFTER = timedelta(hours=48)
+STALLED_AFTER = timedelta(hours=24)
 
 
 async def remind_stalled_favors(user_id: str) -> None:
-    """Avvisa (una sola volta a testa) chi ha un favore accettato da più di 48 ore e non ancora concluso."""
+    """Avvisa (una sola volta a testa) chi ha un favore accettato da più di 24 ore e non ancora concluso."""
     now = datetime.now(timezone.utc)
     stalled = await db.favors.find({
         "status": "accepted", "accepted_at": {"$lte": now - STALLED_AFTER},
@@ -22,11 +22,12 @@ async def remind_stalled_favors(user_id: str) -> None:
         if not claimed.modified_count:
             continue
         accepted_at = favor["accepted_at"] if favor["accepted_at"].tzinfo else favor["accepted_at"].replace(tzinfo=timezone.utc)
-        days = max(2, (now - accepted_at).days)
+        days = max(1, (now - accepted_at).days)
+        since = "1 giorno" if days == 1 else f"{days} giorni"
         await db.notifications.insert_one({
             "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "favor_stalled",
             "title": "Il favore è ancora in corso ⏳",
-            "message": f"\"{favor['title']}\" è in corso da {days} giorni: l'avete concluso? Se sì, mostrate e scansionate il QR; altrimenti scrivetevi in chat.",
+            "message": f"\"{favor['title']}\" è in corso da {since}: l'avete concluso? Se sì, mostrate e scansionate il QR; altrimenti scrivetevi in chat.",
             "related_id": favor["favor_id"], "read": False, "created_at": now,
         })
 

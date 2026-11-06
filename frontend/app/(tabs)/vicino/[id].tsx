@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/context/AuthContext';
+import { VouchBox } from '../../../src/components/profile/VouchBox';
 import { api, PublicProfile } from '../../../src/services/api';
 import colors from '../../../src/theme/colors';
 import { tt, tx } from '../../../src/i18n/tt';
@@ -169,6 +170,10 @@ export default function NeighborProfileScreen() {
             <Text style={styles.boxTitle}>{tt('Affidabilità')}</Text>
             <Text style={styles.boxText}>{reliabilityText(profile)}</Text>
           </View>
+
+          {token && id !== user?.user_id && (
+            <VouchBox userId={profile.user_id ?? id} token={token} onVouched={() => load()} />
+          )}
 
           {profile.skills.length > 0 && (
             <View style={styles.box}>

@@ -282,3 +282,31 @@ async def test_chat_accepts_the_location_message_the_app_sends(client, app_db):
 
     assert response.status_code == 200, response.text
     assert short.status_code == 200, short.text
+
+
+async def test_favors_already_accepted_do_not_count_against_the_new_user_cap(client, app_db):
+    from trust import NEW_USER_MAX_OPEN_FAVORS
+
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_many([make_user("me"), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_many([
+        make_favor(f"acc{i}", creator_id="me", creator_name="me", accepted_by="helper", accepted_by_name="helper",
+                   status="accepted", accepted_at=datetime.now(timezone.utc))
+        for i in range(NEW_USER_MAX_OPEN_FAVORS)
+    ])
+
+    response = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
+
+    assert response.status_code == 200, response.text
+
+
+async def test_stalled_reminder_after_one_day_speaks_in_the_singular(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted",
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(hours=30)))
+
+    stalled = [n for n in await notifications(client, "owner") if n["type"] == "favor_stalled"]
+
+    assert len(stalled) == 1 and "da 1 giorno:" in stalled[0]["message"]

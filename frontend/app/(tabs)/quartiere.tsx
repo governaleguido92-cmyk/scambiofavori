@@ -283,6 +283,9 @@ export default function NeighborhoodScreen() {
             <Ionicons name="lock-closed-outline" size={40} color={colors.textMuted} />
             <Text style={styles.emptyTitle}>{tt('Il quartiere è per chi ha un favore attivo')}</Text>
             <Text style={styles.emptyText}>{tt('Pubblica o accetta un favore per entrare e parlare con chi è vicino a te.')}</Text>
+            <TouchableOpacity style={styles.accessBannerButton} onPress={() => router.push('/create' as any)} accessibilityRole="button" data-testid="square-no-access-create">
+              <Text style={styles.accessBannerButtonText}>{tt('Pubblica un favore')}</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <>
