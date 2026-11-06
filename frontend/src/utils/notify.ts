@@ -1,4 +1,5 @@
 import { Alert, Linking } from 'react-native';
+import { router } from 'expo-router';
 
 export interface ToastMessage {
   id: number;
@@ -42,6 +43,10 @@ export function showRefusal(title: string, message: string, okLabel: string): vo
   const buttons = [{ text: okLabel }];
   if (support) {
     buttons.unshift({ text: 'Scrivi al supporto', onPress: () => { void Linking.openURL(`mailto:${support[0]}`); } } as any);
+  }
+  // Se il messaggio rimanda a «I Miei» (Granelli bloccati da richieste in attesa) si offre di andarci subito
+  if (message.includes('«I Miei»')) {
+    buttons.unshift({ text: 'Vai a I Miei', onPress: () => { router.push('/my-favors' as any); } } as any);
   }
   Alert.alert(title, message, buttons);
 }

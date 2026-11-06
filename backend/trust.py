@@ -99,7 +99,8 @@ def not_enough_granelli_message(currency: str, balance: int, committed: int, cos
     if committed <= 0:
         return f"{currency} insufficienti. Aiuta un vicino con «Dona un favore» per guadagnarne."
     return (f"{currency} insufficienti: ne hai {balance}, ma {committed} sono già impegnati in favori in corso e questo "
-            f"ne richiede {cost}. Aiuta un vicino con «Dona un favore» per guadagnarne.")
+            f"ne richiede {cost}. Annulla o modifica una richiesta ancora in attesa da «I Miei», "
+            f"oppure aiuta un vicino con «Dona un favore» per guadagnarne.")
 
 
 async def count_open_favors(user_id: str, role: str) -> int:
