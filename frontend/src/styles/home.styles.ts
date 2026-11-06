@@ -784,6 +784,54 @@ export const styles = StyleSheet.create({
     color: colors.error,
     fontWeight: '700',
   },
+  homeFooter: {
+    marginTop: 16,
+    gap: 14,
+    alignItems: 'center',
+  },
+  thanksPanel: {
+    alignSelf: 'stretch',
+    backgroundColor: colors.backgroundCard,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  thanksPanelHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  thanksRow: {
+    paddingVertical: 9,
+    gap: 3,
+  },
+  thanksRowDivider: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  thanksNames: {
+    color: colors.textPrimary,
+    fontSize: 13.5,
+    fontWeight: '600',
+  },
+  thanksArrowText: {
+    color: colors.textMuted,
+    fontWeight: '400',
+  },
+  thanksQuote: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  supportLink: {
+    color: colors.textMuted,
+    fontSize: 12.5,
+    paddingVertical: 8,
+  },
   leanCard: {
     minHeight: 104,
   },
@@ -804,7 +852,24 @@ export const styles = StyleSheet.create({
   },
   leanMetaText: {
     flex: 1,
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: '400',
+    letterSpacing: 0.2,
+  },
+  leanKind: {
+    fontSize: 10.5,
     fontWeight: '600',
+    letterSpacing: 0.8,
+  },
+  leanFlowText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  leanTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    letterSpacing: 0.1,
   },
   leanAvatar: {
     width: 20,

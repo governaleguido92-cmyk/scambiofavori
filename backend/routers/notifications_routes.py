@@ -4,9 +4,33 @@ from core import *  # noqa: F401,F403
 
 api_router = APIRouter(prefix="/api")
 
+EXPIRY_REMINDER_WINDOW = timedelta(hours=24)
+
+
+async def remind_expiring_favors(user_id: str) -> None:
+    """Avvisa (una sola volta) chi ha un favore ancora senza risposta che scade entro 24 ore."""
+    now = datetime.now(timezone.utc)
+    expiring = await db.favors.find({
+        "creator_id": user_id, "status": "active", "expiry_reminded": {"$ne": True},
+        "expires_at": {"$gt": now, "$lte": now + EXPIRY_REMINDER_WINDOW},
+    }, {"_id": 0, "favor_id": 1, "title": 1}).to_list(20)
+    for favor in expiring:
+        # Il segno sul favore va messo per primo: due richieste insieme non devono duplicare l'avviso
+        claimed = await db.favors.update_one(
+            {"favor_id": favor["favor_id"], "expiry_reminded": {"$ne": True}}, {"$set": {"expiry_reminded": True}})
+        if not claimed.modified_count:
+            continue
+        await db.notifications.insert_one({
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "favor_expiring",
+            "title": "Il tuo favore sta per scadere ⏳",
+            "message": f"\"{favor['title']}\" scade entro 24 ore e nessuno l'ha ancora accettato. Puoi modificarlo o pubblicarlo di nuovo.",
+            "related_id": favor["favor_id"], "read": False, "created_at": now,
+        })
+
 @api_router.get("/notifications")
 async def get_notifications(current_user: User = Depends(get_current_user)):
     """Get user's notifications"""
+    await remind_expiring_favors(current_user.user_id)
     notifications = await db.notifications.find(
         {"user_id": current_user.user_id},
         {"_id": 0}
@@ -25,6 +49,7 @@ async def mark_notification_read(notification_id: str, current_user: User = Depe
 @api_router.get("/notifications/unread-count")
 async def get_unread_count(current_user: User = Depends(get_current_user)):
     """Get count of unread notifications"""
+    await remind_expiring_favors(current_user.user_id)
     count = await db.notifications.count_documents({
         "user_id": current_user.user_id,
         "read": False

@@ -10,10 +10,12 @@ export type FavorType = 'request' | 'offer';
 interface FavorTypeTabsProps {
   value: FavorType;
   onChange: (type: FavorType) => void;
+  /** Nasconde la riga che spiega cosa fare (per le schermate essenziali). */
+  hideHint?: boolean;
 }
 
 /** Due schede grandi, Dona un favore e Ricevi un favore, sempre separate, con la riga che spiega cosa fare. */
-export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange }) => (
+export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange, hideHint }) => (
   <>
     <View style={styles.typeFilter}>
       {(['request', 'offer'] as const).map((type) => {
@@ -37,6 +39,7 @@ export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange })
       })}
     </View>
 
+    {!hideHint && (
     <View style={[styles.typeHintBox, value === 'offer' ? styles.typeHintBoxOffer : styles.typeHintBoxRequest]}>
       <Ionicons
         name={value === 'offer' ? 'hand-left' : 'gift'}
@@ -49,5 +52,6 @@ export const FavorTypeTabs: React.FC<FavorTypeTabsProps> = ({ value, onChange })
           : tt('Chiedi una mano a chi ha tempo (es. un passaggio): spendi i tuoi Granelli')}
       </Text>
     </View>
+    )}
   </>
 );

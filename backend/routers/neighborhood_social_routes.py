@@ -129,7 +129,14 @@ async def create_event(body: EventBody, current_user: User = Depends(get_current
     now = datetime.now(timezone.utc)
     open_events = await db.neighborhood_events.count_documents({"author_id": current_user.user_id, "starts_at": {"$gte": now}})
     if open_events >= MAX_OPEN_EVENTS_PER_USER:
-        raise HTTPException(status_code=429, detail=f"Puoi avere al massimo {MAX_OPEN_EVENTS_PER_USER} eventi in programma.")
+        first = await db.neighborhood_events.find(
+            {"author_id": current_user.user_id, "starts_at": {"$gte": now}}, {"_id": 0, "starts_at": 1}
+        ).sort("starts_at", 1).to_list(1)
+        when = ""
+        if first:
+            free_at = chat._aware(first[0]["starts_at"])
+            when = f" Si libera un posto dopo il {free_at.strftime('%d/%m alle %H:%M')}, oppure puoi annullare un evento."
+        raise HTTPException(status_code=429, detail=f"Puoi avere al massimo {MAX_OPEN_EVENTS_PER_USER} eventi in programma.{when}")
 
     event = {
         "event_id": f"event_{uuid.uuid4().hex[:12]}", "author_id": current_user.user_id, "author_name": current_user.name,

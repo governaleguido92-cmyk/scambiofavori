@@ -85,7 +85,8 @@ async def ensure_new_user_open_slot(user_id: str) -> None:
     if await count_open_favors(user_id, "creator_id") >= NEW_USER_MAX_OPEN_FAVORS:
         raise HTTPException(
             status_code=403,
-            detail=f"Per i nuovi utenti al massimo {NEW_USER_MAX_OPEN_FAVORS} favori aperti alla volta. "
+            detail=f"Hai già {NEW_USER_MAX_OPEN_FAVORS} favori aperti, il massimo per i nuovi utenti. "
+                   f"Aspetta che uno venga accettato o annullane uno. "
                    f"Completa {FAVORS_FOR_LEVEL_TWO} favori per sbloccare tutto.",
         )
 

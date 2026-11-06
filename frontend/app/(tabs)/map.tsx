@@ -17,6 +17,7 @@ import { RadiusSlider } from '../../src/components/RadiusSlider';
 import { FavorRadar } from '../../src/components/FavorRadar';
 import { FavorCard } from '../../src/components/FavorCard';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
+import { sortFavors } from '../../src/utils/favorSections';
 import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, formatRadius, withinRadius } from '../../src/utils/radius';
 
 
@@ -119,7 +120,7 @@ export default function MapScreen() {
         </View>
 
         <View style={styles.tabsWrap}>
-          <FavorTypeTabs value={selectedType} onChange={setSelectedType} />
+          <FavorTypeTabs value={selectedType} onChange={setSelectedType} hideHint />
         </View>
 
         {userLocation ? (
@@ -161,8 +162,9 @@ export default function MapScreen() {
               </Text>
             ) : (
               <View style={styles.grid}>
-                {visibleFavors.map((item) => (
+                {sortFavors(visibleFavors).map((item) => (
                   <FavorCard
+                    lean
                     key={item.favor_id}
                     item={item}
                     currentUserId={user.user_id}
@@ -217,5 +219,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 20 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: 4 },
 });

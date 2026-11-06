@@ -419,6 +419,18 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
 
     favor_doc = updated
     
+    # Notifica nell'app: chi ha pubblicato il favore la trova in campanella anche senza push
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": favor.creator_id,
+        "type": "favor_accepted",
+        "title": "Favore accettato! 🤝",
+        "message": f"{current_user.name} ha accettato \"{favor.title}\". Apri la chat per accordarvi.",
+        "related_id": data.favor_id,
+        "read": False,
+        "created_at": datetime.now(timezone.utc),
+    })
+
     # Push notification to the favor creator
     await send_push_notification(
         favor.creator_id,

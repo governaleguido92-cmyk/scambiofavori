@@ -70,22 +70,21 @@ export const FavorCard: React.FC<FavorCardProps> = ({
         data-testid={`favor-card-${item.favor_id}`}
       >
         <View style={styles.cleanHead}>
-          <Text style={[styles.cleanKind, { color: isGive ? colors.accent : colors.lime }]} numberOfLines={1}>{kindPillLabel}</Text>
+          <Text style={[styles.cleanKind, styles.leanKind, { color: isGive ? colors.accent : colors.lime }]} numberOfLines={1}>{kindPillLabel}</Text>
           <View style={styles.cleanFlow}>
             <GranelloIcon size={11} />
-            <Text style={styles.cleanFlowText}>{tt(granelliFlowLabel(item, currentUserId))} {item.granelli_cost}</Text>
+            <Text style={[styles.cleanFlowText, styles.leanFlowText]}>{tt(granelliFlowLabel(item, currentUserId))} {item.granelli_cost}</Text>
           </View>
         </View>
         <View style={styles.leanBody}>
           <View style={styles.cleanTitleRow}>
             <Text style={styles.cleanEmoji}>{visual.emoji}</Text>
-            <Text style={[styles.gridTitle, styles.cleanTitle]} numberOfLines={2}>{item.title}</Text>
+            <Text style={[styles.gridTitle, styles.cleanTitle, styles.leanTitle]} numberOfLines={2}>{item.title}</Text>
           </View>
         </View>
         <View style={styles.leanMeta}>
-          <Text style={[styles.gridNear, styles.leanMetaText]} numberOfLines={1}>
+          <Text style={styles.leanMetaText} numberOfLines={1}>
             {typeof item.distance_km === 'number' ? formatDistance(item.distance_km) : tt(item.category)}
-            {expiry ? <Text style={expiry.isSoon ? styles.gridExpirySoon : styles.gridExpiry}>{` · ${expiry.label}`}</Text> : null}
           </Text>
           <View style={[styles.leanAvatar, { backgroundColor: avatarColorsForKind(isGive).backgroundColor }]}>
             <Text style={[styles.leanAvatarInitial, { color: avatarColorsForKind(isGive).color }]}>{item.creator_name.charAt(0).toUpperCase()}</Text>

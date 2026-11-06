@@ -8,7 +8,6 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ScrollView,
   Image,
   TextInput,
 } from 'react-native';
@@ -17,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useAuth } from '../../src/context/AuthContext';
-import { api, Favor, Category, ThanksEntry } from '../../src/services/api';
+import { api, Favor, ThanksEntry } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
 import { MessagesButton } from '../../src/components/MessagesButton';
@@ -30,30 +29,13 @@ import { logger } from '../../src/utils/logger';
 import { tt } from '../../src/i18n/tt';
 import { FavorCard } from '../../src/components/FavorCard';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
-import { buildRows, filterFavors, FavorFilter, FavorRow, FavorSectionKey } from '../../src/utils/favorSections';
-
-const CATEGORY_ICONS: Record<string, string> = {
-  'Trasporto': 'heart-circle',
-  'Spesa': 'heart',
-  'Tecnologia': 'heart-half',
-  'Pulizie': 'home',
-  'Compagnia': 'people',
-  'Cucina': 'heart-circle-outline',
-  'Giardinaggio': 'leaf',
-  'Consiglio': 'chatbubble-ellipses',
-  'Informazione': 'hand-left',
-  'Aiuto Rapido': 'heart-sharp',
-  'Altro': 'heart-outline',
-};
+import { buildRows, filterFavors, FavorRow, FavorSectionKey } from '../../src/utils/favorSections';
 
 export default function HomeScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
   const [favors, setFavors] = useState<Favor[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<FavorType>('request');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -61,7 +43,6 @@ export default function HomeScreen() {
   const [thanksBoard, setThanksBoard] = useState<ThanksEntry[]>([]);
   const [networkError, setNetworkError] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [filter, setFilter] = useState<FavorFilter>('all');
   const [query, setQuery] = useState('');
   const [expandedSections, setExpandedSections] = useState<ReadonlySet<FavorSectionKey>>(new Set());
 
@@ -91,15 +72,6 @@ export default function HomeScreen() {
     }
   };
 
-  const loadCategories = async () => {
-    try {
-      const data = await api.getCategories();
-      setCategories(data);
-    } catch (error) {
-      logger.debug('Error loading categories:', error);
-    }
-  };
-
   const loadThanksBoard = async () => {
     try {
       const data = await api.getThanksBoard(token || '', 5);
@@ -113,7 +85,6 @@ export default function HomeScreen() {
     try {
       setNetworkError(false);
       const params: any = { status: 'active' };
-      if (selectedCategory) params.category = selectedCategory;
       params.type = selectedType;
       if (location) {
         params.latitude = location.latitude;
@@ -133,11 +104,10 @@ export default function HomeScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedCategory, selectedType, location, token, user?.user_id]);
+  }, [selectedType, location, token, user?.user_id]);
 
   useEffect(() => {
     getLocation();
-    loadCategories();
     loadThanksBoard();
     loadUnreadCount();
     // Poll notifications every 15 seconds for real-time updates
@@ -159,23 +129,11 @@ export default function HomeScreen() {
     loadThanksBoard();
   };
 
-  const renderThanksCard = ({ item }: { item: ThanksEntry }) => (
-    <View style={styles.thanksCard}>
-      <View style={styles.thanksHeader}>
-        <Ionicons name="heart" size={14} color="#F87828" />
-        <Text style={styles.thanksGiver}>{item.giver_name}</Text>
-        <Ionicons name="arrow-forward" size={14} color="#A5A89B" />
-        <Text style={styles.thanksReceiver}>{item.receiver_name}</Text>
-      </View>
-      <Text style={styles.thanksMessage} numberOfLines={1}>{`"${item.message}"`}</Text>
-    </View>
-  );
-
-  const visibleFavors = useMemo(() => filterFavors(favors, filter, query), [favors, filter, query]);
+  const visibleFavors = useMemo(() => filterFavors(favors, 'all', query), [favors, query]);
   // Con filtro o ricerca attivi l'elenco è unico; a fasce solo quando si guarda tutto
   const rows = useMemo(
-    () => buildRows(visibleFavors, { grouped: filter === 'all' && query.trim() === '', expanded: expandedSections }),
-    [visibleFavors, filter, query, expandedSections],
+    () => buildRows(visibleFavors, { grouped: query.trim() === '', expanded: expandedSections }),
+    [visibleFavors, query, expandedSections],
   );
 
   const toggleSection = (section: FavorSectionKey) =>
@@ -227,52 +185,13 @@ export default function HomeScreen() {
     );
   };
 
-  const FILTERS: { key: FavorFilter; label: string }[] = [
-    { key: 'all', label: 'Tutti' },
-    { key: 'near', label: 'Vicini' },
-    { key: 'soon', label: 'Scade presto' },
-  ];
 
   // Header component for FlatList
   const ListHeader = () => (
     <>
-      {/* Supporter Promo Banner OR Thanks Board */}
-      {SUPPORTER_PURCHASE_ENABLED && user && !user.is_supporter ? (
-        <TouchableOpacity 
-          style={styles.promoBanner}
-          onPress={() => router.push('/supporter')}
-          data-testid="supporter-promo-banner"
-        >
-          <View style={styles.promoBannerContent}>
-            <View style={styles.promoBannerIcon}>
-              <Ionicons name="heart" size={24} color="#98AA4A" />
-            </View>
-            <View style={styles.promoBannerText}>
-              <Text style={styles.promoBannerTitle}>{tt('Diventa Sostenitore!')}</Text>
-              <Text style={styles.promoBannerSubtitle}>{tt('Solo 1€/mese per supportare la community e ottenere il badge dorato ✨')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#98AA4A" />
-          </View>
-        </TouchableOpacity>
-      ) : thanksBoard.length > 0 ? (
-        <View style={styles.thanksBoardSection}>
-          <View style={styles.thanksBoardHeader}>
-            <Ionicons name="heart" size={20} color="#F87828" />
-            <Text style={styles.thanksBoardTitle}>{tt('Bacheca dei Grazie')}</Text>
-          </View>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={thanksBoard}
-            renderItem={renderThanksCard}
-            keyExtractor={(item) => item.thanks_id}
-            contentContainerStyle={styles.thanksBoardList}
-          />
-        </View>
-      ) : null}
+      <FavorTypeTabs value={selectedType} onChange={setSelectedType} hideHint />
 
-      <FavorTypeTabs value={selectedType} onChange={setSelectedType} />
-
+      {(favors.length >= 7 || query.length > 0) && (
       <View style={styles.searchBox}>
         <Ionicons name="search" size={16} color={colors.textMuted} />
         <TextInput
@@ -290,70 +209,41 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
       </View>
-
-      <View style={styles.filterRow}>
-        {FILTERS.map((option) => (
-          <TouchableOpacity
-            key={option.key}
-            style={[styles.filterPill, filter === option.key && styles.filterPillActive]}
-            onPress={() => setFilter(option.key)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: filter === option.key }}
-          >
-            <Text style={[styles.filterPillText, filter === option.key && styles.filterPillTextActive]}>{tt(option.label)}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Categorie: chiuse di default, si aprono con un tocco */}
-      <TouchableOpacity
-        style={styles.categoriesToggle}
-        onPress={() => setCategoriesOpen((open) => !open)}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: categoriesOpen }}
-      >
-        <Text style={styles.categoriesToggleText}>
-          {tt('Categoria')}: {selectedCategory ? tt(selectedCategory) : t('common.all')}
-        </Text>
-        <Ionicons name={categoriesOpen ? 'chevron-up' : 'chevron-down'} size={14} color={colors.textMuted} />
-      </TouchableOpacity>
-      {categoriesOpen && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoriesContainer}
-          contentContainerStyle={styles.categoriesContent}
-        >
-          <TouchableOpacity
-            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-            onPress={() => { setSelectedCategory(null); setCategoriesOpen(false); }}
-          >
-            <Text style={[styles.categoryChipText, !selectedCategory && styles.categoryChipTextActive]}>
-              {t('common.all')}
-            </Text>
-          </TouchableOpacity>
-          {categories.map((cat) => (
-            <TouchableOpacity
-              key={cat.name}
-              style={[
-                styles.categoryChip,
-                selectedCategory === cat.name && styles.categoryChipActive,
-              ]}
-              onPress={() => { setSelectedCategory(cat.name); setCategoriesOpen(false); }}
-            >
-              <Ionicons
-                name={(CATEGORY_ICONS[cat.name] || 'ellipsis-horizontal') as any}
-                size={14}
-                color={selectedCategory === cat.name ? colors.textPrimary : colors.lime}
-              />
-              <Text style={[styles.categoryChipText, selectedCategory === cat.name && styles.categoryChipTextActive]}>
-                {tt(cat.name)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
       )}
     </>
+  );
+
+  // In fondo all'elenco: i grazie recenti e un invito discreto a sostenere l'app
+  const ListFooter = () => (
+    <View style={styles.homeFooter}>
+      {thanksBoard.length > 0 && (
+        <View style={styles.thanksPanel}>
+          <View style={styles.thanksPanelHead}>
+            <Ionicons name="heart" size={14} color={colors.accent} />
+            <Text style={styles.sectionTitle}>{tt('Bacheca dei Grazie')}</Text>
+          </View>
+          {thanksBoard.slice(0, 3).map((entry, index) => (
+            <View key={entry.thanks_id} style={[styles.thanksRow, index > 0 && styles.thanksRowDivider]}>
+              <Text style={styles.thanksNames} numberOfLines={1}>
+                {entry.giver_name}
+                <Text style={styles.thanksArrowText}>{'  →  '}</Text>
+                {entry.receiver_name}
+              </Text>
+              <Text style={styles.thanksQuote} numberOfLines={2}>{entry.message}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+      {SUPPORTER_PURCHASE_ENABLED && user && !user.is_supporter && (
+        <TouchableOpacity
+          onPress={() => router.push('/supporter')}
+          accessibilityRole="button"
+          data-testid="supporter-promo-banner"
+        >
+          <Text style={styles.supportLink}>{tt('💚 Sostieni l\'app con 1 € al mese')}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 
   return (
@@ -411,6 +301,7 @@ export default function HomeScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={ListHeader}
+          ListFooterComponent={ListFooter}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="search" size={64} color="#333" />
