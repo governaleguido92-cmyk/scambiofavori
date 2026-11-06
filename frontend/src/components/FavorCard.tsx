@@ -3,11 +3,10 @@ import { GranelloIcon } from './GranelloIcon';
 import { useRouter } from 'expo-router';
 import { readableTextColor } from '../utils/readableColor';
 import { earnsGranelli, favorKindFor, granelliFlowLabel } from '../utils/favorKind';
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import { Favor } from '../services/api';
 import colors from '../theme/colors';
 import { styles } from '../styles/home.styles';
@@ -34,13 +33,14 @@ interface FavorCardProps {
   roleText?: string;
   /** Contenuto sotto la scheda: pulsanti e suggerimenti. */
   children?: ReactNode;
+  /** Scheda essenziale per gli elenchi lunghi: tipo, Granelli, titolo, distanza e scadenza. Il resto sta nel dettaglio. */
+  lean?: boolean;
 }
 
 /** Scheda di un favore con banda colorata per categoria. Usata nella home (griglia) e nella mappa (fila scorrevole). */
 export const FavorCard: React.FC<FavorCardProps> = ({
-  item, currentUserId, onPress, onReport, style, highlighted, statusLabel, statusColor, roleText, children,
+  item, currentUserId, onPress, onReport, style, highlighted, statusLabel, statusColor, roleText, children, lean,
 }) => {
-  const { t } = useTranslation();
   const router = useRouter();
   const visual = getCategoryVisual(item.category);
   const expiry = getExpiryInfo(item.expires_at);
@@ -52,6 +52,48 @@ export const FavorCard: React.FC<FavorCardProps> = ({
   const kindPillLabel = tt(`${kindKey} un favore`);
   // Dono: la richiesta di un altro che puoi soddisfare, o un'offerta tua. Ricevo: l'offerta di un altro, o una richiesta tua.
   const isGive = earnsGranelli(item, currentUserId);
+
+  if (lean) {
+    return (
+      <TouchableOpacity
+        style={[
+          styles.gridCard,
+          styles.leanCard,
+          isGive ? styles.gridCardRequest : styles.gridCardOffer,
+          item.is_emergency && styles.gridCardUrgent,
+          highlighted && styles.gridCardHighlighted,
+          style,
+        ]}
+        onPress={() => onPress(item)}
+        accessibilityRole="button"
+        accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
+        data-testid={`favor-card-${item.favor_id}`}
+      >
+        <View style={styles.cleanHead}>
+          <Text style={[styles.cleanKind, { color: isGive ? colors.accent : colors.lime }]} numberOfLines={1}>{kindPillLabel}</Text>
+          <View style={styles.cleanFlow}>
+            <GranelloIcon size={11} />
+            <Text style={styles.cleanFlowText}>{tt(granelliFlowLabel(item, currentUserId))} {item.granelli_cost}</Text>
+          </View>
+        </View>
+        <View style={styles.leanBody}>
+          <View style={styles.cleanTitleRow}>
+            <Text style={styles.cleanEmoji}>{visual.emoji}</Text>
+            <Text style={[styles.gridTitle, styles.cleanTitle]} numberOfLines={2}>{item.title}</Text>
+          </View>
+        </View>
+        <View style={styles.leanMeta}>
+          <Text style={[styles.gridNear, styles.leanMetaText]} numberOfLines={1}>
+            {typeof item.distance_km === 'number' ? formatDistance(item.distance_km) : tt(item.category)}
+            {expiry ? <Text style={expiry.isSoon ? styles.gridExpirySoon : styles.gridExpiry}>{` · ${expiry.label}`}</Text> : null}
+          </Text>
+          <View style={[styles.leanAvatar, { backgroundColor: avatarColorsForKind(isGive).backgroundColor }]}>
+            <Text style={[styles.leanAvatarInitial, { color: avatarColorsForKind(isGive).color }]}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity

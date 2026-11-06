@@ -1,6 +1,6 @@
 import { NeighborhoodButton } from '../../src/components/NeighborhoodButton';
 import { GranelloIcon } from '../../src/components/GranelloIcon';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 import {
   View,
@@ -8,10 +8,9 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
   ScrollView,
   Image,
-  Alert,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -21,7 +20,6 @@ import { useAuth } from '../../src/context/AuthContext';
 import { api, Favor, Category, ThanksEntry } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { SUPPORTER_PURCHASE_ENABLED } from '../../src/utils/features';
-import { ReportModal } from '../../src/components/ReportModal';
 import { MessagesButton } from '../../src/components/MessagesButton';
 import { FavorsGridSkeleton } from '../../src/components/Skeleton';
 import { NetworkErrorBanner } from '../../src/components/OfflineNotice';
@@ -32,6 +30,7 @@ import { logger } from '../../src/utils/logger';
 import { tt } from '../../src/i18n/tt';
 import { FavorCard } from '../../src/components/FavorCard';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
+import { buildRows, filterFavors, FavorFilter, FavorRow, FavorSectionKey } from '../../src/utils/favorSections';
 
 const CATEGORY_ICONS: Record<string, string> = {
   'Trasporto': 'heart-circle',
@@ -62,9 +61,9 @@ export default function HomeScreen() {
   const [thanksBoard, setThanksBoard] = useState<ThanksEntry[]>([]);
   const [networkError, setNetworkError] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  // Report modal state
-  const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [reportTarget, setReportTarget] = useState<{ id: string; name: string } | null>(null);
+  const [filter, setFilter] = useState<FavorFilter>('all');
+  const [query, setQuery] = useState('');
+  const [expandedSections, setExpandedSections] = useState<ReadonlySet<FavorSectionKey>>(new Set());
 
   // Load unread notifications count
   const loadUnreadCount = useCallback(async () => {
@@ -76,11 +75,6 @@ export default function HomeScreen() {
       logger.debug('Error loading notification count:', error);
     }
   }, [token]);
-
-  const handleReportFavor = (favorId: string, favorTitle: string) => {
-    setReportTarget({ id: favorId, name: favorTitle });
-    setReportModalVisible(true);
-  };
 
   const getLocation = async () => {
     try {
@@ -177,14 +171,67 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderFavorCard = ({ item }: { item: Favor }) => (
+  const visibleFavors = useMemo(() => filterFavors(favors, filter, query), [favors, filter, query]);
+  // Con filtro o ricerca attivi l'elenco è unico; a fasce solo quando si guarda tutto
+  const rows = useMemo(
+    () => buildRows(visibleFavors, { grouped: filter === 'all' && query.trim() === '', expanded: expandedSections }),
+    [visibleFavors, filter, query, expandedSections],
+  );
+
+  const toggleSection = (section: FavorSectionKey) =>
+    setExpandedSections((current) => {
+      const next = new Set(current);
+      if (next.has(section)) next.delete(section); else next.add(section);
+      return next;
+    });
+
+  const SECTION_TITLES: Record<FavorSectionKey, string> = {
+    urgent: 'Urgenti',
+    near: 'Vicini a te',
+    others: 'Altri favori',
+  };
+
+  const renderCard = (favor: Favor) => (
     <FavorCard
-      item={item}
+      lean
+      item={favor}
       currentUserId={user?.user_id}
-      onPress={(favor) => router.push(`/favor/${favor.favor_id}`)}
-      onReport={(favor) => handleReportFavor(favor.favor_id, favor.title)}
+      onPress={(f) => router.push(`/favor/${f.favor_id}`)}
     />
   );
+
+  const renderRow = ({ item }: { item: FavorRow }) => {
+    if (item.type === 'header') {
+      return (
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, item.section === 'urgent' && styles.sectionTitleUrgent]}>
+            {tt(SECTION_TITLES[item.section])} ({item.total})
+          </Text>
+          {item.canExpand && (
+            <TouchableOpacity
+              onPress={() => toggleSection(item.section)}
+              accessibilityRole="button"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.sectionMore}>{item.expanded ? tt('Mostra meno') : tt('Vedi tutti')}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      );
+    }
+    return (
+      <View style={styles.pairRow}>
+        {renderCard(item.left)}
+        {item.right ? renderCard(item.right) : <View style={styles.pairSpacer} />}
+      </View>
+    );
+  };
+
+  const FILTERS: { key: FavorFilter; label: string }[] = [
+    { key: 'all', label: 'Tutti' },
+    { key: 'near', label: 'Vicini' },
+    { key: 'soon', label: 'Scade presto' },
+  ];
 
   // Header component for FlatList
   const ListHeader = () => (
@@ -225,6 +272,38 @@ export default function HomeScreen() {
       ) : null}
 
       <FavorTypeTabs value={selectedType} onChange={setSelectedType} />
+
+      <View style={styles.searchBox}>
+        <Ionicons name="search" size={16} color={colors.textMuted} />
+        <TextInput
+          style={styles.searchInput}
+          value={query}
+          onChangeText={setQuery}
+          placeholder={tt('Cerca un favore')}
+          placeholderTextColor={colors.textMuted}
+          returnKeyType="search"
+          accessibilityLabel={tt('Cerca un favore')}
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery('')} accessibilityRole="button" accessibilityLabel={tt('Cancella')}>
+            <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.filterRow}>
+        {FILTERS.map((option) => (
+          <TouchableOpacity
+            key={option.key}
+            style={[styles.filterPill, filter === option.key && styles.filterPillActive]}
+            onPress={() => setFilter(option.key)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filter === option.key }}
+          >
+            <Text style={[styles.filterPillText, filter === option.key && styles.filterPillTextActive]}>{tt(option.label)}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Categorie: chiuse di default, si aprono con un tocco */}
       <TouchableOpacity
@@ -326,11 +405,10 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
-          data={favors}
-          renderItem={renderFavorCard}
-          keyExtractor={(item) => item.favor_id}
-          numColumns={2}
-          columnWrapperStyle={styles.gridRow}
+          data={rows}
+          renderItem={renderRow}
+          keyExtractor={(item) => item.key}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={
@@ -355,20 +433,6 @@ export default function HomeScreen() {
         <Text style={styles.emergencyButtonText}>{tt('Urgenze')}</Text>
       </TouchableOpacity>
 
-      {/* Report Modal */}
-      {reportTarget && token && (
-        <ReportModal
-          visible={reportModalVisible}
-          onClose={() => {
-            setReportModalVisible(false);
-            setReportTarget(null);
-          }}
-          reportType="favor"
-          targetId={reportTarget.id}
-          targetName={reportTarget.name}
-          token={token}
-        />
-      )}
     </SafeAreaView>
   );
 }
