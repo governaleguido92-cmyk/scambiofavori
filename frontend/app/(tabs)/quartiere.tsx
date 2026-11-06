@@ -283,6 +283,15 @@ export default function NeighborhoodScreen() {
               }
             />
             <Text style={styles.rule}>{tt('Segnala, non accusare: se qualcosa non va, tocca il messaggio e segnalalo.')}</Text>
+            <TouchableOpacity
+              style={styles.askHelp}
+              onPress={() => router.push('/create' as any)}
+              accessibilityRole="button"
+              data-testid="square-ask-help"
+            >
+              <Ionicons name="hand-left" size={14} color={colors.accent} />
+              <Text style={styles.askHelpText}>{tt('Ti serve una mano? Chiedi un favore')}</Text>
+            </TouchableOpacity>
             <View style={styles.composer}>
               <TextInput
                 style={styles.input}
@@ -352,6 +361,8 @@ const styles = StyleSheet.create({
   offApp: { flexDirection: 'row', gap: 6, alignItems: 'flex-start', marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: 'rgba(248,120,40,0.35)' },
   offAppText: { flex: 1, color: colors.warning, fontSize: 12, lineHeight: 16 },
   rule: { color: colors.textMuted, fontSize: 12, textAlign: 'center', paddingHorizontal: 16, paddingTop: 6 },
+  askHelp: { flexDirection: 'row', alignItems: 'center', alignSelf: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 14, marginBottom: 6, borderRadius: 999, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.backgroundCard },
+  askHelpText: { color: colors.textSecondary, fontSize: 12.5, fontWeight: '600' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: 10, borderTopWidth: 1, borderTopColor: colors.backgroundLight },
   input: { flex: 1, maxHeight: 110, minHeight: 42, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: colors.backgroundCard, color: colors.textPrimary, fontSize: 15 },
   send: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },

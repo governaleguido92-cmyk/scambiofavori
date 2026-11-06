@@ -26,6 +26,8 @@ const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   chat: { name: 'chatbubble-ellipses', color: colors.lime },
   new_message: { name: 'chatbubble', color: colors.accent },
   favor_completed: { name: 'checkmark-circle', color: '#98AA4A' },
+  favor_accepted: { name: 'hand-left', color: colors.accent },
+  favor_expiring: { name: 'hourglass', color: colors.accentLight },
   supporter: { name: 'heart', color: '#98AA4A' },
   welcome: { name: 'hand-right', color: colors.accent },
   badge_earned: { name: 'ribbon', color: colors.lime },
