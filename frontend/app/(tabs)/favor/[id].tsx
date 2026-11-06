@@ -45,6 +45,8 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Altro': 'ellipsis-horizontal',
 };
 
+const QUICK_THANKS = ['Gentile e puntuale, grazie!', 'Mi hai tolto un pensiero', 'Persona squisita, consigliata', 'Veloce e disponibile'];
+
 export default function FavorDetailScreen() {
   const { id, qr: qrIntent } = useLocalSearchParams<{ id: string; qr?: string }>();
   const { user, token, refreshUser } = useAuth();
@@ -722,6 +724,21 @@ export default function FavorDetailScreen() {
             <Text style={{ color: '#A5A89B', fontSize: 12, marginTop: 6 }}>
               {tt('Il commento sarà visibile sul profilo di chi recensisci, con il tuo nome. Scrivi con rispetto.')}
             </Text>
+
+            <Text style={styles.quickThanksLabel}>{tt('Grazie veloce: tocca una frase')}</Text>
+            <View style={styles.quickThanksRow}>
+              {QUICK_THANKS.map((phrase) => (
+                <TouchableOpacity
+                  key={phrase}
+                  style={[styles.quickThanksChip, publicThanks === tt(phrase) && styles.quickThanksChipActive]}
+                  onPress={() => setPublicThanks(publicThanks === tt(phrase) ? '' : tt(phrase))}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: publicThanks === tt(phrase) }}
+                >
+                  <Text style={[styles.quickThanksText, publicThanks === tt(phrase) && styles.quickThanksTextActive]}>{tt(phrase)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <TextInput
               style={[styles.commentInput, { marginTop: 12 }]}

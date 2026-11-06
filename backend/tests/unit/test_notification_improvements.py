@@ -184,3 +184,60 @@ async def test_no_stalled_reminder_for_a_recent_accepted_favor(client, app_db):
                                               accepted_at=datetime.now(timezone.utc) - timedelta(hours=5)))
 
     assert [n for n in await notifications(client, "owner") if n["type"] == "favor_stalled"] == []
+
+
+# ---------- rilascio dei favori fermi da 7 giorni ----------
+
+async def test_favor_accepted_a_week_ago_goes_back_to_active_and_both_are_told(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted",
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(days=8),
+                                              expires_at=datetime.now(timezone.utc) + timedelta(days=2)))
+
+    items = await notifications(client, "helper")
+
+    stored = await app_db.favors.find_one({"favor_id": "f1"})
+    assert stored["status"] == "active" and "accepted_by" not in stored
+    assert [n for n in items if n["type"] == "favor_released"]
+    assert [n for n in await notifications(client, "owner") if n["type"] == "favor_released"]
+
+
+async def test_expired_stalled_favor_is_closed_not_reopened(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted",
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(days=9),
+                                              expires_at=datetime.now(timezone.utc) - timedelta(days=1)))
+
+    await notifications(client, "owner")
+
+    assert (await app_db.favors.find_one({"favor_id": "f1"}))["status"] == "cancelled"
+
+
+async def test_recently_accepted_favor_is_not_released(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted",
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(days=3)))
+
+    await notifications(client, "owner")
+
+    assert (await app_db.favors.find_one({"favor_id": "f1"}))["status"] == "accepted"
+
+
+async def test_new_helper_at_the_limit_is_freed_by_stalled_favors(client, app_db, mongo_like_find_one_and_update):
+    from trust import NEW_USER_MAX_ACCEPTED_FAVORS
+
+    await app_db.users.insert_many([make_user("helper", email_verified=True), make_user("fresh", email_verified=True)])
+    old = datetime.now(timezone.utc) - timedelta(days=8)
+    await app_db.favors.insert_many([
+        make_favor(f"old{i}", creator_id=f"c{i}", creator_name=f"c{i}", accepted_by="helper", accepted_by_name="helper",
+                   status="accepted", accepted_at=old, expires_at=datetime.now(timezone.utc) + timedelta(days=1))
+        for i in range(NEW_USER_MAX_ACCEPTED_FAVORS)
+    ])
+    await app_db.favors.insert_one(active_favor("new1", "fresh", timedelta(days=3)))
+
+    response = await client.post("/api/favors/accept", json={"favor_id": "new1"}, headers=auth("helper"))
+
+    assert response.status_code == 200, response.text

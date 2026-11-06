@@ -435,6 +435,12 @@ export const styles = StyleSheet.create({
     borderTopColor: '#333',
     paddingTop: 12,
   },
+  quickThanksLabel: { color: '#A5A89B', fontSize: 12, marginTop: 14, marginBottom: 6 },
+  quickThanksRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  quickThanksChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, borderWidth: 1, borderColor: '#2E3420', backgroundColor: '#171A10' },
+  quickThanksChipActive: { backgroundColor: '#F87828', borderColor: '#F87828' },
+  quickThanksText: { color: '#D4D6CC', fontSize: 12.5, fontWeight: '600' },
+  quickThanksTextActive: { color: '#FFFFFF' },
   publicThanksBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',

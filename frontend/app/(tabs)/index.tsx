@@ -28,6 +28,7 @@ import { styles } from '../../src/styles/home.styles';
 import { logger } from '../../src/utils/logger';
 import { tt } from '../../src/i18n/tt';
 import { FavorCard } from '../../src/components/FavorCard';
+import { FirstSteps } from '../../src/components/FirstSteps';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 import { buildRows, filterFavors, FavorRow, FavorSectionKey } from '../../src/utils/favorSections';
 
@@ -189,6 +190,8 @@ export default function HomeScreen() {
   // Header component for FlatList
   const ListHeader = () => (
     <>
+      {token && <FirstSteps token={token} helped={user?.total_favors_given ?? 0} onShowGive={() => setSelectedType('request')} />}
+
       <FavorTypeTabs value={selectedType} onChange={setSelectedType} hideHint />
 
       {(favors.length >= 7 || query.length > 0) && (
@@ -306,7 +309,7 @@ export default function HomeScreen() {
             <View style={styles.emptyContainer}>
               <Ionicons name="search" size={64} color="#333" />
               <Text style={styles.emptyText}>{tt('Ancora nessun favore dei tuoi vicini')}</Text>
-              <Text style={styles.emptySubtext}>{tt('Pubblica tu il primo da Crea, oppure cambia i filtri')}</Text>
+              <Text style={styles.emptySubtext}>{tt('Pubblica tu il primo da Crea: i tuoi vicini lo vedranno subito')}</Text>
             </View>
           }
           refreshControl={
