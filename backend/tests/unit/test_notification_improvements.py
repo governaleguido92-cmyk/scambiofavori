@@ -131,3 +131,56 @@ async def test_not_enough_granelli_message_suggests_how_to_earn_them(client, app
 
     assert response.status_code == 400
     assert "Dona un favore" in response.json()["detail"]
+
+
+# ---------- messaggi raggruppati e favori fermi ----------
+
+async def test_unread_messages_of_one_favor_become_a_single_notification(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted"))
+
+    for text in ("Ciao", "Sto arrivando", "Ci vediamo al portone"):
+        response = await client.post("/api/messages", json={"favor_id": "f1", "content": text}, headers=auth("helper"))
+        assert response.status_code == 200, response.text
+
+    items = [n for n in await notifications(client, "owner") if n["type"] == "new_message"]
+    assert len(items) == 1
+    assert items[0]["count"] == 3 and "3 nuovi messaggi" in items[0]["message"]
+
+
+async def test_new_message_after_reading_starts_a_new_notification(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted"))
+    await client.post("/api/messages", json={"favor_id": "f1", "content": "Ciao"}, headers=auth("helper"))
+    first = [n for n in await notifications(client, "owner") if n["type"] == "new_message"][0]
+    await client.post(f"/api/notifications/read/{first['notification_id']}", headers=auth("owner"))
+
+    await client.post("/api/messages", json={"favor_id": "f1", "content": "Eccomi"}, headers=auth("helper"))
+
+    assert len([n for n in await notifications(client, "owner") if n["type"] == "new_message"]) == 2
+
+
+async def test_both_parties_are_reminded_once_when_a_favor_is_stalled(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted",
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(days=3)))
+
+    for _ in range(2):
+        for user in ("owner", "helper"):
+            await notifications(client, user)
+
+    for user in ("owner", "helper"):
+        stalled = [n for n in await notifications(client, user) if n["type"] == "favor_stalled"]
+        assert len(stalled) == 1 and "3 giorni" in stalled[0]["message"]
+
+
+async def test_no_stalled_reminder_for_a_recent_accepted_favor(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_one(make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper",
+                                              accepted_by_name="helper", status="accepted",
+                                              accepted_at=datetime.now(timezone.utc) - timedelta(hours=5)))
+
+    assert [n for n in await notifications(client, "owner") if n["type"] == "favor_stalled"] == []

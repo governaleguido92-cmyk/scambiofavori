@@ -30,6 +30,7 @@ import { FavorCard } from '../../src/components/FavorCard';
 import { getCategoryVisual } from '../../src/utils/favorVisual';
 import { getTitleExamples } from '../../src/utils/favorExamples';
 import { granelliWord } from '../../src/utils/granelli';
+import colors from '../../src/theme/colors';
 import { logger } from '../../src/utils/logger';
 import { notify, showRefusal } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
@@ -564,6 +565,11 @@ export default function CreateFavorScreen() {
               <Text style={styles.granelliPreviewUnit}>{granelliWord(granelliPreview)}</Text>
             </View>
           </View>
+          {type === 'request' && (user?.granelli || 0) < granelliPreview && (
+            <Text style={[styles.fieldHint, { color: colors.accent }]}>
+              {tt('Non ti bastano: aiuta prima un vicino con «Dona un favore» per guadagnarne.')}
+            </Text>
+          )}
           {type === 'request' && (
             <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}.
             </Text>
