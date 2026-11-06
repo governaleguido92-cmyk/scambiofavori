@@ -29,7 +29,7 @@ SAFETY_HOLD_ALERTS = 2
 SAFETY_WINDOW_DAYS = 90
 REMINDER_COOLDOWN_HOURS = 24
 OPEN_STATUSES = ("active", "accepted")
-RELEASE_AFTER = timedelta(days=7)  # un favore accettato e mai concluso torna libero dopo questo tempo
+RELEASE_AFTER = timedelta(days=5)  # un favore accettato e mai concluso torna libero dopo questo tempo (come la durata massima)
 
 
 def completed_favors_total(user_doc: dict) -> int:
@@ -88,7 +88,7 @@ async def release_stalled_favors(user_id: str) -> int:
 
 async def ensure_emergency_slot(user_id: str) -> None:
     """Poche urgenze alla volta: se tutto è urgente, niente lo è più per chi guarda."""
-    active = await db.favors.count_documents({"creator_id": user_id, "is_emergency": True, "status": "active"})
+    active = await db.favors.count_documents({"creator_id": user_id, "is_emergency": True, "status": "active", "expires_at": {"$gt": datetime.now(timezone.utc)}})
     if active >= MAX_ACTIVE_EMERGENCIES:
         raise HTTPException(
             status_code=403,
@@ -100,8 +100,11 @@ async def ensure_emergency_slot(user_id: str) -> None:
 async def committed_granelli(user_id: str) -> int:
     """Granelli che l'utente dovrà pagare per favori già in corso: richieste che ha pubblicato e favori offerti
     da altri che ha accettato. Servono a non lasciargli promettere più di quanto ha."""
-    favors = await db.favors.find({"status": {"$in": list(OPEN_STATUSES)}, "$or": [
-        {"type": "request", "creator_id": user_id},
+    now = datetime.now(timezone.utc)
+    # Una richiesta scaduta senza risposta non tiene più fermi i Granelli
+    favors = await db.favors.find({"$or": [
+        {"type": "request", "creator_id": user_id, "status": "accepted"},
+        {"type": "request", "creator_id": user_id, "status": "active", "expires_at": {"$gt": now}},
         {"type": "offer", "accepted_by": user_id, "status": "accepted"},
     ]}, {"_id": 0, "granelli_cost": 1}).to_list(200)
     return sum(int(favor.get("granelli_cost") or 1) for favor in favors)
@@ -147,7 +150,7 @@ async def ensure_new_user_open_slot(user_id: str) -> None:
         return
     await release_stalled_favors(user_id)
     # Contano solo i favori ancora in attesa di qualcuno: quelli già accettati li sta seguendo un vicino
-    waiting = await db.favors.count_documents({"status": "active", "creator_id": user_id})
+    waiting = await db.favors.count_documents({"status": "active", "creator_id": user_id, "expires_at": {"$gt": datetime.now(timezone.utc)}})
     if waiting >= NEW_USER_MAX_OPEN_FAVORS:
         raise HTTPException(
             status_code=403,

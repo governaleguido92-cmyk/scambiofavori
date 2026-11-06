@@ -74,6 +74,8 @@ export default function FavorDetailScreen() {
   const [impactRating, setImpactRating] = useState(5);
   const [comment, setComment] = useState('');
   const [publicThanks, setPublicThanks] = useState('');
+  // Granelli già promessi ad altri favori in corso: per accettare un'offerta servono Granelli liberi
+  const [committedGranelli, setCommittedGranelli] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -380,6 +382,18 @@ export default function FavorDetailScreen() {
       setActionLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!token || !user || favor?.type !== 'offer') return;
+    api.getMyFavors(token).then((mine) => {
+      const total = mine
+        .filter((item) => (item.type === 'request' && item.creator_id === user.user_id && (item.status === 'accepted' || (item.status === 'active' && new Date(item.expires_at ?? 0).getTime() > Date.now())))
+          || (item.type === 'offer' && item.accepted_by === user.user_id && item.status === 'accepted'))
+        .reduce((sum, item) => sum + (item.granelli_cost || 1), 0);
+      setCommittedGranelli(total);
+    }).catch(() => setCommittedGranelli(0));
+  }, [token, user?.user_id, favor?.type, favor?.favor_id]);
+  const freeGranelli = Math.max(0, (user?.granelli || 0) - committedGranelli);
 
   const canAccept = () => {
     if (!user || !favor) return false;
@@ -774,6 +788,15 @@ export default function FavorDetailScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
+          {canAccept() && favor.type === 'offer' && (
+            <Text
+              style={[styles.acceptHint, { fontWeight: '700' }, freeGranelli < favor.granelli_cost && { color: '#F87828' }]}
+              data-testid="accept-cost-line"
+            >
+              {tx('Per accettare ti servono {0} {1}: ne hai {2} liberi', [favor.granelli_cost, CURRENCY_NAME, freeGranelli])}
+              {committedGranelli > 0 ? tx(' ({0} già impegnati)', [committedGranelli]) : ''}
+            </Text>
+          )}
           {canAccept() && (
             <TouchableOpacity
               style={styles.acceptButton}

@@ -555,13 +555,17 @@ FAVOR_CATEGORIES = [
 ]
 
 
+# Un favore resta in elenco al massimo questi giorni: poi scade e i Granelli che teneva fermi tornano liberi
+MAX_FAVOR_VALIDITY_DAYS = 5
+
+
 class FavorCreate(BaseModel):
     type: str = Field(max_length=20)  # "offer" or "request"
     title: str = Field(max_length=120)
     description: str = Field(max_length=2000)
     category: str = Field(max_length=60)
     duration_hours: float = Field(default=1.0, gt=0, le=999, allow_inf_nan=False)
-    validity_days: int = Field(default=3, ge=0, le=365)  # Durata annuncio (1-10 giorni, default 3)
+    validity_days: int = Field(default=3, ge=0, le=365)  # Durata annuncio: al massimo 5 giorni (il server la limita)
     # Solo numeri finiti e coordinate vere: un NaN salvato romperebbe l'elenco dei favori per tutti
     latitude: Optional[float] = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
     longitude: Optional[float] = Field(default=None, ge=-180, le=180, allow_inf_nan=False)

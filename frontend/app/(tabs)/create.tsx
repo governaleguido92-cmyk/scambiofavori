@@ -42,16 +42,16 @@ const DESCRIPTION_MAX = 500;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_HOURS = 1; // si va di ora in ora, niente mezze ore
 
-// Durata dell'annuncio: tre scelte semplici (il server accetta da 1 a 10 giorni).
+// Durata dell'annuncio: un favore resta in elenco al massimo 5 giorni (poi scade e i Granelli tornano liberi).
 /** Un favore vecchio può avere una durata che non è tra le tre scelte: si porta alla più vicina. */
-const nearestValidity = (days: number): number => (days <= 1 ? 1 : days <= 4 ? 3 : 7);
+const nearestValidity = (days: number): number => (days <= 1 ? 1 : days <= 3 ? 3 : 5);
 
 const PREFILL_KEYS = ['editId', 'title', 'description', 'category', 'type', 'durationHours', 'validityDays'] as const;
 
 const VALIDITY_CHOICES: ReadonlyArray<{ days: number; label: string }> = [
   { days: 1, label: '1 giorno' },
   { days: 3, label: '3 giorni' },
-  { days: 7, label: '1 settimana' },
+  { days: 5, label: '5 giorni' },
 ];
 
 export default function CreateFavorScreen() {
@@ -71,7 +71,7 @@ export default function CreateFavorScreen() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [durationHours, setDurationHours] = useState('1');
-  const [validityDays, setValidityDays] = useState(3); // Durata annuncio (1-10 giorni)
+  const [validityDays, setValidityDays] = useState(3); // Durata annuncio (1-5 giorni)
   const [address, setAddress] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -86,8 +86,8 @@ export default function CreateFavorScreen() {
     if (!token || !user) return;
     api.getMyFavors(token).then((mine) => {
       const total = mine
-        .filter((favor) => favor.status === 'active' || favor.status === 'accepted')
-        .filter((favor) => (favor.type === 'request' && favor.creator_id === user.user_id)
+        .filter((favor) => (favor.type === 'request' && favor.creator_id === user.user_id
+          && (favor.status === 'accepted' || (favor.status === 'active' && new Date(favor.expires_at ?? 0).getTime() > Date.now())))
           || (favor.type === 'offer' && favor.accepted_by === user.user_id && favor.status === 'accepted'))
         .reduce((sum, favor) => sum + (favor.granelli_cost || 1), 0);
       setCommitted(total);

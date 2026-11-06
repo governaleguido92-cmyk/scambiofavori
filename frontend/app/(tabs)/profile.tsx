@@ -10,6 +10,7 @@ import { ProfileCompletionBar } from '../../src/components/ProfileCompletionBar'
 import { ProfileHero } from '../../src/components/profile/ProfileHero';
 import { ProfileStats } from '../../src/components/profile/ProfileStats';
 import { TrustCard } from '../../src/components/profile/TrustCard';
+import { FundProgress } from '../../src/components/profile/FundProgress';
 import { BadgeShelf } from '../../src/components/profile/BadgeShelf';
 import { BadgeInfoModal } from '../../src/components/profile/BadgeInfoModal';
 import { SkillsSection, SkillsModal } from '../../src/components/profile/SkillsSection';
@@ -241,6 +242,10 @@ export default function ProfileScreen() {
         {/* IL MIO PERCORSO: fiducia, profilo, badge, competenze, recensioni */}
         <SectionTitle>{tt('Il mio percorso')}</SectionTitle>
         {token && <TrustCard token={token} />}
+        <FundProgress
+          done={(user?.total_favors_given ?? 0) + (user?.total_favors_received ?? 0)}
+          unlocked={!!user?.badges?.includes('eroe_quartiere')}
+        />
         {token && <ProfileCompletionBar token={token} refreshKey={completionKey} onItemPress={(itemId) => itemId === 'skills' && openSkills()} />}
         <BadgeShelf badges={shelfBadges} onPress={setSelectedBadge} progress={data.badgeProgress} />
         <SkillsSection skills={data.skills} onEdit={openSkills} />

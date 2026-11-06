@@ -71,7 +71,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     creator_in_debt = current_user.granelli < 0
     
     # Validazione durata annuncio (1-10 giorni)
-    validity_days = max(1, min(10, favor_data.validity_days))
+    validity_days = max(1, min(MAX_FAVOR_VALIDITY_DAYS, favor_data.validity_days))
     created_at = datetime.now(timezone.utc)
     expires_at = created_at + timedelta(days=validity_days)
     
@@ -177,7 +177,7 @@ async def update_favor(favor_id: str, update: FavorUpdate, current_user: User = 
         values["duration_hours"] = duration
         values["granelli_cost"] = granelli_cost
     if "validity_days" in changes:
-        validity_days = max(1, min(10, changes["validity_days"]))
+        validity_days = max(1, min(MAX_FAVOR_VALIDITY_DAYS, changes["validity_days"]))
         values["validity_days"] = validity_days
         values["expires_at"] = datetime.now(timezone.utc) + timedelta(days=validity_days)
 
