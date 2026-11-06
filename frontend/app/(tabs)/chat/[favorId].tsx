@@ -25,7 +25,7 @@ import { api, ChatMessage, Favor, CURRENCY_NAME } from '../../../src/services/ap
 import { SupporterProfileBorder } from '../../../src/components/SupporterBadge';
 import { ChatHeader } from '../../../src/components/chat/ChatHeader';
 import { ChatQuickReplies } from '../../../src/components/chat/ChatQuickReplies';
-import { ChatActionsBar } from '../../../src/components/chat/ChatActionsBar';
+import { AttachButton, ChatActionsMenu } from '../../../src/components/chat/ChatActionsBar';
 import { MeetingPointModal } from '../../../src/components/chat/MeetingPointModal';
 import { MeetingPointCard } from '../../../src/components/chat/MeetingPointCard';
 import { formatMeetingPointMessage, parseMeetingPointMessage } from '../../../src/utils/meetingPoint';
@@ -74,6 +74,7 @@ export default function ChatScreen() {
   const [reportReason, setReportReason] = useState('');
   const [showPrivacyAlert, setShowPrivacyAlert] = useState(false);
   const [sendingLocation, setSendingLocation] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showMeeting, setShowMeeting] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -169,7 +170,8 @@ export default function ChatScreen() {
       const { latitude, longitude } = location.coords;
       
       // Crea un link Google Maps
-      const mapsUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+      // 5 decimali bastano (circa 1 metro) e il link resta corto
+      const mapsUrl = `https://maps.google.com/?q=${latitude.toFixed(5)},${longitude.toFixed(5)}`;
       const locationMessage = `📍 La mia posizione attuale:\n${mapsUrl}`;
       
       await api.sendMessage(favorId, locationMessage, token);
@@ -357,11 +359,14 @@ export default function ChatScreen() {
           ) : item.content.includes('maps.google.com') ? (
             <TouchableOpacity onPress={() => openLocationInMaps(item.content)}>
               <View style={styles.locationMessage}>
-                <Ionicons name="location" size={20} color={colors.accent} />
-                <View>
-                  <Text style={styles.locationTitle}>{tt('📍 Posizione condivisa')}</Text>
-                  <Text style={styles.locationLink}>{tt('Tocca per aprire in Google Maps')}</Text>
+                <View style={styles.locationIcon}>
+                  <Ionicons name="location" size={20} color={colors.background} />
                 </View>
+                <View style={styles.locationBody}>
+                  <Text style={styles.locationTitle}>{tt('Posizione condivisa')}</Text>
+                  <Text style={styles.locationLink}>{tt('Apri nella mappa')}</Text>
+                </View>
+                <Ionicons name="open-outline" size={18} color={colors.textMuted} />
               </View>
             </TouchableOpacity>
           ) : (
@@ -463,12 +468,14 @@ export default function ChatScreen() {
               onSend={(text) => sendText(text, false)}
               onPrefill={(text) => handleChangeText(text)}
             />
-            <ChatActionsBar
+            <ChatActionsMenu
+              open={attachOpen}
               sendingLocation={sendingLocation}
-              onMeetingPoint={handleSendMeetingPoint}
-              onLocation={handleSendLocation}
+              onMeetingPoint={() => { setAttachOpen(false); handleSendMeetingPoint(); }}
+              onLocation={async () => { await handleSendLocation(); setAttachOpen(false); }}
             />
             <View style={styles.inputContainer}>
+              <AttachButton open={attachOpen} disabled={chatStatus?.read_only} onPress={() => setAttachOpen((value) => !value)} />
               <TextInput
                 style={styles.input}
                 value={newMessage}
@@ -933,11 +940,23 @@ const styles = StyleSheet.create({
   locationMessage: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(152, 170, 74, 0.15)',
-    padding: 12,
-    borderRadius: 12,
+    backgroundColor: colors.backgroundLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 10,
+    borderRadius: 14,
     gap: 12,
+    minWidth: 220,
   },
+  locationIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locationBody: { flex: 1 },
   locationTitle: {
     color: colors.textPrimary,
     fontSize: 14,

@@ -184,9 +184,13 @@ SCAM_HINT_PATTERNS = [
 ]
 
 
+# Il link con la posizione che l'app stessa manda in chat: le sue coordinate lunghe non sono un numero di carta
+APP_LOCATION_LINK = re.compile(r'https://maps\.google\.com/\?q=-?\d{1,3}(?:\.\d+)?,-?\d{1,3}(?:\.\d+)?(?![\w.,-])')
+
+
 def contains_scam_hint(text: str) -> bool:
     """True se il testo somiglia a una truffa (codici, anticipi, ricariche, carte, IBAN, cripto)."""
-    text_lower = text.lower()
+    text_lower = APP_LOCATION_LINK.sub(' ', text.lower())
     return any(re.search(pattern, text_lower) for pattern in SCAM_HINT_PATTERNS)
 
 
