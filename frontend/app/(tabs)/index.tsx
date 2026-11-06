@@ -26,7 +26,8 @@ import { offlineCache } from '../../src/utils/offlineCache';
 import { useTranslation } from 'react-i18next';
 import { styles } from '../../src/styles/home.styles';
 import { logger } from '../../src/utils/logger';
-import { tt } from '../../src/i18n/tt';
+import { tt, tx } from '../../src/i18n/tt';
+import { getCategoryVisual, formatDistance } from '../../src/utils/favorVisual';
 import { FavorCard } from '../../src/components/FavorCard';
 import { FirstSteps } from '../../src/components/FirstSteps';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
@@ -44,6 +45,7 @@ export default function HomeScreen() {
   const [thanksBoard, setThanksBoard] = useState<ThanksEntry[]>([]);
   const [networkError, setNetworkError] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [mySkills, setMySkills] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   const [expandedSections, setExpandedSections] = useState<ReadonlySet<FavorSectionKey>>(new Set());
 
@@ -113,6 +115,7 @@ export default function HomeScreen() {
     getLocation();
     loadThanksBoard();
     loadUnreadCount();
+    if (token) api.getUserSkills(token).then((result) => setMySkills(result.skills ?? [])).catch(() => setMySkills([]));
     // Poll notifications every 15 seconds for real-time updates
     const notifInterval = setInterval(loadUnreadCount, 15000);
     return () => clearInterval(notifInterval);
@@ -135,8 +138,8 @@ export default function HomeScreen() {
   const visibleFavors = useMemo(() => filterFavors(favors, 'all', query), [favors, query]);
   // Con filtro o ricerca attivi l'elenco è unico; a fasce solo quando si guarda tutto
   const rows = useMemo(
-    () => buildRows(visibleFavors, { grouped: query.trim() === '', expanded: expandedSections }),
-    [visibleFavors, query, expandedSections],
+    () => buildRows(visibleFavors, { grouped: query.trim() === '', expanded: expandedSections, skills: mySkills }),
+    [visibleFavors, query, expandedSections, mySkills],
   );
 
   const toggleSection = (section: FavorSectionKey) =>
@@ -149,6 +152,7 @@ export default function HomeScreen() {
   const SECTION_TITLES: Record<FavorSectionKey, string> = {
     urgent: 'Urgenti',
     near: 'Vicini a te',
+    skills: 'In linea con le tue competenze',
     others: 'Altri favori',
   };
 
@@ -170,14 +174,38 @@ export default function HomeScreen() {
           </Text>
           {item.canExpand && (
             <TouchableOpacity
-              onPress={() => toggleSection(item.section)}
+              onPress={() => (item.section === 'urgent' ? router.push('/emergencies' as any) : toggleSection(item.section))}
               accessibilityRole="button"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={styles.sectionMore}>{item.expanded ? tt('Mostra meno') : tt('Vedi tutti')}</Text>
+              <Text style={styles.sectionMore}>
+                {item.section === 'urgent' ? tt('Tutte le urgenze') : item.expanded ? tt('Mostra meno') : tt('Vedi tutti')}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
+      );
+    }
+    if (item.type === 'group') {
+      const visual = getCategoryVisual(item.category);
+      return (
+        <TouchableOpacity
+          style={styles.groupRow}
+          onPress={() => setQuery(item.title)}
+          accessibilityRole="button"
+          accessibilityLabel={tx('{0} vicini chiedono: {1}', [item.count, item.title])}
+          data-testid="favor-group-row"
+        >
+          <Text style={styles.groupEmoji}>{visual.emoji}</Text>
+          <View style={styles.groupBody}>
+            <Text style={styles.groupTitle} numberOfLines={1}>{item.title}</Text>
+            <Text style={styles.groupSub}>
+              {tx('{0} vicini lo chiedono', [item.count])}
+              {item.nearestKm !== null ? ` · ${tt('il più vicino')} ${formatDistance(item.nearestKm)}` : ''}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </TouchableOpacity>
       );
     }
     return (

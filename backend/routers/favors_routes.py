@@ -53,6 +53,8 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     
     await trust.ensure_not_on_hold(current_user.user_id)
     await trust.ensure_new_user_can_create(current_user.user_id, granelli_cost, favor_data.is_emergency)
+    if favor_data.is_emergency:
+        await trust.ensure_emergency_slot(current_user.user_id)
 
     # Update last activity
     await update_last_activity(current_user.user_id)

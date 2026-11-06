@@ -1,10 +1,12 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import colors from '../theme/colors';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    // Su computer l'app resta stretta e centrata come su un telefono
+    ...(Platform.OS === 'web' ? { width: '100%', maxWidth: 760, alignSelf: 'center' as const } : {}),
   },
   header: {
     flexDirection: 'row',
@@ -832,6 +834,23 @@ export const styles = StyleSheet.create({
     fontSize: 12.5,
     paddingVertical: 8,
   },
+  groupRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 16,
+    backgroundColor: colors.backgroundCard,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  groupEmoji: { fontSize: 24 },
+  groupBody: { flex: 1, gap: 2 },
+  groupTitle: { color: colors.textPrimary, fontSize: 15, fontWeight: '500' },
+  groupSub: { color: colors.textMuted, fontSize: 12 },
+  leanName: { color: colors.textSecondary, fontSize: 12, maxWidth: 90 },
+  leanWho: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   leanCard: {
     minHeight: 104,
   },

@@ -86,8 +86,11 @@ export const FavorCard: React.FC<FavorCardProps> = ({
           <Text style={styles.leanMetaText} numberOfLines={1}>
             {typeof item.distance_km === 'number' ? formatDistance(item.distance_km) : tt(item.category)}
           </Text>
-          <View style={[styles.leanAvatar, { backgroundColor: avatarColorsForKind(isGive).backgroundColor }]}>
-            <Text style={[styles.leanAvatarInitial, { color: avatarColorsForKind(isGive).color }]}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+          <View style={styles.leanWho}>
+            <Text style={styles.leanName} numberOfLines={1}>{item.creator_name.trim().split(/\s+/)[0]}</Text>
+            <View style={[styles.leanAvatar, { backgroundColor: avatarColorsForKind(isGive).backgroundColor }]}>
+              <Text style={[styles.leanAvatarInitial, { color: avatarColorsForKind(isGive).color }]}>{item.creator_name.charAt(0).toUpperCase()}</Text>
+            </View>
           </View>
         </View>
       </TouchableOpacity>
