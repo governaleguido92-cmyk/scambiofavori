@@ -88,10 +88,12 @@ async def create_donation(donation_data: DonationCreate, current_user: User = De
     # Donations to solidarity fund require 5 completed favors (Eroe di Quartiere badge)
     is_solidarity_fund = donation_data.recipient_id is None
     if is_solidarity_fund and not can_access_fund:
-        total_favors = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
+        # Il Fondo si apre con il badge «Eroe di Quartiere», che si ottiene aiutando 5 volte (non ricevendo aiuto)
+        helped = user_doc.get("total_favors_given", 0)
+        missing = max(1, 5 - helped)
         raise HTTPException(
-            status_code=403, 
-            detail=f"Completa ancora {5 - total_favors} favori per sbloccare l'accesso al Fondo Solidarietà e diventare 'Eroe di Quartiere'!"
+            status_code=403,
+            detail=f"Aiuta ancora {missing} {'vicino' if missing == 1 else 'vicini'} (ne servono 5 in tutto) per sbloccare l'accesso al Fondo Solidarietà e diventare 'Eroe di Quartiere'!"
         )
     
     recipient_name = None

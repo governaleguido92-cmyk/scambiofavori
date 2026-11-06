@@ -553,3 +553,25 @@ async def test_new_user_can_publish_again_when_old_requests_expire(client, app_d
     response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": False}, headers=auth("me"))
 
     assert response.status_code == 200, response.text
+
+
+# ---------- Fondo Solidarietà: si apre aiutando, non ricevendo ----------
+
+async def test_fund_message_counts_only_the_times_you_helped(client, app_db):
+    await app_db.users.insert_one(make_user("me", total_favors_given=1, total_favors_received=4))
+
+    response = await client.post("/api/donations", json={"amount": 1}, headers=auth("me"))
+
+    assert response.status_code == 403
+    detail = response.json()["detail"]
+    assert "Aiuta ancora 4 vicini" in detail
+    assert "Completa ancora 0" not in detail
+
+
+async def test_fund_message_never_says_zero_missing(client, app_db):
+    await app_db.users.insert_one(make_user("me", total_favors_given=5, total_favors_received=0))
+
+    response = await client.post("/api/donations", json={"amount": 1}, headers=auth("me"))
+
+    assert response.status_code == 403
+    assert "Aiuta ancora 1 vicino" in response.json()["detail"]

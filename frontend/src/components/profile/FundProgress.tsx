@@ -4,11 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { tt, tx } from '../../i18n/tt';
 
-/** Favori (fatti o ricevuti) che servono per donare al Fondo Solidarietà: stesso numero del server. */
+/** Volte che si deve aver aiutato un vicino per donare al Fondo Solidarietà: come il badge «Eroe di Quartiere». */
 export const FUND_UNLOCK_FAVORS = 5;
 
 interface Props {
-  /** Favori aiutati + ricevuti. */
+  /** Favori in cui hai aiutato un vicino. */
   done: number;
   /** Ha già il badge «Eroe di Quartiere»: il Fondo è già aperto. */
   unlocked: boolean;
@@ -24,11 +24,11 @@ export function FundProgress({ done, unlocked }: Props) {
         <Ionicons name="heart-circle" size={20} color={colors.accent} />
         <Text style={styles.title}>{tt('Fondo Solidarietà')}</Text>
       </View>
-      <Text style={styles.text}>{tt('Si apre dopo 5 favori fatti o ricevuti: potrai donare Granelli a chi ne ha bisogno.')}</Text>
-      <View style={styles.track} accessibilityLabel={tx('{0} favori su {1} per sbloccare il Fondo', [shown, FUND_UNLOCK_FAVORS])}>
+      <Text style={styles.text}>{tt('Si apre dopo 5 volte che aiuti un vicino: potrai donare Granelli a chi ne ha bisogno.')}</Text>
+      <View style={styles.track} accessibilityLabel={tx('{0} aiuti su {1} per sbloccare il Fondo', [shown, FUND_UNLOCK_FAVORS])}>
         <View style={[styles.fill, { width: `${Math.min(100, (shown / FUND_UNLOCK_FAVORS) * 100)}%` }]} />
       </View>
-      <Text style={styles.count}>{tx('{0} favori su {1} per sbloccare il Fondo', [shown, FUND_UNLOCK_FAVORS])}</Text>
+      <Text style={styles.count}>{tx('{0} aiuti su {1} per sbloccare il Fondo', [shown, FUND_UNLOCK_FAVORS])}</Text>
     </View>
   );
 }
