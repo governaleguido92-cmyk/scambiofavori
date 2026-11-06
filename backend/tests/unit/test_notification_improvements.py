@@ -289,7 +289,7 @@ async def test_favors_already_accepted_do_not_count_against_the_new_user_cap(cli
 
     from test_trust_safety import FAVOR_BODY
 
-    await app_db.users.insert_many([make_user("me"), make_user("helper", email_verified=True)])
+    await app_db.users.insert_many([make_user("me", granelli=100), make_user("helper", email_verified=True)])
     await app_db.favors.insert_many([
         make_favor(f"acc{i}", creator_id="me", creator_name="me", accepted_by="helper", accepted_by_name="helper",
                    status="accepted", accepted_at=datetime.now(timezone.utc))
@@ -368,3 +368,64 @@ async def test_nothing_to_merge_into_returns_false(app_db):
 
     await app_db.users.insert_one(make_user("helper", email_verified=True))
     assert await core.merge_into_completion_notification("helper", "riga", max_age_seconds=180) is False
+
+
+# ---------- Granelli impegnati ----------
+
+async def test_cannot_promise_more_granelli_than_you_have_across_open_requests(client, app_db):
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_one(make_user("me", granelli=3))
+    one_hour = {**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": False}
+
+    codes = [(await client.post("/api/favors", json=one_hour, headers=auth("me"))).status_code for _ in range(4)]
+
+    assert codes == [200, 200, 200, 400]
+    last = await client.post("/api/favors", json=one_hour, headers=auth("me"))
+    assert "impegnati" in last.json()["detail"] and "Dona un favore" in last.json()["detail"]
+
+
+async def test_committed_granelli_count_requests_and_accepted_offers_only(app_db):
+    import trust
+
+    await app_db.favors.insert_many([
+        make_favor("r1", creator_id="u", type="request", status="active", granelli_cost=2, accepted_by=None),
+        make_favor("r2", creator_id="u", type="request", status="accepted", granelli_cost=1),
+        make_favor("done", creator_id="u", type="request", status="completed", granelli_cost=5),
+        make_favor("o_mine", creator_id="u", type="offer", status="active", granelli_cost=4, accepted_by=None),
+        make_favor("o_taken", creator_id="x", type="offer", status="accepted", granelli_cost=3, accepted_by="u"),
+        make_favor("o_other", creator_id="x", type="offer", status="active", granelli_cost=7, accepted_by=None),
+    ])
+
+    assert await trust.committed_granelli("u") == 2 + 1 + 3
+
+
+async def test_skill_match_notifications_are_grouped_in_one(app_db):
+    import core
+
+    await app_db.users.insert_many([
+        make_user("giver", email_verified=True, skills=["Spesa"], approximate_latitude=37.93, approximate_longitude=12.33),
+        make_user("asker", email_verified=True)])
+    for i in range(3):
+        favor = make_favor(f"s{i}", creator_id="asker", creator_name="asker", type="request", status="active",
+                           accepted_by=None, category="Spesa", title=f"Spesa {i}",
+                           approximate_latitude=37.93, approximate_longitude=12.33)
+        await core.create_skill_match_notifications(favor)
+
+    items = await app_db.notifications.find({"user_id": "giver", "type": "skill_match"}).to_list(10)
+    assert len(items) == 1
+    assert items[0]["count"] == 3 and "3 favori" in items[0]["message"]
+
+
+async def test_skill_match_after_reading_starts_a_new_notification(app_db):
+    import core
+
+    await app_db.users.insert_many([make_user("giver", email_verified=True, skills=["Spesa"]), make_user("asker", email_verified=True)])
+    first = make_favor("s1", creator_id="asker", creator_name="asker", type="request", status="active", accepted_by=None,
+                       category="Spesa", title="Spesa 1")
+    await core.create_skill_match_notifications(first)
+    await app_db.notifications.update_many({"user_id": "giver"}, {"$set": {"read": True}})
+
+    await core.create_skill_match_notifications({**first, "favor_id": "s2", "title": "Spesa 2"})
+
+    assert await app_db.notifications.count_documents({"user_id": "giver", "type": "skill_match"}) == 2

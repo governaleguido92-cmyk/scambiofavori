@@ -85,6 +85,23 @@ async def release_stalled_favors(user_id: str) -> int:
     return released
 
 
+async def committed_granelli(user_id: str) -> int:
+    """Granelli che l'utente dovrà pagare per favori già in corso: richieste che ha pubblicato e favori offerti
+    da altri che ha accettato. Servono a non lasciargli promettere più di quanto ha."""
+    favors = await db.favors.find({"status": {"$in": list(OPEN_STATUSES)}, "$or": [
+        {"type": "request", "creator_id": user_id},
+        {"type": "offer", "accepted_by": user_id, "status": "accepted"},
+    ]}, {"_id": 0, "granelli_cost": 1}).to_list(200)
+    return sum(int(favor.get("granelli_cost") or 1) for favor in favors)
+
+
+def not_enough_granelli_message(currency: str, balance: int, committed: int, cost: int) -> str:
+    if committed <= 0:
+        return f"{currency} insufficienti. Aiuta un vicino con «Dona un favore» per guadagnarne."
+    return (f"{currency} insufficienti: ne hai {balance}, ma {committed} sono già impegnati in favori in corso e questo "
+            f"ne richiede {cost}. Aiuta un vicino con «Dona un favore» per guadagnarne.")
+
+
 async def count_open_favors(user_id: str, role: str) -> int:
     """Favori aperti dell'utente: role "creator" = che ha chiesto, "accepted_by" = che sta aiutando."""
     return await db.favors.count_documents({"status": {"$in": list(OPEN_STATUSES)}, role: user_id})

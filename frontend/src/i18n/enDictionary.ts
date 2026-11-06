@@ -997,6 +997,7 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Vicini a te': 'Near you',
   'Scade presto': 'Expiring soon',
   'Cerca un favore': 'Search a favor',
+  ' (liberi: {0}, {1} già impegnati in favori in corso)': ' (free: {0}, {1} already committed to ongoing favors)',
   'Lo conosci di persona?': 'Do you know them in person?',
   'Se lo conosci davvero, puoi garantire per lui: aiuta gli altri vicini a fidarsi.': 'If you really know them, you can vouch for them: it helps other neighbors trust them.',
   'Garanzia data': 'Vouch given',
