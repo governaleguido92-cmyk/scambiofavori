@@ -1573,6 +1573,9 @@ async def send_push_to_multiple(user_ids: list, title: str, body: str, data: dic
     tasks = [send_push_notification(uid, title, body, data) for uid in user_ids]
     await asyncio.gather(*tasks, return_exceptions=True)
 
+SKILL_MATCH_GROUP_WINDOW = timedelta(hours=6)  # avvisi sulle competenze raggruppati entro questo tempo
+
+
 async def create_skill_match_notifications(favor_doc: dict):
     """Create notifications for users whose skills match the favor's category"""
     # Find users with matching skills who are not the favor creator
@@ -1583,19 +1586,34 @@ async def create_skill_match_notifications(favor_doc: dict):
     }, {"_id": 0, "user_id": 1}).to_list(100)
     
     notifications = []
+    window_start = datetime.now(timezone.utc) - SKILL_MATCH_GROUP_WINDOW
     for user in matching_users:
-        notification = {
+        # Se c'è già un avviso di questo tipo non letto, si aggiorna invece di crearne un altro (e niente nuova push)
+        existing = await db.notifications.find_one_and_update(
+            {"user_id": user["user_id"], "type": "skill_match", "read": False, "created_at": {"$gte": window_start}},
+            {"$inc": {"count": 1}, "$set": {"favor_id": favor_doc["favor_id"], "created_at": datetime.now(timezone.utc),
+                                            "last_title": favor_doc["title"]}},
+        )
+        if existing:
+            total = existing.get("count", 1) + 1
+            await db.notifications.update_one(
+                {"notification_id": existing["notification_id"]},
+                {"$set": {"title": "Nuovi favori per te!",
+                          "message": f"{total} favori da donare vicino a te nelle tue competenze. Ultimo: '{favor_doc['title']}'"}},
+            )
+            continue
+        notifications.append({
             "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
             "user_id": user["user_id"],
             "type": "skill_match",
             "title": "Nuovo favore per te!",
             "message": f"C'è un favore da donare vicino a te: '{favor_doc['title']}' nella categoria {favor_doc['category']}",
             "favor_id": favor_doc["favor_id"],
+            "count": 1,
             "read": False,
             "created_at": datetime.now(timezone.utc)
-        }
-        notifications.append(notification)
-    
+        })
+
     if notifications:
         await db.notifications.insert_many(notifications)
         # Send push notifications for skill matches
@@ -1606,7 +1624,7 @@ async def create_skill_match_notifications(favor_doc: dict):
                 notif["message"],
                 {"favor_id": notif["favor_id"], "type": "skill_match"}
             )
-    
+
     return len(notifications)
 
 from fastapi.responses import FileResponse

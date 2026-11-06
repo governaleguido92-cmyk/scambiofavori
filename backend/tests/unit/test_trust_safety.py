@@ -69,7 +69,7 @@ async def test_new_user_cannot_have_more_than_five_open_favors(client, app_db):
     from trust import NEW_USER_MAX_OPEN_FAVORS
 
     assert NEW_USER_MAX_OPEN_FAVORS == 5
-    await app_db.users.insert_one(make_user("me"))
+    await app_db.users.insert_one(make_user("me", granelli=100))
     await app_db.favors.insert_many([_active(f"f{i}", "me") for i in range(NEW_USER_MAX_OPEN_FAVORS - 1)])
     allowed = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
     assert allowed.status_code == 200, allowed.text

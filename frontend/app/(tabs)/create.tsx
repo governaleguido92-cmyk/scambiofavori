@@ -80,6 +80,20 @@ export default function CreateFavorScreen() {
   const [showDebtModal, setShowDebtModal] = useState(false);
 
   // Check if user has zero granelli (can only offer, not request)
+  // Granelli già promessi a favori in corso (richieste pubblicate e offerte accettate): non si possono promettere due volte
+  const [committed, setCommitted] = useState(0);
+  useEffect(() => {
+    if (!token || !user) return;
+    api.getMyFavors(token).then((mine) => {
+      const total = mine
+        .filter((favor) => favor.status === 'active' || favor.status === 'accepted')
+        .filter((favor) => (favor.type === 'request' && favor.creator_id === user.user_id)
+          || (favor.type === 'offer' && favor.accepted_by === user.user_id && favor.status === 'accepted'))
+        .reduce((sum, favor) => sum + (favor.granelli_cost || 1), 0);
+      setCommitted(total);
+    }).catch(() => setCommitted(0));
+  }, [token, user?.user_id, user?.granelli]);
+  const availableGranelli = Math.max(0, (user?.granelli || 0) - committed);
   const hasZeroGranelli = (user?.granelli || 0) === 0;
   
   // Check if user is in social debt
@@ -197,8 +211,8 @@ export default function CreateFavorScreen() {
       return;
     }
     if (!validateTexts()) return;
-    if (type === 'request' && (user?.granelli || 0) < currentHours) {
-      notify(tx('{0} insufficienti', [CURRENCY_NAME]), tx('Hai solo {0} {1} disponibili. Servono {2} {3}.', [user?.granelli ?? 0, CURRENCY_NAME, currentHours, CURRENCY_NAME]));
+    if (type === 'request' && availableGranelli < currentHours) {
+      notify(tx('{0} insufficienti', [CURRENCY_NAME]), tx('Hai solo {0} {1} disponibili. Servono {2} {3}.', [availableGranelli, CURRENCY_NAME, currentHours, CURRENCY_NAME]));
       return;
     }
     setIsLoading(true);
@@ -253,8 +267,8 @@ export default function CreateFavorScreen() {
     const duration = currentHours;
     const granelliNeeded = Math.max(1, Math.round(duration));
 
-    if (type === 'request' && (user?.granelli || 0) < granelliNeeded) {
-      notify(tx('{0} insufficienti', [CURRENCY_NAME]), tx('Hai solo {0} {1} disponibili. Servono {2} {3}.', [user?.granelli ?? 0, CURRENCY_NAME, granelliNeeded, CURRENCY_NAME]));
+    if (type === 'request' && availableGranelli < granelliNeeded) {
+      notify(tx('{0} insufficienti', [CURRENCY_NAME]), tx('Hai solo {0} {1} disponibili. Servono {2} {3}.', [availableGranelli, CURRENCY_NAME, granelliNeeded, CURRENCY_NAME]));
       return;
     }
 
@@ -565,13 +579,13 @@ export default function CreateFavorScreen() {
               <Text style={styles.granelliPreviewUnit}>{granelliWord(granelliPreview)}</Text>
             </View>
           </View>
-          {type === 'request' && (user?.granelli || 0) < granelliPreview && (
+          {type === 'request' && availableGranelli < granelliPreview && (
             <Text style={[styles.fieldHint, { color: colors.accent }]}>
               {tt('Non ti bastano: aiuta prima un vicino con «Dona un favore» per guadagnarne.')}
             </Text>
           )}
           {type === 'request' && (
-            <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}.
+            <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}{committed > 0 ? tx(' (liberi: {0}, {1} già impegnati in favori in corso)', [availableGranelli, committed]) : ''}.
             </Text>
           )}
 
