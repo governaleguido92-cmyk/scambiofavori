@@ -14,7 +14,7 @@ export function trustLevelLabel(level: number): string {
 export function newUserHint(favorsToNextLevel: number | null, maxOpen: number | null, maxHours: number | null): string {
   if (favorsToNextLevel === null || maxOpen === null || maxHours === null) return '';
   return tx(
-    'Per ora puoi avere {0} favori aperti e fino a {1} ore a favore. Completa ancora {2} favori per sbloccare tutto.',
+    'Per ora puoi avere {0} favori in attesa e fino a {1} ore a favore. Completa ancora {2} favori per sbloccare tutto.',
     [maxOpen, maxHours, favorsToNextLevel]
   );
 }

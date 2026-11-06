@@ -75,7 +75,7 @@ async def test_new_user_cannot_have_more_than_five_open_favors(client, app_db):
     assert allowed.status_code == 200, allowed.text
     refused = await client.post("/api/favors", json=FAVOR_BODY, headers=auth("me"))
     assert refused.status_code == 403
-    assert "5 favori aperti" in refused.json()["detail"]
+    assert "5 favori in attesa" in refused.json()["detail"]
 
 
 async def test_experienced_user_has_no_new_user_limits(client, app_db):

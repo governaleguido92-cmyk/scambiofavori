@@ -116,10 +116,12 @@ async def ensure_new_user_open_slot(user_id: str) -> None:
     if not is_new_user(await user_doc_of(user_id)):
         return
     await release_stalled_favors(user_id)
-    if await count_open_favors(user_id, "creator_id") >= NEW_USER_MAX_OPEN_FAVORS:
+    # Contano solo i favori ancora in attesa di qualcuno: quelli già accettati li sta seguendo un vicino
+    waiting = await db.favors.count_documents({"status": "active", "creator_id": user_id})
+    if waiting >= NEW_USER_MAX_OPEN_FAVORS:
         raise HTTPException(
             status_code=403,
-            detail=f"Hai già {NEW_USER_MAX_OPEN_FAVORS} favori aperti, il massimo per i nuovi utenti. "
+            detail=f"Hai già {NEW_USER_MAX_OPEN_FAVORS} favori in attesa di qualcuno, il massimo per i nuovi utenti. "
                    f"Aspetta che uno venga accettato o annullane uno. "
                    f"Completa {FAVORS_FOR_LEVEL_TWO} favori per sbloccare tutto.",
         )
