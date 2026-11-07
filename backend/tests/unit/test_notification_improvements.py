@@ -575,3 +575,80 @@ async def test_fund_message_never_says_zero_missing(client, app_db):
 
     assert response.status_code == 403
     assert "Aiuta ancora 1 vicino" in response.json()["detail"]
+
+
+# ---------- limite giornaliero di 10 ore: si controlla all'accettazione ----------
+
+def completed_today(favor_id, user, hours, other="x"):
+    return make_favor(favor_id, creator_id=other, creator_name=other, accepted_by=user, accepted_by_name=user,
+                      status="completed", duration_hours=hours, completed_at=datetime.now(timezone.utc))
+
+
+async def test_accept_is_refused_when_the_day_has_no_room_for_it(client, app_db, mongo_like_find_one_and_update):
+    await app_db.users.insert_many([make_user("helper", email_verified=True, total_favors_given=5), make_user("owner", email_verified=True)])
+    await app_db.favors.insert_many([completed_today("d1", "helper", 9.0), {**active_favor("t1", "owner", timedelta(days=1)), "duration_hours": 2.0}])
+
+    response = await client.post("/api/favors/accept", json={"favor_id": "t1"}, headers=auth("helper"))
+
+    assert response.status_code == 403
+    assert "Oggi hai già 9 ore" in response.json()["detail"] and "richiede 2" in response.json()["detail"]
+    assert (await app_db.favors.find_one({"favor_id": "t1"}))["status"] == "active"
+
+
+async def test_accept_counts_hours_of_favors_already_accepted(client, app_db, mongo_like_find_one_and_update):
+    await app_db.users.insert_many([make_user("helper", email_verified=True, total_favors_given=5), make_user("owner", email_verified=True)])
+    await app_db.favors.insert_many([
+        make_favor("a1", creator_id="owner", creator_name="owner", accepted_by="helper", accepted_by_name="helper", status="accepted", duration_hours=9.0),
+        {**active_favor("t1", "owner", timedelta(days=1)), "duration_hours": 2.0}])
+
+    response = await client.post("/api/favors/accept", json={"favor_id": "t1"}, headers=auth("helper"))
+
+    assert response.status_code == 403 and "Oggi hai già 9 ore" in response.json()["detail"]
+
+
+async def test_accept_is_refused_when_the_creator_has_reached_the_limit(client, app_db, mongo_like_find_one_and_update):
+    await app_db.users.insert_many([make_user("helper", email_verified=True, total_favors_given=5), make_user("owner", email_verified=True)])
+    await app_db.favors.insert_many([completed_today("d1", "owner", 10.0, other="z"), {**active_favor("t1", "owner", timedelta(days=1)), "duration_hours": 1.0}])
+
+    response = await client.post("/api/favors/accept", json={"favor_id": "t1"}, headers=auth("helper"))
+
+    assert response.status_code == 403 and "chi l'ha pubblicato" in response.json()["detail"]
+
+
+async def test_accept_within_the_limit_still_works_and_emergencies_are_exempt(client, app_db, mongo_like_find_one_and_update):
+    await app_db.users.insert_many([make_user("helper", email_verified=True, total_favors_given=5), make_user("owner", email_verified=True)])
+    await app_db.favors.insert_many([
+        completed_today("d1", "helper", 9.0),
+        {**active_favor("fits", "owner", timedelta(days=1)), "duration_hours": 1.0},
+        {**active_favor("urgent", "owner", timedelta(days=1)), "duration_hours": 3.0, "is_emergency": True}])
+
+    fits = await client.post("/api/favors/accept", json={"favor_id": "fits"}, headers=auth("helper"))
+    urgent = await client.post("/api/favors/accept", json={"favor_id": "urgent"}, headers=auth("helper"))
+
+    assert fits.status_code == 200, fits.text
+    assert urgent.status_code == 200, urgent.text
+
+
+async def test_qr_completion_is_never_blocked_by_the_daily_limit(client, app_db):
+    await app_db.users.insert_many([make_user("owner", email_verified=True), make_user("helper", email_verified=True)])
+    await app_db.favors.insert_many([
+        completed_today("d1", "helper", 10.0, other="z"),
+        make_favor("f1", creator_id="owner", creator_name="owner", accepted_by="helper", accepted_by_name="helper",
+                   status="accepted", duration_hours=1.0, granelli_cost=1, qr_code="tok123")])
+
+    response = await client.post("/api/favors/f1/verify-qr", json={"qr_code": "tok123"}, headers=auth("helper"))
+
+    assert response.status_code == 200, response.text
+    assert (await app_db.favors.find_one({"favor_id": "f1"}))["status"] == "completed"
+
+
+async def test_daily_hours_endpoint_reports_used_and_remaining(client, app_db):
+    await app_db.users.insert_one(make_user("me", email_verified=True))
+    await app_db.favors.insert_many([
+        completed_today("d1", "me", 3.0),
+        make_favor("a1", creator_id="x", creator_name="x", accepted_by="me", accepted_by_name="me", status="accepted", duration_hours=2.0)])
+
+    response = await client.get("/api/users/me/daily-hours", headers=auth("me"))
+
+    assert response.status_code == 200
+    assert response.json() == {"limit": 10, "used": 5.0, "remaining": 5.0}

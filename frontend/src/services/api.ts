@@ -1048,6 +1048,12 @@ export const api = {
   },
 
   // Fiducia e sicurezza
+  getDailyHours: async (token: string): Promise<{ limit: number; used: number; remaining: number }> => {
+    const response = await fetch(`${API_URL}/api/users/me/daily-hours`, { headers: getHeaders(token) });
+    if (!response.ok) throw new Error('Ore di oggi non disponibili');
+    return response.json();
+  },
+
   getMyTrust: async (token: string): Promise<TrustStatus> => {
     const response = await fetch(`${API_URL}/api/users/me/trust`, { headers: getHeaders(token) });
     return handleResponse(response);

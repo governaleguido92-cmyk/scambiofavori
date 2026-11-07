@@ -1261,6 +1261,32 @@ async def check_daily_hours_limit(user_id: str) -> dict:
         "limit_exceeded": total_hours_today >= MAX_DAILY_HOURS
     }
 
+async def daily_hours_load(user_id: str) -> dict:
+    """Ore di oggi già fatte più quelle dei favori accettati e ancora da fare: servono a capire se ne entra un altro."""
+    done = await check_daily_hours_limit(user_id)
+    open_docs = await db.favors.find(
+        {"status": "accepted", "$or": [{"creator_id": user_id}, {"accepted_by": user_id}]}, {"_id": 0, "duration_hours": 1}
+    ).to_list(100)
+    committed = sum(f.get("duration_hours", 0) for f in open_docs)
+    used = done["total_hours_today"] + committed
+    return {"limit": MAX_DAILY_HOURS, "used": used, "remaining": max(0, MAX_DAILY_HOURS - used)}
+
+
+async def ensure_daily_hours_for_accept(favor: "Favor", acceptor_id: str) -> None:
+    """Il limite giornaliero si controlla quando si accetta, prima del lavoro: chi ha fatto il favore viene sempre pagato."""
+    if favor.is_emergency:
+        return
+    for user_id, mine in ((acceptor_id, True), (favor.creator_id, False)):
+        load = await daily_hours_load(user_id)
+        if load["used"] + favor.duration_hours > MAX_DAILY_HOURS:
+            if mine:
+                detail = (f"Oggi hai già {load['used']:g} ore tra favori fatti e accettati su {MAX_DAILY_HOURS}: "
+                          f"questo ne richiede {favor.duration_hours:g}. Riprova domani o concludi prima un favore.")
+            else:
+                detail = "Questo favore oggi non si può accettare: chi l'ha pubblicato ha già raggiunto il limite giornaliero. Riprova domani."
+            raise HTTPException(status_code=403, detail=detail)
+
+
 async def log_security_transaction(
     favor_id: str,
     creator_id: str,
