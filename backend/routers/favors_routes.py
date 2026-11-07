@@ -405,6 +405,7 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     if not favor.is_emergency:
         await trust.ensure_new_user_can_accept(current_user.user_id)
     await trust.ensure_pair_not_overused(current_user.user_id, favor.creator_id)
+    await ensure_daily_hours_for_accept(favor, current_user.user_id)
 
     # Atomic check-and-set: filter su status="active" previene double-accept concorrente
     updated = await db.favors.find_one_and_update(
@@ -467,21 +468,7 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
     if payer_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Solo chi riceve il servizio può confermare il completamento")
     
-    # ========================
-    # ANTI-FRAUD: Daily Hours Limit Check
-    # ========================
-    for user_id in [favor.creator_id, favor.accepted_by]:
-        daily_check = await check_daily_hours_limit(user_id)
-        if daily_check["limit_exceeded"]:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Limite giornaliero di {MAX_DAILY_HOURS} ore raggiunto. Riprova domani."
-            )
-        if daily_check["remaining_hours"] < favor.duration_hours:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Ore rimanenti oggi: {daily_check['remaining_hours']:.1f}h. Questo favore richiede {favor.duration_hours}h."
-            )
+    # Il limite giornaliero delle ore si controlla quando si accetta il favore, non qui: chi ha fatto il lavoro viene sempre pagato
     
     # ========================
     # PROXIMITY CHECK (30 m + tolleranza del GPS) - Geofencing
@@ -631,16 +618,7 @@ async def verify_and_complete_qr(
                     detail=f"Siete troppo lontani per completare ({int(distance_m)} m). Avvicinatevi entro {MAX_EXCHANGE_DISTANCE_METERS} m.",
                 )
     
-    # ========================
-    # ANTI-FRAUD: Daily Hours Limit Check
-    # ========================
-    for user_id in [favor.creator_id, favor.accepted_by]:
-        daily_check = await check_daily_hours_limit(user_id)
-        if daily_check["limit_exceeded"]:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Limite giornaliero di {MAX_DAILY_HOURS} ore raggiunto. Riprova domani."
-            )
+    # Il limite giornaliero delle ore si controlla quando si accetta il favore, non qui: chi ha fatto il lavoro viene sempre pagato
     
     helper_id, receiver_id = await settle_favor(favor, {"checkin_completed": True})
 

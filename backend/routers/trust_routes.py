@@ -20,6 +20,12 @@ def _resolve(user_id: str, current_user) -> str:
     return current_user.user_id if user_id == "me" else user_id
 
 
+@api_router.get("/users/me/daily-hours")
+async def my_daily_hours(current_user: User = Depends(get_current_user)):
+    """Ore di oggi già usate (fatte più accettate) e ore che restano: il limite giornaliero si controlla all'accettazione."""
+    return await daily_hours_load(current_user.user_id)
+
+
 @api_router.get("/users/me/trust")
 async def my_trust(current_user: User = Depends(get_current_user)):
     doc = await trust.user_doc_of(current_user.user_id)

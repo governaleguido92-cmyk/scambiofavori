@@ -999,6 +999,8 @@ export const EN_DICTIONARY: Record<string, string> = {
   'Vicini a te': 'Near you',
   'Scade presto': 'Expiring soon',
   'Cerca un favore': 'Search a favor',
+  'Oggi hai già {0} ore su {1}: questo favore ne richiede {2}. Riprova domani.': 'Today you already have {0} hours out of {1}: this favor needs {2}. Try again tomorrow.',
+  'Oggi hai già {0} ore su {1} tra favori fatti e accettati': 'Today you already have {0} hours out of {1} between favors done and accepted',
   'Si apre dopo 5 volte che aiuti un vicino: potrai donare Granelli a chi ne ha bisogno.': 'It opens after you help a neighbor 5 times: you will be able to donate Granelli to people in need.',
   '{0} aiuti su {1} per sbloccare il Fondo': '{0} helps out of {1} to unlock the Fund',
   'Per accettare ti servono {0} {1}: ne hai {2} liberi': 'To accept you need {0} {1}: you have {2} free',

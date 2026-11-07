@@ -76,6 +76,8 @@ export default function FavorDetailScreen() {
   const [publicThanks, setPublicThanks] = useState('');
   // Granelli già promessi ad altri favori in corso: per accettare un'offerta servono Granelli liberi
   const [committedGranelli, setCommittedGranelli] = useState(0);
+  // Ore di oggi già fatte o accettate: il limite giornaliero si controlla quando si accetta
+  const [dailyHours, setDailyHours] = useState<{ limit: number; used: number; remaining: number } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -393,6 +395,10 @@ export default function FavorDetailScreen() {
       setCommittedGranelli(total);
     }).catch(() => setCommittedGranelli(0));
   }, [token, user?.user_id, favor?.type, favor?.favor_id]);
+  useEffect(() => {
+    if (!token) return;
+    api.getDailyHours(token).then(setDailyHours).catch(() => setDailyHours(null));
+  }, [token, favor?.favor_id]);
   const freeGranelli = Math.max(0, (user?.granelli || 0) - committedGranelli);
 
   const canAccept = () => {
@@ -788,6 +794,16 @@ export default function FavorDetailScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
+          {canAccept() && !favor.is_emergency && dailyHours && (dailyHours.remaining < favor.duration_hours || dailyHours.used >= dailyHours.limit - 3) && (
+            <Text
+              style={[styles.acceptHint, { fontWeight: '700' }, dailyHours.remaining < favor.duration_hours && { color: '#F87828' }]}
+              data-testid="daily-hours-line"
+            >
+              {dailyHours.remaining < favor.duration_hours
+                ? tx('Oggi hai già {0} ore su {1}: questo favore ne richiede {2}. Riprova domani.', [dailyHours.used, dailyHours.limit, favor.duration_hours])
+                : tx('Oggi hai già {0} ore su {1} tra favori fatti e accettati', [dailyHours.used, dailyHours.limit])}
+            </Text>
+          )}
           {canAccept() && favor.type === 'offer' && (
             <Text
               style={[styles.acceptHint, { fontWeight: '700' }, freeGranelli < favor.granelli_cost && { color: '#F87828' }]}
