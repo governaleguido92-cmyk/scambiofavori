@@ -82,7 +82,7 @@ async def find_neighborhood_places(
     q: Optional[str] = None,
     current_user: User = Depends(get_current_user),
 ):
-    """Luoghi pubblici entro 20 km da chi organizza qualcosa nel quartiere (eventi, avvisi): piazze, bar, parchi, spiagge, porti...
+    """Luoghi pubblici entro 15 km da chi organizza qualcosa nel quartiere (eventi, avvisi): piazze, bar, parchi, spiagge, porti...
 
     Il centro è la posizione approssimata già usata dal quartiere (favori aperti o profilo), mai quella esatta.
     """

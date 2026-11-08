@@ -212,7 +212,7 @@ export function NewsTab({ token, composeSignal }: { token: string | null; compos
             />
             <TouchableOpacity style={styles.placeButton} onPress={() => setPlacePickerOpen(true)} accessibilityRole="button" data-testid="notice-pick-place">
               <Ionicons name="location" size={16} color="#FFFFFF" />
-              <Text style={styles.placeButtonText}>{tt('Aggiungi un luogo (entro 20 km)')}</Text>
+              <Text style={styles.placeButtonText}>{tt('Aggiungi un luogo (entro 15 km)')}</Text>
             </TouchableOpacity>
             <Text style={styles.counter}>{text.length}/{NOTICE_MAX}  ·  {tt('Resta 3 giorni. Niente soldi, telefono, email o link.')}</Text>
             <View style={styles.sheetButtons}>

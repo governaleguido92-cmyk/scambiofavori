@@ -1,4 +1,4 @@
-"""HTTP routes: Quartiere, la chat tra chi ha un favore attivo entro 30 km. I messaggi durano 2 giorni."""
+"""HTTP routes: Quartiere, la chat tra chi ha un favore attivo entro 15 km. I messaggi durano 2 giorni."""
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -13,7 +13,7 @@ from public_text import ensure_public_text_allowed
 
 api_router = APIRouter(prefix="/api")
 
-AREA_RADIUS_KM = 30
+AREA_RADIUS_KM = 15
 MESSAGE_LIFETIME = timedelta(days=2)
 MAX_MESSAGE_LENGTH = 300
 MAX_MESSAGES_PER_MINUTE = 6
@@ -35,7 +35,7 @@ def _aware(moment: datetime) -> datetime:
 
 
 async def _reference_points(user_id: str) -> list:
-    """Posizioni (approssimate) dei favori ancora aperti di una persona: da lì si calcola il raggio di 30 km."""
+    """Posizioni (approssimate) dei favori ancora aperti di una persona: da lì si calcola il raggio di 15 km."""
     now = datetime.now(timezone.utc)
     favors = await db.favors.find({
         "status": {"$in": ["active", "accepted"]},
@@ -68,7 +68,7 @@ def _nearest_km(point: tuple, others: list) -> float:
 
 @api_router.get("/area-chat")
 async def read_area_chat(since: Optional[str] = Query(default=None), current_user: User = Depends(get_current_user)):
-    """Messaggi degli ultimi 2 giorni di chi ha un favore attivo entro 30 km."""
+    """Messaggi degli ultimi 2 giorni di chi ha un favore attivo entro 15 km."""
     points = await _require_access(current_user.user_id)
     now = datetime.now(timezone.utc)
     cutoff = now - MESSAGE_LIFETIME

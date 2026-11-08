@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -12,13 +12,13 @@ import { MapMarkersSkeleton } from '../../src/components/Skeleton';
 import { BrandLogo } from '../../src/components/BrandLogo';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../../src/utils/logger';
-import { tt } from '../../src/i18n/tt';
+import { tt, tx } from '../../src/i18n/tt';
 import { RadiusSlider } from '../../src/components/RadiusSlider';
 import { FavorRadar } from '../../src/components/FavorRadar';
 import { FavorCard } from '../../src/components/FavorCard';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 import { sortFavors } from '../../src/utils/favorSections';
-import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, formatRadius, withinRadius } from '../../src/utils/radius';
+import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, formatRadius, pickWidenedRadius, withinRadius } from '../../src/utils/radius';
 
 
 type Coordinates = { latitude: number; longitude: number };
@@ -32,6 +32,9 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<FavorType>('request');
   const [radiusKm, setRadiusKm] = useState<number>(DEFAULT_RADIUS_KM);
+  // Il raggio si allarga da solo (5, 10, 15 km) finché non lo cambi tu
+  const radiusTouched = useRef(false);
+  const [widenedKm, setWidenedKm] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const getUserLocation = async (): Promise<Coordinates | null> => {
@@ -61,7 +64,13 @@ export default function MapScreen() {
       }
       const data = await api.getFavors(params, token || undefined);
       // I tuoi favori stanno in "I Miei": qui si vedono solo quelli dei vicini.
-      setFavors(data.filter((favor) => favor.creator_id !== user?.user_id));
+      const others = data.filter((favor) => favor.creator_id !== user?.user_id);
+      setFavors(others);
+      if (location && !radiusTouched.current) {
+        const radius = pickWidenedRadius(others.map((f) => f.distance_km).filter((km): km is number => typeof km === 'number'));
+        setRadiusKm(radius);
+        setWidenedKm(radius > DEFAULT_RADIUS_KM ? radius : null);
+      }
       await offlineCache.saveFavors(data);
     } catch (error) {
       logger.debug('Error loading favors:', error);
@@ -124,7 +133,14 @@ export default function MapScreen() {
         </View>
 
         {userLocation ? (
-          <RadiusSlider valueKm={radiusKm} onChange={setRadiusKm} label={tt('Raggio di ricerca')} />
+          <>
+            <RadiusSlider valueKm={radiusKm} onChange={(km) => { radiusTouched.current = true; setWidenedKm(null); setRadiusKm(km); }} label={tt('Raggio di ricerca')} />
+            {widenedKm !== null && (
+              <Text style={[styles.noLocationText, { marginHorizontal: 20, marginBottom: 12 }]} data-testid="map-widened-note">
+                {tx('Pochi favori vicino a te: ho allargato la ricerca a {0} km', [widenedKm])}
+              </Text>
+            )}
+          </>
         ) : (
           <View style={styles.noLocationNote}>
             <Ionicons name="location-outline" size={16} color={colors.textMuted} />

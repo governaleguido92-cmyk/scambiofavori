@@ -691,7 +691,7 @@ export const api = {
     return handleResponse(response);
   },
 
-  /** Luoghi pubblici entro 20 km dalla tua zona (OpenStreetMap), per eventi e avvisi del quartiere. */
+  /** Luoghi pubblici entro 15 km dalla tua zona (OpenStreetMap), per eventi e avvisi del quartiere. */
   getNeighborhoodPlaces: async (
     search: { category?: string; q?: string },
     token: string,
@@ -896,7 +896,7 @@ export const api = {
     return handleResponse(response);
   },
 
-  // Quartiere: chat tra chi ha un favore attivo entro 30 km
+  // Quartiere: chat tra chi ha un favore attivo entro 15 km
   getAreaChat: async (token: string): Promise<{ messages: AreaMessage[]; radius_km: number }> => {
     const response = await fetch(`${API_URL}/api/area-chat`, { headers: getHeaders(token) });
     return handleResponse(response);

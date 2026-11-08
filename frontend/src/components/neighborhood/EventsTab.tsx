@@ -221,7 +221,7 @@ export function EventsTab({ token, composeSignal }: { token: string | null; comp
             <TextInput style={styles.input} value={place} onChangeText={setPlace} placeholder={tt('Dove (es. Piazza principale, zona porto)')} placeholderTextColor={colors.textMuted} maxLength={PLACE_MAX} data-testid="event-place" />
             <TouchableOpacity style={styles.placeButton} onPress={() => setPlacePickerOpen(true)} accessibilityRole="button" data-testid="event-pick-place">
               <Ionicons name="location" size={16} color="#FFFFFF" />
-              <Text style={styles.placeButtonText}>{tt('Scegli un luogo vicino (entro 20 km)')}</Text>
+              <Text style={styles.placeButtonText}>{tt('Scegli un luogo vicino (entro 15 km)')}</Text>
             </TouchableOpacity>
 
             <Text style={styles.label}>{tt('Quando')}</Text>

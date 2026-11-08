@@ -45,7 +45,7 @@ async def _position_points(user_id: str) -> list:
 
 @api_router.get("/neighborhood/news")
 async def neighborhood_news(current_user: User = Depends(get_current_user)):
-    """Avvisi dei vicini entro 30 km dai favori aperti (o dalla posizione del profilo)."""
+    """Avvisi dei vicini entro 15 km dai favori aperti (o dalla posizione del profilo)."""
     points = await _position_points(current_user.user_id)
     if not points:
         return {"notices": [], "reason": "no_position"}

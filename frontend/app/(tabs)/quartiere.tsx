@@ -43,7 +43,7 @@ type NeighborhoodTab = 'chat' | 'avvisi' | 'eventi' | 'vicini';
 const TABS: ReadonlyArray<NeighborhoodTab> = ['chat', 'avvisi', 'eventi', 'vicini'];
 const TAB_LABELS: Record<NeighborhoodTab, string> = { chat: 'Chat', avvisi: 'Avvisi', eventi: 'Eventi', vicini: 'Vicini' };
 
-/** Quartiere: chat tra chi ha un favore attivo entro 30 km. I messaggi durano 2 giorni. */
+/** Quartiere: chat tra chi ha un favore attivo entro 15 km. I messaggi durano 2 giorni. */
 export default function NeighborhoodScreen() {
   const { token } = useAuth();
   const router = useRouter();
@@ -230,7 +230,7 @@ export default function NeighborhoodScreen() {
         <View style={styles.note}>
           <Ionicons name="shield-checkmark" size={18} color={colors.textSecondary} />
           <Text style={styles.noteText}>
-            {tt('Qui scrive chi ha un favore attivo entro 30 km. I messaggi durano 2 giorni. Niente soldi, codici, telefono o email: per accordarvi usate la chat del favore.')}
+            {tt('Qui scrive chi ha un favore attivo entro 15 km. I messaggi durano 2 giorni. Niente soldi, codici, telefono o email: per accordarvi usate la chat del favore.')}
           </Text>
         </View>
 

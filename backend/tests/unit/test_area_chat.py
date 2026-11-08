@@ -1,4 +1,4 @@
-"""Quartiere: chat tra chi ha un favore attivo entro 30 km, messaggi che durano 2 giorni."""
+"""Quartiere: chat tra chi ha un favore attivo entro 15 km, messaggi che durano 2 giorni."""
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -61,11 +61,11 @@ async def test_account_on_hold_cannot_write(client, app_db):
     assert (await say(client, "me", "Ciao a tutti")).status_code == 403
 
 
-# ---------- raggio di 30 km ----------
+# ---------- raggio di 15 km ----------
 
-async def test_people_within_30_km_see_each_other(client, app_db):
+async def test_people_within_15_km_see_each_other(client, app_db):
     await people(app_db, "anna", "marco")
-    await app_db.favors.insert_many([open_favor("f1", "anna"), open_favor("f2", "marco", km=20)])
+    await app_db.favors.insert_many([open_favor("f1", "anna"), open_favor("f2", "marco", km=12)])
 
     await say(client, "anna", "Qualcuno ha una scala?")
     messages = await read(client, "marco")
@@ -74,9 +74,9 @@ async def test_people_within_30_km_see_each_other(client, app_db):
     assert messages[0]["mine"] is False
 
 
-async def test_people_beyond_30_km_do_not_see_each_other(client, app_db):
+async def test_people_beyond_15_km_do_not_see_each_other(client, app_db):
     await people(app_db, "anna", "luca")
-    await app_db.favors.insert_many([open_favor("f1", "anna"), open_favor("f3", "luca", km=45)])
+    await app_db.favors.insert_many([open_favor("f1", "anna"), open_favor("f3", "luca", km=25)])
 
     await say(client, "anna", "Qualcuno ha una scala?")
 
