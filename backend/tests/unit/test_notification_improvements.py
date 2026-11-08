@@ -372,7 +372,7 @@ async def test_nothing_to_merge_into_returns_false(app_db):
 
 # ---------- Granelli impegnati ----------
 
-async def test_cannot_promise_more_granelli_than_you_have_across_open_requests(client, app_db):
+async def test_waiting_requests_do_not_hold_granelli_back(client, app_db):
     from test_trust_safety import FAVOR_BODY
 
     await app_db.users.insert_one(make_user("me", granelli=3))
@@ -380,12 +380,21 @@ async def test_cannot_promise_more_granelli_than_you_have_across_open_requests(c
 
     codes = [(await client.post("/api/favors", json=one_hour, headers=auth("me"))).status_code for _ in range(4)]
 
-    assert codes == [200, 200, 200, 400]
-    last = await client.post("/api/favors", json=one_hour, headers=auth("me"))
-    assert "impegnati" in last.json()["detail"] and "Dona un favore" in last.json()["detail"]
+    assert codes == [200, 200, 200, 200]
 
 
-async def test_committed_granelli_count_requests_and_accepted_offers_only(app_db):
+async def test_a_single_request_you_cannot_afford_is_still_refused(client, app_db):
+    from test_trust_safety import FAVOR_BODY
+
+    await app_db.users.insert_one(make_user("me", granelli=1))
+
+    response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 2.0, "is_emergency": False}, headers=auth("me"))
+
+    assert response.status_code == 400
+    assert "Dona un favore" in response.json()["detail"]
+
+
+async def test_committed_granelli_count_only_favors_already_accepted(app_db):
     import trust
 
     await app_db.favors.insert_many([
@@ -398,7 +407,7 @@ async def test_committed_granelli_count_requests_and_accepted_offers_only(app_db
         make_favor("o_other", creator_id="x", type="offer", status="active", granelli_cost=7, accepted_by=None),
     ])
 
-    assert await trust.committed_granelli("u") == 2 + 1 + 3
+    assert await trust.committed_granelli("u") == 1 + 3
 
 
 async def test_skill_match_notifications_are_grouped_in_one(app_db):
@@ -445,7 +454,7 @@ async def test_one_reminder_for_requests_waiting_more_than_a_day(client, app_db)
     first = [n for n in await notifications(client, "owner") if n["type"] == "favor_waiting"]
     again = [n for n in await notifications(client, "owner") if n["type"] == "favor_waiting"]
 
-    assert len(first) == 1 and first[0]["count"] == 3 and "3 richieste" in first[0]["message"] and "3 Granelli" in first[0]["message"]
+    assert len(first) == 1 and first[0]["count"] == 3 and "3 tue richieste" in first[0]["message"]
     assert len(again) == 1
 
 
@@ -464,13 +473,13 @@ async def test_not_enough_granelli_message_points_to_i_miei(client, app_db):
     from test_trust_safety import FAVOR_BODY
 
     await app_db.users.insert_one(make_user("me", granelli=1))
-    one_hour = {**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": False}
-    await client.post("/api/favors", json=one_hour, headers=auth("me"))
+    await app_db.favors.insert_one(make_favor("acc", creator_id="me", creator_name="me", type="request", status="accepted",
+                                              granelli_cost=1, accepted_by="x", accepted_by_name="x"))
 
-    refused = await client.post("/api/favors", json=one_hour, headers=auth("me"))
+    refused = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": False}, headers=auth("me"))
 
     assert refused.status_code == 400
-    assert "I Miei" in refused.json()["detail"] and "Annulla o modifica" in refused.json()["detail"]
+    assert "I Miei" in refused.json()["detail"] and "ancora da concludere" in refused.json()["detail"]
 
 
 # ---------- poche urgenze alla volta ----------
@@ -525,17 +534,29 @@ async def test_default_validity_is_three_days():
     assert core.FavorCreate(type="request", title="t", description="d", category="Spesa").validity_days == 3
 
 
-async def test_expired_request_no_longer_holds_granelli(app_db):
-    import trust
-
+async def test_helper_cannot_accept_a_request_the_author_cannot_pay(client, app_db, mongo_like_find_one_and_update):
+    await app_db.users.insert_many([make_user("helper", email_verified=True, total_favors_given=5),
+                                    make_user("poor", email_verified=True, granelli=1)])
     await app_db.favors.insert_many([
-        make_favor("alive", creator_id="u", type="request", status="active", granelli_cost=2, accepted_by=None,
-                   expires_at=datetime.now(timezone.utc) + timedelta(hours=5)),
-        make_favor("gone", creator_id="u", type="request", status="active", granelli_cost=3, accepted_by=None,
-                   expires_at=datetime.now(timezone.utc) - timedelta(minutes=5)),
-    ])
+        make_favor("busy", creator_id="poor", creator_name="poor", type="request", status="accepted", granelli_cost=1,
+                   accepted_by="someone", accepted_by_name="someone"),
+        {**active_favor("new", "poor", timedelta(days=1)), "type": "request", "granelli_cost": 1}])
 
-    assert await trust.committed_granelli("u") == 2
+    response = await client.post("/api/favors/accept", json={"favor_id": "new"}, headers=auth("helper"))
+
+    assert response.status_code == 400
+    assert "non ha Granelli liberi" in response.json()["detail"]
+    assert (await app_db.favors.find_one({"favor_id": "new"}))["status"] == "active"
+
+
+async def test_helper_can_accept_a_request_when_the_author_has_free_granelli(client, app_db, mongo_like_find_one_and_update):
+    await app_db.users.insert_many([make_user("helper", email_verified=True, total_favors_given=5),
+                                    make_user("rich", email_verified=True, granelli=3)])
+    await app_db.favors.insert_one({**active_favor("new", "rich", timedelta(days=1)), "type": "request", "granelli_cost": 2})
+
+    response = await client.post("/api/favors/accept", json={"favor_id": "new"}, headers=auth("helper"))
+
+    assert response.status_code == 200, response.text
 
 
 async def test_new_user_can_publish_again_when_old_requests_expire(client, app_db):

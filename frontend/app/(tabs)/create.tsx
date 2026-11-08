@@ -85,10 +85,11 @@ export default function CreateFavorScreen() {
   useEffect(() => {
     if (!token || !user) return;
     api.getMyFavors(token).then((mine) => {
+      // Impegnati solo i Granelli di favori già accettati: le richieste in attesa non impegnano niente
       const total = mine
-        .filter((favor) => (favor.type === 'request' && favor.creator_id === user.user_id
-          && (favor.status === 'accepted' || (favor.status === 'active' && new Date(favor.expires_at ?? 0).getTime() > Date.now())))
-          || (favor.type === 'offer' && favor.accepted_by === user.user_id && favor.status === 'accepted'))
+        .filter((favor) => favor.status === 'accepted'
+          && ((favor.type === 'request' && favor.creator_id === user.user_id)
+            || (favor.type === 'offer' && favor.accepted_by === user.user_id)))
         .reduce((sum, favor) => sum + (favor.granelli_cost || 1), 0);
       setCommitted(total);
     }).catch(() => setCommitted(0));
@@ -581,16 +582,16 @@ export default function CreateFavorScreen() {
           </View>
           {type === 'request' && availableGranelli < granelliPreview && (
             <Text style={[styles.fieldHint, { color: colors.accent }]}>
-              {tt('Non ti bastano: annulla una richiesta in attesa, oppure aiuta prima un vicino con «Dona un favore» per guadagnarne.')}
+              {tt('Non ti bastano: aiuta prima un vicino con «Dona un favore» per guadagnarne.')}
             </Text>
           )}
           {type === 'request' && committed > 0 && (
             <TouchableOpacity onPress={() => router.push('/my-favors' as any)} accessibilityRole="link" data-testid="create-see-waiting">
-              <Text style={[styles.fieldHint, { color: colors.accent, fontWeight: '700' }]}>{tt('Vedi le tue richieste in attesa')}</Text>
+              <Text style={[styles.fieldHint, { color: colors.accent, fontWeight: '700' }]}>{tt('Vedi i tuoi favori in corso')}</Text>
             </TouchableOpacity>
           )}
           {type === 'request' && (
-            <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}{committed > 0 ? tx(' (liberi: {0}, {1} già impegnati in favori in corso)', [availableGranelli, committed]) : ''}.
+            <Text style={styles.fieldHint}>{tt('Questi')}{' '}{CURRENCY_NAME}{' '}{tt('li paghi a chi ti aiuta, a favore completato. Ora ne hai')}{' '}{user?.granelli || 0}{committed > 0 ? tx(' (liberi: {0}, {1} già impegnati in favori accettati)', [availableGranelli, committed]) : ''}.
             </Text>
           )}
 

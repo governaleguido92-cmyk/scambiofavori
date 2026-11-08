@@ -396,10 +396,7 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     if favor.creator_id in await get_blocked_user_ids(current_user.user_id):
         raise HTTPException(status_code=403, detail="Non puoi accettare i favori di questo utente")
 
-    if favor.type == "offer":
-        committed = await trust.committed_granelli(current_user.user_id)
-        if current_user.granelli - committed < favor.granelli_cost:
-            raise HTTPException(status_code=400, detail=trust.not_enough_granelli_message(CURRENCY_NAME, current_user.granelli, committed, favor.granelli_cost).replace("insufficienti:", "insufficienti per accettare questo favore:", 1))
+    await trust.ensure_payer_has_free_granelli(favor, current_user.user_id, CURRENCY_NAME)
 
     await trust.ensure_not_on_hold(current_user.user_id)
     if not favor.is_emergency:
