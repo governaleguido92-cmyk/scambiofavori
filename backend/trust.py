@@ -98,24 +98,42 @@ async def ensure_emergency_slot(user_id: str) -> None:
 
 
 async def committed_granelli(user_id: str) -> int:
-    """Granelli che l'utente dovrà pagare per favori già in corso: richieste che ha pubblicato e favori offerti
-    da altri che ha accettato. Servono a non lasciargli promettere più di quanto ha."""
-    now = datetime.now(timezone.utc)
-    # Una richiesta scaduta senza risposta non tiene più fermi i Granelli
-    favors = await db.favors.find({"$or": [
-        {"type": "request", "creator_id": user_id, "status": "accepted"},
-        {"type": "request", "creator_id": user_id, "status": "active", "expires_at": {"$gt": now}},
-        {"type": "offer", "accepted_by": user_id, "status": "accepted"},
+    """Granelli che l'utente deve pagare per favori GIÀ ACCETTATI da qualcuno e ancora da concludere:
+    le sue richieste accettate e le offerte altrui che ha accettato. Le richieste ancora in attesa non impegnano
+    niente: i Granelli si impegnano solo quando qualcuno accetta, e allora si controlla che ci siano."""
+    favors = await db.favors.find({"status": "accepted", "$or": [
+        {"type": "request", "creator_id": user_id},
+        {"type": "offer", "accepted_by": user_id},
     ]}, {"_id": 0, "granelli_cost": 1}).to_list(200)
     return sum(int(favor.get("granelli_cost") or 1) for favor in favors)
+
+
+async def ensure_payer_has_free_granelli(favor, acceptor_id: str, currency: str) -> None:
+    """All'accettazione: chi paga (l'autore di una richiesta, o chi accetta un'offerta) deve avere i Granelli liberi adesso."""
+    payer_id = favor.creator_id if favor.type == "request" else acceptor_id
+    payer = await user_doc_of(payer_id)
+    balance = int(payer.get("granelli") or 0)
+    committed = await committed_granelli(payer_id)
+    if balance - committed >= favor.granelli_cost:
+        return
+    if payer_id == acceptor_id:
+        raise HTTPException(
+            status_code=400,
+            detail=not_enough_granelli_message(currency, balance, committed, favor.granelli_cost).replace(
+                "insufficienti:", "insufficienti per accettare questo favore:", 1),
+        )
+    raise HTTPException(
+        status_code=400,
+        detail="Chi ha pubblicato questa richiesta in questo momento non ha Granelli liberi per pagarla: scegli un altro favore o riprova più tardi.",
+    )
 
 
 def not_enough_granelli_message(currency: str, balance: int, committed: int, cost: int) -> str:
     if committed <= 0:
         return f"{currency} insufficienti. Aiuta un vicino con «Dona un favore» per guadagnarne."
-    return (f"{currency} insufficienti: ne hai {balance}, ma {committed} sono già impegnati in favori in corso e questo "
-            f"ne richiede {cost}. Annulla o modifica una richiesta ancora in attesa da «I Miei», "
-            f"oppure aiuta un vicino con «Dona un favore» per guadagnarne.")
+    return (f"{currency} insufficienti: ne hai {balance}, ma {committed} sono già impegnati in favori accettati e ancora da "
+            f"concludere (li trovi in «I Miei») e questo ne richiede {cost}. Appena si concludono i Granelli passano a chi ha "
+            f"aiutato; intanto puoi aiutare un vicino con «Dona un favore» per guadagnarne.")
 
 
 async def count_open_favors(user_id: str, role: str) -> int:

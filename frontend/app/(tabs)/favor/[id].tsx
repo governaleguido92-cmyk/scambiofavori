@@ -389,8 +389,9 @@ export default function FavorDetailScreen() {
     if (!token || !user || favor?.type !== 'offer') return;
     api.getMyFavors(token).then((mine) => {
       const total = mine
-        .filter((item) => (item.type === 'request' && item.creator_id === user.user_id && (item.status === 'accepted' || (item.status === 'active' && new Date(item.expires_at ?? 0).getTime() > Date.now())))
-          || (item.type === 'offer' && item.accepted_by === user.user_id && item.status === 'accepted'))
+        .filter((item) => item.status === 'accepted'
+          && ((item.type === 'request' && item.creator_id === user.user_id)
+            || (item.type === 'offer' && item.accepted_by === user.user_id)))
         .reduce((sum, item) => sum + (item.granelli_cost || 1), 0);
       setCommittedGranelli(total);
     }).catch(() => setCommittedGranelli(0));

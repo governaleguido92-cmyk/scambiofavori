@@ -13,7 +13,7 @@ BLOCKING_REQUEST_AFTER = timedelta(hours=24)
 
 
 async def remind_blocking_requests(user_id: str) -> None:
-    """Una sola notifica (per gruppo di favori) a chi ha richieste senza risposta da più di 24 ore: tengono fermi i suoi Granelli."""
+    """Una sola notifica (per gruppo di favori) a chi ha richieste senza risposta da più di 24 ore."""
     now = datetime.now(timezone.utc)
     waiting = await db.favors.find({
         "type": "request", "status": "active", "creator_id": user_id, "waiting_reminded": {"$ne": True},
@@ -32,8 +32,8 @@ async def remind_blocking_requests(user_id: str) -> None:
     await db.notifications.insert_one({
         "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "favor_waiting",
         "title": "Richieste ancora senza risposta ⏳",
-        "message": (f"{len(claimed)} richieste sono senza risposta da più di un giorno e tengono fermi {held} Granelli."
-                    if many else f"Una tua richiesta è senza risposta da più di un giorno e tiene fermi {held} Granelli.")
+        "message": (f"{len(claimed)} tue richieste sono senza risposta da più di un giorno."
+                    if many else "Una tua richiesta è senza risposta da più di un giorno.")
                    + " Vuoi modificarla o annullarla da «I Miei»?",
         "related_id": claimed[0]["favor_id"], "count": len(claimed), "read": False, "created_at": now,
     })
