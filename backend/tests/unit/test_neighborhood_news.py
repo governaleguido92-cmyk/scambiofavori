@@ -1,4 +1,4 @@
-"""Avvisi del quartiere: li pubblica chi ha un favore attivo, durano 3 giorni, entro 30 km."""
+"""Avvisi del quartiere: li pubblica chi ha un favore attivo, durano 3 giorni, entro 15 km."""
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -39,9 +39,9 @@ async def test_posting_needs_an_active_favor(client, app_db):
     assert (await publish(client, "me")).status_code == 403
 
 
-async def test_notice_is_seen_within_30_km_and_not_beyond(client, app_db):
+async def test_notice_is_seen_within_15_km_and_not_beyond(client, app_db):
     await people(app_db, "anna", "vicino", "lontano")
-    await app_db.favors.insert_many([open_favor("f1", "anna"), open_favor("f2", "vicino", km=20), open_favor("f3", "lontano", km=45)])
+    await app_db.favors.insert_many([open_favor("f1", "anna"), open_favor("f2", "vicino", km=12), open_favor("f3", "lontano", km=25)])
 
     assert (await publish(client, "anna")).status_code == 200
 

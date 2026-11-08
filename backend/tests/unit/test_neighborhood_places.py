@@ -1,4 +1,4 @@
-"""Luoghi per eventi e avvisi del quartiere: fino a 20 km dalla posizione di chi organizza, con spiagge e porti."""
+"""Luoghi per eventi e avvisi del quartiere: fino a 15 km dalla posizione di chi organizza, con spiagge e porti."""
 import pytest
 
 import places
@@ -28,7 +28,7 @@ def area(monkeypatch):
         node(1, "Piazza Madrice", km_north(0.4), CENTER[1], place="square"),
         node(2, "Bar Sole", km_north(2), CENTER[1], amenity="cafe"),
         node(3, "Cala Rossa", km_north(12), CENTER[1], natural="beach"),
-        node(4, "Porto di Favignana", km_north(18), CENTER[1], leisure="marina"),
+        node(4, "Porto di Favignana", km_north(14), CENTER[1], leisure="marina"),
         node(5, "Bar Lontano", km_north(40), CENTER[1], amenity="bar"),
     ]
 
@@ -52,7 +52,7 @@ async def test_needs_login(client):
     assert (await client.get(PLACES_URL, params={"category": "bar"})).status_code == 401
 
 
-async def test_lists_places_within_20_km_nearest_first(client, app_db, area):
+async def test_lists_places_within_15_km_nearest_first(client, app_db, area):
     await user_with_position(app_db)
 
     response = await client.get(PLACES_URL, params={"category": "beach"}, headers=auth("marco"))
@@ -60,7 +60,7 @@ async def test_lists_places_within_20_km_nearest_first(client, app_db, area):
     assert response.status_code == 200
     assert area["category"] == "beach"
     assert [p["name"] for p in response.json()["places"]] == ["Cala Rossa"]
-    assert response.json()["radius_km"] == 20
+    assert response.json()["radius_km"] == 15
 
 
 async def test_far_places_are_left_out(client, app_db, area):
@@ -81,7 +81,7 @@ async def test_a_word_picks_the_category_and_other_text_filters_by_name(client, 
     assert [p["name"] for p in by_name.json()["places"]] == ["Bar Sole"]
 
 
-async def test_free_text_searches_by_name_up_to_20_km(client, app_db, monkeypatch):
+async def test_free_text_searches_by_name_up_to_15_km(client, app_db, monkeypatch):
     await user_with_position(app_db)
     seen = {}
 
@@ -93,7 +93,7 @@ async def test_free_text_searches_by_name_up_to_20_km(client, app_db, monkeypatc
 
     response = await client.get(PLACES_URL, params={"q": "cantina"}, headers=auth("marco"))
 
-    assert seen["max"] == 20000
+    assert seen["max"] == 15000
     assert response.json()["places"][0]["name"] == "Cantina Sociale"
 
 
@@ -149,7 +149,7 @@ async def test_nearby_search_stops_at_5_km_when_there_are_enough_places():
     assert calls == [5000] and len(found) == 8
 
 
-async def test_nearby_search_widens_to_20_km_only_when_few_places_are_close():
+async def test_nearby_search_widens_to_15_km_only_when_few_places_are_close():
     calls = []
 
     async def fetch(lat, lon, radius_m, category):
@@ -160,7 +160,7 @@ async def test_nearby_search_widens_to_20_km_only_when_few_places_are_close():
 
     found = await places.search_category_nearby(*CENTER, "beach", fetch=fetch, cache=MemoryCache())
 
-    assert calls == [5000, 20000]
+    assert calls == [5000, 15000]
     assert [p["name"] for p in found] == ["Cala Vicina", "Cala Lontana"]
 
 
@@ -191,7 +191,7 @@ async def test_when_overpass_is_busy_the_name_search_fills_in(monkeypatch):
         raise places.PlacesUnavailable("502")
 
     async def by_name(lat, lon, text, max_distance_m=places.NAME_SEARCH_RADIUS_M, **kwargs):
-        assert max_distance_m == 20000
+        assert max_distance_m == 15000
         return [
             {"id": "node/1", "name": "Spiaggia del Bue Marino", "category": "beach", "distance_m": 4000, "street": None},
             {"id": "node/2", "name": "Bar Spiaggia", "category": "bar", "distance_m": 500, "street": None},

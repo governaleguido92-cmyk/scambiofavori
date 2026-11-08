@@ -1,7 +1,20 @@
-/** Raggio di ricerca sulla mappa: da 10 metri a 30 km, con scala logaritmica (più precisione sui valori piccoli). */
+/** Raggio di ricerca sulla mappa: da 10 metri a 15 km, con scala logaritmica (più precisione sui valori piccoli). */
 export const MIN_RADIUS_KM = 0.01;
-export const MAX_RADIUS_KM = 30;
-export const DEFAULT_RADIUS_KM = 10;
+export const MAX_RADIUS_KM = 15;
+export const DEFAULT_RADIUS_KM = 5;
+
+/** Raggi provati in ordine quando ci sono pochi favori vicini: si parte stretti e si allarga solo se serve. */
+export const WIDEN_STEPS_KM: readonly number[] = [5, 10, 15];
+/** Sotto questo numero di favori nel raggio, l'elenco si allarga al passo successivo. */
+export const MIN_FAVORS_BEFORE_WIDENING = 5;
+
+/** Il raggio più piccolo tra i passi che dà abbastanza favori; se nessuno basta, il più largo. */
+export const pickWidenedRadius = (distancesKm: readonly number[]): number => {
+  for (const step of WIDEN_STEPS_KM) {
+    if (distancesKm.filter((km) => km <= step).length >= MIN_FAVORS_BEFORE_WIDENING) return step;
+  }
+  return WIDEN_STEPS_KM[WIDEN_STEPS_KM.length - 1];
+};
 
 const LOG_RATIO = Math.log(MAX_RADIUS_KM / MIN_RADIUS_KM);
 
@@ -32,7 +45,7 @@ export const radiusFromPosition = (position: number): number =>
 export const positionFromRadius = (km: number): number =>
   clamp(Math.log(clamp(km, MIN_RADIUS_KM, MAX_RADIUS_KM) / MIN_RADIUS_KM) / LOG_RATIO, 0, 1);
 
-/** "10 m", "250 m", "1,5 km", "30 km". */
+/** "10 m", "250 m", "1,5 km", "15 km". */
 export const formatRadius = (km: number): string => {
   if (km < 1) return `${Math.round(km * 1000)} m`;
   return `${km.toLocaleString(undefined, { maximumFractionDigits: 1 })} km`;

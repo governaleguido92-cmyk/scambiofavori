@@ -29,7 +29,7 @@ ATTRIBUTION = "© OpenStreetMap contributors"
 OVERPASS_TIMEOUT_SECONDS = 60.0  # il servizio pubblico a volte impiega decine di secondi
 PHOTON_TIMEOUT_SECONDS = 8.0
 NAME_SEARCH_RADIUS_M = 3000
-NEIGHBORHOOD_RADIUS_M = 20000  # luoghi per eventi e avvisi del quartiere: fino a 20 km da chi organizza
+NEIGHBORHOOD_RADIUS_M = 15000  # luoghi per eventi e avvisi del quartiere: fino a 15 km da chi organizza
 DEFAULT_RADIUS_M = 1000
 MAX_RESULTS = 20
 AREA_LIMIT = 400  # quanti luoghi tenere in copia per zona
@@ -330,7 +330,7 @@ async def search_area(
 
 
 CategoryFetcher = Callable[[float, float, int, str], Awaitable[list[Any]]]
-NEIGHBORHOOD_RADII_M = (5000, NEIGHBORHOOD_RADIUS_M)  # prima vicino (veloce), poi fino a 20 km se servono altri risultati
+NEIGHBORHOOD_RADII_M = (5000, NEIGHBORHOOD_RADIUS_M)  # prima vicino (veloce), poi fino a 15 km se servono altri risultati
 NEIGHBORHOOD_ENOUGH = 6
 
 
@@ -355,8 +355,8 @@ async def search_category_nearby(
     cache: Any = None,
     max_wait_seconds: Optional[float] = MAX_WAIT_SECONDS,
 ) -> list[dict[str, Any]]:
-    """I luoghi di una categoria entro 20 km: una interrogazione leggera per categoria, prima entro 5 km e solo se i risultati
-    sono pochi anche fino a 20 km. Ogni risposta resta in copia per zona e categoria; richieste uguali condividono il lavoro."""
+    """I luoghi di una categoria entro 15 km: una interrogazione leggera per categoria, prima entro 5 km e solo se i risultati
+    sono pochi anche fino a 15 km. Ogni risposta resta in copia per zona e categoria; richieste uguali condividono il lavoro."""
     fetch = fetch or _fetch_category
     cache = cache or default_cache
     lat, lon = round(lat, 3), round(lon, 3)
@@ -521,7 +521,7 @@ async def search_by_name(
 
 
 async def search_category_neighborhood(lat: float, lon: float, category: str) -> list[dict[str, Any]]:
-    """Luoghi di una categoria entro 20 km: Overpass (completo) e, se è occupato o lento, Photon per nome (veloce).
+    """Luoghi di una categoria entro 15 km: Overpass (completo) e, se è occupato o lento, Photon per nome (veloce).
 
     Il ripiego cerca le parole della categoria («spiaggia», «porto»...) e tiene solo i luoghi della categoria giusta.
     Se anche il ripiego non trova nulla si segnala l'errore originale.

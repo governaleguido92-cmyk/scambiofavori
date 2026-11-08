@@ -29,6 +29,7 @@ import { logger } from '../../src/utils/logger';
 import { tt, tx } from '../../src/i18n/tt';
 import { getCategoryVisual, formatDistance } from '../../src/utils/favorVisual';
 import { FavorCard } from '../../src/components/FavorCard';
+import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, pickWidenedRadius } from '../../src/utils/radius';
 import { FirstSteps } from '../../src/components/FirstSteps';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 import { buildRows, filterFavors, FavorRow, FavorSectionKey } from '../../src/utils/favorSections';
@@ -46,6 +47,8 @@ export default function HomeScreen() {
   const [networkError, setNetworkError] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [mySkills, setMySkills] = useState<string[]>([]);
+  // Se i favori vicini sono pochi la ricerca si allarga da sola: qui il raggio usato
+  const [widenedKm, setWidenedKm] = useState<number | null>(null);
   const [query, setQuery] = useState('');
   const [expandedSections, setExpandedSections] = useState<ReadonlySet<FavorSectionKey>>(new Set());
 
@@ -92,11 +95,20 @@ export default function HomeScreen() {
       if (location) {
         params.latitude = location.latitude;
         params.longitude = location.longitude;
-        params.max_distance_km = 10;
+        params.max_distance_km = MAX_RADIUS_KM; // si scarica fino al massimo; il raggio vero si sceglie sotto
       }
       const data = await api.getFavors(params, token || undefined);
       // I favori che hai pubblicato tu stanno in "I Miei": qui si vedono solo quelli degli altri.
-      const others = data.filter((f) => f.creator_id !== user?.user_id);
+      const mine = data.filter((f) => f.creator_id !== user?.user_id);
+      // Si parte stretti (5 km) e si allarga a 10 e 15 solo se ci sono pochi favori vicini
+      let others = mine;
+      let widened: number | null = null;
+      if (location) {
+        const radius = pickWidenedRadius(mine.map((f) => f.distance_km).filter((km): km is number => typeof km === 'number'));
+        others = mine.filter((f) => typeof f.distance_km !== 'number' || f.distance_km <= radius);
+        widened = radius > DEFAULT_RADIUS_KM ? radius : null;
+      }
+      setWidenedKm(widened);
       // Se nulla è cambiato si tiene l'elenco com'è: niente nuovo disegno ogni 3 secondi
       setFavors((previous) => (JSON.stringify(previous) === JSON.stringify(others) ? previous : others));
       await offlineCache.saveFavors(data);
@@ -223,6 +235,12 @@ export default function HomeScreen() {
       {token && <FirstSteps token={token} helped={user?.total_favors_given ?? 0} onShowGive={() => setSelectedType('request')} />}
 
       <FavorTypeTabs value={selectedType} onChange={setSelectedType} hideHint />
+
+      {widenedKm !== null && (
+        <Text style={styles.widenedNote} data-testid="home-widened-note">
+          {tx('Pochi favori vicino a te: ho allargato la ricerca a {0} km', [widenedKm])}
+        </Text>
+      )}
 
       {(favors.length >= 7 || query.length > 0) && (
       <View style={styles.searchBox}>

@@ -851,6 +851,7 @@ export const styles = StyleSheet.create({
   groupSub: { color: colors.textMuted, fontSize: 12 },
   leanName: { color: colors.textSecondary, fontSize: 12, maxWidth: 90 },
   leanWho: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  widenedNote: { color: colors.textMuted, fontSize: 12.5, marginTop: 10 },
   leanCard: {
     minHeight: 104,
   },

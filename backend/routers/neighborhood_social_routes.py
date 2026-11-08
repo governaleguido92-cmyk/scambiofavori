@@ -86,7 +86,7 @@ async def _report(item: dict, id_key: str, report_type: str, collection, reporte
 
 @api_router.get("/neighborhood/events")
 async def list_events(current_user: User = Depends(get_current_user)):
-    """Eventi e ritrovi in arrivo entro 30 km."""
+    """Eventi e ritrovi in arrivo entro 15 km."""
     points = await _position_points(current_user.user_id)
     if not points:
         return {"events": [], "reason": "no_position"}
@@ -198,7 +198,7 @@ async def report_event(request: Request, event_id: str, body: ReportBody, curren
 
 @api_router.get("/neighborhood/intros")
 async def list_intros(current_user: User = Depends(get_current_user)):
-    """Presentazioni degli ultimi 14 giorni di chi abita entro 30 km."""
+    """Presentazioni degli ultimi 14 giorni di chi abita entro 15 km."""
     points = await _position_points(current_user.user_id)
     if not points:
         return {"intros": [], "reason": "no_position"}

@@ -182,7 +182,7 @@ export default function ConversationsScreen() {
           <Ionicons name="people" size={22} color={colors.accent} />
           <View style={styles.squareText}>
             <Text style={styles.squareTitle}>{tt('Il Nostro Quartiere')}</Text>
-            <Text style={styles.squareSubtitle}>{tt('Chatta con chi ha un favore attivo entro 30 km')}</Text>
+            <Text style={styles.squareSubtitle}>{tt('Chatta con chi ha un favore attivo entro 15 km')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textPrimary} />
         </TouchableOpacity>

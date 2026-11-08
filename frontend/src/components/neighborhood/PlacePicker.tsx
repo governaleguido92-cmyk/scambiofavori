@@ -29,7 +29,7 @@ const CATEGORIES: ReadonlyArray<{ key: string; emoji: string; label: string }> =
 ];
 
 /**
- * Scelta del luogo per eventi e avvisi: piazze, bar, parchi, spiagge e porti entro 20 km da te (dati OpenStreetMap),
+ * Scelta del luogo per eventi e avvisi: piazze, bar, parchi, spiagge e porti entro 15 km da te (dati OpenStreetMap),
  * da una categoria o cercando per nome. Resta sempre possibile scrivere il luogo a mano.
  */
 export function PlacePicker({ visible, token, onPick, onClose }: PlacePickerProps) {
@@ -86,7 +86,7 @@ export function PlacePicker({ visible, token, onPick, onClose }: PlacePickerProp
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tt('Chiudi')}>
         <Pressable style={styles.sheet} onPress={() => undefined}>
           <Text style={styles.title}>{tt('Scegli un luogo')}</Text>
-          <Text style={styles.hint}>{tt('Entro 20 km da te')}</Text>
+          <Text style={styles.hint}>{tt('Entro 15 km da te')}</Text>
 
           <View style={styles.chips}>
             {CATEGORIES.map((item) => {

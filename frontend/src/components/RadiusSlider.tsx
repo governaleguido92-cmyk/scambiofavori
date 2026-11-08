@@ -19,7 +19,7 @@ interface RadiusSliderProps {
 const THUMB_SIZE = 26;
 const KEYBOARD_STEP = 0.05;
 
-/** Cursore a scala logaritmica da 10 m a 30 km, senza librerie native (funziona anche su web). */
+/** Cursore a scala logaritmica da 10 m a 15 km, senza librerie native (funziona anche su web). */
 export const RadiusSlider: React.FC<RadiusSliderProps> = ({ valueKm, onChange, label }) => {
   const [trackWidth, setTrackWidth] = useState(0);
   const widthRef = useRef(0);
