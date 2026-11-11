@@ -52,9 +52,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
             raise HTTPException(status_code=400, detail=trust.not_enough_granelli_message(CURRENCY_NAME, current_user.granelli, committed, granelli_cost))
     
     await trust.ensure_not_on_hold(current_user.user_id)
-    await trust.ensure_new_user_can_create(current_user.user_id, granelli_cost, favor_data.is_emergency)
-    if favor_data.is_emergency:
-        await trust.ensure_emergency_slot(current_user.user_id)
+    await trust.ensure_new_user_can_create(current_user.user_id, granelli_cost)
 
     # Update last activity
     await update_last_activity(current_user.user_id)
@@ -70,10 +68,11 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     # Check if user is in debt (for priority highlighting)
     creator_in_debt = current_user.granelli < 0
     
-    # Validazione durata annuncio (1-10 giorni)
-    validity_days = max(1, min(MAX_FAVOR_VALIDITY_DAYS, favor_data.validity_days))
+    # Scadenza dell'annuncio: da 1 ora a 5 giorni (le app vecchie mandano i giorni)
+    validity_hours = favor_validity_hours(favor_data.validity_hours, favor_data.validity_days)
+    validity_days = validity_days_for_old_apps(validity_hours)
     created_at = datetime.now(timezone.utc)
-    expires_at = created_at + timedelta(days=validity_days)
+    expires_at = created_at + timedelta(hours=validity_hours)
     
     favor_doc = {
         "favor_id": favor_id,
@@ -87,6 +86,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         "duration_hours": favor_data.duration_hours,
         "granelli_cost": granelli_cost,
         "validity_days": validity_days,
+        "validity_hours": validity_hours,
         "expires_at": expires_at,
         "status": "active",
         "accepted_by": None,
@@ -96,7 +96,6 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
         "exact_latitude": favor_data.latitude,
         "exact_longitude": favor_data.longitude,
         "address": favor_data.address,
-        "is_emergency": favor_data.is_emergency,
         "creator_in_debt": creator_in_debt,  # For priority highlighting
         "qr_code": qr_code,
         "checkin_completed": False,
@@ -176,10 +175,11 @@ async def update_favor(favor_id: str, update: FavorUpdate, current_user: User = 
             raise HTTPException(status_code=400, detail=f"{CURRENCY_NAME} insufficienti. Aiuta un vicino con «Dona un favore» per guadagnarne.")
         values["duration_hours"] = duration
         values["granelli_cost"] = granelli_cost
-    if "validity_days" in changes:
-        validity_days = max(1, min(MAX_FAVOR_VALIDITY_DAYS, changes["validity_days"]))
-        values["validity_days"] = validity_days
-        values["expires_at"] = datetime.now(timezone.utc) + timedelta(days=validity_days)
+    if changes.get("validity_hours") is not None or changes.get("validity_days") is not None:
+        validity_hours = favor_validity_hours(changes.get("validity_hours"), changes.get("validity_days"))
+        values["validity_hours"] = validity_hours
+        values["validity_days"] = validity_days_for_old_apps(validity_hours)
+        values["expires_at"] = datetime.now(timezone.utc) + timedelta(hours=validity_hours)
 
     await db.favors.update_one({"favor_id": favor_id}, {"$set": values})
     favor.update(values)
@@ -193,7 +193,6 @@ async def get_favors(
     type: Optional[str] = None,
     category: Optional[str] = None,
     status: str = "active",
-    is_emergency: Optional[bool] = None,
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
     max_distance_km: Optional[float] = None,
@@ -219,16 +218,13 @@ async def get_favors(
         query["type"] = type
     if category:
         query["category"] = category
-    if is_emergency is not None:
-        query["is_emergency"] = is_emergency
 
     # Chi ho bloccato (o chi ha bloccato me) non compare nell'elenco
     blocked_ids = await get_blocked_user_ids(current_user.user_id)
     if blocked_ids:
         query["creator_id"] = {"$nin": list(blocked_ids)}
     
-    # Sort emergencies first
-    sort_order = [("is_emergency", -1), ("created_at", -1)]
+    sort_order = [("created_at", -1)]
     
     favors_cursor = db.favors.find(query, {"_id": 0, "exact_latitude": 0, "exact_longitude": 0}).sort(sort_order).limit(100)
     favors = await favors_cursor.to_list(100)
@@ -285,34 +281,14 @@ async def get_favors(
         result.append(favor_obj)
     
     if latitude and longitude:
-        result.sort(key=lambda x: (not x.is_emergency, x.distance_km if x.distance_km else float('inf')))
+        result.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
     
     return result
 
-@api_router.get("/favors/emergencies", response_model=List[Favor], response_model_exclude={"__all__": {"qr_code"}})
-async def get_emergencies(
-    latitude: float,
-    longitude: float,
-    current_user: User = Depends(get_current_user)
-):
-    """Get nearby emergency requests (for notifications)"""
-    query = {"status": "active", "is_emergency": True}
-    
-    favors_cursor = db.favors.find(query, {"_id": 0, "exact_latitude": 0, "exact_longitude": 0, "qr_code": 0})
-    favors = await favors_cursor.to_list(50)
-    
-    nearby = []
-    for favor in favors:
-        if favor.get("approximate_latitude") and favor.get("approximate_longitude"):
-            distance = calculate_distance(latitude, longitude, favor["approximate_latitude"], favor["approximate_longitude"])
-            if distance <= 2.0:  # Within 2km
-                favor["distance_km"] = round(distance, 2)
-                nearby.append(Favor(**favor))
-    
-    # Sort by distance
-    nearby.sort(key=lambda x: x.distance_km if x.distance_km else float('inf'))
-    
-    return nearby[:10]  # Return top 10 nearest
+@api_router.get("/favors/emergencies", response_model=List[Favor])
+async def get_emergencies(current_user: User = Depends(get_current_user)):
+    """Le Urgenze non esistono più: le app vecchie chiedono ancora questo elenco e ricevono un elenco vuoto."""
+    return []
 
 @api_router.get("/favors/my", response_model=List[Favor], response_model_exclude={"__all__": {"qr_code"}})
 async def get_my_favors(current_user: User = Depends(get_current_user)):
@@ -399,8 +375,7 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
     await trust.ensure_payer_has_free_granelli(favor, current_user.user_id, CURRENCY_NAME)
 
     await trust.ensure_not_on_hold(current_user.user_id)
-    if not favor.is_emergency:
-        await trust.ensure_new_user_can_accept(current_user.user_id)
+    await trust.ensure_new_user_can_accept(current_user.user_id)
     await trust.ensure_pair_not_overused(current_user.user_id, favor.creator_id)
     await ensure_daily_hours_for_accept(favor, current_user.user_id)
 
@@ -494,13 +469,6 @@ async def complete_favor(data: FavorComplete, current_user: User = Depends(get_c
                 )
     
     helper_id, _ = await settle_favor(favor)
-
-    # Update emergency counts
-    if favor.is_emergency:
-        await db.users.update_one(
-            {"user_id": helper_id},
-            {"$inc": {"emergencies_helped": 1}}
-        )
     
     # ========================
     # SECURITY LOG: Record transaction for legal purposes
@@ -618,13 +586,6 @@ async def verify_and_complete_qr(
     # Il limite giornaliero delle ore si controlla quando si accetta il favore, non qui: chi ha fatto il lavoro viene sempre pagato
     
     helper_id, receiver_id = await settle_favor(favor, {"checkin_completed": True})
-
-    # Update emergency counts
-    if favor.is_emergency:
-        await db.users.update_one(
-            {"user_id": helper_id},
-            {"$inc": {"emergencies_helped": 1}}
-        )
     
     # Create transaction record for security/legal purposes
     await log_security_transaction(

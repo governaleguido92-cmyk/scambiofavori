@@ -138,7 +138,6 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
                     style={[
                       styles.dot,
                       { backgroundColor: give ? GIVE_COLOR : RECEIVE_COLOR },
-                      favor.is_emergency && styles.dotUrgent,
                       isOwn && styles.dotOwn,
                       selected && styles.dotSelected,
                     ]}
@@ -287,10 +286,6 @@ const styles = StyleSheet.create({
     borderRadius: DOT_SIZE / 2,
     borderWidth: 2,
     borderColor: colors.backgroundCard,
-  },
-  dotUrgent: {
-    borderColor: colors.error,
-    borderWidth: 3,
   },
   dotOwn: {
     borderColor: '#FFFFFF',

@@ -98,7 +98,6 @@ export interface User {
   total_favors_given: number;
   total_favors_received: number;
   micro_favors_completed: number;
-  emergencies_helped: number;
   total_hours_helped: number;
   total_donations: number;
   average_rating: number;
@@ -260,9 +259,9 @@ export interface Favor {
   exact_longitude?: number;
   address?: string;
   distance_km?: number;
-  is_emergency: boolean;
   creator_in_debt: boolean;  // For priority highlighting
-  validity_days: number;  // Durata annuncio (1-10 giorni)
+  validity_days: number;  // Durata annuncio in giorni (1-5), per le app vecchie
+  validity_hours?: number;  // Durata annuncio in ore (1-120); manca nei favori creati prima
   expires_at?: string;  // Data scadenza
   qr_code?: string;
   checkin_completed: boolean;
@@ -335,11 +334,11 @@ export interface FavorCreateData {
   category: string;
   duration_hours: number;
   validity_days?: number;
+  validity_hours?: number;
   latitude?: number;
   longitude?: number;
   address?: string;
   is_micro?: boolean;
-  is_emergency?: boolean;
 }
 
 export type { ConversationSummary } from '../utils/conversations';
@@ -398,6 +397,7 @@ export interface FavorUpdateData {
   category?: string;
   duration_hours?: number;
   validity_days?: number;
+  validity_hours?: number;
 }
 
 export interface PlaceSuggestion {
@@ -749,8 +749,7 @@ export const api = {
     category?: string;
     status?: string;
     is_micro?: boolean;
-    is_emergency?: boolean;
-    latitude?: number;
+      latitude?: number;
     longitude?: number;
     max_distance_km?: number;
   }, token?: string): Promise<Favor[]> => {
@@ -764,17 +763,6 @@ export const api = {
     }
     const url = `${API_URL}/api/favors${searchParams.toString() ? `?${searchParams}` : ''}`;
     const response = await fetch(url, { headers: getHeaders(token) });
-    return handleResponse(response);
-  },
-
-  getEmergencies: async (latitude: number, longitude: number, token: string): Promise<Favor[]> => {
-    const params = new URLSearchParams({
-      latitude: String(latitude),
-      longitude: String(longitude),
-    });
-    const response = await fetch(`${API_URL}/api/favors/emergencies?${params}`, {
-      headers: getHeaders(token),
-    });
     return handleResponse(response);
   },
 

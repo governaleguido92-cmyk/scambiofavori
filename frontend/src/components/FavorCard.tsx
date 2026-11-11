@@ -11,7 +11,8 @@ import { Favor } from '../services/api';
 import colors from '../theme/colors';
 import { styles } from '../styles/home.styles';
 import { tt, tx } from '../i18n/tt';
-import { getCategoryVisual, getExpiryInfo, formatDistance } from '../utils/favorVisual';
+import { getCategoryVisual, formatDistance } from '../utils/favorVisual';
+import { FavorCountdown } from './FavorCountdown';
 import { formatGranelli } from '../utils/granelli';
 import { UserNameWithBadge, SupporterProfileBorder } from './SupporterBadge';
 
@@ -43,7 +44,8 @@ export const FavorCard: React.FC<FavorCardProps> = ({
 }) => {
   const router = useRouter();
   const visual = getCategoryVisual(item.category);
-  const expiry = getExpiryInfo(item.expires_at);
+  // Il conto alla rovescia ha senso solo finché il favore aspetta qualcuno
+  const showCountdown = item.status === 'active' && !item.accepted_by && !!item.expires_at;
   const isOffer = item.type === 'offer';
   const isOwn = !!currentUserId && item.creator_id === currentUserId && !roleText;
   const kindKey = favorKindFor(item, currentUserId);
@@ -60,13 +62,12 @@ export const FavorCard: React.FC<FavorCardProps> = ({
           styles.gridCard,
           styles.leanCard,
           isGive ? styles.gridCardRequest : styles.gridCardOffer,
-          item.is_emergency && styles.gridCardUrgent,
           highlighted && styles.gridCardHighlighted,
           style,
         ]}
         onPress={() => onPress(item)}
         accessibilityRole="button"
-        accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
+        accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}`}
         data-testid={`favor-card-${item.favor_id}`}
       >
         <View style={styles.cleanHead}>
@@ -81,6 +82,11 @@ export const FavorCard: React.FC<FavorCardProps> = ({
             <Text style={styles.cleanEmoji}>{visual.emoji}</Text>
             <Text style={[styles.gridTitle, styles.cleanTitle, styles.leanTitle]} numberOfLines={2}>{item.title}</Text>
           </View>
+          {showCountdown && (
+            <View style={styles.leanCountdown}>
+              <FavorCountdown expiresAt={item.expires_at} earns={isGive} granelli={item.granelli_cost} variant="card" />
+            </View>
+          )}
         </View>
         <View style={styles.leanMeta}>
           <Text style={styles.leanMetaText} numberOfLines={1}>
@@ -102,7 +108,6 @@ export const FavorCard: React.FC<FavorCardProps> = ({
       style={[
         styles.gridCard,
         isGive ? styles.gridCardRequest : styles.gridCardOffer, // arancione = dono, oliva = ricevo (come nelle schede della Home)
-        item.is_emergency && styles.gridCardUrgent,
         item.creator_in_debt && isOffer && styles.favorCardDebtHighlight,
         isOwn && styles.gridCardOwn,
         highlighted && styles.gridCardHighlighted,
@@ -110,7 +115,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
       ]}
       onPress={() => onPress(item)}
       accessibilityRole="button"
-      accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}${item.is_emergency ? ', ' + tt('Urgente') : ''}`}
+      accessibilityLabel={`${kindLabel}: ${item.title}, ${formatGranelli(item.granelli_cost)}`}
       data-testid={`favor-card-${item.favor_id}`}
     >
       {/* Intestazione pulita: il tipo (arancione = dono, oliva = ricevo) e cosa succede ai Granelli. Niente fasce piene. */}
@@ -121,18 +126,11 @@ export const FavorCard: React.FC<FavorCardProps> = ({
           <Text style={styles.cleanFlowText}>{tt(granelliFlowLabel(item, currentUserId))} {item.granelli_cost}</Text>
         </View>
       </View>
-      {(statusLabel || item.is_emergency) && (
+      {statusLabel && (
         <View style={styles.cleanTags}>
-          {statusLabel && (
-            <View style={[styles.gridStatusTag, { backgroundColor: statusColor ?? colors.primary }]}>
-              <Text style={[styles.gridStatusText, { color: readableTextColor(statusColor ?? colors.primary) }]}>{statusLabel}</Text>
-            </View>
-          )}
-          {item.is_emergency && (
-            <View style={styles.gridUrgentTag}>
-              <Text style={styles.gridUrgentText}>{tt('URGENTE')}</Text>
-            </View>
-          )}
+          <View style={[styles.gridStatusTag, { backgroundColor: statusColor ?? colors.primary }]}>
+            <Text style={[styles.gridStatusText, { color: readableTextColor(statusColor ?? colors.primary) }]}>{statusLabel}</Text>
+          </View>
         </View>
       )}
 
@@ -194,10 +192,8 @@ export const FavorCard: React.FC<FavorCardProps> = ({
         <Text style={styles.gridNear} numberOfLines={1}>
           {typeof item.distance_km === 'number' ? `● ${formatDistance(item.distance_km)}` : tt(item.category)}
         </Text>
-        {expiry && (
-          <Text style={[styles.gridExpiry, expiry.isSoon && styles.gridExpirySoon]} numberOfLines={1}>
-            {expiry.label}
-          </Text>
+        {showCountdown && (
+          <FavorCountdown expiresAt={item.expires_at} earns={isGive} granelli={item.granelli_cost} variant="card" />
         )}
       </View>
       {children}

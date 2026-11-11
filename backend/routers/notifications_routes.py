@@ -6,6 +6,16 @@ import trust
 api_router = APIRouter(prefix="/api")
 
 EXPIRY_REMINDER_WINDOW = timedelta(hours=24)
+# Gli annunci brevi (da 1 ora) si ricordano nell'ultimo quarto della loro vita, non appena pubblicati
+EXPIRY_REMINDER_SHARE = 4
+
+
+def expiry_reminder_window(favor: dict) -> timedelta:
+    """Quanto prima della scadenza avvisare: 24 ore, o meno per un annuncio che dura poco."""
+    hours = favor.get("validity_hours") or (favor.get("validity_days") or 0) * HOURS_PER_DAY
+    if not hours:
+        return EXPIRY_REMINDER_WINDOW
+    return min(EXPIRY_REMINDER_WINDOW, timedelta(hours=hours) / EXPIRY_REMINDER_SHARE)
 STALLED_AFTER = timedelta(hours=24)
 
 
@@ -71,8 +81,12 @@ async def remind_expiring_favors(user_id: str) -> None:
     expiring = await db.favors.find({
         "creator_id": user_id, "status": "active", "expiry_reminded": {"$ne": True},
         "expires_at": {"$gt": now, "$lte": now + EXPIRY_REMINDER_WINDOW},
-    }, {"_id": 0, "favor_id": 1, "title": 1}).to_list(20)
+    }, {"_id": 0, "favor_id": 1, "title": 1, "expires_at": 1, "validity_hours": 1, "validity_days": 1}).to_list(20)
     for favor in expiring:
+        window = expiry_reminder_window(favor)
+        expires_at = favor["expires_at"] if favor["expires_at"].tzinfo else favor["expires_at"].replace(tzinfo=timezone.utc)
+        if expires_at > now + window:
+            continue
         # Il segno sul favore va messo per primo: due richieste insieme non devono duplicare l'avviso
         claimed = await db.favors.update_one(
             {"favor_id": favor["favor_id"], "expiry_reminded": {"$ne": True}}, {"$set": {"expiry_reminded": True}})
@@ -81,7 +95,7 @@ async def remind_expiring_favors(user_id: str) -> None:
         await db.notifications.insert_one({
             "notification_id": f"notif_{uuid.uuid4().hex[:12]}", "user_id": user_id, "type": "favor_expiring",
             "title": "Il tuo favore sta per scadere ⏳",
-            "message": f"\"{favor['title']}\" scade entro 24 ore e nessuno l'ha ancora accettato. Puoi modificarlo o pubblicarlo di nuovo.",
+            "message": f"\"{favor['title']}\" {'scade entro 24 ore' if window == EXPIRY_REMINDER_WINDOW else 'scade tra poco'} e nessuno l'ha ancora accettato. Puoi modificarlo o pubblicarlo di nuovo.",
             "related_id": favor["favor_id"], "read": False, "created_at": now,
         })
 

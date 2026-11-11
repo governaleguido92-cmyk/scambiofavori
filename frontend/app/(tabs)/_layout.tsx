@@ -53,6 +53,8 @@ export default function TabsLayout() {
           height: Platform.OS === 'ios' ? 90 : 70,
           paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 10,
+          // Su web (Chrome da computer) la barra non si allarga a tutto lo schermo: resta larga come un telefono, al centro.
+          ...(Platform.OS === 'web' ? styles.webTabBar : null),
         },
         // Etichetta sempre sotto l'icona: su web, di default, finisce accanto e il tasto Crea risulta fuori asse.
         tabBarLabelPosition: 'below-icon',
@@ -118,7 +120,7 @@ export default function TabsLayout() {
         }}
       />
       {/* Pagine che si aprono dentro l'app ma tengono sempre visibile la barra in basso (Home, Mappa, Crea, I Miei, Profilo) */}
-      {['favor/[id]', 'vicino/[id]', 'chat/[favorId]', 'conversations', 'quartiere', 'notifications', 'emergencies', 'moderazione'].map((name) => (
+      {['favor/[id]', 'vicino/[id]', 'chat/[favorId]', 'conversations', 'quartiere', 'notifications', 'moderazione'].map((name) => (
         <Tabs.Screen key={name} name={name} options={{ href: null, tabBarHideOnKeyboard: true }} />
       ))}
     </Tabs>
@@ -128,7 +130,16 @@ export default function TabsLayout() {
   );
 }
 
+const WEB_TAB_BAR_MAX_WIDTH = 760; // come il contenuto della Home su web (home.styles.ts)
+
 const styles = StyleSheet.create({
+  webTabBar: {
+    width: '100%',
+    maxWidth: WEB_TAB_BAR_MAX_WIDTH,
+    alignSelf: 'center',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
   // Il cerchio sporge sopra la barra: 54 px di altezza meno 30 di margine = 24 px, come le altre icone,
   // così l'etichetta "Crea" resta sulla stessa riga delle altre voci.
   createButton: {

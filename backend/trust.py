@@ -17,7 +17,6 @@ from core import PHONE_VERIFICATION_REQUIRED, db
 FAVORS_FOR_LEVEL_TWO = 3
 MIN_RATING_FOR_LEVEL_TWO = 3.5
 NEW_USER_MAX_OPEN_FAVORS = 5  # favori che il nuovo utente chiede, aperti insieme
-MAX_ACTIVE_EMERGENCIES = 2  # urgenze ancora senza risposta che una persona può avere insieme
 NEW_USER_MAX_ACCEPTED_FAVORS = 5  # favori che il nuovo utente sta aiutando, aperti insieme
 NEW_USER_MAX_GRANELLI_COST = 3
 PAIR_WEEKLY_LIMIT = 5
@@ -86,17 +85,6 @@ async def release_stalled_favors(user_id: str) -> int:
     return released
 
 
-async def ensure_emergency_slot(user_id: str) -> None:
-    """Poche urgenze alla volta: se tutto è urgente, niente lo è più per chi guarda."""
-    active = await db.favors.count_documents({"creator_id": user_id, "is_emergency": True, "status": "active", "expires_at": {"$gt": datetime.now(timezone.utc)}})
-    if active >= MAX_ACTIVE_EMERGENCIES:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Hai già {MAX_ACTIVE_EMERGENCIES} urgenze senza risposta. Aspetta che qualcuno risponda, oppure annullane una "
-                   "o pubblica questo come favore normale.",
-        )
-
-
 async def committed_granelli(user_id: str) -> int:
     """Granelli che l'utente deve pagare per favori GIÀ ACCETTATI da qualcuno e ancora da concludere:
     le sue richieste accettate e le offerte altrui che ha accettato. Le richieste ancora in attesa non impegnano
@@ -149,9 +137,9 @@ async def ensure_not_on_hold(user_id: str) -> None:
         )
 
 
-async def ensure_new_user_can_create(user_id: str, granelli_cost: int, is_emergency: bool) -> None:
-    """I nuovi utenti hanno favori piccoli e pochi alla volta. Le emergenze non hanno limiti."""
-    if is_emergency or not is_new_user(await user_doc_of(user_id)):
+async def ensure_new_user_can_create(user_id: str, granelli_cost: int) -> None:
+    """I nuovi utenti hanno favori piccoli e pochi alla volta."""
+    if not is_new_user(await user_doc_of(user_id)):
         return
     if granelli_cost > NEW_USER_MAX_GRANELLI_COST:
         raise HTTPException(

@@ -482,9 +482,9 @@ async def test_not_enough_granelli_message_points_to_i_miei(client, app_db):
     assert "I Miei" in refused.json()["detail"] and "ancora da concludere" in refused.json()["detail"]
 
 
-# ---------- poche urgenze alla volta ----------
+# ---------- le Urgenze non esistono più ----------
 
-async def test_a_person_cannot_have_more_than_two_active_emergencies(client, app_db):
+async def test_old_apps_can_still_publish_with_the_urgent_flag_but_it_is_ignored(client, app_db):
     from test_trust_safety import FAVOR_BODY
 
     await app_db.users.insert_one(make_user("me", granelli=50, total_favors_given=5))
@@ -492,24 +492,18 @@ async def test_a_person_cannot_have_more_than_two_active_emergencies(client, app
 
     codes = [(await client.post("/api/favors", json=urgent, headers=auth("me"))).status_code for _ in range(3)]
 
-    assert codes == [200, 200, 403]
-    refused = await client.post("/api/favors", json=urgent, headers=auth("me"))
-    assert "2 urgenze" in refused.json()["detail"]
-    normal = await client.post("/api/favors", json={**urgent, "is_emergency": False}, headers=auth("me"))
-    assert normal.status_code == 200, normal.text
+    assert codes == [200, 200, 200]
+    stored = await app_db.favors.find({"creator_id": "me"}).to_list(10)
+    assert all("is_emergency" not in favor for favor in stored)
 
 
-async def test_answered_emergencies_free_the_slot(client, app_db):
-    from test_trust_safety import FAVOR_BODY
+async def test_the_old_emergencies_list_is_always_empty(client, app_db):
+    await app_db.users.insert_one(make_user("me"))
+    await app_db.favors.insert_one({**active_favor("old", "other", timedelta(days=1)), "is_emergency": True})
 
-    await app_db.users.insert_one(make_user("me", granelli=50, total_favors_given=5))
-    await app_db.favors.insert_many([
-        {**active_favor(f"e{i}", "me", timedelta(days=1)), "is_emergency": True, "status": "accepted", "accepted_by": "x"}
-        for i in range(2)])
+    response = await client.get("/api/favors/emergencies?latitude=37.9&longitude=12.3", headers=auth("me"))
 
-    response = await client.post("/api/favors", json={**FAVOR_BODY, "duration_hours": 1.0, "is_emergency": True}, headers=auth("me"))
-
-    assert response.status_code == 200, response.text
+    assert response.status_code == 200 and response.json() == []
 
 
 # ---------- i favori durano al massimo 5 giorni ----------
@@ -636,7 +630,7 @@ async def test_accept_is_refused_when_the_creator_has_reached_the_limit(client, 
     assert response.status_code == 403 and "chi l'ha pubblicato" in response.json()["detail"]
 
 
-async def test_accept_within_the_limit_still_works_and_emergencies_are_exempt(client, app_db, mongo_like_find_one_and_update):
+async def test_accept_within_the_limit_works_and_old_urgent_favors_follow_the_limit(client, app_db, mongo_like_find_one_and_update):
     await app_db.users.insert_many([make_user("helper", email_verified=True, total_favors_given=5), make_user("owner", email_verified=True)])
     await app_db.favors.insert_many([
         completed_today("d1", "helper", 9.0),
@@ -647,7 +641,7 @@ async def test_accept_within_the_limit_still_works_and_emergencies_are_exempt(cl
     urgent = await client.post("/api/favors/accept", json={"favor_id": "urgent"}, headers=auth("helper"))
 
     assert fits.status_code == 200, fits.text
-    assert urgent.status_code == 200, urgent.text
+    assert urgent.status_code == 403 and "10 ore" in urgent.json()["detail"], urgent.text
 
 
 async def test_qr_completion_is_never_blocked_by_the_daily_limit(client, app_db):

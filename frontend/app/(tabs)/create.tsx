@@ -30,6 +30,10 @@ import { FavorCard } from '../../src/components/FavorCard';
 import { getCategoryVisual } from '../../src/utils/favorVisual';
 import { getTitleExamples } from '../../src/utils/favorExamples';
 import { granelliWord } from '../../src/utils/granelli';
+import {
+  DEFAULT_VALIDITY_HOURS, HOURS_PER_DAY, MAX_VALIDITY_HOURS, MIN_VALIDITY_HOURS,
+  formatValidity, nearestValidityStep, stepValidity, validityDaysFor,
+} from '../../src/utils/favorValidity';
 import colors from '../../src/theme/colors';
 import { logger } from '../../src/utils/logger';
 import { notify, showRefusal } from '../../src/utils/notify';
@@ -39,20 +43,11 @@ const DEBT_LIMIT = -3; // Social debt threshold
 
 const TITLE_MAX = 100;
 const DESCRIPTION_MAX = 500;
-const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
 const MIN_HOURS = 1; // si va di ora in ora, niente mezze ore
 
-// Durata dell'annuncio: un favore resta in elenco al massimo 5 giorni (poi scade e i Granelli tornano liberi).
-/** Un favore vecchio può avere una durata che non è tra le tre scelte: si porta alla più vicina. */
-const nearestValidity = (days: number): number => (days <= 1 ? 1 : days <= 3 ? 3 : 5);
-
-const PREFILL_KEYS = ['editId', 'title', 'description', 'category', 'type', 'durationHours', 'validityDays'] as const;
-
-const VALIDITY_CHOICES: ReadonlyArray<{ days: number; label: string }> = [
-  { days: 1, label: '1 giorno' },
-  { days: 3, label: '3 giorni' },
-  { days: 5, label: '5 giorni' },
-];
+// Durata dell'annuncio: da 1 ora a 5 giorni (poi scade e i Granelli tornano liberi). Le regole stanno in favorValidity.
+const PREFILL_KEYS = ['editId', 'title', 'description', 'category', 'type', 'durationHours', 'validityDays', 'validityHours'] as const;
 
 export default function CreateFavorScreen() {
   const { user, token, refreshUser } = useAuth();
@@ -62,7 +57,7 @@ export default function CreateFavorScreen() {
   // "Ripubblica" e "Modifica" da I Miei aprono questa pagina con i dati già compilati.
   // Con editId il favore esistente viene aggiornato; senza, se ne pubblica uno nuovo.
   const prefill = useLocalSearchParams<{
-    editId?: string; title?: string; description?: string; category?: string; type?: string; durationHours?: string; validityDays?: string;
+    editId?: string; title?: string; description?: string; category?: string; type?: string; durationHours?: string; validityDays?: string; validityHours?: string;
   }>();
   const editingId = prefill.editId ? String(prefill.editId) : null;
   const editing = editingId !== null;
@@ -71,7 +66,7 @@ export default function CreateFavorScreen() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [durationHours, setDurationHours] = useState('1');
-  const [validityDays, setValidityDays] = useState(3); // Durata annuncio (1-5 giorni)
+  const [validityHours, setValidityHours] = useState(DEFAULT_VALIDITY_HOURS); // Durata annuncio (1 ora - 5 giorni)
   const [address, setAddress] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -111,8 +106,9 @@ export default function CreateFavorScreen() {
     if (prefill.description) setDescription(String(prefill.description).slice(0, DESCRIPTION_MAX));
     if (prefill.type === 'offer' || prefill.type === 'request') setType(prefill.type);
     if (prefill.durationHours && /^\d{1,3}$/.test(String(prefill.durationHours))) setDurationHours(String(prefill.durationHours));
-    if (prefill.validityDays && Number.isFinite(Number(prefill.validityDays))) setValidityDays(nearestValidity(Number(prefill.validityDays)));
-  }, [prefill.title, prefill.description, prefill.type, prefill.durationHours, prefill.validityDays]);
+    if (prefill.validityHours && Number.isFinite(Number(prefill.validityHours))) setValidityHours(nearestValidityStep(Number(prefill.validityHours)));
+    else if (prefill.validityDays && Number.isFinite(Number(prefill.validityDays))) setValidityHours(nearestValidityStep(Number(prefill.validityDays) * HOURS_PER_DAY));
+  }, [prefill.title, prefill.description, prefill.type, prefill.durationHours, prefill.validityDays, prefill.validityHours]);
 
   // Uscendo dalla pagina i dati precompilati vanno via: tornando su "Crea" si riparte da un favore nuovo.
   const hasPrefillRef = useRef(false);
@@ -121,7 +117,7 @@ export default function CreateFavorScreen() {
     setTitle('');
     setDescription('');
     setDurationHours('1');
-    setValidityDays(3);
+    setValidityHours(DEFAULT_VALIDITY_HOURS);
     router.setParams(Object.fromEntries(PREFILL_KEYS.map((key) => [key, undefined])) as any);
   }, [router]);
   useFocusEffect(
@@ -220,7 +216,7 @@ export default function CreateFavorScreen() {
     try {
       await api.updateFavor(
         editingId,
-        { title: title.trim(), description: description.trim(), category, duration_hours: currentHours, validity_days: validityDays },
+        { title: title.trim(), description: description.trim(), category, duration_hours: currentHours, validity_hours: validityHours, validity_days: validityDaysFor(validityHours) },
         token
       );
       notify(t('common.success'), tt('Favore aggiornato!'));
@@ -284,7 +280,8 @@ export default function CreateFavorScreen() {
           description: description.trim(),
           category,
           duration_hours: duration,
-          validity_days: validityDays,
+          validity_hours: validityHours,
+          validity_days: validityDaysFor(validityHours),
           latitude: location?.latitude,
           longitude: location?.longitude,
           address: address || undefined,
@@ -306,7 +303,7 @@ export default function CreateFavorScreen() {
               setTitle('');
               setDescription('');
               setDurationHours('1');
-              setValidityDays(3);
+              setValidityHours(DEFAULT_VALIDITY_HOURS);
               setAddress('');
               setLocation(null);
               router.push('/(tabs)');
@@ -342,10 +339,10 @@ export default function CreateFavorScreen() {
     duration_hours: currentHours,
     granelli_cost: granelliPreview,
     status: 'active',
-    is_emergency: false,
     creator_in_debt: false,
-    validity_days: validityDays,
-    expires_at: new Date(Date.now() + validityDays * DAY_MS).toISOString(),
+    validity_days: validityDaysFor(validityHours),
+    validity_hours: validityHours,
+    expires_at: new Date(Date.now() + validityHours * HOUR_MS).toISOString(),
     checkin_completed: false,
     created_at: new Date().toISOString(),
   };
@@ -595,26 +592,35 @@ export default function CreateFavorScreen() {
             </Text>
           )}
 
-          {/* Durata annuncio: tre scelte semplici */}
+          {/* Durata annuncio: contatore da 1 ora a 5 giorni */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>{tt('Durata Annuncio')}</Text>
-            <View style={styles.validityChoices}>
-              {VALIDITY_CHOICES.map((choice) => (
-                <TouchableOpacity
-                  key={choice.days}
-                  style={[styles.validityChoice, validityDays === choice.days && styles.validityChoiceActive]}
-                  onPress={() => setValidityDays(choice.days)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: validityDays === choice.days }}
-                  data-testid={`validity-${choice.days}`}
-                >
-                  <Text style={[styles.validityChoiceText, validityDays === choice.days && styles.validityChoiceTextActive]}>
-                    {tt(choice.label)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.durationContainer}>
+              <TouchableOpacity
+                style={[styles.durationButton, validityHours <= MIN_VALIDITY_HOURS && styles.durationButtonDisabled]}
+                onPress={() => setValidityHours((hours) => stepValidity(hours, -1))}
+                disabled={validityHours <= MIN_VALIDITY_HOURS}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Scade prima')}
+                data-testid="validity-minus"
+              >
+                <Ionicons name="remove" size={24} color="#0C0E09" />
+              </TouchableOpacity>
+              <View style={styles.durationDisplay}>
+                <Text style={styles.validityValue} data-testid="validity-value">{formatValidity(validityHours)}</Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.durationButton, validityHours >= MAX_VALIDITY_HOURS && styles.durationButtonDisabled]}
+                onPress={() => setValidityHours((hours) => stepValidity(hours, 1))}
+                disabled={validityHours >= MAX_VALIDITY_HOURS}
+                accessibilityRole="button"
+                accessibilityLabel={tt('Scade dopo')}
+                data-testid="validity-plus"
+              >
+                <Ionicons name="add" size={24} color="#0C0E09" />
+              </TouchableOpacity>
             </View>
-            <Text style={styles.validityHint}>{tt('L\'annuncio scadrà automaticamente dopo')}{' '}{validityDays} {validityDays === 1 ? tt('giorno') : tt('giorni')}
+            <Text style={styles.validityHint}>{tt('L\'annuncio scadrà automaticamente dopo')}{' '}{formatValidity(validityHours)}
             </Text>
           </View>
 

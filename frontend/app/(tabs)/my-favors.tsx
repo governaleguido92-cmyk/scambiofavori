@@ -27,6 +27,7 @@ import colors from '../../src/theme/colors';
 import { FavorCard } from '../../src/components/FavorCard';
 import { qrRole, canComplete, groupByTab, isExpired, MyFavorTab } from '../../src/utils/myFavors';
 import { roleText, statusOf } from '../../src/utils/favorLabels';
+import { validityHoursOf } from '../../src/utils/favorValidity';
 
 const TAB_ORDER: ReadonlyArray<MyFavorTab> = ['ongoing', 'published', 'closed'];
 
@@ -187,7 +188,7 @@ export default function MyFavorsScreen() {
         category: favor.category,
         type: favor.type,
         durationHours: String(Math.max(1, Math.round(favor.duration_hours))),
-        validityDays: String(favor.validity_days ?? 3),
+        validityHours: String(validityHoursOf(favor)),
       },
     } as any);
   };
