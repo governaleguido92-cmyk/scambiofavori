@@ -16,10 +16,18 @@ export const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 6,
   },
+  // Sui telefoni stretti cede spazio il saluto (si accorcia con «…»), mai i pulsanti e i Granelli a destra
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    flexShrink: 1,
+    minWidth: 0,
+    marginRight: 8,
+  },
+  headerGreeting: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   headerLogo: {
     width: 36,
@@ -29,7 +37,8 @@ export const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+    flexShrink: 0,
   },
   notificationButton: {
     width: 36,

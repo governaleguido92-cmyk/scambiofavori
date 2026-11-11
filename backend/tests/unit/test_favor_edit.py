@@ -174,7 +174,7 @@ async def test_invalid_edits_are_rejected_and_change_nothing(client, app_db, pay
 
     response = await client.put("/api/favors/favor_1", json=payload, headers=auth("creator"))
 
-    assert response.status_code == 400
+    assert response.status_code in (400, 422)  # 422: durata non in ore intere, rifiutata dal modello
     stored = await app_db.favors.find_one({"favor_id": "favor_1"})
     assert stored["title"] == "Aiuto con la spesa" and stored["granelli_cost"] == 1
 

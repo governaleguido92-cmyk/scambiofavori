@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Image,
   TextInput,
+  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -34,9 +35,14 @@ import { FirstSteps } from '../../src/components/FirstSteps';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 import { buildRows, filterFavors, FavorRow, FavorSectionKey } from '../../src/utils/favorSections';
 
+const NARROW_SCREEN_PX = 380;
+
 export default function HomeScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
+  // Sui telefoni stretti il logo lascia spazio al saluto: i pulsanti e i Granelli a destra restano interi
+  const { width: screenWidth } = useWindowDimensions();
+  const isNarrowScreen = screenWidth < NARROW_SCREEN_PX;
   const { t } = useTranslation();
   const [favors, setFavors] = useState<Favor[]>([]);
   const [selectedType, setSelectedType] = useState<FavorType>('request');
@@ -326,10 +332,10 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
-          <View>
-            <Text style={styles.greeting}>{tt('Ciao,')}{' '}{user?.name?.trim().split(/\s+/)[0] ?? ''}!</Text>
-            <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+          {!isNarrowScreen && <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />}
+          <View style={styles.headerGreeting}>
+            <Text style={styles.greeting} numberOfLines={1}>{tt('Ciao,')}{' '}{user?.name?.trim().split(/\s+/)[0] ?? ''}!</Text>
+            <Text style={styles.subtitle} numberOfLines={1}>{t('home.subtitle')}</Text>
           </View>
         </View>
         <View style={styles.headerRight}>

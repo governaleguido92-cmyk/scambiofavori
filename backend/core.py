@@ -563,6 +563,13 @@ def favor_validity_hours(validity_hours: Optional[int], validity_days: Optional[
     return days * HOURS_PER_DAY
 
 
+def ensure_whole_hours(hours: Optional[float]) -> Optional[float]:
+    """La durata di un favore va di ora in ora, da 1 in su: niente mezze ore (1 ora = 1 Granello)."""
+    if hours is not None and (hours < 1 or not float(hours).is_integer()):
+        raise ValueError("La durata va in ore intere, almeno 1")
+    return hours
+
+
 def validity_days_for_old_apps(validity_hours: int) -> int:
     """Le app vecchie leggono ancora validity_days: poche ore contano come 1 giorno."""
     return max(1, -(-validity_hours // HOURS_PER_DAY))
@@ -582,6 +589,8 @@ class FavorCreate(BaseModel):
     longitude: Optional[float] = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
     address: Optional[str] = Field(default=None, max_length=200)
 
+    _whole_hours = field_validator("duration_hours")(ensure_whole_hours)
+
 class FavorUpdate(BaseModel):
     """Campi modificabili di un favore non ancora accettato. Tipo, autore e posizione non si cambiano."""
     title: Optional[str] = None
@@ -590,6 +599,8 @@ class FavorUpdate(BaseModel):
     duration_hours: Optional[float] = None
     validity_days: Optional[int] = None
     validity_hours: Optional[int] = Field(default=None, ge=MIN_FAVOR_VALIDITY_HOURS, le=MAX_FAVOR_VALIDITY_HOURS)
+
+    _whole_hours = field_validator("duration_hours")(ensure_whole_hours)
 
 class Favor(BaseModel):
     favor_id: str
