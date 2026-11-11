@@ -1,4 +1,5 @@
 import { tt, tx } from '../i18n/tt';
+import { serverTime } from './serverDate';
 
 export interface CategoryVisual {
   emoji: string;
@@ -36,14 +37,17 @@ export interface ExpiryInfo {
   isSoon: boolean;
 }
 
-/** Testo "scade tra N g" calcolato dalla data di scadenza; null se manca o non è valida. */
+const HOUR_MS = 60 * 60 * 1000;
+
+/** Testo "scade tra N h" (sotto un giorno) o "scade tra N g", dalla data di scadenza; null se manca o non è valida. */
 export const getExpiryInfo = (expiresAt: string | undefined, now: number = Date.now()): ExpiryInfo | null => {
   if (!expiresAt) return null;
-  const end = new Date(expiresAt).getTime();
+  const end = serverTime(expiresAt);
   if (Number.isNaN(end)) return null;
-  const days = Math.ceil((end - now) / DAY_MS);
-  if (days <= 0) return { label: tt('scade oggi'), isSoon: true };
-  return { label: tx('scade tra {0} g', [days]), isSoon: days <= 1 };
+  const left = end - now;
+  if (left <= 0) return { label: tt('scade oggi'), isSoon: true };
+  if (left <= DAY_MS) return { label: tx('scade tra {0} h', [Math.ceil(left / HOUR_MS)]), isSoon: true };
+  return { label: tx('scade tra {0} g', [Math.ceil(left / DAY_MS)]), isSoon: false };
 };
 
 const DISTANCE_STEP_M = 50;

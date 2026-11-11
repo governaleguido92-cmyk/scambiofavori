@@ -1,4 +1,5 @@
 import type { Favor } from '../services/api';
+import { serverTime } from './serverDate';
 
 export type MyFavorTab = 'ongoing' | 'published' | 'closed';
 
@@ -11,7 +12,7 @@ export interface FavorGroups {
 /** Un favore pubblicato ma non accettato è scaduto quando la data di scadenza è passata. */
 export const isExpired = (favor: Pick<Favor, 'status' | 'expires_at'>, now: number = Date.now()): boolean => {
   if (favor.status !== 'active' || !favor.expires_at) return false;
-  const end = new Date(favor.expires_at).getTime();
+  const end = serverTime(favor.expires_at);
   return !Number.isNaN(end) && end < now;
 };
 

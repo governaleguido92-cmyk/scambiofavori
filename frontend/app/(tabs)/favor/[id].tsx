@@ -1,7 +1,7 @@
 import { avatarColorsForKind } from '../../../src/utils/avatarColor';
 import { GranelloIcon } from '../../../src/components/GranelloIcon';
 import { earnsGranelli, favorKindFor, granelliFlowLabel } from '../../../src/utils/favorKind';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -29,6 +29,8 @@ import { styles } from '../../../src/styles/favorDetail.styles';
 import { logger } from '../../../src/utils/logger';
 import { notify, showRefusal } from '../../../src/utils/notify';
 import { tt, tx } from '../../../src/i18n/tt';
+import { FavorCountdown } from '../../../src/components/FavorCountdown';
+import { serverDate, serverTime } from '../../../src/utils/serverDate';
 import { goBackOrHome } from '../../../src/utils/navigation';
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -402,9 +404,15 @@ export default function FavorDetailScreen() {
   }, [token, favor?.favor_id]);
   const freeGranelli = Math.max(0, (user?.granelli || 0) - committedGranelli);
 
+  // Scaduto mentre la pagina era aperta: il conto alla rovescia lo segnala e il tasto Accetta sparisce
+  const [expiredWhileOpen, setExpiredWhileOpen] = useState(false);
+  const markExpired = useCallback(() => setExpiredWhileOpen(true), []);
+  const isExpiredNow = expiredWhileOpen || (!!favor?.expires_at && serverTime(favor.expires_at) <= Date.now());
+
   const canAccept = () => {
     if (!user || !favor) return false;
     if (favor.status !== 'active') return false;
+    if (isExpiredNow) return false;
     if (favor.creator_id === user.user_id) return false;
     if (favor.type === 'offer' && (user.granelli || 0) < favor.granelli_cost) return false;
     return true;
@@ -569,12 +577,6 @@ export default function FavorDetailScreen() {
               {tt(`${favorKindFor(favor, user?.user_id)} un favore`)}
             </Text>
           </View>
-          {favor.is_emergency && (
-            <View style={styles.emergencyBadge}>
-              <Ionicons name="alert-circle" size={14} color="#F87828" />
-              <Text style={styles.emergencyText}>{tt('Urgente')}</Text>
-            </View>
-          )}
         </View>
 
         {/* Category */}
@@ -590,7 +592,7 @@ export default function FavorDetailScreen() {
         {/* Creation Date/Time */}
         <View style={styles.dateTimeContainer}>
           <Ionicons name="calendar-outline" size={16} color="#A5A89B" />
-          <Text style={styles.dateTimeText}>{tt('Creato il')}{' '}{new Date(favor.created_at || Date.now()).toLocaleDateString('it-IT', {
+          <Text style={styles.dateTimeText}>{tt('Creato il')}{' '}{(favor.created_at ? serverDate(favor.created_at) : new Date()).toLocaleDateString('it-IT', {
               day: 'numeric',
               month: 'long',
               year: 'numeric',
@@ -599,12 +601,23 @@ export default function FavorDetailScreen() {
             })}
           </Text>
         </View>
+        {favor.expires_at && favor.status === 'active' && !favor.accepted_by && (
+          <FavorCountdown
+            expiresAt={favor.expires_at}
+            earns={earnsGranelli(favor, user?.user_id)}
+            granelli={favor.granelli_cost}
+            variant="banner"
+            onExpire={markExpired}
+          />
+        )}
         {favor.expires_at && favor.status === 'active' && (
           <View style={styles.dateTimeContainer}>
             <Ionicons name="hourglass-outline" size={16} color="#A5A89B" />
-            <Text style={styles.dateTimeText}>{tt('Disponibile fino al')}{' '}{new Date(favor.expires_at).toLocaleDateString('it-IT', {
+            <Text style={styles.dateTimeText}>{tt('Disponibile fino al')}{' '}{serverDate(favor.expires_at).toLocaleString('it-IT', {
                 day: 'numeric',
                 month: 'long',
+                hour: '2-digit',
+                minute: '2-digit',
               })}
             </Text>
           </View>
@@ -795,7 +808,7 @@ export default function FavorDetailScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          {canAccept() && !favor.is_emergency && dailyHours && (dailyHours.remaining < favor.duration_hours || dailyHours.used >= dailyHours.limit - 3) && (
+          {canAccept() && dailyHours && (dailyHours.remaining < favor.duration_hours || dailyHours.used >= dailyHours.limit - 3) && (
             <Text
               style={[styles.acceptHint, { fontWeight: '700' }, dailyHours.remaining < favor.duration_hours && { color: '#F87828' }]}
               data-testid="daily-hours-line"

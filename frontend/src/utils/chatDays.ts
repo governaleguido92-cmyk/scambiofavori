@@ -1,3 +1,5 @@
+import { serverDate } from './serverDate';
+
 export type DayKind = 'today' | 'yesterday' | 'date';
 
 export interface DayBucket {
@@ -34,7 +36,7 @@ export const buildRows = <M extends { message_id: string; created_at: string }>(
   const rows: ChatRow<M>[] = [];
   let lastKey: string | null = null;
   for (const message of messages) {
-    const date = new Date(message.created_at);
+    const date = serverDate(message.created_at);
     if (!Number.isNaN(date.getTime())) {
       const key = dayKey(date);
       if (key !== lastKey) {

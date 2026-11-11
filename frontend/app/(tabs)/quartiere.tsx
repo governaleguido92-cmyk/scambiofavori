@@ -25,6 +25,7 @@ import { NewsTab } from '../../src/components/neighborhood/NewsTab';
 import { EventsTab } from '../../src/components/neighborhood/EventsTab';
 import { NeighborsTab } from '../../src/components/neighborhood/NeighborsTab';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
+import { serverDate } from '../../src/utils/serverDate';
 
 const WEATHER_REFRESH_MS = 10 * 60 * 1000;
 
@@ -156,7 +157,7 @@ export default function NeighborhoodScreen() {
   };
 
   const renderItem = ({ item }: { item: AreaMessage }) => {
-    const time = new Date(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const time = serverDate(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     return (
       <View style={[styles.row, item.mine ? styles.rowMine : styles.rowOther]}>
         <TouchableOpacity

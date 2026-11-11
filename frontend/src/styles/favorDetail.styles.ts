@@ -240,20 +240,6 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  emergencyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(248, 120, 40, 0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  emergencyText: {
-    color: '#F87828',
-    fontSize: 12,
-    fontWeight: '600',
-  },
   microBadge: {
     flexDirection: 'row',
     alignItems: 'center',

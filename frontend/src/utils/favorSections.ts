@@ -1,8 +1,9 @@
 import type { Favor } from '../services/api';
 import { getExpiryInfo } from './favorVisual';
+import { serverTime } from './serverDate';
 
 export type FavorFilter = 'all' | 'near' | 'soon';
-export type FavorSectionKey = 'urgent' | 'near' | 'skills' | 'others';
+export type FavorSectionKey = 'near' | 'skills' | 'others';
 
 export interface FavorSection {
   key: FavorSectionKey;
@@ -15,8 +16,6 @@ export const NEAR_KM = 1;
 export const SECTIONS_MIN_FAVORS = 7;
 /** Quanti favori mostra ogni fascia prima di «Vedi tutti». */
 export const SECTION_PREVIEW = 4;
-/** Le urgenze in Home sono poche: il resto sta nella schermata Urgenze. */
-export const URGENT_PREVIEW = 3;
 /** «Vicini a te» sono i più vicini in assoluto, non quelli entro un raggio fisso: funziona anche con pochi iscritti. */
 export const NEAR_COUNT = 5;
 /** Da quante richieste uguali si fa una riga sola. */
@@ -26,7 +25,7 @@ const distanceOf = (favor: Favor): number =>
   typeof favor.distance_km === 'number' ? favor.distance_km : Number.POSITIVE_INFINITY;
 
 const expiryOf = (favor: Favor): number => {
-  const end = favor.expires_at ? new Date(favor.expires_at).getTime() : NaN;
+  const end = favor.expires_at ? serverTime(favor.expires_at) : NaN;
   return Number.isNaN(end) ? Number.POSITIVE_INFINITY : end;
 };
 
@@ -63,22 +62,19 @@ export const filterFavors = (
 const hasDistance = (favor: Favor): boolean => Number.isFinite(distanceOf(favor));
 
 /**
- * Urgenti, poi i più vicini, poi quelli in linea con le competenze, poi gli altri.
+ * I più vicini, poi quelli in linea con le competenze, poi gli altri.
  * Ogni favore sta in una sola fascia; le fasce vuote spariscono.
  */
 export const buildSections = (favors: readonly Favor[], skills: readonly string[] = []): FavorSection[] => {
   const sorted = sortFavors(favors);
-  const urgent = sorted.filter((favor) => favor.is_emergency);
-  const rest = sorted.filter((favor) => !favor.is_emergency);
-  const near = rest.filter(hasDistance).slice(0, NEAR_COUNT);
+  const near = sorted.filter(hasDistance).slice(0, NEAR_COUNT);
   const nearIds = new Set(near.map((favor) => favor.favor_id));
-  const remaining = rest.filter((favor) => !nearIds.has(favor.favor_id));
+  const remaining = sorted.filter((favor) => !nearIds.has(favor.favor_id));
   const mine = new Set(skills);
   const inSkills = mine.size ? remaining.filter((favor) => mine.has(favor.category)) : [];
   const skillIds = new Set(inSkills.map((favor) => favor.favor_id));
   const others = remaining.filter((favor) => !skillIds.has(favor.favor_id));
   const sections: FavorSection[] = [
-    { key: 'urgent', favors: urgent },
     { key: 'near', favors: near },
     { key: 'skills', favors: inSkills },
     { key: 'others', favors: others },
@@ -95,7 +91,7 @@ const groupKey = (favor: Favor): string => `${favor.type}|${normalize(favor.titl
 
 type Unit = { kind: 'single'; favor: Favor } | { kind: 'group'; key: string; favors: Favor[] };
 
-/** Più richieste uguali (stesso titolo e tipo) diventano un'unica riga; le urgenze non si raggruppano mai. */
+/** Più richieste uguali (stesso titolo e tipo) diventano un'unica riga. */
 const toUnits = (favors: readonly Favor[], allowGroups: boolean): Unit[] => {
   if (!allowGroups) return favors.map((favor) => ({ kind: 'single', favor }));
   const counts = new Map<string, Favor[]>();
@@ -140,8 +136,6 @@ const unitsToRows = (units: readonly Unit[], prefix: string): FavorRow[] => {
   return rows;
 };
 
-const previewOf = (section: FavorSectionKey): number => (section === 'urgent' ? URGENT_PREVIEW : SECTION_PREVIEW);
-
 /** Righe per l'elenco: se i favori sono pochi (o c'è una ricerca) un elenco unico, altrimenti a fasce. */
 export const buildRows = (
   favors: readonly Favor[],
@@ -152,8 +146,8 @@ export const buildRows = (
   }
   return buildSections(favors, options.skills ?? []).flatMap((section) => {
     const expanded = options.expanded.has(section.key);
-    const units = toUnits(section.favors, section.key !== 'urgent');
-    const preview = previewOf(section.key);
+    const units = toUnits(section.favors, true);
+    const preview = SECTION_PREVIEW;
     const canExpand = units.length > preview;
     const shown = expanded ? units : units.slice(0, preview);
     const header: FavorRow = {

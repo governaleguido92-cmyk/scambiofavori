@@ -1,6 +1,7 @@
 import type { Favor } from '../services/api';
 import { tt, tx } from '../i18n/tt';
 import { isExpired, roleOf } from './myFavors';
+import { serverTime } from './serverDate';
 
 export const STATUS_COLORS = {
   waiting: '#98AA4A',
@@ -17,7 +18,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** Giorni interi da quando il favore è pubblicato e nessuno lo ha accettato; 0 se è ancora fresco. */
 export const waitingDays = (favor: Pick<Favor, 'status' | 'created_at'>, now: number = Date.now()): number => {
   if (favor.status !== 'active') return 0;
-  const created = new Date(favor.created_at).getTime();
+  const created = serverTime(favor.created_at);
   if (Number.isNaN(created)) return 0;
   return Math.max(0, Math.floor((now - created) / DAY_MS));
 };

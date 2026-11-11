@@ -387,20 +387,6 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  emergencyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.debtMuted,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 3,
-  },
-  emergencyText: {
-    color: colors.error,
-    fontSize: 12,
-    fontWeight: '600',
-  },
   typeBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -465,29 +451,6 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-  emergencyButton: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    height: 48,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    gap: 6,
-    borderRadius: 24,
-    backgroundColor: colors.error,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: colors.error,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  emergencyButtonText: {
-    color: colors.background,
-    fontSize: 14,
-    fontWeight: '700',
-  },
   distanceText: {
     color: colors.textMuted,
     fontSize: 12,
@@ -520,10 +483,6 @@ export const styles = StyleSheet.create({
   gridCardRequest: {
     borderTopWidth: 3,
     borderTopColor: colors.accent,
-  },
-  gridCardUrgent: {
-    borderWidth: 2,
-    borderColor: colors.error,
   },
   gridCardOwn: {
     borderWidth: 2,
@@ -648,21 +607,6 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.3,
   },
-  gridUrgentPill: {
-    position: 'absolute',
-    left: 8,
-    bottom: 8,
-    backgroundColor: colors.error,
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  gridUrgentText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.4,
-  },
   // Scheda pulita: niente fascia piena, solo tipo e Granelli in testa
   cleanHead: {
     flexDirection: 'row',
@@ -702,12 +646,6 @@ export const styles = StyleSheet.create({
     paddingTop: 8,
   },
   gridStatusTag: {
-    borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  gridUrgentTag: {
-    backgroundColor: colors.error,
     borderRadius: 999,
     paddingHorizontal: 9,
     paddingVertical: 3,
@@ -776,14 +714,6 @@ export const styles = StyleSheet.create({
     flexShrink: 1,
     color: '#FFFFFF',
     fontSize: 11.5,
-    fontWeight: '700',
-  },
-  gridExpiry: {
-    color: colors.textMuted,
-    fontSize: 11.5,
-  },
-  gridExpirySoon: {
-    color: colors.error,
     fontWeight: '700',
   },
   homeFooter: {
@@ -859,6 +789,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 4,
     flexGrow: 1,
+  },
+  leanCountdown: {
+    marginTop: 6,
   },
   leanMeta: {
     flexDirection: 'row',
@@ -958,9 +891,6 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
-  },
-  sectionTitleUrgent: {
-    color: colors.error,
   },
   sectionMore: {
     color: colors.accent,

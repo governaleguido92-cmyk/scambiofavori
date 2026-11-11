@@ -497,32 +497,15 @@ export const styles = StyleSheet.create({
     color: '#0C0E09',
     fontWeight: '700',
   },
-  validityChoices: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
+  durationButtonDisabled: {
+    opacity: 0.4,
   },
-  validityChoice: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: '#171A10',
-    borderWidth: 1,
-    borderColor: '#2E3420',
-  },
-  validityChoiceActive: {
-    backgroundColor: '#98AA4A',
-    borderColor: '#98AA4A',
-  },
-  validityChoiceText: {
-    color: '#D4D6CC',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  validityChoiceTextActive: {
-    color: '#0C0E09',
-    fontWeight: '700',
+  validityValue: {
+    color: '#98AA4A',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    minWidth: 120,
   },
   previewWrap: {
     alignItems: 'center',

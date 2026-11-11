@@ -1,6 +1,6 @@
 import { NeighborhoodButton } from '../../src/components/NeighborhoodButton';
 import { GranelloIcon } from '../../src/components/GranelloIcon';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
 import {
   View,
@@ -154,6 +154,25 @@ export default function HomeScreen() {
     [visibleFavors, query, expandedSections, mySkills],
   );
 
+  // «Aiuta un vicino» (Comincia da qui): scheda «Dona un favore» e poi giù fino ai favori, appena l'elenco è pronto
+  const listRef = useRef<FlatList<(typeof rows)[number]>>(null);
+  const [pendingGiveScroll, setPendingGiveScroll] = useState(false);
+  const showGive = () => {
+    setQuery('');
+    setSelectedType('request');
+    setPendingGiveScroll(true);
+  };
+  useEffect(() => {
+    if (!pendingGiveScroll || loading || selectedType !== 'request') return;
+    setPendingGiveScroll(false);
+    if (rows.length === 0) {
+      // Nessun favore qui vicino: la Mappa permette di allargare il raggio
+      router.push('/(tabs)/map' as any);
+      return;
+    }
+    listRef.current?.scrollToIndex({ index: 0, animated: true, viewPosition: 0 });
+  }, [pendingGiveScroll, loading, selectedType, rows, router]);
+
   const toggleSection = (section: FavorSectionKey) =>
     setExpandedSections((current) => {
       const next = new Set(current);
@@ -162,7 +181,6 @@ export default function HomeScreen() {
     });
 
   const SECTION_TITLES: Record<FavorSectionKey, string> = {
-    urgent: 'Urgenti',
     near: 'Vicini a te',
     skills: 'In linea con le tue competenze',
     others: 'Altri favori',
@@ -181,17 +199,17 @@ export default function HomeScreen() {
     if (item.type === 'header') {
       return (
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, item.section === 'urgent' && styles.sectionTitleUrgent]}>
+          <Text style={styles.sectionTitle}>
             {tt(SECTION_TITLES[item.section])} ({item.total})
           </Text>
           {item.canExpand && (
             <TouchableOpacity
-              onPress={() => (item.section === 'urgent' ? router.push('/emergencies' as any) : toggleSection(item.section))}
+              onPress={() => toggleSection(item.section)}
               accessibilityRole="button"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.sectionMore}>
-                {item.section === 'urgent' ? tt('Tutte le urgenze') : item.expanded ? tt('Mostra meno') : tt('Vedi tutti')}
+                {item.expanded ? tt('Mostra meno') : tt('Vedi tutti')}
               </Text>
             </TouchableOpacity>
           )}
@@ -232,7 +250,7 @@ export default function HomeScreen() {
   // Intestazione e fondo dell'elenco: sono elementi, non componenti, così non si ricreano a ogni aggiornamento (evita il lampeggio)
   const listHeader = (
     <>
-      {token && <FirstSteps token={token} helped={user?.total_favors_given ?? 0} onShowGive={() => setSelectedType('request')} />}
+      {token && <FirstSteps token={token} helped={user?.total_favors_given ?? 0} onShowGive={showGive} />}
 
       <FavorTypeTabs value={selectedType} onChange={setSelectedType} hideHint />
 
@@ -346,6 +364,9 @@ export default function HomeScreen() {
         </View>
       ) : (
         <FlatList
+          ref={listRef}
+          onScrollToIndexFailed={({ averageItemLength, index }) =>
+            listRef.current?.scrollToOffset({ offset: averageItemLength * index, animated: true })}
           data={rows}
           renderItem={renderRow}
           keyExtractor={(item) => item.key}
@@ -365,15 +386,6 @@ export default function HomeScreen() {
           }
         />
       )}
-
-      {/* Emergency Button */}
-      <TouchableOpacity
-        style={styles.emergencyButton}
-        onPress={() => router.push('/emergencies' as any)}
-      >
-        <Ionicons name="alert-circle" size={24} color="#0C0E09" />
-        <Text style={styles.emergencyButtonText}>{tt('Urgenze')}</Text>
-      </TouchableOpacity>
 
     </SafeAreaView>
   );

@@ -5,6 +5,7 @@ import { styles } from '../../styles/profile.styles';
 import { tt, tx } from '../../i18n/tt';
 import i18n from '../../i18n';
 import { averageReviewRating } from '../../utils/profileProgress';
+import { serverDate } from '../../utils/serverDate';
 
 export interface ReceivedReview {
   review_id: string;
@@ -51,7 +52,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
                     <Ionicons key={star} name={star <= review.rating ? 'star' : 'star-outline'} size={16} color="#98AA4A" />
                   ))}
                 </View>
-                <Text style={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString(locale)}</Text>
+                <Text style={styles.reviewDate}>{serverDate(review.created_at).toLocaleDateString(locale)}</Text>
               </View>
               <Text style={styles.reviewerName}>{tt('da')}{' '}{review.reviewer_name}</Text>
               {review.comment ? <Text style={styles.reviewComment}>{`"${review.comment}"`}</Text> : null}

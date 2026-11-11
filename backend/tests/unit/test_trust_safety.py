@@ -85,13 +85,13 @@ async def test_experienced_user_has_no_new_user_limits(client, app_db):
     assert response.status_code == 200, response.text
 
 
-async def test_emergency_is_exempt_from_new_user_limits(client, app_db):
+async def test_old_apps_marking_a_favor_urgent_get_no_exemption(client, app_db):
+    # Le Urgenze non esistono più: un'app vecchia che manda is_emergency non salta i limiti dei nuovi utenti
     await app_db.users.insert_one(make_user("me", granelli=20))
-    await app_db.favors.insert_many([_active(f"f{i}", "me") for i in range(1, 4)])
     response = await client.post(
         "/api/favors", json={**FAVOR_BODY, "duration_hours": 4.0, "is_emergency": True}, headers=auth("me")
     )
-    assert response.status_code == 200, response.text
+    assert response.status_code == 403, response.text
 
 
 async def test_new_user_can_help_more_than_three_favors(client, app_db):

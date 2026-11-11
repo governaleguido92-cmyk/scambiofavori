@@ -40,6 +40,7 @@ import { tt, tx } from '../../../src/i18n/tt';
 import { goBackOrHome } from '../../../src/utils/navigation';
 import { buildShareText } from '../../../src/utils/shareFavor';
 import { useLiveRefresh } from '../../../src/hooks/useLiveRefresh';
+import { serverDate } from '../../../src/utils/serverDate';
 
 // Theme colors
 const colors = {
@@ -329,7 +330,7 @@ export default function ChatScreen() {
   const renderMessage = (item: ChatMessage) => {
     const isMe = item.sender_id === user?.user_id;
     const meetingPoint = item.blocked ? null : parseMeetingPointMessage(item.content);
-    const messageTime = new Date(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const messageTime = serverDate(item.created_at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
     const senderIsSupporter = getSenderIsSupporter(item.sender_id);
     
     return (

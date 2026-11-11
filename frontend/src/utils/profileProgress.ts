@@ -68,7 +68,6 @@ const REQUIREMENT_TEXTS: Record<string, string> = {
   welcomes_given: 'Dai il benvenuto a {0} nuovi vicini.',
   profile_complete: 'Completa il tuo profilo.',
   first_favor: 'Completa il tuo primo favore.',
-  emergencies_helped: 'Rispondi a {0} Emergenze Gentilezza.',
   high_rating: 'Mantieni una valutazione media sopra {0} stelle, con almeno 10 recensioni.',
 };
 

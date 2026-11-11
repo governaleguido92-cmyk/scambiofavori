@@ -379,10 +379,6 @@ BADGES = {
         "description": "Hai aiutato 10 volte e quasi mai hai annullato dopo aver accettato",
         "icon": "time", "color": "#F87828", "requirement": {"type": "punctual", "value": 10},
     },
-    "angelo_quartiere": {
-        "id": "angelo_quartiere", "name": "Angelo del Quartiere", "description": "Hai risposto a 5 Urgenze",
-        "icon": "medkit", "color": "#FB9A52", "requirement": {"type": "emergencies_helped", "value": 5},
-    },
     "saggio_community": {
         "id": "saggio_community", "name": "Saggio della Community",
         "description": "Hai ricevuto il massimo dei voti da 10 persone diverse",
@@ -431,11 +427,8 @@ def get_user_title(user_doc: dict) -> str:
     """Get user's community title based on their stats"""
     badges = user_doc.get("badges", [])
     rating = user_doc.get("average_rating", 0)
-    emergencies = user_doc.get("emergencies_helped", 0)
-    
-    if "angelo_quartiere" in badges:
-        return "Angelo del Quartiere"
-    elif "vicino_virtuoso" in badges:
+
+    if "vicino_virtuoso" in badges:
         return "Vicino Virtuoso"
     elif len(badges) >= 3:
         return "Membro Attivo"
@@ -499,7 +492,6 @@ class User(BaseModel):
     total_favors_given: int = 0
     total_favors_received: int = 0
     micro_favors_completed: int = 0
-    emergencies_helped: int = 0
     total_hours_helped: float = 0.0
     total_donations: int = 0
     average_rating: float = 0.0
@@ -557,6 +549,23 @@ FAVOR_CATEGORIES = [
 
 # Un favore resta in elenco al massimo questi giorni: poi scade e i Granelli che teneva fermi tornano liberi
 MAX_FAVOR_VALIDITY_DAYS = 5
+# La scadenza si sceglie in ore: da 1 ora a 5 giorni
+HOURS_PER_DAY = 24
+MIN_FAVOR_VALIDITY_HOURS = 1
+MAX_FAVOR_VALIDITY_HOURS = MAX_FAVOR_VALIDITY_DAYS * HOURS_PER_DAY
+
+
+def favor_validity_hours(validity_hours: Optional[int], validity_days: Optional[int]) -> int:
+    """Ore di vita dell'annuncio. Le app nuove mandano le ore; quelle vecchie solo i giorni (1-5)."""
+    if validity_hours is not None:
+        return validity_hours
+    days = max(1, min(MAX_FAVOR_VALIDITY_DAYS, validity_days if validity_days is not None else 3))
+    return days * HOURS_PER_DAY
+
+
+def validity_days_for_old_apps(validity_hours: int) -> int:
+    """Le app vecchie leggono ancora validity_days: poche ore contano come 1 giorno."""
+    return max(1, -(-validity_hours // HOURS_PER_DAY))
 
 
 class FavorCreate(BaseModel):
@@ -565,12 +574,13 @@ class FavorCreate(BaseModel):
     description: str = Field(max_length=2000)
     category: str = Field(max_length=60)
     duration_hours: float = Field(default=1.0, gt=0, le=999, allow_inf_nan=False)
-    validity_days: int = Field(default=3, ge=0, le=365)  # Durata annuncio: al massimo 5 giorni (il server la limita)
+    validity_days: int = Field(default=3, ge=0, le=365)  # App vecchie: durata annuncio in giorni (il server la limita a 1-5)
+    # App nuove: scadenza in ore intere, da 1 ora a 5 giorni. Se c'è, vince sui giorni.
+    validity_hours: Optional[int] = Field(default=None, ge=MIN_FAVOR_VALIDITY_HOURS, le=MAX_FAVOR_VALIDITY_HOURS)
     # Solo numeri finiti e coordinate vere: un NaN salvato romperebbe l'elenco dei favori per tutti
     latitude: Optional[float] = Field(default=None, ge=-90, le=90, allow_inf_nan=False)
     longitude: Optional[float] = Field(default=None, ge=-180, le=180, allow_inf_nan=False)
     address: Optional[str] = Field(default=None, max_length=200)
-    is_emergency: bool = False  # Emergenza Gentilezza
 
 class FavorUpdate(BaseModel):
     """Campi modificabili di un favore non ancora accettato. Tipo, autore e posizione non si cambiano."""
@@ -579,6 +589,7 @@ class FavorUpdate(BaseModel):
     category: Optional[str] = None
     duration_hours: Optional[float] = None
     validity_days: Optional[int] = None
+    validity_hours: Optional[int] = Field(default=None, ge=MIN_FAVOR_VALIDITY_HOURS, le=MAX_FAVOR_VALIDITY_HOURS)
 
 class Favor(BaseModel):
     favor_id: str
@@ -592,7 +603,8 @@ class Favor(BaseModel):
     category: str
     duration_hours: float
     granelli_cost: int = 1  # Default to 1 if not present
-    validity_days: int = 3  # Durata annuncio
+    validity_days: int = 3  # Durata annuncio in giorni (per le app vecchie)
+    validity_hours: Optional[int] = None  # Durata annuncio in ore (manca nei favori creati prima)
     expires_at: Optional[datetime] = None  # Data scadenza annuncio
     status: str = "active"
     accepted_by: Optional[str] = None
@@ -605,7 +617,6 @@ class Favor(BaseModel):
     exact_longitude: Optional[float] = None
     address: Optional[str] = None
     distance_km: Optional[float] = None
-    is_emergency: bool = False
     creator_in_debt: bool = False  # For priority highlighting in feed
     qr_code: Optional[str] = None
     checkin_completed: bool = False
@@ -1018,7 +1029,7 @@ async def badge_progress(user_doc: dict) -> dict:
 
     current = {
         "first_favor": given + received, "favors_given": given, "micro_favors": user_doc.get("micro_favors_completed", 0),
-        "distinct_neighbors": neighbors, "punctual": given, "emergencies_helped": user_doc.get("emergencies_helped", 0),
+        "distinct_neighbors": neighbors, "punctual": given,
         "perfect_reviews": user_doc.get("perfect_reviews_count", 0), "high_rating": review_count,
         "vouches": len(vouches), "referrals": user_doc.get("successful_referrals", 0),
         "events_with_guests": user_doc.get("events_with_guests", 0), "welcomes_given": user_doc.get("welcomes_given", 0),
@@ -1096,8 +1107,7 @@ async def update_community_score(user_id: str):
     score += user_doc.get("total_favors_received", 0) * 5
     score += user_doc.get("total_donations", 0) * 15
     score += user_doc.get("successful_referrals", 0) * 20
-    score += user_doc.get("emergencies_helped", 0) * 25
-    score += len(user_doc.get("badges", [])) * 25
+    score += sum(1 for badge in user_doc.get("badges", []) if badge in BADGES) * 25
     score += int(user_doc.get("average_rating", 0) * 10)
     score += int(user_doc.get("average_kindness", 0) * 10)
     score += int(user_doc.get("average_impact", 0) * 10)
@@ -1105,7 +1115,6 @@ async def update_community_score(user_id: str):
     # Calculate Social Impact Score (for the Social Impact Bar)
     total_favors = user_doc.get("total_favors_given", 0) + user_doc.get("total_favors_received", 0)
     social_impact = total_favors * 20  # 20 points per favor
-    social_impact += user_doc.get("emergencies_helped", 0) * 50  # 50 points per emergency
     social_impact += user_doc.get("total_donations", 0) * 10  # 10 points per donation
     social_impact += int(user_doc.get("total_hours_helped", 0) * 15)  # 15 points per hour helped
     
@@ -1274,8 +1283,6 @@ async def daily_hours_load(user_id: str) -> dict:
 
 async def ensure_daily_hours_for_accept(favor: "Favor", acceptor_id: str) -> None:
     """Il limite giornaliero si controlla quando si accetta, prima del lavoro: chi ha fatto il favore viene sempre pagato."""
-    if favor.is_emergency:
-        return
     for user_id, mine in ((acceptor_id, True), (favor.creator_id, False)):
         load = await daily_hours_load(user_id)
         if load["used"] + favor.duration_hours > MAX_DAILY_HOURS:
