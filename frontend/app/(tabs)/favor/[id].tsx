@@ -353,6 +353,7 @@ export default function FavorDetailScreen() {
             setActionLoading(true);
             try {
               await api.acceptFavor(favor.favor_id, token);
+              refreshUser(); // primo favore accettato: si aprono Quartiere, Messaggi e I Miei
               // Naviga direttamente alla chat sostituendo la pagina corrente
               router.replace(`/chat/${favor.favor_id}` as any);
             } catch (error: any) {

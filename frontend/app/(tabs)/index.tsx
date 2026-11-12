@@ -2,6 +2,7 @@ import { NeighborhoodButton } from '../../src/components/NeighborhoodButton';
 import { GranelloIcon } from '../../src/components/GranelloIcon';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
+import { useNeighborhoodCity } from '../../src/hooks/useNeighborhoodCity';
 import {
   View,
   Text,
@@ -50,6 +51,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const city = useNeighborhoodCity(token, location);
   const [thanksBoard, setThanksBoard] = useState<ThanksEntry[]>([]);
   const [networkError, setNetworkError] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -336,7 +338,14 @@ export default function HomeScreen() {
           {!isNarrowScreen && <Image source={require('../../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />}
           <View style={styles.headerGreeting}>
             <Text style={styles.greeting} numberOfLines={1}>{tt('Ciao,')}{' '}{user?.name?.trim().split(/\s+/)[0] ?? ''}!</Text>
-            <Text style={styles.subtitle} numberOfLines={1}>{t('home.subtitle')}</Text>
+            {city ? (
+              <View style={styles.cityRow} accessibilityLabel={tx('Paese del quartiere: {0}', [city])} data-testid="home-city">
+                <Ionicons name="location" size={13} color={colors.accent} />
+                <Text style={styles.city} numberOfLines={1}>{city}</Text>
+              </View>
+            ) : (
+              <Text style={styles.subtitle} numberOfLines={1}>{t('home.subtitle')}</Text>
+            )}
           </View>
         </View>
         <View style={styles.headerRight}>

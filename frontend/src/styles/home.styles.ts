@@ -78,6 +78,18 @@ export const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2,
   },
+  cityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 2,
+  },
+  city: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    flexShrink: 1,
+  },
   soliDisplay: {
     flexDirection: 'row',
     alignItems: 'center',

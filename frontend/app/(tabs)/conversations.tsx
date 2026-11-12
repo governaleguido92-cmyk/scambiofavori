@@ -28,6 +28,8 @@ import {
 import { tt } from '../../src/i18n/tt';
 import { goBackOrHome } from '../../src/utils/navigation';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
+import { StartGate } from '../../src/components/StartGate';
+import { useHasStarted } from '../../src/hooks/useHasStarted';
 
 const FILTERS: ReadonlyArray<{ key: ConversationFilter; label: string }> = [
   { key: 'all', label: 'Tutti' },
@@ -54,7 +56,7 @@ const EMPTY_BY_FILTER: Record<ConversationFilter, { icon: keyof typeof Ionicons.
 };
 
 /** Elenco delle persone con cui hai scritto, una riga per favore. Se il favore è concluso la chat è solo da leggere. */
-export default function ConversationsScreen() {
+function ConversationsScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { conversations, loading, failed, refresh } = useMessages();
@@ -383,3 +385,8 @@ const styles = StyleSheet.create({
   },
   retryText: { color: colors.background, fontSize: 15, fontWeight: '800' },
 });
+
+/** Si apre solo dopo il primo favore pubblicato o accettato. */
+export default function GatedConversationsScreen() {
+  return useHasStarted() ? <ConversationsScreen /> : <StartGate area={tt('I tuoi messaggi')} />;
+}
