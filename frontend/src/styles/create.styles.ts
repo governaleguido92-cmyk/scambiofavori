@@ -156,8 +156,9 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 20,
   },
+  // Pulsanti −/+ (Durata Stimata e Durata Annuncio): bianchi, con il segno scuro ben visibile
   durationButton: {
-    backgroundColor: '#171A10',
+    backgroundColor: '#FFFFFF',
     width: 50,
     height: 50,
     borderRadius: 25,

@@ -57,7 +57,8 @@ export const installTextScaling = (): void => {
   if (patched || typeof target.render !== 'function') return;
   patched = true;
   const original = target.render;
-  target.render = function scaledRender(props: any, ref: any) {
+  // Nome con la maiuscola: per React (e per il lint) è il render di un componente, quindi può usare gli hook
+  target.render = function ScaledTextRender(props: any, ref: any) {
     const size = useTextSize();
     const scale = scaleOf(size);
     if (scale === 1) return original.call(this, props, ref);

@@ -198,12 +198,6 @@ export const styles = StyleSheet.create({
   content: {
     padding: 20,
   },
-  badgesRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
-    flexWrap: 'wrap',
-  },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -221,25 +215,6 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  typeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 6,
-  },
-  offerBadge: {
-    backgroundColor: 'rgba(152, 170, 74, 0.3)',
-  },
-  requestBadge: {
-    backgroundColor: 'rgba(248, 120, 40, 0.3)',
-  },
-  typeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-  },
   microBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -254,22 +229,59 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  categoryContainer: {
+  // Riga sopra il titolo: tipo (arancione = dono, oliva = ricevo) · categoria
+  kindRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 6,
   },
-  categoryText: {
-    color: '#98AA4A',
+  kindText: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  kindSeparator: {
+    color: '#A5A89B',
     fontSize: 14,
+  },
+  kindEmoji: {
+    fontSize: 14,
+  },
+  kindCategory: {
+    color: '#98AA4A',
+    fontSize: 13,
     fontWeight: '600',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 12,
+    marginBottom: 10,
+  },
+  // Granelli, ore e distanza in una riga sola sotto il titolo
+  factsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 16,
+  },
+  factStrong: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  factText: {
+    color: '#D4D6CC',
+    fontSize: 15,
+  },
+  createdFooter: {
+    color: '#A5A89B',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 18,
   },
   description: {
     fontSize: 16,
@@ -277,31 +289,8 @@ export const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 20,
   },
-  infoCards: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  infoCard: {
-    flex: 1,
-    backgroundColor: '#171A10',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
   infoSymbol: {
     fontSize: 32,
-  },
-  infoValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 8,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: '#A5A89B',
-    marginTop: 4,
   },
   userCard: {
     flexDirection: 'row',
@@ -659,16 +648,6 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   // New styles for date/time, report button, user profile modal
-  dateTimeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  dateTimeText: {
-    color: '#A5A89B',
-    fontSize: 14,
-  },
   reportButton: {
     width: 40,
     height: 40,

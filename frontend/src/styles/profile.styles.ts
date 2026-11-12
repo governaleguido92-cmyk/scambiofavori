@@ -566,7 +566,7 @@ export const styles = StyleSheet.create({
     gap: 20,
   },
   donateAdjust: {
-    backgroundColor: '#0C0E09',
+    backgroundColor: '#FFFFFF', // bianco: il segno −/+ scuro deve vedersi
     width: 44,
     height: 44,
     borderRadius: 22,
