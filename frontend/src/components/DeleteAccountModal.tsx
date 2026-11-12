@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 import { tt } from '../i18n/tt';
+import { modalAnimation } from '../utils/reducedMotion';
 
 interface DeleteAccountModalProps {
   visible: boolean;
@@ -53,7 +54,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible,
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
+    <Modal visible={visible} transparent animationType={modalAnimation()} onRequestClose={handleClose}>
       <KeyboardAvoidingView
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -110,7 +111,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ visible,
               accessibilityLabel={tt('Elimina definitivamente il mio account')}
             >
               {deleting ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.white} />
               ) : (
                 <Text style={styles.deleteText}>{tt('Elimina definitivamente')}</Text>
               )}
@@ -153,5 +154,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontSize: 16, fontWeight: '600' },
   deleteButton: { backgroundColor: colors.error },
   deleteButtonDisabled: { opacity: 0.4 },
-  deleteText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  deleteText: { color: colors.white, fontSize: 16, fontWeight: '700' },
 });

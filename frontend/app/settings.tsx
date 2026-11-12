@@ -23,7 +23,7 @@ const NOTIFICATION_OPTIONS = [
   { key: 'favor_completed', label: 'Favore completato', icon: 'trophy', desc: 'Al completamento di un favore' },
   { key: 'new_message', label: 'Nuovi messaggi', icon: 'chatbubble', desc: 'Messaggi nella chat' },
   { key: 'new_review', label: 'Nuove recensioni', icon: 'star', desc: 'Quando ricevi una recensione' },
-  { key: 'skill_match', label: 'Match competenze', icon: 'flash', desc: 'Favori che corrispondono alle tue competenze' },
+  { key: 'skill_match', label: 'Favori adatti a te', icon: 'flash', desc: 'Favori che corrispondono alle tue competenze' },
 ] as const;
 
 export default function SettingsScreen() {
@@ -75,7 +75,7 @@ export default function SettingsScreen() {
             accessibilityLabel={tt('Indietro')}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color={themeColors.white} />
           </TouchableOpacity>
           <BrandLogo />
           <Text style={styles.title}>{tt('Impostazioni')}</Text>
@@ -97,7 +97,7 @@ export default function SettingsScreen() {
                   value={!!notifPrefs[item.key]}
                   onValueChange={() => handleToggleNotifPref(item.key)}
                   trackColor={{ false: themeColors.backgroundLight, true: themeColors.primaryLight }}
-                  thumbColor={notifPrefs[item.key] ? themeColors.accent : '#D4D6CC'}
+                  thumbColor={notifPrefs[item.key] ? themeColors.accent : themeColors.textSecondary}
                   data-testid={`notif-toggle-${item.key}`}
                 />
               </View>
@@ -107,7 +107,7 @@ export default function SettingsScreen() {
 
         <View style={styles.languageSection}>
           <View style={styles.languageLabelRow}>
-            <Ionicons name="language" size={20} color="#D4D6CC" />
+            <Ionicons name="language" size={20} color={themeColors.textSecondary} />
             <Text style={styles.languageLabel}>{t('settings.language')}</Text>
           </View>
           <View style={styles.languageButtons}>
@@ -125,7 +125,7 @@ export default function SettingsScreen() {
 
         <View style={styles.languageSection}>
           <View style={styles.languageLabelRow}>
-            <Ionicons name="text" size={20} color="#D4D6CC" />
+            <Ionicons name="text" size={20} color={themeColors.textSecondary} />
             <Text style={styles.languageLabel}>{tt('Dimensione del testo')}</Text>
           </View>
           <View style={styles.languageButtons}>
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
         <BlockedUsersSection token={token} />
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out" size={20} color="#F87828" />
+          <Ionicons name="log-out" size={20} color={themeColors.accent} />
           <Text style={styles.logoutText}>{t('profile.logout')}</Text>
         </TouchableOpacity>
 

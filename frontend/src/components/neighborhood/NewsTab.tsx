@@ -18,6 +18,7 @@ import colors from '../../theme/colors';
 import { tt, tx } from '../../i18n/tt';
 import { notify, showRefusal } from '../../utils/notify';
 import { useLiveRefresh } from '../../hooks/useLiveRefresh';
+import { modalAnimation } from '../../utils/reducedMotion';
 
 const NOTICE_MAX = 200;
 
@@ -182,7 +183,7 @@ export function NewsTab({ token, composeSignal }: { token: string | null; compos
         <Text style={styles.fabText}>{tt('Pubblica un avviso')}</Text>
       </TouchableOpacity>
 
-      <Modal visible={composerOpen} transparent animationType="slide" onRequestClose={() => setComposerOpen(false)}>
+      <Modal visible={composerOpen} transparent animationType={modalAnimation()} onRequestClose={() => setComposerOpen(false)}>
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>{tt('Pubblica un avviso per il quartiere')}</Text>
@@ -211,7 +212,7 @@ export function NewsTab({ token, composeSignal }: { token: string | null; compos
               data-testid="notice-input"
             />
             <TouchableOpacity style={styles.placeButton} onPress={() => setPlacePickerOpen(true)} accessibilityRole="button" data-testid="notice-pick-place">
-              <Ionicons name="location" size={16} color="#FFFFFF" />
+              <Ionicons name="location" size={16} color={colors.white} />
               <Text style={styles.placeButtonText}>{tt('Aggiungi un luogo (entro 15 km)')}</Text>
             </TouchableOpacity>
             <Text style={styles.counter}>{text.length}/{NOTICE_MAX}  ·  {tt('Resta 3 giorni. Niente soldi, telefono, email o link.')}</Text>
@@ -259,8 +260,8 @@ const styles = StyleSheet.create({
   emptyText: { color: colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   fab: { position: 'absolute', right: 16, bottom: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999 },
   placeButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.backgroundCard, borderRadius: 12, paddingVertical: 11, borderWidth: 1, borderColor: colors.border },
-  placeButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-  fabText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  placeButtonText: { color: colors.white, fontSize: 14, fontWeight: '700' },
+  fabText: { color: colors.white, fontSize: 14, fontWeight: '800' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 18, gap: 12 },
   sheetTitle: { color: colors.textPrimary, fontSize: 17, fontWeight: '800' },
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.backgroundCard },
   chipActive: { backgroundColor: colors.accent },
   chipText: { color: colors.textPrimary, fontSize: 13 },
-  chipTextActive: { color: '#FFFFFF', fontWeight: '800' },
+  chipTextActive: { color: colors.white, fontWeight: '800' },
   input: { minHeight: 90, borderRadius: 12, backgroundColor: colors.backgroundCard, color: colors.textPrimary, padding: 12, fontSize: 15, textAlignVertical: 'top' },
   counter: { color: colors.textMuted, fontSize: 12 },
   sheetButtons: { flexDirection: 'row', gap: 10 },
@@ -276,5 +277,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontWeight: '700' },
   publish: { flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accent },
   publishDisabled: { opacity: 0.85 },
-  publishText: { color: '#FFFFFF', fontWeight: '800' },
+  publishText: { color: colors.white, fontWeight: '800' },
 });

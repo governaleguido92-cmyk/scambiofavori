@@ -36,11 +36,14 @@ interface FavorCardProps {
   children?: ReactNode;
   /** Scheda essenziale per gli elenchi lunghi: tipo, Granelli, titolo, distanza e scadenza. Il resto sta nel dettaglio. */
   lean?: boolean;
+  /** false per non mostrare la descrizione (es. in I Miei, dove contano i pulsanti). */
+  showDescription?: boolean;
 }
 
 /** Scheda di un favore con banda colorata per categoria. Usata nella home (griglia) e nella mappa (fila scorrevole). */
 export const FavorCard: React.FC<FavorCardProps> = ({
   item, currentUserId, onPress, onReport, style, highlighted, statusLabel, statusColor, roleText, children, lean,
+  showDescription = true,
 }) => {
   const router = useRouter();
   const visual = getCategoryVisual(item.category);
@@ -185,7 +188,7 @@ export const FavorCard: React.FC<FavorCardProps> = ({
           <Text style={styles.cleanEmoji}>{visual.emoji}</Text>
           <Text style={[styles.gridTitle, styles.cleanTitle]} numberOfLines={2}>{item.title}</Text>
         </View>
-        <Text style={styles.gridDescription} numberOfLines={2}>{item.description}</Text>
+        {showDescription && <Text style={styles.gridDescription} numberOfLines={2}>{item.description}</Text>}
       </View>
 
       <View style={styles.gridMeta}>

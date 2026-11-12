@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../src/theme/colors';
 import { BrandLogo } from '../src/components/BrandLogo';
 import { goBackOrHome } from '../src/utils/navigation';
+import { HEADER_ICON_HIT_SLOP } from '../src/utils/touch';
+import { tt } from '../src/i18n/tt';
 
 export default function LegalScreen() {
   const router = useRouter();
@@ -22,7 +24,7 @@ export default function LegalScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)} hitSlop={HEADER_ICON_HIT_SLOP} accessibilityRole="button" accessibilityLabel={tt('Indietro')}>
             <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <BrandLogo />

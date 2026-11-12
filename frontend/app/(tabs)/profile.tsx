@@ -29,6 +29,7 @@ import { granelliWord } from '../../src/utils/granelli';
 import { ShelfBadge, sortBadges } from '../../src/utils/profileProgress';
 import { useProfileData } from '../../src/hooks/useProfileData';
 import { useProfilePhoto } from '../../src/hooks/useProfilePhoto';
+import colors from '../../src/theme/colors';
 
 const SITE_URL = 'https://scambiofavori.it';
 
@@ -175,7 +176,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#98AA4A" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -189,7 +190,7 @@ export default function ProfileScreen() {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             data-testid="open-settings"
           >
-            <Ionicons name="settings-outline" size={24} color="#fff" />
+            <Ionicons name="settings-outline" size={24} color={colors.white} />
           </TouchableOpacity>
         </View>
 
@@ -201,18 +202,18 @@ export default function ProfileScreen() {
 
         {isModerator && (
           <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#F87828', borderRadius: 14, padding: 14, marginBottom: 12 }}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.accent, borderRadius: 14, padding: 14, marginBottom: 12 }}
             onPress={() => router.push('/moderazione' as any)}
             accessibilityRole="button"
             accessibilityLabel={tt('Apri il pannello di moderazione')}
             data-testid="open-moderation-panel"
           >
-            <Ionicons name="shield-checkmark" size={26} color="#0C0E09" />
+            <Ionicons name="shield-checkmark" size={26} color={colors.background} />
             <View style={{ flex: 1 }}>
-              <Text style={{ color: '#0C0E09', fontSize: 16, fontWeight: '800' }}>{tt('Pannello di moderazione')}</Text>
-              <Text style={{ color: '#0C0E09', fontSize: 13 }}>{tt('Segnalazioni da gestire e account in revisione')}</Text>
+              <Text style={{ color: colors.background, fontSize: 16, fontWeight: '800' }}>{tt('Pannello di moderazione')}</Text>
+              <Text style={{ color: colors.background, fontSize: 13 }}>{tt('Segnalazioni da gestire e account in revisione')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={22} color="#0C0E09" />
+            <Ionicons name="chevron-forward" size={22} color={colors.background} />
           </TouchableOpacity>
         )}
 
@@ -234,9 +235,9 @@ export default function ProfileScreen() {
           accessibilityLabel={tt('Come ti vedono gli altri')}
           data-testid="view-as-others"
         >
-          <Ionicons name="eye-outline" size={24} color="#98AA4A" />
+          <Ionicons name="eye-outline" size={24} color={colors.primary} />
           <Text style={styles.leaderboardButtonText}>{tt('Come ti vedono gli altri')}</Text>
-          <Ionicons name="chevron-forward" size={24} color="#A5A89B" />
+          <Ionicons name="chevron-forward" size={24} color={colors.textMuted} />
         </TouchableOpacity>
 
         {/* IL MIO PERCORSO: fiducia, profilo, badge, competenze, recensioni */}
@@ -257,21 +258,21 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitle}>{tt('Fondo Solidarietà')}</Text>
           <View style={styles.fundCard}>
             <View style={styles.fundInfo}>
-              <Ionicons name="heart" size={32} color="#F87828" />
+              <Ionicons name="heart" size={32} color={colors.accent} />
               <View>
                 <Text style={styles.fundAmount}>{data.fund} {granelliWord(data.fund)}</Text>
                 <Text style={styles.fundLabel}>{tt('disponibili per chi ha bisogno')}</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.donateButton} onPress={() => setShowDonate(true)} accessibilityRole="button" accessibilityLabel={tt('Dona al Fondo Solidarietà')}>
-              <Ionicons name="gift" size={20} color="#0C0E09" />
+              <Ionicons name="gift" size={20} color={colors.background} />
               <Text style={styles.donateButtonText}>{tt('Dona')}</Text>
             </TouchableOpacity>
           </View>
           <Text style={styles.fundDescription}>{tt('Il Fondo si riempie con i Granelli donati dai vicini. Chi è in debito, dopo aver aiutato almeno una volta, può chiedere un dono di fino a 3 Granelli.')}</Text>
           {balance < 0 && (
             <TouchableOpacity style={[styles.donateButton, { marginTop: 10, alignSelf: 'flex-start' }]} onPress={askFundGift} accessibilityRole="button" data-testid="ask-fund-gift">
-              <Ionicons name="hand-left" size={20} color="#0C0E09" />
+              <Ionicons name="hand-left" size={20} color={colors.background} />
               <Text style={styles.donateButtonText}>{tt('Chiedi un dono al Fondo')}</Text>
             </TouchableOpacity>
           )}
@@ -279,13 +280,13 @@ export default function ProfileScreen() {
 
         <TouchableOpacity style={styles.referralCard} onPress={() => setShowReferral(true)} accessibilityRole="button">
           <View style={styles.referralLeft}>
-            <Ionicons name="people" size={32} color="#F87828" />
+            <Ionicons name="people" size={32} color={colors.accent} />
             <View>
               <Text style={styles.referralTitle}>{tt('Invita Amici')}</Text>
               <Text style={styles.referralSubtitle}>{data.referral?.successful_referrals || 0}{' '}{tt('inviti completati')}</Text>
             </View>
           </View>
-          <Ionicons name="chevron-forward" size={24} color="#A5A89B" />
+          <Ionicons name="chevron-forward" size={24} color={colors.textMuted} />
         </TouchableOpacity>
 
         {/* "Sostieni il Progetto" è nascosto su Android (norme di Google Play Billing) */}
@@ -293,21 +294,21 @@ export default function ProfileScreen() {
           <TouchableOpacity style={styles.supporterCard} onPress={() => router.push('/supporter' as any)} accessibilityRole="button" data-testid="become-supporter-button">
             <View style={styles.referralLeft}>
               <View style={styles.supporterIconWrapper}>
-                <Ionicons name="heart" size={32} color="#98AA4A" />
+                <Ionicons name="heart" size={32} color={colors.primary} />
               </View>
               <View>
                 <Text style={styles.supporterTitle}>{user?.is_supporter ? tt('Sei un Pilastro della Community') : tt('Sostieni il Progetto')}</Text>
                 <Text style={styles.supporterSubtitle}>{user?.is_supporter ? tt('Grazie! Gestisci il tuo contributo') : tt('Diventa un Pilastro della Community')}</Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={24} color="#98AA4A" />
+            <Ionicons name="chevron-forward" size={24} color={colors.primary} />
           </TouchableOpacity>
         )}
 
         <TouchableOpacity style={styles.leaderboardButton} onPress={explainGranelli} accessibilityRole="button" data-testid="explain-granelli">
-          <Ionicons name="help-circle-outline" size={24} color="#98AA4A" />
+          <Ionicons name="help-circle-outline" size={24} color={colors.primary} />
           <Text style={styles.leaderboardButtonText}>{tt('Come Funzionano i Granelli')}</Text>
-          <Ionicons name="chevron-forward" size={24} color="#A5A89B" />
+          <Ionicons name="chevron-forward" size={24} color={colors.textMuted} />
         </TouchableOpacity>
       </ScrollView>
 

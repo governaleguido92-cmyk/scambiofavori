@@ -24,7 +24,7 @@ export function GranelloIcon({ size = 16, color = colors.accent }: GranelloIconP
       style={[styles.coin, { width: coin, height: coin, borderRadius: coin / 2, backgroundColor: color }]}
       accessibilityLabel="Granelli"
     >
-      <MaterialCommunityIcons name="barley" size={Math.round(size * 1.15)} color="#FFFFFF" />
+      <MaterialCommunityIcons name="barley" size={Math.round(size * 1.15)} color={colors.white} />
     </View>
   );
 }

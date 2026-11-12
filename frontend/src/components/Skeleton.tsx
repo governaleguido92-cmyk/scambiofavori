@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { useReducedMotion } from '../utils/reducedMotion';
+import colors from '../theme/colors';
 
 interface SkeletonProps {
   width?: number | string;
@@ -15,8 +17,14 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   style,
 }) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // Con «Riduci animazioni» il segnaposto resta fermo a metà luminosità, senza pulsare
+    if (reducedMotion) {
+      animatedValue.setValue(0.5);
+      return undefined;
+    }
     const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(animatedValue, {
@@ -33,7 +41,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
     );
     animation.start();
     return () => animation.stop();
-  }, []);
+  }, [reducedMotion, animatedValue]);
 
   const opacity = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -123,12 +131,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#2E3420',
-    backgroundColor: '#171A10',
+    borderColor: colors.border,
+    backgroundColor: colors.backgroundCard,
     overflow: 'hidden',
   },
   skeleton: {
-    backgroundColor: '#333',
+    backgroundColor: colors.borderLight,
   },
   mapContainer: {
     padding: 16,

@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import colors from '../theme/colors';
 import { tt } from '../i18n/tt';
+import { modalAnimation } from '../utils/reducedMotion';
 
 interface LegalConsentModalProps {
   visible: boolean;
@@ -46,7 +47,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={modalAnimation()}
       statusBarTranslucent
       onRequestClose={() => {}} // Prevent back button closing without consent
     >
@@ -97,7 +98,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
               activeOpacity={0.7}
             >
               <View style={[styles.checkbox, tosAccepted && styles.checkboxChecked]}>
-                {tosAccepted && <Ionicons name="checkmark" size={16} color="#fff" />}
+                {tosAccepted && <Ionicons name="checkmark" size={16} color={colors.white} />}
               </View>
               <View style={styles.checkboxTextContainer}>
                 <Text style={styles.checkboxText}>{tt('Ho letto e accetto i')}{' '}
@@ -116,7 +117,7 @@ export default function LegalConsentModal({ visible, onAccept }: LegalConsentMod
               activeOpacity={0.7}
             >
               <View style={[styles.checkbox, privacyAccepted && styles.checkboxChecked]}>
-                {privacyAccepted && <Ionicons name="checkmark" size={16} color="#fff" />}
+                {privacyAccepted && <Ionicons name="checkmark" size={16} color={colors.white} />}
               </View>
               <View style={styles.checkboxTextContainer}>
                 <Text style={styles.checkboxText}>{tt('Ho letto e accetto la')}{' '}

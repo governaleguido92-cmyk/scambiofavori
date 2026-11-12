@@ -29,6 +29,8 @@ import {
 } from '../../src/utils/googleAuth';
 import { notify } from '../../src/utils/notify';
 import { tt } from '../../src/i18n/tt';
+import { hitSlopFor } from '../../src/utils/touch';
+import colors from '../../src/theme/colors';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -187,11 +189,11 @@ export default function LoginScreen() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Email')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -200,20 +202,20 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Password')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={hitSlopFor(20)} accessibilityRole="button" accessibilityLabel={showPassword ? tt('Nascondi la password') : tt('Mostra la password')}>
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color="#A5A89B"
+                  color={colors.textMuted}
                 />
               </TouchableOpacity>
             </View>
@@ -224,7 +226,7 @@ export default function LoginScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#0C0E09" />
+                <ActivityIndicator color={colors.background} />
               ) : (
                 <Text style={styles.loginButtonText}>{tt('Accedi')}</Text>
               )}
@@ -248,7 +250,7 @@ export default function LoginScreen() {
               disabled={isLoading}
               data-testid="google-login-button"
             >
-              <Ionicons name="logo-google" size={20} color="#fff" />
+              <Ionicons name="logo-google" size={20} color={colors.white} />
               <Text style={styles.googleButtonText}>{tt('Continua con Google')}</Text>
             </TouchableOpacity>
 
@@ -268,7 +270,7 @@ export default function LoginScreen() {
                 disabled={isLoading}
                 data-testid="apple-login-button"
               >
-                <Ionicons name="logo-apple" size={20} color="#fff" />
+                <Ionicons name="logo-apple" size={20} color={colors.white} />
                 <Text style={styles.appleButtonText}>{tt('Continua con Apple')}</Text>
               </TouchableOpacity>
             )}
@@ -291,7 +293,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0C0E09',
+    backgroundColor: colors.background,
   },
   keyboardView: {
     flex: 1,
@@ -311,12 +313,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginTop: 16,
   },
   subtitle: {
     fontSize: 16,
-    color: '#A5A89B',
+    color: colors.textMuted,
     marginTop: 8,
   },
   form: {
@@ -325,7 +327,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#171A10',
+    backgroundColor: colors.backgroundCard,
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
@@ -336,11 +338,11 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
   },
   loginButton: {
-    backgroundColor: '#98AA4A',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     height: 56,
     justifyContent: 'center',
@@ -348,7 +350,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   loginButtonText: {
-    color: '#0C0E09',
+    color: colors.background,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -360,10 +362,10 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#333',
+    backgroundColor: colors.borderLight,
   },
   dividerText: {
-    color: '#A5A89B',
+    color: colors.textMuted,
     paddingHorizontal: 16,
   },
   googleButton: {
@@ -376,7 +378,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   googleButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -390,10 +392,10 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.borderLight,
   },
   appleButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -408,11 +410,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   registerText: {
-    color: '#A5A89B',
+    color: colors.textMuted,
     fontSize: 14,
   },
   registerLink: {
-    color: '#98AA4A',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -421,7 +423,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   forgotText: {
-    color: '#F87828',
+    color: colors.accent,
     fontSize: 14,
     fontWeight: '500',
   },

@@ -5,6 +5,8 @@ import { styles } from '../../styles/profile.styles';
 import { tt, tx } from '../../i18n/tt';
 import { granelliWord } from '../../utils/granelli';
 import { clampDonation, DONATION_QUICK_AMOUNTS } from '../../utils/profileProgress';
+import { modalAnimation } from '../../utils/reducedMotion';
+import colors from '../../theme/colors';
 
 interface DonateModalProps {
   visible: boolean;
@@ -42,7 +44,7 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimation()} onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>{tt('Dona al Fondo Solidarietà')}</Text>
@@ -69,7 +71,7 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
 
               <View style={styles.donateInputContainer}>
                 <TouchableOpacity style={styles.donateAdjust} onPress={() => change(-1)} accessibilityRole="button" accessibilityLabel={tt('Meno')}>
-                  <Ionicons name="remove" size={24} color="#0C0E09" />
+                  <Ionicons name="remove" size={24} color={colors.background} />
                 </TouchableOpacity>
                 <TextInput
                   style={styles.donateInput}
@@ -81,7 +83,7 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
                   accessibilityLabel={tt('Quanti Granelli donare')}
                 />
                 <TouchableOpacity style={styles.donateAdjust} onPress={() => change(1)} accessibilityRole="button" accessibilityLabel={tt('Più')}>
-                  <Ionicons name="add" size={24} color="#0C0E09" />
+                  <Ionicons name="add" size={24} color={colors.background} />
                 </TouchableOpacity>
               </View>
               <Text style={styles.donateCreditsLabel}>{granelliWord(amount)}</Text>
@@ -99,10 +101,10 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
               accessibilityRole="button"
             >
               {donating ? (
-                <ActivityIndicator size="small" color="#0C0E09" />
+                <ActivityIndicator size="small" color={colors.background} />
               ) : (
                 <>
-                  <Ionicons name="heart" size={20} color="#0C0E09" />
+                  <Ionicons name="heart" size={20} color={colors.background} />
                   <Text style={styles.modalConfirmText}>{tt('Dona')}</Text>
                 </>
               )}
@@ -115,14 +117,14 @@ export function DonateModal({ visible, balance, onClose, onDonate }: DonateModal
 }
 
 const local = StyleSheet.create({
-  balance: { color: '#A5A89B', fontSize: 12.5, textAlign: 'center', marginBottom: 12 },
-  noBalance: { color: '#D4D6CC', fontSize: 14, lineHeight: 20, textAlign: 'center', marginVertical: 16 },
+  balance: { color: colors.textMuted, fontSize: 12.5, textAlign: 'center', marginBottom: 12 },
+  noBalance: { color: colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center', marginVertical: 16 },
   quickRow: { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 14 },
   quick: {
     minWidth: 54, alignItems: 'center', paddingVertical: 8, borderRadius: 14,
-    backgroundColor: '#171A10', borderWidth: 1, borderColor: '#2E3420',
+    backgroundColor: colors.backgroundCard, borderWidth: 1, borderColor: colors.border,
   },
-  quickActive: { backgroundColor: '#F87828', borderColor: '#F87828' },
-  quickText: { color: '#D4D6CC', fontSize: 15, fontWeight: '700' },
-  quickTextActive: { color: '#fff' },
+  quickActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  quickText: { color: colors.textSecondary, fontSize: 15, fontWeight: '700' },
+  quickTextActive: { color: colors.white },
 });

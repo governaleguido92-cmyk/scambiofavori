@@ -427,7 +427,7 @@ async def test_skill_match_notifications_are_grouped_in_one(app_db):
     assert items[0]["count"] == 3 and "3 favori" in items[0]["message"]
 
 
-async def test_skill_match_after_reading_starts_a_new_notification(app_db):
+async def test_skill_match_after_reading_reuses_the_same_notification(app_db):
     import core
 
     await app_db.users.insert_many([make_user("giver", email_verified=True, skills=["Spesa"]), make_user("asker", email_verified=True)])
@@ -435,6 +435,24 @@ async def test_skill_match_after_reading_starts_a_new_notification(app_db):
                        category="Spesa", title="Spesa 1")
     await core.create_skill_match_notifications(first)
     await app_db.notifications.update_many({"user_id": "giver"}, {"$set": {"read": True}})
+
+    await core.create_skill_match_notifications({**first, "favor_id": "s2", "title": "Spesa 2"})
+
+    items = await app_db.notifications.find({"user_id": "giver", "type": "skill_match"}).to_list(10)
+    assert len(items) == 1
+    assert items[0]["read"] is False and items[0]["count"] == 1
+    assert "Spesa 2" in items[0]["message"] and items[0]["favor_id"] == "s2"
+
+
+async def test_skill_match_older_than_the_window_starts_a_new_notification(app_db):
+    import core
+
+    await app_db.users.insert_many([make_user("giver", email_verified=True, skills=["Spesa"]), make_user("asker", email_verified=True)])
+    first = make_favor("s1", creator_id="asker", creator_name="asker", type="request", status="active", accepted_by=None,
+                       category="Spesa", title="Spesa 1")
+    await core.create_skill_match_notifications(first)
+    old = datetime.now(timezone.utc) - core.SKILL_MATCH_GROUP_WINDOW - timedelta(minutes=1)
+    await app_db.notifications.update_many({"user_id": "giver"}, {"$set": {"read": True, "created_at": old}})
 
     await core.create_skill_match_notifications({**first, "favor_id": "s2", "title": "Spesa 2"})
 

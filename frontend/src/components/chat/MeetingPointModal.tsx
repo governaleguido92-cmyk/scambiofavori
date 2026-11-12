@@ -222,10 +222,10 @@ export function MeetingPointModal({ visible, sending, error, favorId, token, onC
             accessibilityLabel={tt('Invia il punto d\'incontro')}
           >
             {sending ? (
-              <ActivityIndicator size="small" color="#0C0E09" />
+              <ActivityIndicator size="small" color={colors.background} />
             ) : (
               <>
-                <Ionicons name="send" size={18} color="#0C0E09" />
+                <Ionicons name="send" size={18} color={colors.background} />
                 <Text style={styles.sendText}>{tt('Invia il punto d\'incontro')}</Text>
               </>
             )}
@@ -286,11 +286,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 10, marginBottom: 12,
     backgroundColor: 'rgba(248,120,40,0.12)', borderWidth: 1, borderColor: 'rgba(248,120,40,0.4)',
   },
-  errorText: { flex: 1, color: '#FB9A52', fontSize: 12.5, lineHeight: 17 },
+  errorText: { flex: 1, color: colors.accentLight, fontSize: 12.5, lineHeight: 17 },
   send: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10,
     paddingVertical: 14, borderRadius: 12, backgroundColor: colors.accent,
   },
   sendDisabled: { opacity: 0.5 },
-  sendText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  sendText: { color: colors.white, fontSize: 15, fontWeight: '800' },
 });

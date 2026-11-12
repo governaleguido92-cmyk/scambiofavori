@@ -15,7 +15,7 @@ interface Props {
 const MIN_LEVEL_TO_VOUCH = 2;
 
 /**
- * Nel profilo di un vicino: «Lo conosco di persona». Chi ha già 3 favori completati può garantire per lui;
+ * Nel profilo di un vicino: «Lo conosco di persona». Chi ha già 3 favori completati può garantire per questa persona;
  * gli altri vedono il pulsante spento e quanti favori mancano, così non lo toccano per niente.
  */
 export function VouchBox({ userId, token, onVouched }: Props) {
@@ -51,7 +51,7 @@ export function VouchBox({ userId, token, onVouched }: Props) {
       <Text style={styles.title}>{tt('Lo conosci di persona?')}</Text>
       <Text style={styles.text}>
         {canVouch
-          ? tt('Se lo conosci davvero, puoi garantire per lui: aiuta gli altri vicini a fidarsi.')
+          ? tt('Se conosci davvero questa persona, puoi garantire per lei: aiuta gli altri vicini a fidarsi.')
           : tx('Potrai garantire per un vicino dopo 3 favori completati: te ne mancano {0}.', [missing])}
       </Text>
       <TouchableOpacity

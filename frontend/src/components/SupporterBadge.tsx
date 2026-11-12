@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { tt } from '../i18n/tt';
+import colors from '../theme/colors';
 
 interface SupporterBadgeProps {
   size?: 'small' | 'medium' | 'large';
@@ -22,7 +23,7 @@ export const SupporterBadge: React.FC<SupporterBadgeProps> = ({
   
   return (
     <View style={[styles.container, styles[`container_${size}`], style]}>
-      <Ionicons name="heart" size={iconSize} color="#98AA4A" />
+      <Ionicons name="heart" size={iconSize} color={colors.primary} />
       {showLabel && <Text style={styles.label}>{tt('Sostenitore')}</Text>}
     </View>
   );
@@ -75,19 +76,19 @@ const styles = StyleSheet.create({
     // Default - no extra padding
   },
   container_medium: {
-    backgroundColor: '#ffd70020',
+    backgroundColor: colors.accentMuted,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 10,
   },
   container_large: {
-    backgroundColor: '#ffd70020',
+    backgroundColor: colors.accentMuted,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   label: {
-    color: '#98AA4A',
+    color: colors.primary,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -98,9 +99,9 @@ const styles = StyleSheet.create({
   profileBorderWrapper: {
     borderRadius: 100,
     padding: 3,
-    backgroundColor: '#98AA4A',
+    backgroundColor: colors.primary,
     // Gradient effect using shadow
-    shadowColor: '#98AA4A',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 4,

@@ -14,6 +14,7 @@ import { initI18n } from '../src/i18n';
 import i18n from '../src/i18n';
 import { installWebAlert } from '../src/utils/webAlert';
 import { installTextScaling, loadTextSize } from '../src/utils/textScale';
+import colors from '../src/theme/colors';
 
 installWebAlert();
 installTextScaling();
@@ -50,7 +51,7 @@ function RootLayoutNav() {
         key={i18nInstance.language}
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#0C0E09' },
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen name="index" />

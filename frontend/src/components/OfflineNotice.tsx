@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
 import { tt } from '../i18n/tt';
+import { isReducedMotion } from '../utils/reducedMotion';
+import colors from '../theme/colors';
 
 interface OfflineNoticeProps {
   onRetry?: () => void;
@@ -17,6 +19,11 @@ export const OfflineNotice: React.FC<OfflineNoticeProps> = ({ onRetry }) => {
       const offline = !state.isConnected;
       setIsOffline(offline);
       
+      // Con «Riduci animazioni» l'avviso compare subito, senza scivolare
+      if (isReducedMotion()) {
+        slideAnim.setValue(offline ? 0 : -100);
+        return;
+      }
       Animated.spring(slideAnim, {
         toValue: offline ? 0 : -100,
         useNativeDriver: true,
@@ -39,12 +46,12 @@ export const OfflineNotice: React.FC<OfflineNoticeProps> = ({ onRetry }) => {
       data-testid="offline-notice"
     >
       <View style={styles.content}>
-        <Ionicons name="cloud-offline" size={20} color="#fff" />
+        <Ionicons name="cloud-offline" size={20} color={colors.white} />
         <Text style={styles.text}>{tt('Sei offline')}</Text>
       </View>
       {onRetry && (
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-          <Ionicons name="refresh" size={16} color="#fff" />
+          <Ionicons name="refresh" size={16} color={colors.white} />
           <Text style={styles.retryText}>{tt('Riprova')}</Text>
         </TouchableOpacity>
       )}
@@ -63,12 +70,12 @@ export const NetworkErrorBanner: React.FC<{
   return (
     <View style={styles.errorBanner} data-testid="network-error-banner">
       <View style={styles.content}>
-        <Ionicons name="warning" size={20} color="#fff" />
+        <Ionicons name="warning" size={20} color={colors.white} />
         <Text style={styles.text}>{message}</Text>
       </View>
       {onRetry && (
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
-          <Ionicons name="refresh" size={16} color="#fff" />
+          <Ionicons name="refresh" size={16} color={colors.white} />
           <Text style={styles.retryText}>{tt('Riprova')}</Text>
         </TouchableOpacity>
       )}
@@ -82,7 +89,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#F87828',
+    backgroundColor: colors.accent,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -91,7 +98,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   errorBanner: {
-    backgroundColor: '#F87828',
+    backgroundColor: colors.accent,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -106,7 +113,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   text: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -120,7 +127,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   retryText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: '500',
   },

@@ -9,6 +9,7 @@ import { tt, tx } from '../../i18n/tt';
 import { notify, showRefusal } from '../../utils/notify';
 import { useLiveRefresh } from '../../hooks/useLiveRefresh';
 import { buildStart, dayLabel, EVENT_DAY_OPTIONS, EVENT_HOUR_OPTIONS, formatEventStart, hourLabel } from '../../utils/eventTime';
+import { modalAnimation } from '../../utils/reducedMotion';
 
 const TITLE_MAX = 60;
 const PLACE_MAX = 60;
@@ -204,7 +205,7 @@ export function EventsTab({ token, composeSignal }: { token: string | null; comp
         <Text style={styles.fabText}>{tt('Organizza')}</Text>
       </TouchableOpacity>
 
-      <Modal visible={composerOpen} transparent animationType="slide" onRequestClose={() => setComposerOpen(false)}>
+      <Modal visible={composerOpen} transparent animationType={modalAnimation()} onRequestClose={() => setComposerOpen(false)}>
         <View style={styles.backdrop}>
           <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">
             <Text style={styles.sheetTitle}>{tt('Organizza per il quartiere')}</Text>
@@ -220,7 +221,7 @@ export function EventsTab({ token, composeSignal }: { token: string | null; comp
             <TextInput style={styles.input} value={title} onChangeText={setTitle} placeholder={tt('Titolo (es. Caffè in piazza)')} placeholderTextColor={colors.textMuted} maxLength={TITLE_MAX} data-testid="event-title" />
             <TextInput style={styles.input} value={place} onChangeText={setPlace} placeholder={tt('Dove (es. Piazza principale, zona porto)')} placeholderTextColor={colors.textMuted} maxLength={PLACE_MAX} data-testid="event-place" />
             <TouchableOpacity style={styles.placeButton} onPress={() => setPlacePickerOpen(true)} accessibilityRole="button" data-testid="event-pick-place">
-              <Ionicons name="location" size={16} color="#FFFFFF" />
+              <Ionicons name="location" size={16} color={colors.white} />
               <Text style={styles.placeButtonText}>{tt('Scegli un luogo vicino (entro 15 km)')}</Text>
             </TouchableOpacity>
 
@@ -273,21 +274,21 @@ const styles = StyleSheet.create({
   title: { color: colors.textPrimary, fontSize: 16, fontWeight: '800' },
   place: { color: colors.textSecondary, fontSize: 13.5 },
   placeButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.backgroundCard, borderRadius: 12, paddingVertical: 11, borderWidth: 1, borderColor: colors.border },
-  placeButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+  placeButtonText: { color: colors.white, fontSize: 14, fontWeight: '700' },
   description: { color: colors.textPrimary, fontSize: 14, lineHeight: 19, marginTop: 2 },
   meta: { color: colors.textMuted, fontSize: 11.5, marginTop: 2 },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingBottom: 12 },
   count: { color: colors.textSecondary, fontSize: 13 },
   goButton: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, opacity: 0.85 },
   goButtonOn: { backgroundColor: colors.lime, opacity: 1 },
-  goText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '800' },
+  goText: { color: colors.white, fontSize: 13.5, fontWeight: '800' },
   // sul verde oliva (già «Ci vado!») il testo scuro si legge meglio del bianco
   goTextOn: { color: colors.background },
   empty: { alignItems: 'center', gap: 8, marginTop: 40, paddingHorizontal: 24 },
   emptyTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '800' },
   emptyText: { color: colors.textSecondary, fontSize: 14, lineHeight: 20, textAlign: 'center' },
   fab: { position: 'absolute', right: 16, bottom: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 999 },
-  fabText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  fabText: { color: colors.white, fontSize: 14, fontWeight: '800' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%' },
   sheetContent: { padding: 18, gap: 12 },
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.backgroundCard },
   chipActive: { backgroundColor: colors.accent },
   chipText: { color: colors.textPrimary, fontSize: 13 },
-  chipTextActive: { color: '#FFFFFF', fontWeight: '800' },
+  chipTextActive: { color: colors.white, fontWeight: '800' },
   input: { borderRadius: 12, backgroundColor: colors.backgroundCard, color: colors.textPrimary, padding: 12, fontSize: 15 },
   inputBig: { minHeight: 70, textAlignVertical: 'top' },
   counter: { color: colors.textMuted, fontSize: 12 },
@@ -307,5 +308,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontWeight: '700' },
   publish: { flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accent },
   publishDisabled: { opacity: 0.85 },
-  publishText: { color: '#FFFFFF', fontWeight: '800' },
+  publishText: { color: colors.white, fontWeight: '800' },
 });

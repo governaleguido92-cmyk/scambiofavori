@@ -27,7 +27,7 @@ import colors from '../../src/theme/colors';
 import { FavorCard } from '../../src/components/FavorCard';
 import { qrRole, canComplete, groupByTab, isExpired, MyFavorTab } from '../../src/utils/myFavors';
 import { roleText, statusOf } from '../../src/utils/favorLabels';
-import { validityHoursOf } from '../../src/utils/favorValidity';
+import { editFavorRoute } from '../../src/utils/favorActions';
 
 const TAB_ORDER: ReadonlyArray<MyFavorTab> = ['ongoing', 'published', 'closed'];
 
@@ -179,18 +179,7 @@ export default function MyFavorsScreen() {
 
   // Modificare = aprire "Crea" sullo stesso favore, con i dati già compilati: al salvataggio si aggiorna quello, non se ne crea un altro.
   const handleEdit = (favor: Favor) => {
-    router.push({
-      pathname: '/create',
-      params: {
-        editId: favor.favor_id,
-        title: favor.title,
-        description: favor.description,
-        category: favor.category,
-        type: favor.type,
-        durationHours: String(Math.max(1, Math.round(favor.duration_hours))),
-        validityHours: String(validityHoursOf(favor)),
-      },
-    } as any);
+    router.push(editFavorRoute(favor) as any);
   };
 
   const openFavor = (favor: Favor) => router.push(`/favor/${favor.favor_id}`);
@@ -206,18 +195,15 @@ export default function MyFavorsScreen() {
         item={item}
         currentUserId={user?.user_id}
         onPress={openFavor}
-        statusLabel={status.label}
+        // Nella scheda «In corso» l'etichetta «In corso» direbbe una cosa già scritta in alto
+        statusLabel={tab === 'ongoing' ? undefined : status.label}
         statusColor={status.color}
         roleText={roleText(item, user?.user_id)}
+        showDescription={false}
         style={styles.card}
       >
         {item.status === 'accepted' && (
           <View style={styles.cardActions}>
-            <Text style={styles.hint}>
-              {role === 'show'
-                ? tx('A favore finito mostra il QR a chi ti ha aiutato: i {0} passano a lui quando lo scansiona.', [CURRENCY_NAME])
-                : tt('A favore finito scansiona il QR che ti mostra chi hai aiutato.')}
-            </Text>
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={[styles.primaryButton, styles.flexButton]}
@@ -346,6 +332,16 @@ export default function MyFavorsScreen() {
           numColumns={2}
           columnWrapperStyle={styles.gridRow}
           contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            tab === 'ongoing' && visible.length > 0 ? (
+              <View style={styles.qrNote}>
+                <Ionicons name="qr-code" size={16} color={colors.lime} />
+                <Text style={styles.hint}>
+                  {tx('A favore finito chi riceve mostra il QR e chi ha aiutato lo scansiona: così i {0} passano a chi ha aiutato.', [CURRENCY_NAME])}
+                </Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <EmptyState tab={tab} onCreate={() => router.push('/create' as any)} onBrowse={() => router.push('/(tabs)' as any)} />
           }
@@ -394,7 +390,7 @@ const styles = StyleSheet.create({
   },
   tabActive: { backgroundColor: colors.accentDark },
   tabText: { color: colors.textSecondary, fontSize: 13, fontWeight: '600' },
-  tabTextActive: { color: '#fff', fontWeight: '800' },
+  tabTextActive: { color: colors.white, fontWeight: '800' },
   tabCount: {
     minWidth: 20,
     paddingHorizontal: 6,
@@ -405,13 +401,17 @@ const styles = StyleSheet.create({
   },
   tabCountActive: { backgroundColor: 'rgba(0,0,0,0.25)' },
   tabCountText: { color: colors.textSecondary, fontSize: 11, fontWeight: '700' },
-  tabCountTextActive: { color: '#fff' },
+  tabCountTextActive: { color: colors.white },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   listContent: { padding: 20, paddingBottom: 100 },
   gridRow: { justifyContent: 'space-between' },
   card: { alignSelf: 'stretch' },
   cardActions: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
-  hint: { color: colors.textSecondary, fontSize: 12, lineHeight: 17 },
+  hint: { flex: 1, color: colors.textSecondary, fontSize: 12.5, lineHeight: 17 },
+  qrNote: {
+    flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, marginBottom: 12,
+    borderRadius: 14, backgroundColor: colors.backgroundCard, borderWidth: 1, borderColor: colors.border,
+  },
   buttonRow: { gap: 8 },
   flexButton: { alignSelf: 'stretch' },
   primaryButton: {

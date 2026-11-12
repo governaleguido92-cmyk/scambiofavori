@@ -5,6 +5,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { api } from '../services/api';
 import { logger } from '../utils/logger';
+import colors from '../theme/colors';
 
 // Configure foreground notification behavior
 Notifications.setNotificationHandler({
@@ -35,7 +36,7 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
       name: 'Scambio Favori',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#6B7A38',
+      lightColor: colors.primaryDark,
     });
   }
 

@@ -97,6 +97,11 @@ REFERRAL_BONUS = 2  # Bonus referral etico
 GRANELLI_PER_HOUR = 1  # 1 ora = 1 granello
 
 CURRENCY_NAME = "Granelli"  # "Ogni favore fatto è un granello di sabbia che costruisce la community"
+
+
+def granelli_text(amount: int) -> str:
+    """«1 Granello», «3 Granelli»: mai «1 Granelli»."""
+    return f"{amount} {'Granello' if amount == 1 else CURRENCY_NAME}"
 CURRENCY_SYMBOL = "🌾"
 
 # Privacy: approximate location radius in meters
@@ -1636,18 +1641,21 @@ async def create_skill_match_notifications(favor_doc: dict):
     notifications = []
     window_start = datetime.now(timezone.utc) - SKILL_MATCH_GROUP_WINDOW
     for user in matching_users:
-        # Se c'è già un avviso di questo tipo non letto, si aggiorna invece di crearne un altro (e niente nuova push)
-        existing = await db.notifications.find_one_and_update(
-            {"user_id": user["user_id"], "type": "skill_match", "read": False, "created_at": {"$gte": window_start}},
-            {"$inc": {"count": 1}, "$set": {"favor_id": favor_doc["favor_id"], "created_at": datetime.now(timezone.utc),
-                                            "last_title": favor_doc["title"]}},
+        # Entro la finestra c'è un solo avviso sulle competenze: si aggiorna e torna in cima (niente nuova push).
+        # Se era già stato letto riparte da 1, così il numero parla solo dei favori nuovi.
+        existing = await db.notifications.find_one(
+            {"user_id": user["user_id"], "type": "skill_match", "created_at": {"$gte": window_start}},
+            sort=[("created_at", -1)],
         )
         if existing:
-            total = existing.get("count", 1) + 1
+            total = 1 if existing.get("read") else existing.get("count", 1) + 1
+            message = (f"{total} favori da donare vicino a te nelle tue competenze. Ultimo: '{favor_doc['title']}'" if total > 1
+                       else f"C'è un favore da donare vicino a te: '{favor_doc['title']}' nella categoria {favor_doc['category']}")
             await db.notifications.update_one(
                 {"notification_id": existing["notification_id"]},
-                {"$set": {"title": "Nuovi favori per te!",
-                          "message": f"{total} favori da donare vicino a te nelle tue competenze. Ultimo: '{favor_doc['title']}'"}},
+                {"$set": {"title": "Nuovi favori per te!" if total > 1 else "Nuovo favore per te!", "message": message,
+                          "count": total, "read": False, "favor_id": favor_doc["favor_id"],
+                          "created_at": datetime.now(timezone.utc), "last_title": favor_doc["title"]}},
             )
             continue
         notifications.append({

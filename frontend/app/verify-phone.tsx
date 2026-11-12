@@ -25,6 +25,7 @@ import { goBackOrHome } from '../src/utils/navigation';
 import { HOME_ROUTE } from '../src/utils/afterRegistration';
 import { Linking } from 'react-native';
 import { buildPhoneNumber, DEFAULT_PHONE_PREFIX, PHONE_PREFIXES, PhonePrefix } from '../src/utils/phonePrefixes';
+import { modalAnimation } from '../src/utils/reducedMotion';
 
 const MIN_NATIONAL_DIGITS = 6;
 
@@ -254,7 +255,7 @@ export default function VerifyPhoneScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
+      <Modal visible={pickerOpen} transparent animationType={modalAnimation()} onRequestClose={() => setPickerOpen(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>

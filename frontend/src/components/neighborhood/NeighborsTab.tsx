@@ -8,6 +8,7 @@ import { tt, tx } from '../../i18n/tt';
 import { notify, showRefusal } from '../../utils/notify';
 import { useLiveRefresh } from '../../hooks/useLiveRefresh';
 import { GranelloIcon } from '../GranelloIcon';
+import { modalAnimation } from '../../utils/reducedMotion';
 
 const INTRO_MAX = 200;
 const THANKS_LIMIT = 10;
@@ -197,7 +198,7 @@ export function NeighborsTab({ token, composeSignal }: { token: string | null; c
         )}
       </ScrollView>
 
-      <Modal visible={composerOpen} transparent animationType="slide" onRequestClose={() => setComposerOpen(false)}>
+      <Modal visible={composerOpen} transparent animationType={modalAnimation()} onRequestClose={() => setComposerOpen(false)}>
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>{tt('Presentati ai tuoi vicini')}</Text>
@@ -245,12 +246,12 @@ const styles = StyleSheet.create({
   count: { color: colors.textSecondary, fontSize: 13 },
   welcomeButton: { backgroundColor: colors.accent, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, opacity: 0.85 },
   welcomeButtonOn: { backgroundColor: colors.lime, opacity: 1 },
-  welcomeText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '800' },
+  welcomeText: { color: colors.white, fontSize: 13.5, fontWeight: '800' },
   // sul verde oliva (già dato il benvenuto) il testo scuro si legge meglio del bianco
   welcomeTextOn: { color: colors.background },
   emptyLine: { color: colors.textSecondary, fontSize: 14, lineHeight: 20 },
   introButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.accent, paddingVertical: 12, borderRadius: 12 },
-  introButtonText: { color: '#FFFFFF', fontSize: 14.5, fontWeight: '800' },
+  introButtonText: { color: colors.white, fontSize: 14.5, fontWeight: '800' },
   thanksCard: { flexDirection: 'row', gap: 10, backgroundColor: colors.backgroundCard, borderRadius: 12, padding: 12 },
   thanksText: { color: colors.textPrimary, fontSize: 14, lineHeight: 19 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
@@ -263,5 +264,5 @@ const styles = StyleSheet.create({
   cancelText: { color: colors.textPrimary, fontWeight: '700' },
   publish: { flex: 2, alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accent },
   publishDisabled: { opacity: 0.85 },
-  publishText: { color: '#FFFFFF', fontWeight: '800' },
+  publishText: { color: colors.white, fontWeight: '800' },
 });
