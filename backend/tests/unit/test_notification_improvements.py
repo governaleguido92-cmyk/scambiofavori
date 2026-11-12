@@ -2,24 +2,8 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from mongomock_motor import AsyncMongoMockCollection
 
 from conftest import auth, make_favor, make_user
-
-
-@pytest.fixture
-def mongo_like_find_one_and_update(monkeypatch):
-    """mongomock restituisce None con return_document + projection (Mongo vero no): si toglie la projection nel test."""
-    original = AsyncMongoMockCollection.find_one_and_update
-
-    async def patched(self, *args, **kwargs):
-        projection = kwargs.pop("projection", None)
-        doc = await original(self, *args, **kwargs)
-        if doc and projection and projection.get("_id") == 0:
-            doc = {k: v for k, v in doc.items() if k != "_id"}
-        return doc
-
-    monkeypatch.setattr(AsyncMongoMockCollection, "find_one_and_update", patched)
 
 
 def active_favor(favor_id: str, creator: str, expires_in: timedelta) -> dict:

@@ -528,6 +528,8 @@ class User(BaseModel):
     debt_start_date: Optional[datetime] = None  # When user went into debt
     last_activity_date: Optional[datetime] = None  # Last app activity
     in_debt_recovery: bool = False  # Using solidarity fund for recovery
+    # Primo passo fatto: ha pubblicato o accettato un favore. Fino ad allora l'app apre solo Home, Mappa e Crea.
+    has_started: bool = False
     # Privacy: approximate location for public display
     approximate_latitude: Optional[float] = None
     approximate_longitude: Optional[float] = None

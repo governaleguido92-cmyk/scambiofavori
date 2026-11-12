@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from core import *  # noqa: F401,F403
 import moderation_notify
 import trust
+import locality
 import weather
 from public_text import ensure_public_text_allowed
 
@@ -184,18 +185,48 @@ async def ensure_area_indexes() -> None:
         logger.exception("Indice dei messaggi di zona non creato")
 
 
+async def _neighborhood_point(user_id: str) -> Optional[tuple]:
+    """Centro del quartiere: la posizione approssimata dei favori aperti o, in mancanza, quella del profilo."""
+    points = await _reference_points(user_id)
+    if points:
+        return points[0]
+    doc = await db.users.find_one({"user_id": user_id}, {"_id": 0, "approximate_latitude": 1, "approximate_longitude": 1})
+    if doc and doc.get("approximate_latitude") is not None and doc.get("approximate_longitude") is not None:
+        return (doc["approximate_latitude"], doc["approximate_longitude"])
+    return None
+
+
 @api_router.get("/neighborhood/weather")
 async def neighborhood_weather(current_user: User = Depends(get_current_user)):
     """Meteo del quartiere, dalla posizione approssimata dei favori aperti (o, in mancanza, del profilo)."""
-    points = await _reference_points(current_user.user_id)
-    if not points:
-        doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0, "approximate_latitude": 1, "approximate_longitude": 1})
-        if doc and doc.get("approximate_latitude") is not None and doc.get("approximate_longitude") is not None:
-            points = [(doc["approximate_latitude"], doc["approximate_longitude"])]
-    if not points:
+    point = await _neighborhood_point(current_user.user_id)
+    if not point:
         return {"weather": None, "reason": "no_position"}
     try:
-        return {"weather": await weather.get_weather(points[0][0], points[0][1])}
+        return {"weather": await weather.get_weather(point[0], point[1])}
     except weather.WeatherUnavailable:
         logger.warning("Meteo non disponibile per il quartiere")
         return {"weather": None, "reason": "unavailable"}
+
+
+@api_router.get("/neighborhood/city")
+async def neighborhood_city(
+    latitude: Optional[float] = Query(None, ge=-90, le=90),
+    longitude: Optional[float] = Query(None, ge=-180, le=180),
+    current_user: User = Depends(get_current_user),
+):
+    """Il paese in cui si opera: dai favori aperti, altrimenti dalla posizione del telefono, altrimenti dal profilo."""
+    favor_points = await _reference_points(current_user.user_id)
+    if favor_points:
+        point = favor_points[0]
+    elif latitude is not None and longitude is not None:
+        point = (latitude, longitude)
+    else:
+        point = await _neighborhood_point(current_user.user_id)
+    if not point:
+        return {"city": None, "reason": "no_position"}
+    try:
+        return {"city": await locality.get_city(point[0], point[1])}
+    except locality.LocalityUnavailable:
+        logger.warning("Nome del paese non disponibile per il quartiere")
+        return {"city": None, "reason": "unavailable"}

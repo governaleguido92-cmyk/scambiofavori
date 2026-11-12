@@ -104,6 +104,7 @@ async def create_favor(favor_data: FavorCreate, current_user: User = Depends(get
     }
     
     await db.favors.insert_one(favor_doc)
+    await trust.mark_started(current_user.user_id)
 
     # Prepara in sottofondo l'elenco dei luoghi della zona (per il punto d'incontro), usando solo la posizione
     # approssimata: così, quando serve in chat, è già pronto.
@@ -396,7 +397,8 @@ async def accept_favor(data: FavorAccept, current_user: User = Depends(get_curre
         raise HTTPException(status_code=400, detail="Il favore non è più disponibile")
 
     favor_doc = updated
-    
+    await trust.mark_started(current_user.user_id)
+
     # Notifica nell'app: chi ha pubblicato il favore la trova in campanella anche senza push
     await db.notifications.insert_one({
         "notification_id": f"notif_{uuid.uuid4().hex[:12]}",

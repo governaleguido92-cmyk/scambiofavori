@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from mongomock_motor import AsyncMongoMockCollection
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from mongomock_motor import AsyncMongoMockClient
@@ -92,3 +93,18 @@ async def google_login(client, monkeypatch, email, name="Guido"):
     monkeypatch.setattr(google_auth, "verify_google_id_token", fake_verify)
     nonce = (await client.get("/api/auth/google/nonce")).json()["nonce"]
     return await client.post("/api/auth/google", json={"id_token": "finto", "nonce": nonce})
+
+
+@pytest.fixture
+def mongo_like_find_one_and_update(monkeypatch):
+    """mongomock restituisce None con return_document + projection (Mongo vero no): si toglie la projection nel test."""
+    original = AsyncMongoMockCollection.find_one_and_update
+
+    async def patched(self, *args, **kwargs):
+        projection = kwargs.pop("projection", None)
+        doc = await original(self, *args, **kwargs)
+        if doc and projection and projection.get("_id") == 0:
+            doc = {k: v for k, v in doc.items() if k != "_id"}
+        return doc
+
+    monkeypatch.setattr(AsyncMongoMockCollection, "find_one_and_update", patched)

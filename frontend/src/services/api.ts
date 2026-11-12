@@ -120,6 +120,8 @@ export interface User {
   debt_start_date?: string;
   last_activity_date?: string;
   in_debt_recovery: boolean;
+  /** Ha pubblicato o accettato almeno un favore: prima Quartiere, Messaggi e I Miei sono chiusi. */
+  has_started?: boolean;
   approximate_latitude?: number;
   approximate_longitude?: number;
   neighborhood?: string;
@@ -1014,6 +1016,15 @@ export const api = {
 
   getNeighborhoodWeather: async (token: string): Promise<{ weather: NeighborhoodWeather | null; reason?: string }> => {
     const response = await fetch(`${API_URL}/api/neighborhood/weather`, { headers: getHeaders(token) });
+    return handleResponse(response);
+  },
+
+  getNeighborhoodCity: async (
+    token: string,
+    position?: { latitude: number; longitude: number } | null
+  ): Promise<{ city: string | null; reason?: string }> => {
+    const query = position ? `?latitude=${position.latitude}&longitude=${position.longitude}` : '';
+    const response = await fetch(`${API_URL}/api/neighborhood/city${query}`, { headers: getHeaders(token) });
     return handleResponse(response);
   },
 

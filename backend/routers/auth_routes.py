@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 import html
 
+import trust
 from core import *  # noqa: F401,F403
 import age
 import google_auth
@@ -727,7 +728,8 @@ async def apple_auth(request: Request, auth_data: AppleAuthRequest, response: Re
 @api_router.get("/auth/me", response_model=User)
 async def get_me(current_user: User = Depends(get_current_user)):
     """Get current user info"""
-    return current_user
+    started = await trust.has_started(current_user.user_id, current_user.has_started)
+    return current_user.model_copy(update={"has_started": started})
 
 @api_router.post("/auth/logout")
 async def logout(response: Response, request: Request):

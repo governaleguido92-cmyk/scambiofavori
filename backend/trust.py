@@ -54,6 +54,24 @@ async def user_doc_of(user_id: str) -> dict:
     return await db.users.find_one({"user_id": user_id}, {"_id": 0}) or {}
 
 
+async def mark_started(user_id: str) -> None:
+    """Primo passo fatto (favore pubblicato o accettato): da qui l'app è tutta aperta, anche se poi lo annulla."""
+    await db.users.update_one({"user_id": user_id, "has_started": {"$ne": True}}, {"$set": {"has_started": True}})
+
+
+async def has_started(user_id: str, flag: bool = False) -> bool:
+    """Ha già pubblicato o accettato un favore? Per chi usava l'app prima della regola si guarda lo storico, una volta sola."""
+    if flag:
+        return True
+    earlier = await db.favors.find_one(
+        {"$or": [{"creator_id": user_id, "status": {"$ne": "cancelled"}}, {"accepted_by": user_id}]},
+        {"_id": 0, "favor_id": 1},
+    )
+    if earlier:
+        await mark_started(user_id)
+    return earlier is not None
+
+
 async def release_stalled_favors(user_id: str) -> int:
     """I favori accettati da più di 7 giorni e mai conclusi tornano disponibili (o si chiudono se sono scaduti),
     così chi li ha accettati non resta bloccato dal limite. Avvisa entrambe le persone. Ritorna quanti ne ha liberati."""

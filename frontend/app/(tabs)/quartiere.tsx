@@ -25,7 +25,10 @@ import { NewsTab } from '../../src/components/neighborhood/NewsTab';
 import { EventsTab } from '../../src/components/neighborhood/EventsTab';
 import { NeighborsTab } from '../../src/components/neighborhood/NeighborsTab';
 import { useLiveRefresh } from '../../src/hooks/useLiveRefresh';
+import { useNeighborhoodCity } from '../../src/hooks/useNeighborhoodCity';
 import { serverDate } from '../../src/utils/serverDate';
+import { StartGate } from '../../src/components/StartGate';
+import { useHasStarted } from '../../src/hooks/useHasStarted';
 
 const WEATHER_REFRESH_MS = 10 * 60 * 1000;
 
@@ -45,7 +48,7 @@ const TABS: ReadonlyArray<NeighborhoodTab> = ['chat', 'avvisi', 'eventi', 'vicin
 const TAB_LABELS: Record<NeighborhoodTab, string> = { chat: 'Chat', avvisi: 'Avvisi', eventi: 'Eventi', vicini: 'Vicini' };
 
 /** Quartiere: chat tra chi ha un favore attivo entro 15 km. I messaggi durano 2 giorni. */
-export default function NeighborhoodScreen() {
+function NeighborhoodScreen() {
   const { token } = useAuth();
   const router = useRouter();
   const listRef = useRef<FlatList<AreaMessage>>(null);
@@ -56,6 +59,7 @@ export default function NeighborhoodScreen() {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [weather, setWeather] = useState<NeighborhoodWeather | null>(null);
+  const city = useNeighborhoodCity(token);
   const [tab, setTab] = useState<NeighborhoodTab>('chat');
   const { tab: tabParam, compose: composeParam } = useLocalSearchParams<{ tab?: string; compose?: string }>();
 
@@ -204,7 +208,14 @@ export default function NeighborhoodScreen() {
           <BrandLogo />
           <View style={styles.titleBlock}>
             <Text style={styles.title} numberOfLines={1} accessibilityRole="header">{tt('Il Nostro Quartiere')}</Text>
-            <Text style={styles.subtitle} numberOfLines={1}>{tt('Tutto quello che succede intorno a te')}</Text>
+            {city ? (
+              <View style={styles.cityRow} accessibilityLabel={tx('Paese del quartiere: {0}', [city])} data-testid="neighborhood-city">
+                <Ionicons name="location" size={14} color={colors.accent} />
+                <Text style={styles.city} numberOfLines={1}>{tx('{0} e dintorni', [city])}</Text>
+              </View>
+            ) : (
+              <Text style={styles.subtitle} numberOfLines={1}>{tt('Tutto quello che succede intorno a te')}</Text>
+            )}
           </View>
         </View>
 
@@ -345,6 +356,8 @@ const styles = StyleSheet.create({
   titleBlock: { flex: 1 },
   title: { color: colors.textPrimary, fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
   subtitle: { color: colors.textSecondary, fontSize: 12.5, marginTop: 1 },
+  cityRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  city: { color: colors.textPrimary, fontSize: 14, fontWeight: '700', flexShrink: 1 },
   weatherCard: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.backgroundCard },
   weatherTemp: { color: colors.textPrimary, fontSize: 15, fontWeight: '800' },
   weatherLine: { flex: 1, color: colors.textSecondary, fontSize: 13 },
@@ -387,3 +400,8 @@ const styles = StyleSheet.create({
   send: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   sendDisabled: { opacity: 0.85 },
 });
+
+/** Si apre solo dopo il primo favore pubblicato o accettato. */
+export default function GatedNeighborhoodScreen() {
+  return useHasStarted() ? <NeighborhoodScreen /> : <StartGate area={tt('Il Nostro Quartiere')} />;
+}

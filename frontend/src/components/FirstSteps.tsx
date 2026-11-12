@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Share, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useHasStarted } from '../hooks/useHasStarted';
 import colors from '../theme/colors';
 import { api } from '../services/api';
 import { tt, tx } from '../i18n/tt';
@@ -21,12 +22,15 @@ interface Step {
   key: string;
   label: string;
   done: boolean;
+  /** Passo obbligatorio: senza, Quartiere, Messaggi e I Miei restano chiusi. */
+  required?: boolean;
   onPress: () => void;
 }
 
 /** Per chi è appena arrivato: quattro passi semplici. Sparisce da sola quando sono tutti fatti o non si è più nuovi. */
 export function FirstSteps({ token, helped, onShowGive }: FirstStepsProps) {
   const router = useRouter();
+  const hasStarted = useHasStarted();
   const [state, setState] = useState<{ isNew: boolean; published: boolean; introduced: boolean } | null>(null);
 
   useEffect(() => {
@@ -63,7 +67,7 @@ export function FirstSteps({ token, helped, onShowGive }: FirstStepsProps) {
   };
 
   const steps: Step[] = [
-    { key: 'publish', label: tt('Pubblica il tuo primo favore'), done: state.published, onPress: () => router.push('/create' as any) },
+    { key: 'publish', label: tt('Pubblica o accetta il tuo primo favore'), done: hasStarted || state.published, required: true, onPress: () => router.push('/create' as any) },
     { key: 'intro', label: tt('Presentati al quartiere'), done: state.introduced, onPress: () => router.push('/quartiere?tab=vicini&compose=1' as any) },
     { key: 'help', label: tt('Aiuta un vicino e guadagna Granelli'), done: helped > 0, onPress: onShowGive },
     { key: 'invite', label: tt('Invita un vicino'), done: false, onPress: invite },
@@ -77,11 +81,16 @@ export function FirstSteps({ token, helped, onShowGive }: FirstStepsProps) {
         <Text style={styles.title}>{tt('Comincia da qui')}</Text>
         <Text style={styles.count}>{completed}/{steps.length}</Text>
       </View>
-      <Text style={styles.sub}>{tt('Inizi con 3 Granelli di benvenuto: servono per ricevere aiuto, e li guadagni aiutando.')}</Text>
+      <Text style={styles.sub}>
+        {hasStarted
+          ? tt('Inizi con 3 Granelli di benvenuto: servono per ricevere aiuto, e li guadagni aiutando.')
+          : tt('Il primo passo è obbligatorio: pubblica un favore o accettane uno. Poi si aprono Quartiere, Messaggi e I Miei.')}
+      </Text>
       {steps.map((step) => (
         <TouchableOpacity key={step.key} style={styles.row} onPress={step.onPress} accessibilityRole="button" accessibilityState={{ checked: step.done }}>
           <Ionicons name={step.done ? 'checkmark-circle' : 'ellipse-outline'} size={22} color={step.done ? colors.lime : colors.textMuted} />
           <Text style={[styles.label, step.done && styles.labelDone]}>{step.label}</Text>
+          {step.required && !step.done && <Text style={styles.required}>{tt('Obbligatorio')}</Text>}
           {!step.done && <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />}
         </TouchableOpacity>
       ))}
@@ -98,4 +107,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 },
   label: { flex: 1, color: colors.textPrimary, fontSize: 14, fontWeight: '500' },
   labelDone: { color: colors.textMuted, textDecorationLine: 'line-through' },
+  required: {
+    color: colors.background, backgroundColor: colors.accent, fontSize: 11, fontWeight: '800',
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, overflow: 'hidden',
+  },
 });

@@ -28,6 +28,8 @@ import { FavorCard } from '../../src/components/FavorCard';
 import { qrRole, canComplete, groupByTab, isExpired, MyFavorTab } from '../../src/utils/myFavors';
 import { roleText, statusOf } from '../../src/utils/favorLabels';
 import { editFavorRoute } from '../../src/utils/favorActions';
+import { StartGate } from '../../src/components/StartGate';
+import { useHasStarted } from '../../src/hooks/useHasStarted';
 
 const TAB_ORDER: ReadonlyArray<MyFavorTab> = ['ongoing', 'published', 'closed'];
 
@@ -99,7 +101,7 @@ function EmptyState({ tab, onCreate, onBrowse }: EmptyProps) {
   );
 }
 
-export default function MyFavorsScreen() {
+function MyFavorsScreen() {
   const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   const { t } = useTranslation();
@@ -443,3 +445,8 @@ const styles = StyleSheet.create({
   emptyText: { color: colors.textPrimary, fontSize: 17, fontWeight: '700', textAlign: 'center' },
   emptySubtext: { color: colors.textSecondary, fontSize: 13, lineHeight: 19, textAlign: 'center', marginBottom: 8 },
 });
+
+/** Si apre solo dopo il primo favore pubblicato o accettato. */
+export default function GatedMyFavorsScreen() {
+  return useHasStarted() ? <MyFavorsScreen /> : <StartGate area={tt('I tuoi favori')} />;
+}
