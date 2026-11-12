@@ -1,5 +1,6 @@
-const DARK_TEXT = '#0C0E09';
-const LIGHT_TEXT = '#FFFFFF';
+import colors from '../theme/colors';
+const DARK_TEXT = colors.background;
+const LIGHT_TEXT = colors.white;
 /** Contrasto minimo WCAG per il testo grande o in grassetto (titoli, pulsanti). */
 export const MIN_CONTRAST_LARGE_TEXT = 3;
 /** Contrasto minimo WCAG per il testo piccolo. */

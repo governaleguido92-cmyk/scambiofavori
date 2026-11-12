@@ -1,5 +1,6 @@
 import { tt, tx } from '../i18n/tt';
 import { serverTime } from './serverDate';
+import colors from '../theme/colors';
 
 export interface CategoryVisual {
   emoji: string;
@@ -7,22 +8,22 @@ export interface CategoryVisual {
   color: string;
 }
 
-const DEFAULT_VISUAL: CategoryVisual = { emoji: '🤝', color: '#98AA4A' };
+const DEFAULT_VISUAL: CategoryVisual = { emoji: '🤝', color: colors.primary };
 
 export const CATEGORY_VISUALS: Record<string, CategoryVisual> = {
-  'Trasporto': { emoji: '🚗', color: '#E0560F' },
-  'Spesa': { emoji: '🛒', color: '#98AA4A' },
-  'Tecnologia': { emoji: '💻', color: '#98AA4A' },
-  'Pulizie': { emoji: '🧹', color: '#FFFFFF' },
-  'Compagnia': { emoji: '🐕', color: '#F87828' },
-  'Cucina': { emoji: '🍳', color: '#FB9A52' },
-  'Giardinaggio': { emoji: '🌱', color: '#98AA4A' },
-  'Consiglio': { emoji: '💡', color: '#98AA4A' },
-  'Informazione': { emoji: 'ℹ️', color: '#FB9A52' },
-  'Aiuto Rapido': { emoji: '⚡', color: '#98AA4A' },
-  'Babysitting': { emoji: '👶', color: '#FB9A52' },
-  'Animali': { emoji: '🐾', color: '#BF500E' },
-  'Ripetizioni': { emoji: '📚', color: '#6B7A38' },
+  'Trasporto': { emoji: '🚗', color: colors.accentDark },
+  'Spesa': { emoji: '🛒', color: colors.primary },
+  'Tecnologia': { emoji: '💻', color: colors.primary },
+  'Pulizie': { emoji: '🧹', color: colors.white },
+  'Compagnia': { emoji: '🐕', color: colors.accent },
+  'Cucina': { emoji: '🍳', color: colors.accentLight },
+  'Giardinaggio': { emoji: '🌱', color: colors.primary },
+  'Consiglio': { emoji: '💡', color: colors.primary },
+  'Informazione': { emoji: 'ℹ️', color: colors.accentLight },
+  'Aiuto Rapido': { emoji: '⚡', color: colors.primary },
+  'Babysitting': { emoji: '👶', color: colors.accentLight },
+  'Animali': { emoji: '🐾', color: colors.accentDark },
+  'Ripetizioni': { emoji: '📚', color: colors.primaryDark },
   'Altro': DEFAULT_VISUAL,
 };
 

@@ -23,6 +23,7 @@ import { checkBirthDate, formatBirthInput, MIN_AGE } from '../../src/utils/birth
 import colors from '../../src/theme/colors';
 import { notify } from '../../src/utils/notify';
 import { tt, tx } from '../../src/i18n/tt';
+import { hitSlopFor } from '../../src/utils/touch';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
@@ -153,7 +154,7 @@ export default function RegisterScreen() {
               style={styles.backButton}
               onPress={() => setVerificationStep(false)}
             >
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="arrow-back" size={24} color={colors.white} />
             </TouchableOpacity>
 
             <View style={styles.header}>
@@ -171,7 +172,7 @@ export default function RegisterScreen() {
                 <TextInput
                   style={styles.codeInput}
                   placeholder="000000"
-                  placeholderTextColor="#A5A89B"
+                  placeholderTextColor={colors.textMuted}
                   value={verificationCode}
                   onChangeText={setVerificationCode}
                   keyboardType="number-pad"
@@ -228,7 +229,7 @@ export default function RegisterScreen() {
             accessibilityRole="button"
             accessibilityLabel={tt('Indietro')}
           >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color={colors.white} />
           </TouchableOpacity>
 
           <View style={styles.header}>
@@ -245,11 +246,11 @@ export default function RegisterScreen() {
 
           <View style={styles.form}>
             <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="person-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Nome')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
@@ -257,11 +258,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="mail-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Email')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -270,30 +271,30 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Password')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={hitSlopFor(20)} accessibilityRole="button" accessibilityLabel={showPassword ? tt('Nascondi la password') : tt('Mostra la password')}>
                 <Ionicons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
-                  color="#A5A89B"
+                  color={colors.textMuted}
                 />
               </TouchableOpacity>
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Conferma Password')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showPassword}
@@ -301,11 +302,11 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="calendar-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="calendar-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Data di nascita (gg/mm/aaaa)')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={birthDate}
                 onChangeText={(value) => setBirthDate(formatBirthInput(value))}
                 keyboardType="number-pad"
@@ -317,11 +318,11 @@ export default function RegisterScreen() {
             <Text style={styles.birthHint}>{tx('Serve per verificare che tu sia maggiorenne ({0}+). Non la mostriamo a nessuno.', [MIN_AGE])}</Text>
 
             <View style={styles.inputContainer}>
-              <Ionicons name="gift-outline" size={20} color="#A5A89B" style={styles.inputIcon} />
+              <Ionicons name="gift-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={tt('Codice Referral (opzionale)')}
-                placeholderTextColor="#A5A89B"
+                placeholderTextColor={colors.textMuted}
                 value={referralCode}
                 onChangeText={setReferralCode}
                 autoCapitalize="characters"
@@ -335,7 +336,7 @@ export default function RegisterScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#0C0E09" />
+                <ActivityIndicator color={colors.background} />
               ) : (
                 <Text style={styles.registerButtonText}>{tt('Registrati')}</Text>
               )}
@@ -389,12 +390,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginTop: 16,
   },
   subtitle: {
     fontSize: 16,
-    color: '#A5A89B',
+    color: colors.textMuted,
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 24,
@@ -416,10 +417,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
   },
-  birthHint: { color: '#A5A89B', fontSize: 12, lineHeight: 16, marginTop: -8, marginBottom: 14, paddingHorizontal: 4 },
+  birthHint: { color: colors.textMuted, fontSize: 12, lineHeight: 16, marginTop: -8, marginBottom: 14, paddingHorizontal: 4 },
   registerButton: {
     backgroundColor: colors.accent,
     borderRadius: 12,
@@ -454,7 +455,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   loginText: {
-    color: '#A5A89B',
+    color: colors.textMuted,
     fontSize: 14,
   },
   loginLink: {
@@ -493,7 +494,7 @@ const styles = StyleSheet.create({
     height: 70,
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     letterSpacing: 12,
     paddingHorizontal: 20,
   },
@@ -502,7 +503,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resendText: {
-    color: '#A5A89B',
+    color: colors.textMuted,
     fontSize: 14,
   },
   resendLink: {

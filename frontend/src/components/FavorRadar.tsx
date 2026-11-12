@@ -7,6 +7,7 @@ import { formatRadius } from '../utils/radius';
 import { formatDistance } from '../utils/favorVisual';
 import { bearingDeg, fallbackBearing, radarOffset } from '../utils/radar';
 import { earnsGranelli, favorKindFor, granelliFlowLabel } from '../utils/favorKind';
+import { modalAnimation } from '../utils/reducedMotion';
 
 interface FavorRadarProps {
   favors: Favor[];
@@ -25,8 +26,8 @@ const CLUSTER_SIZE = 30;
 const CLUSTER_DISTANCE_PX = 22;
 const EDGE_MARGIN = CLUSTER_SIZE / 2 + 22;
 const GIVE_COLOR = colors.accent;
-const RECEIVE_COLOR = '#98AA4A';
-const MIXED_COLOR = '#2E3420';
+const RECEIVE_COLOR = colors.primary;
+const MIXED_COLOR = colors.border;
 
 interface Placed {
   favor: Favor;
@@ -182,7 +183,7 @@ export const FavorRadar: React.FC<FavorRadarProps> = ({ favors, userLocation, ra
         </>
       )}
 
-      <Modal visible={openGroup !== null} transparent animationType="slide" onRequestClose={() => setOpenGroup(null)}>
+      <Modal visible={openGroup !== null} transparent animationType={modalAnimation()} onRequestClose={() => setOpenGroup(null)}>
         <Pressable style={styles.backdrop} onPress={() => setOpenGroup(null)} accessibilityLabel={tt('Chiudi')}>
           <Pressable style={styles.sheet} onPress={() => undefined}>
             <Text style={styles.sheetTitle}>{tx('{0} favori in questa zona', [openGroup?.length ?? 0])}</Text>
@@ -260,8 +261,8 @@ const styles = StyleSheet.create({
   },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendYou: { backgroundColor: colors.background, borderWidth: 2, borderColor: '#fff' },
-  legendText: { color: '#FFFFFF', fontSize: 11.5, fontWeight: '700' },
+  legendYou: { backgroundColor: colors.background, borderWidth: 2, borderColor: colors.white },
+  legendText: { color: colors.white, fontSize: 11.5, fontWeight: '700' },
   userDot: {
     zIndex: 4,
     position: 'absolute',
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: colors.background,
     borderWidth: 2.5,
-    borderColor: '#fff',
+    borderColor: colors.white,
   },
   // Area toccabile più grande del punto (almeno 32 pixel) per il dito
   dotHit: {
@@ -288,12 +289,12 @@ const styles = StyleSheet.create({
     borderColor: colors.backgroundCard,
   },
   dotOwn: {
-    borderColor: '#FFFFFF',
+    borderColor: colors.white,
     borderWidth: 3,
   },
   dotSelected: {
     transform: [{ scale: 1.5 }],
-    borderColor: '#FFFFFF',
+    borderColor: colors.white,
     borderWidth: 3,
   },
   cluster: {
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
     borderColor: colors.backgroundCard,
   },
   clusterMixed: {
-    borderColor: '#FFFFFF',
+    borderColor: colors.white,
   },
   clusterText: {
     color: colors.background,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   clusterTextMixed: {
-    color: '#FFFFFF',
+    color: colors.white,
   },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: {
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
     gap: 10,
     maxHeight: '70%',
   },
-  sheetTitle: { color: '#FFFFFF', fontSize: 17, fontWeight: '800' },
+  sheetTitle: { color: colors.white, fontSize: 17, fontWeight: '800' },
   sheetList: { flexGrow: 0 },
   row: {
     flexDirection: 'row',
@@ -338,8 +339,8 @@ const styles = StyleSheet.create({
   },
   rowDot: { width: 14, height: 14, borderRadius: 7 },
   rowText: { flex: 1 },
-  rowTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-  rowMeta: { color: '#FFFFFF', opacity: 0.8, fontSize: 12.5, marginTop: 2 },
+  rowTitle: { color: colors.white, fontSize: 15, fontWeight: '700' },
+  rowMeta: { color: colors.white, opacity: 0.8, fontSize: 12.5, marginTop: 2 },
   close: { alignItems: 'center', paddingVertical: 12, borderRadius: 12 },
-  closeText: { color: '#FFFFFF', fontWeight: '700' },
+  closeText: { color: colors.white, fontWeight: '700' },
 });

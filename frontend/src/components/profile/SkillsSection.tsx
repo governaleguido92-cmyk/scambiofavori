@@ -5,6 +5,8 @@ import type { Category } from '../../services/api';
 import { styles } from '../../styles/profile.styles';
 import { tt, tx } from '../../i18n/tt';
 import { getCategoryVisual } from '../../utils/favorVisual';
+import { modalAnimation } from '../../utils/reducedMotion';
+import colors from '../../theme/colors';
 
 interface SkillsSectionProps {
   skills: string[];
@@ -25,7 +27,7 @@ export function SkillsSection({ skills, onEdit }: SkillsSectionProps) {
             accessibilityLabel={tt('Modifica le competenze')}
             data-testid="edit-skills-button"
           >
-            <Ionicons name="pencil" size={16} color="#98AA4A" />
+            <Ionicons name="pencil" size={16} color={colors.primary} />
             <Text style={styles.editSkillsText}>{tt('Modifica')}</Text>
           </TouchableOpacity>
         )}
@@ -45,12 +47,12 @@ export function SkillsSection({ skills, onEdit }: SkillsSectionProps) {
         </View>
       ) : (
         <TouchableOpacity style={local.emptyCard} onPress={onEdit} accessibilityRole="button" data-testid="add-skills-button">
-          <Ionicons name="school-outline" size={28} color="#A5A89B" />
+          <Ionicons name="school-outline" size={28} color={colors.textMuted} />
           <View style={local.emptyText}>
             <Text style={styles.noSkillsTitle}>{tt('Nessuna competenza selezionata')}</Text>
             <Text style={local.emptyHint}>{tt('Scegli in cosa sai aiutare: ti avvisiamo quando qualcuno cerca proprio quello.')}</Text>
           </View>
-          <Ionicons name="add-circle" size={28} color="#98AA4A" />
+          <Ionicons name="add-circle" size={28} color={colors.primary} />
         </TouchableOpacity>
       )}
     </View>
@@ -69,7 +71,7 @@ interface SkillsModalProps {
 
 export function SkillsModal({ visible, categories, selected, saving, onToggle, onSave, onClose }: SkillsModalProps) {
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimation()} onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={[styles.modalContent, styles.skillsModal]}>
           <Text style={styles.modalTitle}>{tt('Le Tue Competenze')}</Text>
@@ -95,7 +97,7 @@ export function SkillsModal({ visible, categories, selected, saving, onToggle, o
                     <Text style={[styles.skillSelectName, isSelected && styles.skillSelectNameActive]}>{tt(category.name)}</Text>
                   </View>
                   <View style={[styles.skillCheckbox, isSelected && styles.skillCheckboxActive]}>
-                    {isSelected && <Ionicons name="checkmark" size={16} color="#fff" />}
+                    {isSelected && <Ionicons name="checkmark" size={16} color={colors.white} />}
                   </View>
                 </TouchableOpacity>
               );
@@ -117,10 +119,10 @@ export function SkillsModal({ visible, categories, selected, saving, onToggle, o
               accessibilityRole="button"
             >
               {saving ? (
-                <ActivityIndicator size="small" color="#0C0E09" />
+                <ActivityIndicator size="small" color={colors.background} />
               ) : (
                 <>
-                  <Ionicons name="save" size={20} color="#0C0E09" />
+                  <Ionicons name="save" size={20} color={colors.background} />
                   <Text style={styles.modalConfirmText}>{tt('Salva')}</Text>
                 </>
               )}
@@ -137,8 +139,8 @@ const local = StyleSheet.create({
   emojiBig: { fontSize: 20 },
   emptyCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14,
-    backgroundColor: '#171A10', borderWidth: 1, borderColor: '#2E3420',
+    backgroundColor: colors.backgroundCard, borderWidth: 1, borderColor: colors.border,
   },
   emptyText: { flex: 1 },
-  emptyHint: { color: '#A5A89B', fontSize: 12.5, lineHeight: 17, marginTop: 2 },
+  emptyHint: { color: colors.textMuted, fontSize: 12.5, lineHeight: 17, marginTop: 2 },
 });

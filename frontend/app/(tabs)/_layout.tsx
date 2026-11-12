@@ -94,7 +94,7 @@ export default function TabsLayout() {
           title: tt('Crea'),
           tabBarIcon: ({ color, size }) => (
             <View style={styles.createButton}>
-              <Ionicons name="heart" size={28} color="#fff" />
+              <Ionicons name="heart" size={28} color={colors.white} />
             </View>
           ),
         }}

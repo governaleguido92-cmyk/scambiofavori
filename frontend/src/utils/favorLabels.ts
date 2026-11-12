@@ -2,14 +2,15 @@ import type { Favor } from '../services/api';
 import { tt, tx } from '../i18n/tt';
 import { isExpired, roleOf } from './myFavors';
 import { serverTime } from './serverDate';
+import colors from '../theme/colors';
 
 export const STATUS_COLORS = {
-  waiting: '#98AA4A',
-  waitingLong: '#F87828',
-  expired: '#8A8C80',
-  ongoing: '#98AA4A',
-  completed: '#98AA4A',
-  cancelled: '#8A8C80',
+  waiting: colors.primary,
+  waitingLong: colors.accent,
+  expired: colors.textMuted,
+  ongoing: colors.primary,
+  completed: colors.primary,
+  cancelled: colors.textMuted,
 } as const;
 
 /** Etichetta e colore dello stato di un favore (In attesa, In corso, Concluso...). */

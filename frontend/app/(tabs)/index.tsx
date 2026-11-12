@@ -32,6 +32,7 @@ import { getCategoryVisual, formatDistance } from '../../src/utils/favorVisual';
 import { FavorCard } from '../../src/components/FavorCard';
 import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, pickWidenedRadius } from '../../src/utils/radius';
 import { FirstSteps } from '../../src/components/FirstSteps';
+import { hitSlopFor } from '../../src/utils/touch';
 import { FavorTypeTabs, FavorType } from '../../src/components/FavorTypeTabs';
 import { buildRows, filterFavors, FavorRow, FavorSectionKey } from '../../src/utils/favorSections';
 
@@ -343,6 +344,9 @@ export default function HomeScreen() {
           <TouchableOpacity 
             style={styles.notificationButton}
             onPress={() => router.push('/notifications' as any)}
+            hitSlop={hitSlopFor(36)}
+            accessibilityRole="button"
+            accessibilityLabel={unreadNotifications > 0 ? tx('Notifiche, {0} non lette', [unreadNotifications]) : tt('Notifiche')}
             data-testid="notifications-button"
           >
             <Ionicons name="notifications" size={24} color={colors.textPrimary} />
@@ -388,7 +392,7 @@ export default function HomeScreen() {
             </View>
           }
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#98AA4A" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
           }
         />
       )}

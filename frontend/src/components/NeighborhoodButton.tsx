@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../theme/colors';
 import { tt } from '../i18n/tt';
+import { hitSlopFor } from '../utils/touch';
 
 interface NeighborhoodButtonProps {
   /** Diametro del pulsante: 36 nell'intestazione della Home. */
@@ -17,6 +18,7 @@ export function NeighborhoodButton({ size = 36 }: NeighborhoodButtonProps) {
   return (
     <TouchableOpacity
       style={[styles.button, { width: size, height: size, borderRadius: size / 2 }]}
+      hitSlop={hitSlopFor(size)}
       onPress={() => router.push('/quartiere' as never)}
       accessibilityRole="button"
       accessibilityLabel={tt('Il Nostro Quartiere')}

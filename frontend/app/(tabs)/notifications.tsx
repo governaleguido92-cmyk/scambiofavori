@@ -16,6 +16,7 @@ import { api, Notification } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { logger } from '../../src/utils/logger';
 import { tt } from '../../src/i18n/tt';
+import { HEADER_ICON_HIT_SLOP } from '../../src/utils/touch';
 import { BrandLogo } from '../../src/components/BrandLogo';
 import { goBackOrHome } from '../../src/utils/navigation';
 
@@ -25,12 +26,12 @@ const NOTIFICATION_ICONS: Record<string, { name: string; color: string }> = {
   system: { name: 'information-circle', color: colors.textSecondary },
   chat: { name: 'chatbubble-ellipses', color: colors.lime },
   new_message: { name: 'chatbubble', color: colors.accent },
-  favor_completed: { name: 'checkmark-circle', color: '#98AA4A' },
+  favor_completed: { name: 'checkmark-circle', color: colors.primary },
   favor_accepted: { name: 'hand-left', color: colors.accent },
   favor_expiring: { name: 'hourglass', color: colors.accentLight },
   favor_stalled: { name: 'time', color: colors.accentLight },
   favor_waiting: { name: 'hourglass-outline', color: colors.accentLight },
-  supporter: { name: 'heart', color: '#98AA4A' },
+  supporter: { name: 'heart', color: colors.primary },
   welcome: { name: 'hand-right', color: colors.accent },
   badge_earned: { name: 'ribbon', color: colors.lime },
 };
@@ -162,7 +163,7 @@ export default function NotificationsScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)}>
+            <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)} hitSlop={HEADER_ICON_HIT_SLOP} accessibilityRole="button" accessibilityLabel={tt('Indietro')}>
               <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
             </TouchableOpacity>
             <BrandLogo />
@@ -184,7 +185,7 @@ export default function NotificationsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)}>
+          <TouchableOpacity style={styles.backButton} onPress={() => goBackOrHome(router)} hitSlop={HEADER_ICON_HIT_SLOP} accessibilityRole="button" accessibilityLabel={tt('Indietro')}>
             <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           <BrandLogo />

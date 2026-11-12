@@ -20,7 +20,7 @@ const SLIDES = [
   {
     id: '1',
     icon: 'heart-circle',
-    iconColor: '#F87828',
+    iconColor: colors.accent,
     title: 'Il Senso Etico',
     subtitle: 'Una community basata sulla reciprocità',
     points: [
@@ -33,7 +33,7 @@ const SLIDES = [
   {
     id: '2',
     icon: 'diamond',
-    iconColor: '#98AA4A',
+    iconColor: colors.primary,
     title: 'I Granelli',
     subtitle: 'La valuta del tempo',
     points: [
@@ -46,7 +46,7 @@ const SLIDES = [
   {
     id: '3',
     icon: 'rocket',
-    iconColor: '#98AA4A',
+    iconColor: colors.primary,
     title: 'Come Funziona',
     subtitle: 'Semplice e trasparente',
     points: [
@@ -163,7 +163,7 @@ export default function RegistrationOnboarding({ onComplete }: RegistrationOnboa
                 {
                   transform: [{ scale }],
                   opacity,
-                  backgroundColor: currentIndex === index ? colors.accent : '#555',
+                  backgroundColor: currentIndex === index ? colors.accent : colors.borderLight,
                 },
               ]}
             />

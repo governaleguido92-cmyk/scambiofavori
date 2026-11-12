@@ -41,23 +41,24 @@ import { goBackOrHome } from '../../../src/utils/navigation';
 import { buildShareText } from '../../../src/utils/shareFavor';
 import { useLiveRefresh } from '../../../src/hooks/useLiveRefresh';
 import { serverDate } from '../../../src/utils/serverDate';
+import themeColors from '../../../src/theme/colors';
 
 // Theme colors
 const colors = {
-  primary: '#6B7A38',
-  primaryLight: '#98AA4A',
-  accent: '#F87828',
-  lime: '#98AA4A',
-  background: '#0C0E09',
-  backgroundLight: '#171A10',
-  backgroundCard: '#171A10',
-  textPrimary: '#FFFFFF',
-  textSecondary: '#D4D6CC',
-  textMuted: '#A5A89B',
-  border: '#2E3420',
-  error: '#F87828',
-  warning: '#F87828',
-  granelli: '#98AA4A',
+  primary: themeColors.primaryDark,
+  primaryLight: themeColors.primary,
+  accent: themeColors.accent,
+  lime: themeColors.primary,
+  background: themeColors.background,
+  backgroundLight: themeColors.backgroundCard,
+  backgroundCard: themeColors.backgroundCard,
+  textPrimary: themeColors.white,
+  textSecondary: themeColors.textSecondary,
+  textMuted: themeColors.textMuted,
+  border: themeColors.border,
+  error: themeColors.accent,
+  warning: themeColors.accent,
+  granelli: themeColors.primary,
 };
 
 export default function ChatScreen() {
@@ -699,7 +700,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(248, 120, 40, 0.4)',
   },
-  sendErrorText: { flex: 1, color: '#FB9A52', fontSize: 12.5, lineHeight: 17 },
+  sendErrorText: { flex: 1, color: themeColors.accentLight, fontSize: 12.5, lineHeight: 17 },
   menuOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'flex-end', paddingTop: 70, paddingHorizontal: 12 },
   menuCard: {
     minWidth: 220,

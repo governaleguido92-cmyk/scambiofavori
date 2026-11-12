@@ -605,7 +605,7 @@ async def verify_and_complete_qr(
         "user_id": helper_id,
         "type": "favor_completed",
         "title": "Favore Completato! 🎉",
-        "message": f"Hai completato \"{favor.title}\" e guadagnato {favor.granelli_cost} {CURRENCY_NAME}!",
+        "message": f"Hai completato \"{favor.title}\" e guadagnato {granelli_text(favor.granelli_cost)}!",
         "related_id": favor_id,
         "read": False,
         "created_at": datetime.now(timezone.utc)
@@ -627,7 +627,7 @@ async def verify_and_complete_qr(
     await send_push_notification(
         helper_id,
         "Favore Completato!",
-        f"Hai completato \"{favor.title}\" e guadagnato {favor.granelli_cost} {CURRENCY_NAME}!",
+        f"Hai completato \"{favor.title}\" e guadagnato {granelli_text(favor.granelli_cost)}!",
         {"favor_id": favor_id, "type": "favor_completed"}
     )
     await send_push_notification(

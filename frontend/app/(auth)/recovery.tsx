@@ -17,6 +17,7 @@ import { api } from '../../src/services/api';
 import colors from '../../src/theme/colors';
 import { notify } from '../../src/utils/notify';
 import { tt } from '../../src/i18n/tt';
+import { hitSlopFor } from '../../src/utils/touch';
 
 type RecoveryMode = 'choose' | 'password' | 'username';
 type PasswordStep = 'email' | 'code' | 'done';
@@ -171,7 +172,7 @@ export default function RecoveryScreen() {
               <View style={styles.inputContainer}>
                 <Ionicons name="lock-closed-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder={tt('Nuova password')} placeholderTextColor={colors.textMuted} value={newPassword} onChangeText={setNewPassword} secureTextEntry={!showPassword} data-testid="new-password-input" />
-                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} hitSlop={hitSlopFor(20)} accessibilityRole="button" accessibilityLabel={showPassword ? tt('Nascondi la password') : tt('Mostra la password')}>
                   <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.textMuted} />
                 </TouchableOpacity>
               </View>
@@ -232,7 +233,7 @@ export default function RecoveryScreen() {
                 <TextInput style={styles.input} placeholder={tt('Email')} placeholderTextColor={colors.textMuted} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" data-testid="username-email-input" />
               </View>
               <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleRecoverUsername} disabled={isLoading} data-testid="send-username-code-btn">
-                {isLoading ? <ActivityIndicator color="#0C0E09" /> : <Text style={styles.primaryButtonText}>{tt('Invia Codice')}</Text>}
+                {isLoading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>{tt('Invia Codice')}</Text>}
               </TouchableOpacity>
             </>
           ) : (
@@ -241,7 +242,7 @@ export default function RecoveryScreen() {
                 <TextInput style={styles.codeInput} placeholder="000000" placeholderTextColor={colors.textMuted} value={unCode} onChangeText={setUnCode} keyboardType="number-pad" maxLength={6} textAlign="center" data-testid="username-code-input" />
               </View>
               <TouchableOpacity style={[styles.primaryButton, { backgroundColor: colors.primary }]} onPress={handleVerifyUsername} disabled={isLoading} data-testid="verify-username-btn">
-                {isLoading ? <ActivityIndicator color="#0C0E09" /> : <Text style={styles.primaryButtonText}>{tt('Verifica')}</Text>}
+                {isLoading ? <ActivityIndicator color={colors.background} /> : <Text style={styles.primaryButtonText}>{tt('Verifica')}</Text>}
               </TouchableOpacity>
               <TouchableOpacity onPress={handleRecoverUsername} disabled={isLoading} style={styles.resendLink}>
                 <Text style={styles.resendText}>{tt('Non hai ricevuto il codice?')}{' '}<Text style={styles.resendBold}>{tt('Reinvia')}</Text></Text>

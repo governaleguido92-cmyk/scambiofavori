@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../styles/profile.styles';
 import { tt, tx } from '../../i18n/tt';
 import { granelliWord } from '../../utils/granelli';
+import { modalAnimation } from '../../utils/reducedMotion';
+import colors from '../../theme/colors';
 
 export interface ReferralInfo {
   referral_code: string;
@@ -24,7 +26,7 @@ export function ReferralModal({ visible, info, onClose, onShare }: ReferralModal
   const bonus = info?.bonus_per_referral || DEFAULT_BONUS;
   const invited = info?.successful_referrals || 0;
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimation()} onRequestClose={onClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>{tt('Invita i Tuoi Amici')}</Text>
@@ -51,7 +53,7 @@ export function ReferralModal({ visible, info, onClose, onShare }: ReferralModal
               <Text style={styles.modalCancelText}>{tt('Chiudi')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalConfirmButton} onPress={onShare} disabled={!info} accessibilityRole="button">
-              <Ionicons name="share-social" size={20} color="#0C0E09" />
+              <Ionicons name="share-social" size={20} color={colors.background} />
               <Text style={styles.modalConfirmText}>{tt('Condividi')}</Text>
             </TouchableOpacity>
           </View>

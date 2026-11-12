@@ -208,30 +208,24 @@ export default function NeighborhoodScreen() {
           </View>
         </View>
 
+        {/* Meteo in una riga sola: il quartiere sono i messaggi, non le previsioni */}
         {weather && (
           <View style={styles.weatherCard} accessibilityLabel={tt('Meteo del quartiere')} data-testid="neighborhood-weather">
-            <Ionicons name={WEATHER_ICONS[weather.icon] || 'partly-sunny'} size={34} color={colors.lime} />
-            <View style={styles.weatherMain}>
+            <Ionicons name={WEATHER_ICONS[weather.icon] || 'partly-sunny'} size={20} color={colors.lime} />
+            <Text style={styles.weatherLine} numberOfLines={1}>
               <Text style={styles.weatherTemp}>{weather.temperature}°</Text>
-              <Text style={styles.weatherDesc}>{tt(weather.description)}</Text>
-            </View>
-            <View style={styles.weatherDetails}>
-              <Text style={styles.weatherLine}>{tx('Oggi {0}° / {1}°', [weather.today.min, weather.today.max])}</Text>
-              <Text style={styles.weatherLine}>
-                {tx('Domani: {0}, {1}°', [tt(weather.tomorrow.description), weather.tomorrow.max])}
-              </Text>
-              {weather.today.rain_chance >= 30 && (
-                <Text style={styles.weatherLine}>{tx('Pioggia oggi: {0}%', [weather.today.rain_chance])}</Text>
-              )}
-              <Text style={styles.weatherSource}>{tx('Meteo: {0}', [weather.source])}</Text>
-            </View>
+              {'  '}{tt(weather.description)}
+              {weather.today.rain_chance >= 30 ? ` · ${tx('pioggia {0}%', [weather.today.rain_chance])}` : ''}
+              {' · '}{tx('domani {0}°', [weather.tomorrow.max])}
+            </Text>
+            <Text style={styles.weatherSource}>{weather.source}</Text>
           </View>
         )}
 
         <View style={styles.note}>
-          <Ionicons name="shield-checkmark" size={18} color={colors.textSecondary} />
-          <Text style={styles.noteText}>
-            {tt('Qui scrive chi ha un favore attivo entro 15 km. I messaggi durano 2 giorni. Niente soldi, codici, telefono o email: per accordarvi usate la chat del favore.')}
+          <Ionicons name="shield-checkmark" size={14} color={colors.textMuted} />
+          <Text style={styles.noteText} numberOfLines={2}>
+            {tt('Vicini entro 15 km · i messaggi durano 2 giorni · niente soldi né contatti: per accordarvi usate la chat del favore.')}
           </Text>
         </View>
 
@@ -351,20 +345,17 @@ const styles = StyleSheet.create({
   titleBlock: { flex: 1 },
   title: { color: colors.textPrimary, fontSize: 22, fontWeight: '800', letterSpacing: -0.3 },
   subtitle: { color: colors.textSecondary, fontSize: 12.5, marginTop: 1 },
-  weatherCard: { flexDirection: 'row', alignItems: 'center', gap: 12, marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 12, backgroundColor: colors.backgroundCard },
-  weatherMain: { alignItems: 'center', minWidth: 74 },
-  weatherTemp: { color: colors.textPrimary, fontSize: 26, fontWeight: '800' },
-  weatherDesc: { color: colors.textSecondary, fontSize: 12, textAlign: 'center' },
-  weatherDetails: { flex: 1, gap: 2 },
-  weatherLine: { color: colors.textPrimary, fontSize: 13 },
-  weatherSource: { color: colors.textMuted, fontSize: 10.5, marginTop: 2 },
+  weatherCard: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 6, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.backgroundCard },
+  weatherTemp: { color: colors.textPrimary, fontSize: 15, fontWeight: '800' },
+  weatherLine: { flex: 1, color: colors.textSecondary, fontSize: 13 },
+  weatherSource: { color: colors.textMuted, fontSize: 10 },
   tabs: { flexDirection: 'row', gap: 8, marginHorizontal: 16, marginBottom: 8 },
   tab: { flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: 999, backgroundColor: colors.backgroundCard },
   tabActive: { backgroundColor: colors.accent },
   tabText: { color: colors.textPrimary, fontSize: 14, fontWeight: '700' },
   tabTextActive: { color: colors.background, fontWeight: '800' },
-  note: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', marginHorizontal: 16, marginBottom: 8, padding: 10, borderRadius: 10, backgroundColor: colors.backgroundCard },
-  noteText: { flex: 1, color: colors.textSecondary, fontSize: 12.5, lineHeight: 17 },
+  note: { flexDirection: 'row', gap: 6, alignItems: 'center', marginHorizontal: 16, marginBottom: 8, paddingHorizontal: 4 },
+  noteText: { flex: 1, color: colors.textMuted, fontSize: 12, lineHeight: 16 },
   loader: { marginTop: 40 },
   list: { paddingHorizontal: 12, paddingBottom: 8 },
   emptyContainer: { flexGrow: 1, justifyContent: 'center' },
@@ -388,7 +379,7 @@ const styles = StyleSheet.create({
   accessBannerTitle: { color: colors.textPrimary, fontSize: 14, fontWeight: '700' },
   accessBannerText: { color: colors.textSecondary, fontSize: 12.5, lineHeight: 17 },
   accessBannerButton: { backgroundColor: colors.accent, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14 },
-  accessBannerButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+  accessBannerButtonText: { color: colors.white, fontSize: 13, fontWeight: '800' },
   askHelp: { flexDirection: 'row', alignItems: 'center', alignSelf: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 14, marginBottom: 6, borderRadius: 999, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.backgroundCard },
   askHelpText: { color: colors.textSecondary, fontSize: 12.5, fontWeight: '600' },
   composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: 10, borderTopWidth: 1, borderTopColor: colors.backgroundLight },

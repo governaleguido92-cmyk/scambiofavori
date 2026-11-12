@@ -41,7 +41,7 @@ export function ChatHeader({ favor, currentUserId, otherName, qrRole, onBack, on
           accessibilityLabel={tt('Indietro')}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
 
         <View style={[styles.emojiCircle, { backgroundColor: visual.color }]}>
@@ -67,7 +67,7 @@ export function ChatHeader({ favor, currentUserId, otherName, qrRole, onBack, on
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           data-testid="chat-menu-button"
         >
-          <Ionicons name="ellipsis-vertical" size={22} color="#FFFFFF" />
+          <Ionicons name="ellipsis-vertical" size={22} color={colors.white} />
         </TouchableOpacity>
       </View>
 
@@ -93,7 +93,7 @@ export function ChatHeader({ favor, currentUserId, otherName, qrRole, onBack, on
             accessibilityLabel={qrRole === 'show' ? tt('Mostra il QR per completare') : tt('Scansiona il QR per completare')}
             data-testid="chat-complete-button"
           >
-            <Ionicons name={qrRole === 'show' ? 'qr-code' : 'scan'} size={20} color="#FFFFFF" />
+            <Ionicons name={qrRole === 'show' ? 'qr-code' : 'scan'} size={20} color={colors.white} />
             <Text style={styles.completeText}>{qrRole === 'show' ? tt('Mostra il QR per completare') : tt('Scansiona il QR per completare')}</Text>
           </TouchableOpacity>
         ) : (
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   emojiCircle: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   emoji: { fontSize: 24 },
   titleBlock: { flex: 1 },
-  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
+  title: { color: colors.white, fontSize: 18, fontWeight: '800' },
   subtitle: { color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 1 },
   pillRow: { flexDirection: 'row', gap: 8, marginTop: 10, marginLeft: 50 },
   statusPill: {
@@ -122,16 +122,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)',
   },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
+  statusText: { color: colors.white, fontSize: 11, fontWeight: '800', letterSpacing: 0.3 },
   granelliPill: {
     borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3,
     backgroundColor: colors.background, borderWidth: 1, borderColor: 'rgba(152,170,74,0.5)',
   },
-  granelliText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
+  granelliText: { color: colors.white, fontSize: 12, fontWeight: '800' },
   completeButton: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginTop: 12, paddingVertical: 12, borderRadius: 12, backgroundColor: '#E0560F',
+    marginTop: 12, paddingVertical: 12, borderRadius: 12, backgroundColor: colors.accentDark,
   },
-  completeText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' },
+  completeText: { color: colors.white, fontSize: 15, fontWeight: '800' },
   waitText: { color: 'rgba(255,255,255,0.85)', fontSize: 12.5, marginTop: 10, marginLeft: 50 },
 });

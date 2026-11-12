@@ -6,6 +6,7 @@ import { useAuth } from '../src/context/AuthContext';
 import { logger } from '../src/utils/logger';
 import { tt } from '../src/i18n/tt';
 import { notify } from '../src/utils/notify';
+import colors from '../src/theme/colors';
 
 /** Sul web Google rimanda alla stessa scheda con #id_token=... nell'indirizzo. */
 function readWebIdToken(): string | null {
@@ -71,7 +72,7 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#98AA4A" />
+      <ActivityIndicator size="large" color={colors.primary} />
       <Text style={styles.loadingText}>{tt('Caricamento...')}</Text>
     </View>
   );
@@ -82,10 +83,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0C0E09',
+    backgroundColor: colors.background,
   },
   loadingText: {
-    color: '#D4D6CC',
+    color: colors.textSecondary,
     fontSize: 14,
     marginTop: 16,
   },

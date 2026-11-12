@@ -26,6 +26,9 @@ export const colors = {
   backgroundLight: '#23281A',
   backgroundCard: '#171A10',
 
+  // Bianco pieno (pulsanti chiari, testi su arancione o oliva)
+  white: '#FFFFFF',
+
   // Text - Bianco e sue sfumature
   textPrimary: '#FFFFFF',
   textSecondary: '#D4D6CC',

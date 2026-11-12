@@ -1,7 +1,8 @@
+import colors from '../theme/colors';
 /** I colori del logo: verde oliva e arancione. Le iniziali degli utenti usano solo questi due, mai altri colori. */
-const AVATAR_BACKGROUNDS = ['#98AA4A', '#F87828'] as const;
+const AVATAR_BACKGROUNDS = [colors.primary, colors.accent] as const;
 /** Testo scuro su entrambi: contrasto oltre 7:1 (il bianco sull'oliva e sull'arancione chiaro è troppo debole). */
-const AVATAR_TEXT = '#0C0E09';
+const AVATAR_TEXT = colors.background;
 
 function hashName(name: string): number {
   let hash = 0;

@@ -203,7 +203,7 @@ function SupporterContent() {
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <TouchableOpacity onPress={() => goBackOrHome(router)} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
+              <Ionicons name="arrow-back" size={24} color={colors.white} />
             </TouchableOpacity>
             <BrandLogo />
           </View>
@@ -213,7 +213,7 @@ function SupporterContent() {
         {/* Hero Section */}
         <View style={styles.heroSection}>
           <View style={styles.heartIcon}>
-            <Ionicons name="heart" size={64} color="#98AA4A" />
+            <Ionicons name="heart" size={64} color={colors.primary} />
           </View>
           <Text style={styles.heroTitle}>Diventa un Pilastro{'\n'}della Community</Text>
           <Text style={styles.heroSubtitle}>
@@ -239,7 +239,7 @@ function SupporterContent() {
           
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="heart" size={24} color="#98AA4A" />
+              <Ionicons name="heart" size={24} color={colors.primary} />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Badge Cuore Dorato</Text>
@@ -249,7 +249,7 @@ function SupporterContent() {
 
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="sparkles" size={24} color="#98AA4A" />
+              <Ionicons name="sparkles" size={24} color={colors.primary} />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Profilo Speciale</Text>
@@ -259,7 +259,7 @@ function SupporterContent() {
 
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="map" size={24} color="#98AA4A" />
+              <Ionicons name="map" size={24} color={colors.primary} />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Visibilità sulla Mappa</Text>
@@ -269,7 +269,7 @@ function SupporterContent() {
 
           <View style={styles.benefitItem}>
             <View style={styles.benefitIcon}>
-              <Ionicons name="ribbon" size={24} color="#98AA4A" />
+              <Ionicons name="ribbon" size={24} color={colors.primary} />
             </View>
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Riconoscimento Eterno</Text>
@@ -292,7 +292,7 @@ function SupporterContent() {
         {isSupporter ? (
           <View style={styles.supporterActive}>
             <View style={styles.supporterBadge}>
-              <Ionicons name="heart" size={32} color="#98AA4A" />
+              <Ionicons name="heart" size={32} color={colors.primary} />
               <Text style={styles.supporterActiveTitle}>Sei un Sostenitore!</Text>
             </View>
             <Text style={styles.supporterActiveText}>
@@ -313,10 +313,10 @@ function SupporterContent() {
                   data-testid={cancelAtPeriodEnd ? 'resume-subscription-button' : 'cancel-subscription-button'}
                 >
                   {changingPlan ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={colors.white} />
                   ) : (
                     <>
-                      <Ionicons name={cancelAtPeriodEnd ? 'refresh-outline' : 'close-circle-outline'} size={20} color="#fff" />
+                      <Ionicons name={cancelAtPeriodEnd ? 'refresh-outline' : 'close-circle-outline'} size={20} color={colors.white} />
                       <Text style={styles.manageButtonText}>{cancelAtPeriodEnd ? 'Riattiva abbonamento' : 'Annulla abbonamento'}</Text>
                     </>
                   )}
@@ -331,7 +331,7 @@ function SupporterContent() {
                   style={styles.manageButton}
                   onPress={handleManageSubscription}
                 >
-                  <Ionicons name="settings-outline" size={20} color="#fff" />
+                  <Ionicons name="settings-outline" size={20} color={colors.white} />
                   <Text style={styles.manageButtonText}>Gestisci Abbonamento</Text>
                 </TouchableOpacity>
                 <Text style={styles.manageHint}>
@@ -348,10 +348,10 @@ function SupporterContent() {
             data-testid="subscribe-button"
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#0C0E09" />
+              <ActivityIndicator size="small" color={colors.background} />
             ) : (
               <>
-                <Ionicons name="heart" size={24} color="#0C0E09" />
+                <Ionicons name="heart" size={24} color={colors.background} />
                 <Text style={styles.subscribeButtonText}>Sostieni Ora - 1€/mese</Text>
               </>
             )}
@@ -360,7 +360,7 @@ function SupporterContent() {
 
         {/* Transparency Note */}
         <View style={styles.transparencyNote}>
-          <Ionicons name="shield-checkmark" size={20} color="#98AA4A" />
+          <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
           <Text style={styles.transparencyText}>
             Pagamento sicuro con Stripe. Puoi disdire quando vuoi dal portale di gestione.
           </Text>
@@ -368,7 +368,7 @@ function SupporterContent() {
 
         {/* Privacy Note */}
         <View style={styles.privacyNote}>
-          <Ionicons name="eye-off" size={16} color="#A5A89B" />
+          <Ionicons name="eye-off" size={16} color={colors.textMuted} />
           <Text style={styles.privacyText}>
             Il tuo contributo è privato: gli altri vedranno solo che sei un Sostenitore, non l&apos;importo.
           </Text>
@@ -381,7 +381,7 @@ function SupporterContent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f0f23',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   heroSection: {
     alignItems: 'center',
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#ffd70020',
+    backgroundColor: colors.accentMuted,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -414,18 +414,18 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
     marginBottom: 12,
   },
   heroSubtitle: {
     fontSize: 16,
-    color: '#A5A89B',
+    color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 22,
   },
   messageCard: {
-    backgroundColor: '#171A10',
+    backgroundColor: colors.backgroundCard,
     marginHorizontal: 20,
     padding: 20,
     borderRadius: 16,
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
     marginTop: 12,
     lineHeight: 24,
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   },
   messageSubtext: {
     fontSize: 14,
-    color: '#A5A89B',
+    color: colors.textMuted,
     textAlign: 'center',
     marginTop: 8,
   },
@@ -456,13 +456,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 16,
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#171A10',
+    backgroundColor: colors.backgroundCard,
     padding: 16,
     borderRadius: 12,
     marginBottom: 10,
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#ffd70015',
+    backgroundColor: colors.accentMuted,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -482,25 +482,25 @@ const styles = StyleSheet.create({
   benefitTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 4,
   },
   benefitDesc: {
     fontSize: 14,
-    color: '#A5A89B',
+    color: colors.textMuted,
   },
   pricingCard: {
-    backgroundColor: '#ffd70015',
+    backgroundColor: colors.accentMuted,
     marginHorizontal: 20,
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#98AA4A',
+    borderColor: colors.primary,
   },
   planName: {
     fontSize: 14,
-    color: '#98AA4A',
+    color: colors.primary,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -513,23 +513,23 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 48,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.white,
   },
   priceInterval: {
     fontSize: 18,
-    color: '#A5A89B',
+    color: colors.textMuted,
     marginLeft: 4,
   },
   priceHint: {
     fontSize: 14,
-    color: '#A5A89B',
+    color: colors.textMuted,
     marginTop: 8,
   },
   subscribeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#98AA4A',
+    backgroundColor: colors.primary,
     marginHorizontal: 20,
     marginTop: 24,
     padding: 18,
@@ -542,17 +542,17 @@ const styles = StyleSheet.create({
   subscribeButtonText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0C0E09',
+    color: colors.background,
   },
   supporterActive: {
-    backgroundColor: '#ffd70015',
+    backgroundColor: colors.accentMuted,
     marginHorizontal: 20,
     marginTop: 24,
     padding: 24,
     borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#98AA4A',
+    borderColor: colors.primary,
   },
   supporterBadge: {
     flexDirection: 'row',
@@ -563,11 +563,11 @@ const styles = StyleSheet.create({
   supporterActiveTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#98AA4A',
+    color: colors.primary,
   },
   supporterActiveText: {
     fontSize: 14,
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -575,17 +575,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#333',
+    backgroundColor: colors.borderLight,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 10,
   },
   manageButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: '600',
   },
   planStatus: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     lineHeight: 20,
     textAlign: 'center',
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#B3392B',
+    backgroundColor: colors.accentDark,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 10,
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#5F7A24',
+    backgroundColor: colors.primaryDark,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 10,
@@ -618,13 +618,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   cardLinkText: {
-    color: '#fff',
+    color: colors.white,
     opacity: 0.85,
     fontSize: 13,
     textDecorationLine: 'underline',
   },
   manageHint: {
-    color: '#fff',
+    color: colors.white,
     opacity: 0.85,
     fontSize: 13,
     lineHeight: 18,
@@ -638,13 +638,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     padding: 14,
-    backgroundColor: '#B8C86815',
+    backgroundColor: colors.primaryMuted,
     borderRadius: 10,
   },
   transparencyText: {
     flex: 1,
     fontSize: 12,
-    color: '#98AA4A',
+    color: colors.primary,
   },
   privacyNote: {
     flexDirection: 'row',
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
   privacyText: {
     flex: 1,
     fontSize: 12,
-    color: '#A5A89B',
+    color: colors.textMuted,
   },
   loadingContainer: {
     flex: 1,
@@ -669,12 +669,12 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
     marginTop: 20,
   },
   loadingSubtext: {
     fontSize: 14,
-    color: '#A5A89B',
+    color: colors.textMuted,
     marginTop: 8,
   },
 });

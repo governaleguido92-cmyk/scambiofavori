@@ -5,6 +5,7 @@ import { styles } from '../../styles/profile.styles';
 import { tt, tx } from '../../i18n/tt';
 import type { ShelfBadge } from '../../utils/profileProgress';
 import type { BadgeProgress } from '../../services/api';
+import colors from '../../theme/colors';
 
 /** Ogni badge ha la sua icona (nomi Ionicons mandati dal server); senza nome valido, un nastro. */
 export const badgeIconName = (icon: string): string => (icon in Ionicons.glyphMap ? icon : 'ribbon');
@@ -40,8 +41,8 @@ export function BadgeShelf({ badges, onPress, progress = {} }: BadgeShelfProps) 
             accessibilityRole="button"
             accessibilityLabel={`${tt(badge.name)}, ${badge.earned ? tt('Ottenuto!') : tt('Non ancora ottenuto')}`}
           >
-            <View style={[styles.badgeIcon, { backgroundColor: badge.earned ? badge.color : '#333' }]}>
-              <Ionicons name={badgeIconName(badge.icon) as any} size={24} color={badge.earned ? '#fff' : '#A5A89B'} />
+            <View style={[styles.badgeIcon, { backgroundColor: badge.earned ? badge.color : colors.borderLight }]}>
+              <Ionicons name={badgeIconName(badge.icon) as any} size={24} color={badge.earned ? colors.white : colors.textMuted} />
             </View>
             <Text style={[styles.badgeName, !badge.earned && styles.badgeNameLocked]}>{tt(badge.name)}</Text>
             {!badge.earned && (

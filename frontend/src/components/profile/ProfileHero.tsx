@@ -8,6 +8,7 @@ import { styles } from '../../styles/profile.styles';
 import { tt } from '../../i18n/tt';
 import { hasRatings } from '../../utils/profileProgress';
 import { PhoneStatus } from './PhoneStatus';
+import colors from '../../theme/colors';
 
 const NAME_MIN = 2;
 const NAME_MAX = 50;
@@ -25,7 +26,7 @@ interface ProfileHeroProps {
 const Stars = ({ value }: { value: number }) => (
   <View style={styles.starsRow}>
     {[1, 2, 3, 4, 5].map((star) => (
-      <Ionicons key={star} name={star <= value ? 'star' : 'star-outline'} size={16} color="#98AA4A" />
+      <Ionicons key={star} name={star <= value ? 'star' : 'star-outline'} size={16} color={colors.primary} />
     ))}
   </View>
 );
@@ -71,7 +72,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
             )}
           </SupporterProfileBorder>
           <View style={styles.cameraIconContainer}>
-            {uploadingImage ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="camera" size={16} color="#fff" />}
+            {uploadingImage ? <ActivityIndicator size="small" color={colors.white} /> : <Ionicons name="camera" size={16} color={colors.white} />}
           </View>
         </TouchableOpacity>
       </View>
@@ -97,9 +98,9 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               {savingName ? (
-                <ActivityIndicator size="small" color="#98AA4A" />
+                <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Ionicons name="checkmark-circle" size={26} color={canSaveName ? '#98AA4A' : '#8A8C80'} />
+                <Ionicons name="checkmark-circle" size={26} color={canSaveName ? colors.primary : colors.textMuted} />
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -108,7 +109,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
               accessibilityLabel={tt('Annulla')}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons name="close-circle" size={26} color="#A5A89B" />
+              <Ionicons name="close-circle" size={26} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
         ) : (
@@ -119,7 +120,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
             accessibilityLabel={`${user?.name ?? ''}, ${tt('Modifica il nome')}`}
           >
             <Text style={styles.userName}>{user?.name}</Text>
-            <Ionicons name="pencil" size={14} color="#A5A89B" />
+            <Ionicons name="pencil" size={14} color={colors.textMuted} />
           </TouchableOpacity>
         )}
         {user?.is_supporter && <SupporterBadge size="medium" showLabel style={{ marginLeft: 8 }} />}
@@ -129,7 +130,7 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
       <PhoneStatus verified={!!user?.phone_verified} masked={user?.phone_masked ?? null} />
       {user?.identity_verified && (
         <View style={local.verified}>
-          <Ionicons name="shield-checkmark" size={14} color="#98AA4A" />
+          <Ionicons name="shield-checkmark" size={14} color={colors.primary} />
           <Text style={local.verifiedText}>{tt('Identità verificata')}</Text>
         </View>
       )}
@@ -159,8 +160,8 @@ export function ProfileHero({ user, profileImage, uploadingImage, onPickImage, o
 const local = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   nameEdit: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nameInput: { borderBottomWidth: 1, borderBottomColor: '#98AA4A', minWidth: 140, color: '#fff' },
+  nameInput: { borderBottomWidth: 1, borderBottomColor: colors.primary, minWidth: 140, color: colors.white },
   verified: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 },
-  verifiedText: { color: '#98AA4A', fontSize: 12.5, fontWeight: '700' },
-  noRatings: { color: '#A5A89B', fontSize: 12, textAlign: 'center', marginTop: 12 },
+  verifiedText: { color: colors.primary, fontSize: 12.5, fontWeight: '700' },
+  noRatings: { color: colors.textMuted, fontSize: 12, textAlign: 'center', marginTop: 12 },
 });

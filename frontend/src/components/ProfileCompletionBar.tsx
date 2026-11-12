@@ -136,7 +136,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({
                 <Ionicons
                   name={(item.completed ? 'checkmark' : STEP_ICONS[item.id] || 'ellipse') as any}
                   size={14}
-                  color={item.completed ? '#fff' : colors.textMuted}
+                  color={item.completed ? colors.white : colors.textMuted}
                 />
               </View>
               <Text style={[

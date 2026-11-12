@@ -6,6 +6,7 @@ import { tt, tx } from '../../i18n/tt';
 import i18n from '../../i18n';
 import { averageReviewRating } from '../../utils/profileProgress';
 import { serverDate } from '../../utils/serverDate';
+import colors from '../../theme/colors';
 
 export interface ReceivedReview {
   review_id: string;
@@ -35,7 +36,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
           accessible
           accessibilityLabel={average === null ? tt('Nessuna recensione') : tx('Media {0} su {1} recensioni', [average.toLocaleString(locale), reviews.length])}
         >
-          <Ionicons name="star" size={16} color="#98AA4A" />
+          <Ionicons name="star" size={16} color={colors.primary} />
           <Text style={styles.reviewsCountText}>
             {average === null ? '0' : `${average.toLocaleString(locale)} · ${reviews.length}`}
           </Text>
@@ -49,7 +50,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
               <View style={styles.reviewHeader}>
                 <View style={styles.reviewStars}>
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons key={star} name={star <= review.rating ? 'star' : 'star-outline'} size={16} color="#98AA4A" />
+                    <Ionicons key={star} name={star <= review.rating ? 'star' : 'star-outline'} size={16} color={colors.primary} />
                   ))}
                 </View>
                 <Text style={styles.reviewDate}>{serverDate(review.created_at).toLocaleDateString(locale)}</Text>
@@ -58,7 +59,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
               {review.comment ? <Text style={styles.reviewComment}>{`"${review.comment}"`}</Text> : null}
               {review.public_thanks ? (
                 <View style={styles.publicThanksContainer}>
-                  <Ionicons name="heart" size={14} color="#F87828" />
+                  <Ionicons name="heart" size={14} color={colors.accent} />
                   <Text style={styles.publicThanksText}>{review.public_thanks}</Text>
                 </View>
               ) : null}
@@ -70,7 +71,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
         </View>
       ) : (
         <View style={local.empty}>
-          <Ionicons name="chatbubble-ellipses-outline" size={26} color="#A5A89B" />
+          <Ionicons name="chatbubble-ellipses-outline" size={26} color={colors.textMuted} />
           <Text style={local.emptyText}>{tt('Nessuna recensione ricevuta ancora. Completa dei favori per ricevere feedback!')}</Text>
         </View>
       )}
@@ -81,7 +82,7 @@ export function ReviewsSection({ reviews }: ReviewsSectionProps) {
 const local = StyleSheet.create({
   empty: {
     flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14,
-    backgroundColor: '#171A10', borderWidth: 1, borderColor: '#2E3420',
+    backgroundColor: colors.backgroundCard, borderWidth: 1, borderColor: colors.border,
   },
-  emptyText: { flex: 1, color: '#A5A89B', fontSize: 13, lineHeight: 18 },
+  emptyText: { flex: 1, color: colors.textMuted, fontSize: 13, lineHeight: 18 },
 });

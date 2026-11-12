@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -94,6 +94,8 @@ export default function MapScreen() {
     if (selectedId && !visibleFavors.some((favor) => favor.favor_id === selectedId)) setSelectedId(null);
   }, [visibleFavors, selectedId]);
 
+  const sortedFavors = sortFavors(visibleFavors);
+
   const handleSelect = (favorId: string) => {
     setSelectedId(favorId);
   };
@@ -112,7 +114,34 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      {/* Elenco virtualizzato: anche con 100 favori si disegnano solo le schede visibili; mappa e filtri stanno in testa */}
+      <FlatList
+        data={loading ? [] : sortedFavors}
+        keyExtractor={(item) => item.favor_id}
+        numColumns={2}
+        columnWrapperStyle={styles.gridRow}
+        contentContainerStyle={styles.scrollContent}
+        initialNumToRender={8}
+        windowSize={7}
+        renderItem={({ item }) => (
+          <FavorCard
+            lean
+            item={item}
+            currentUserId={user.user_id}
+            onPress={openFavor}
+            highlighted={item.favor_id === selectedId}
+          />
+        )}
+        ListEmptyComponent={loading ? null : (
+          <Text style={styles.emptyText}>
+            {userLocation
+              ? tt('Nessun favore in questo raggio: prova ad allargare il raggio di ricerca')
+              : tt('Nessun favore trovato')}
+            {userLocation ? ` (${formatRadius(radiusKm)})` : ''}
+          </Text>
+        )}
+        ListHeaderComponent={
+      <>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <BrandLogo />
@@ -169,30 +198,11 @@ export default function MapScreen() {
               {tt('Le posizioni sono approssimative per proteggere la privacy')}
             </Text>
 
-            {visibleFavors.length === 0 ? (
-              <Text style={styles.emptyText}>
-                {userLocation
-                  ? tt('Nessun favore in questo raggio: prova ad allargare il raggio di ricerca')
-                  : tt('Nessun favore trovato')}
-                {userLocation ? ` (${formatRadius(radiusKm)})` : ''}
-              </Text>
-            ) : (
-              <View style={styles.grid}>
-                {sortFavors(visibleFavors).map((item) => (
-                  <FavorCard
-                    lean
-                    key={item.favor_id}
-                    item={item}
-                    currentUserId={user.user_id}
-                    onPress={openFavor}
-                    highlighted={item.favor_id === selectedId}
-                  />
-                ))}
-              </View>
-            )}
           </>
         )}
-      </ScrollView>
+      </>
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -235,5 +245,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: 4 },
+  gridRow: { justifyContent: 'space-between', paddingHorizontal: 20 },
 });

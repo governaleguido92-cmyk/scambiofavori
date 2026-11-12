@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMessages } from '../context/MessagesContext';
 import colors from '../theme/colors';
 import { tt } from '../i18n/tt';
+import { hitSlopFor } from '../utils/touch';
 
 interface MessagesButtonProps {
   /** Diametro del pulsante: 36 nell'intestazione della Home, 44 in "I Miei". */
@@ -20,6 +21,7 @@ export function MessagesButton({ size = 44 }: MessagesButtonProps) {
   return (
     <TouchableOpacity
       style={[styles.button, { width: size, height: size, borderRadius: size / 2 }]}
+      hitSlop={hitSlopFor(size)}
       onPress={() => router.push('/conversations' as never)}
       accessibilityRole="button"
       accessibilityLabel={label}

@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     flexShrink: 0,
   },
   notificationButton: {
@@ -69,7 +69,7 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   greeting: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
@@ -226,7 +226,7 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.backgroundLight,
   },
   typeButtonActiveOffer: {
-    backgroundColor: '#98AA4A',
+    backgroundColor: colors.primary,
   },
   typeButtonActiveRequest: {
     backgroundColor: colors.accent,
@@ -374,7 +374,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   authorInitial: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -487,7 +487,7 @@ export const styles = StyleSheet.create({
   },
   gridCardOffer: {
     borderTopWidth: 3,
-    borderTopColor: '#98AA4A',
+    borderTopColor: colors.primary,
   },
   gridCardRequest: {
     borderTopWidth: 3,
@@ -569,18 +569,18 @@ export const styles = StyleSheet.create({
     gap: 5,
   },
   gridPillDot: {
-    color: '#FFFFFF',
+    color: colors.white,
     opacity: 0.7,
     fontSize: 12,
     fontWeight: '800',
   },
   gridFlowText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 12.5,
     fontWeight: '800',
   },
   gridKindText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10.5,
     fontWeight: '800',
     letterSpacing: 0.4,
@@ -590,7 +590,7 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: '#0C0E09',
+    backgroundColor: colors.background,
     borderColor: 'rgba(152,170,74,0.5)',
     borderWidth: 1,
     borderRadius: 999,
@@ -598,7 +598,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   gridGranelliText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 14,
     fontWeight: '800',
   },
@@ -611,7 +611,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   gridStatusText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.3,
@@ -643,7 +643,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   cleanFlowText: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 12.5,
     fontWeight: '800',
   },
@@ -721,7 +721,7 @@ export const styles = StyleSheet.create({
   },
   gridNear: {
     flexShrink: 1,
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 11.5,
     fontWeight: '700',
   },
@@ -868,7 +868,7 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
   filterPillTextActive: {
-    color: '#FFFFFF',
+    color: colors.white,
   },
   searchBox: {
     flexDirection: 'row',
@@ -895,7 +895,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionTitle: {
-    color: '#FFFFFF',
+    color: colors.white,
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.6,

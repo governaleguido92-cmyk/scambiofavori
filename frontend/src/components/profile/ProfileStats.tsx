@@ -6,6 +6,7 @@ import { User } from '../../services/api';
 import { styles } from '../../styles/profile.styles';
 import { tt } from '../../i18n/tt';
 import { granelliWord } from '../../utils/granelli';
+import colors from '../../theme/colors';
 
 interface ProfileStatsProps {
   user: User | null;
@@ -22,17 +23,17 @@ export function ProfileStats({ user }: ProfileStatsProps) {
         <Text style={styles.statLabel}>{granelliWord(balance)}</Text>
       </View>
       <View style={styles.statCard} accessible accessibilityLabel={`${tt('Hai aiutato')} ${user?.total_favors_given || 0}`}>
-        <Ionicons name="gift" size={32} color="#98AA4A" />
+        <Ionicons name="gift" size={32} color={colors.primary} />
         <Text style={styles.statValue}>{user?.total_favors_given || 0}</Text>
         <Text style={styles.statLabel}>{tt('Hai aiutato')}</Text>
       </View>
       <View style={styles.statCard} accessible accessibilityLabel={`${tt('Hai ricevuto')} ${user?.total_favors_received || 0}`}>
-        <Ionicons name="hand-left" size={32} color="#F87828" />
+        <Ionicons name="hand-left" size={32} color={colors.accent} />
         <Text style={styles.statValue}>{user?.total_favors_received || 0}</Text>
         <Text style={styles.statLabel}>{tt('Hai ricevuto')}</Text>
       </View>
       <View style={styles.statCard} accessible accessibilityLabel={`${tt('Ore Donate')} ${(user?.total_hours_helped || 0).toFixed(1)}`}>
-        <Ionicons name="time" size={32} color="#F87828" />
+        <Ionicons name="time" size={32} color={colors.accent} />
         <Text style={styles.statValue}>{(user?.total_hours_helped || 0).toFixed(1)}h</Text>
         <Text style={styles.statLabel}>{tt('Ore Donate')}</Text>
       </View>

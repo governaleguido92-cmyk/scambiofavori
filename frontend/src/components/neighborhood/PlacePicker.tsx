@@ -5,6 +5,7 @@ import colors from '../../theme/colors';
 import { api, PlaceSuggestion } from '../../services/api';
 import { tt } from '../../i18n/tt';
 import { formatDistance } from '../../utils/favorVisual';
+import { modalAnimation } from '../../utils/reducedMotion';
 
 interface PlacePickerProps {
   visible: boolean;
@@ -82,7 +83,7 @@ export function PlacePicker({ visible, token, onPick, onClose }: PlacePickerProp
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={modalAnimation()} onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel={tt('Chiudi')}>
         <Pressable style={styles.sheet} onPress={() => undefined}>
           <Text style={styles.title}>{tt('Scegli un luogo')}</Text>
@@ -163,23 +164,23 @@ export { RADIUS_KM as PLACE_PICKER_RADIUS_KM };
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 18, gap: 10, maxHeight: '85%' },
-  title: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
-  hint: { color: '#FFFFFF', opacity: 0.8, fontSize: 13 },
+  title: { color: colors.white, fontSize: 18, fontWeight: '800' },
+  hint: { color: colors.white, opacity: 0.8, fontSize: 13 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.backgroundCard },
   chipActive: { backgroundColor: colors.accent },
-  chipText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '600' },
-  chipTextActive: { color: '#FFFFFF', fontWeight: '800' },
+  chipText: { color: colors.white, fontSize: 13.5, fontWeight: '600' },
+  chipTextActive: { color: colors.white, fontWeight: '800' },
   searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.backgroundCard, borderRadius: 12, paddingHorizontal: 12 },
-  searchInput: { flex: 1, color: '#FFFFFF', paddingVertical: 11, fontSize: 15 },
+  searchInput: { flex: 1, color: colors.white, paddingVertical: 11, fontSize: 15 },
   list: { flexGrow: 0, minHeight: 120 },
   spinner: { marginVertical: 24 },
-  message: { color: '#FFFFFF', opacity: 0.85, fontSize: 14, lineHeight: 20, paddingVertical: 16 },
+  message: { color: colors.white, opacity: 0.85, fontSize: 14, lineHeight: 20, paddingVertical: 16 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.backgroundCard, borderRadius: 12, padding: 12, marginBottom: 8 },
   rowText: { flex: 1 },
-  rowName: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
-  rowMeta: { color: '#FFFFFF', opacity: 0.8, fontSize: 12.5, marginTop: 2 },
-  attribution: { color: '#FFFFFF', opacity: 0.6, fontSize: 11, textAlign: 'center', paddingVertical: 6 },
+  rowName: { color: colors.white, fontSize: 15, fontWeight: '700' },
+  rowMeta: { color: colors.white, opacity: 0.8, fontSize: 12.5, marginTop: 2 },
+  attribution: { color: colors.white, opacity: 0.6, fontSize: 11, textAlign: 'center', paddingVertical: 6 },
   close: { alignItems: 'center', paddingVertical: 12, borderRadius: 12, backgroundColor: colors.backgroundCard },
-  closeText: { color: '#FFFFFF', fontWeight: '700' },
+  closeText: { color: colors.white, fontWeight: '700' },
 });

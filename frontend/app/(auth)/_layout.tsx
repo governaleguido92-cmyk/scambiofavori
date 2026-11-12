@@ -1,11 +1,12 @@
 import { Stack } from 'expo-router';
+import colors from '../../src/theme/colors';
 
 export default function AuthLayout() {
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#0C0E09' },
+        contentStyle: { backgroundColor: colors.background },
       }}
     >
       <Stack.Screen name="login" />

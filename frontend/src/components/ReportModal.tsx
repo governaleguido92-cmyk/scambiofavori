@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../services/api';
 import { notify } from '../utils/notify';
 import { tt } from '../i18n/tt';
+import { modalAnimation } from '../utils/reducedMotion';
+import colors from '../theme/colors';
 
 interface ReportModalProps {
   visible: boolean;
@@ -91,15 +93,15 @@ export const ReportModal: React.FC<ReportModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
+    <Modal visible={visible} transparent animationType={modalAnimation()}>
       <View style={styles.overlay}>
         <View style={styles.modalContent}>
           <View style={styles.header}>
-            <Ionicons name="flag" size={24} color="#F87828" />
+            <Ionicons name="flag" size={24} color={colors.accent} />
             <Text style={styles.title}>{tt('Segnala')}{' '}{reportType === 'favor' ? tt('Annuncio') : tt('Utente')}
             </Text>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#A5A89B" />
+              <Ionicons name="close" size={24} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
 
@@ -128,7 +130,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   <Ionicons
                     name={reason.icon as any}
                     size={20}
-                    color={selectedReason === reason.id ? '#fff' : '#A5A89B'}
+                    color={selectedReason === reason.id ? colors.white : colors.textMuted}
                   />
                 </View>
                 <Text style={[
@@ -138,7 +140,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   {tt(reason.label)}
                 </Text>
                 {selectedReason === reason.id && (
-                  <Ionicons name="checkmark-circle" size={20} color="#F87828" />
+                  <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
                 )}
               </TouchableOpacity>
             ))}
@@ -148,7 +150,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           <TextInput
             style={styles.descriptionInput}
             placeholder={tt('Descrivi il problema...')}
-            placeholderTextColor="#A5A89B"
+            placeholderTextColor={colors.textMuted}
             value={description}
             onChangeText={setDescription}
             multiline
@@ -167,10 +169,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
               data-testid="submit-report-button"
             >
               {submitting ? (
-                <ActivityIndicator size="small" color="#0C0E09" />
+                <ActivityIndicator size="small" color={colors.background} />
               ) : (
                 <>
-                  <Ionicons name="send" size={16} color="#0C0E09" />
+                  <Ionicons name="send" size={16} color={colors.background} />
                   <Text style={styles.submitButtonText}>{tt('Invia Segnalazione')}</Text>
                 </>
               )}
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#0C0E09',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -205,22 +207,22 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.white,
   },
   closeButton: {
     padding: 4,
   },
   targetInfo: {
-    color: '#A5A89B',
+    color: colors.textMuted,
     fontSize: 14,
     marginBottom: 16,
   },
   targetName: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: '600',
   },
   sectionTitle: {
-    color: '#A5A89B',
+    color: colors.textMuted,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 12,
@@ -233,7 +235,7 @@ const styles = StyleSheet.create({
   reasonItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#171A10',
+    backgroundColor: colors.backgroundCard,
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
@@ -241,34 +243,34 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   reasonItemSelected: {
-    borderColor: '#F87828',
-    backgroundColor: '#ff6b6b15',
+    borderColor: colors.accent,
+    backgroundColor: colors.debtMuted,
   },
   reasonIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#333',
+    backgroundColor: colors.borderLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   reasonIconSelected: {
-    backgroundColor: '#F87828',
+    backgroundColor: colors.accent,
   },
   reasonLabel: {
     flex: 1,
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
   },
   reasonLabelSelected: {
     fontWeight: '600',
   },
   descriptionInput: {
-    backgroundColor: '#171A10',
+    backgroundColor: colors.backgroundCard,
     borderRadius: 12,
     padding: 14,
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     minHeight: 80,
     textAlignVertical: 'top',
@@ -282,11 +284,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#333',
+    backgroundColor: colors.borderLight,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: '600',
   },
   submitButton: {
@@ -294,7 +296,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#F87828',
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -303,7 +305,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: '#0C0E09',
+    color: colors.background,
     fontWeight: '600',
   },
 });

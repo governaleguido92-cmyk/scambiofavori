@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import colors from '../../theme/colors';
 import { tt } from '../../i18n/tt';
 import { showRefusal } from '../../utils/notify';
+import { modalAnimation } from '../../utils/reducedMotion';
 
 const BIO_MAX = 200;
 
@@ -50,7 +51,7 @@ export function BioCard({ bio, onSave }: BioCardProps) {
         )}
       </TouchableOpacity>
 
-      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
+      <Modal visible={open} transparent animationType={modalAnimation()} onRequestClose={() => setOpen(false)}>
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>{tt('Chi sono')}</Text>

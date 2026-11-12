@@ -246,7 +246,7 @@ async def request_debt_recovery(current_user: User = Depends(get_current_user)):
         "amount_received": recovery_amount,
         "new_balance": new_balance,
         "returned_positive": returned_positive,
-        "message": "La community ti ha fatto un dono! Bentornato tra i sostenitori attivi!" if returned_positive else f"Hai ricevuto {recovery_amount} {CURRENCY_NAME} dalla community."
+        "message": "La community ti ha fatto un dono! Bentornato tra i sostenitori attivi!" if returned_positive else f"Hai ricevuto {granelli_text(recovery_amount)} dalla community."
     }
 
 @api_router.get("/referral/code")
