@@ -6,6 +6,7 @@ import { tt, tx } from '../i18n/tt';
 import { useNow } from '../hooks/useNow';
 import { COUNTDOWN_LAST_HOUR_MS, formatCountdown, msLeft } from '../utils/favorCountdown';
 import { formatGranelli } from '../utils/granelli';
+import { serverDate } from '../utils/serverDate';
 
 interface FavorCountdownProps {
   expiresAt: string | undefined;
@@ -50,9 +51,10 @@ export function FavorCountdown({ expiresAt, earns, granelli, variant, onExpire }
   const title = isExpired
     ? (earns ? tt('Scaduto: l\'occasione di guadagnare è persa') : tt('Annuncio scaduto'))
     : (earns ? tx('Hai ancora {0} per guadagnare {1}', [clock, formatGranelli(granelli)]) : tx('L\'annuncio scade tra {0}', [clock]));
+  const endsAt = serverDate(expiresAt).toLocaleString('it-IT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
   const subtitle = isExpired
     ? tt('Nessuno può più accettarlo.')
-    : (earns ? tt('Poi l\'annuncio scade e l\'occasione è persa.') : tt('Poi sparisce dagli elenchi.'));
+    : (earns ? tx('Scade il {0}: poi l\'occasione è persa.', [endsAt]) : tx('Scade il {0}.', [endsAt]));
 
   return (
     <View style={[styles.banner, isLastHour && styles.bannerLastHour, isExpired && styles.bannerExpired]}>

@@ -32,20 +32,21 @@ import { tt, tx } from '../../../src/i18n/tt';
 import { FavorCountdown } from '../../../src/components/FavorCountdown';
 import { serverDate, serverTime } from '../../../src/utils/serverDate';
 import { goBackOrHome } from '../../../src/utils/navigation';
+import { formatDistance, getCategoryVisual } from '../../../src/utils/favorVisual';
+import colors from '../../../src/theme/colors';
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'Trasporto': 'heart-circle',
-  'Spesa': 'heart',
-  'Tecnologia': 'heart-half',
-  'Pulizie': 'home',
-  'Compagnia': 'people',
-  'Cucina': 'heart-circle-outline',
-  'Giardinaggio': 'leaf',
-  'Consiglio': 'bulb',
-  'Informazione': 'information-circle',
-  'Aiuto Rapido': 'flash',
-  'Altro': 'ellipsis-horizontal',
+/** La descrizione senza il titolo ripetuto all'inizio (es. «Passaggio alla stazione. Scrivimi…» → «Scrivimi…»). */
+const descriptionWithoutTitle = (favor: Pick<Favor, 'title' | 'description'>): string => {
+  const title = favor.title.trim();
+  const description = (favor.description ?? '').trim();
+  if (description.toLowerCase() === title.toLowerCase()) return '';
+  if (description.toLowerCase().startsWith(title.toLowerCase())) {
+    const rest = description.slice(title.length).replace(/^[\s.,:;!-]+/, '');
+    return rest || '';
+  }
+  return description;
 };
+
 
 const QUICK_THANKS = ['Gentile e puntuale, grazie!', 'Mi hai tolto un pensiero', 'Persona squisita, consigliata', 'Veloce e disponibile'];
 
@@ -559,48 +560,38 @@ export default function FavorDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Status and Type */}
-        <View style={styles.badgesRow}>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(favor.status) + '30' }]}>
-            <View style={[styles.statusDot, { backgroundColor: getStatusColor(favor.status) }]} />
-            <Text style={[styles.statusText, { color: getStatusColor(favor.status) }]}>
-              {getStatusText(favor.status)}
-            </Text>
-          </View>
-          <View style={[styles.typeBadge, isGiveKind ? styles.requestBadge : styles.offerBadge]}>
-            <Ionicons
-              name={isGiveKind ? 'gift' : 'hand-left'}
-              size={16}
-              color="#fff"
-            />
-            <Text style={styles.typeText}>
-              {tt(`${favorKindFor(favor, user?.user_id)} un favore`)}
-            </Text>
-          </View>
-        </View>
-
-        {/* Category */}
-        <View style={styles.categoryContainer}>
-          <Ionicons
-            name={(CATEGORY_ICONS[favor.category] || 'ellipsis-horizontal') as any}
-            size={20}
-            color="#98AA4A"
-          />
-          <Text style={styles.categoryText}>{tt(favor.category)}</Text>
-        </View>
-
-        {/* Creation Date/Time */}
-        <View style={styles.dateTimeContainer}>
-          <Ionicons name="calendar-outline" size={16} color="#A5A89B" />
-          <Text style={styles.dateTimeText}>{tt('Creato il')}{' '}{(favor.created_at ? serverDate(favor.created_at) : new Date()).toLocaleDateString('it-IT', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
+        {/* Tipo e categoria in una riga, poi subito il titolo */}
+        <View style={styles.kindRow}>
+          <Text style={[styles.kindText, { color: isGiveKind ? colors.accent : colors.lime }]}>
+            {tt(`${favorKindFor(favor, user?.user_id)} un favore`).toUpperCase()}
           </Text>
+          <Text style={styles.kindSeparator}>·</Text>
+          <Text style={styles.kindEmoji}>{getCategoryVisual(favor.category).emoji}</Text>
+          <Text style={styles.kindCategory}>{tt(favor.category)}</Text>
+          {favor.status !== 'active' && (
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(favor.status) + '30' }]}>
+              <View style={[styles.statusDot, { backgroundColor: getStatusColor(favor.status) }]} />
+              <Text style={[styles.statusText, { color: getStatusColor(favor.status) }]}>{getStatusText(favor.status)}</Text>
+            </View>
+          )}
         </View>
+        <Text style={styles.title}>{favor.title}</Text>
+
+        {/* Granelli, ore e distanza in una riga sola */}
+        <View style={styles.factsRow}>
+          <GranelloIcon size={16} />
+          <Text style={styles.factStrong}>{tt(granelliFlowLabel(favor, user?.user_id))} {favor.granelli_cost}</Text>
+          <Text style={styles.kindSeparator}>·</Text>
+          <Ionicons name="time-outline" size={16} color={colors.textMuted} />
+          <Text style={styles.factText}>{favor.duration_hours} {favor.duration_hours === 1 ? tt('ora') : tt('ore')}</Text>
+          {typeof favor.distance_km === 'number' && (
+            <>
+              <Text style={styles.kindSeparator}>·</Text>
+              <Text style={styles.factText}>{formatDistance(favor.distance_km)}</Text>
+            </>
+          )}
+        </View>
+
         {favor.expires_at && favor.status === 'active' && !favor.accepted_by && (
           <FavorCountdown
             expiresAt={favor.expires_at}
@@ -610,36 +601,10 @@ export default function FavorDetailScreen() {
             onExpire={markExpired}
           />
         )}
-        {favor.expires_at && favor.status === 'active' && (
-          <View style={styles.dateTimeContainer}>
-            <Ionicons name="hourglass-outline" size={16} color="#A5A89B" />
-            <Text style={styles.dateTimeText}>{tt('Disponibile fino al')}{' '}{serverDate(favor.expires_at).toLocaleString('it-IT', {
-                day: 'numeric',
-                month: 'long',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
-          </View>
+
+        {descriptionWithoutTitle(favor) !== '' && (
+          <Text style={styles.description}>{descriptionWithoutTitle(favor)}</Text>
         )}
-
-        {/* Title and Description */}
-        <Text style={styles.title}>{favor.title}</Text>
-        <Text style={styles.description}>{favor.description}</Text>
-
-        {/* Soli and Duration */}
-        <View style={styles.infoCards}>
-          <View style={styles.infoCard}>
-            <GranelloIcon size={18} />
-            <Text style={styles.infoValue}>{favor.granelli_cost}</Text>
-            <Text style={[styles.infoLabel, { color: '#FFFFFF', fontWeight: '800', fontSize: 14 }]}>{tt(granelliFlowLabel(favor, user?.user_id))}</Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Ionicons name="time" size={24} color="#98AA4A" />
-            <Text style={styles.infoValue}>{favor.duration_hours}</Text>
-            <Text style={styles.infoLabel}>{tt('ore')}</Text>
-          </View>
-        </View>
 
         {/* Creator Info */}
         <TouchableOpacity 
@@ -883,6 +848,12 @@ export default function FavorDetailScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {favor.created_at && (
+          <Text style={styles.createdFooter}>
+            {tt('Pubblicato il')}{' '}{serverDate(favor.created_at).toLocaleString('it-IT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        )}
       </ScrollView>
 
       {/* QR Code Modal */}

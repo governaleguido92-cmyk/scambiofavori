@@ -382,7 +382,7 @@ export default function HomeScreen() {
           ListFooterComponent={listFooter}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="search" size={64} color="#333" />
+              <Ionicons name="search" size={64} color={colors.textMuted} />
               <Text style={styles.emptyText}>{tt('Ancora nessun favore dei tuoi vicini')}</Text>
               <Text style={styles.emptySubtext}>{tt('Pubblica tu il primo da Crea: i tuoi vicini lo vedranno subito')}</Text>
             </View>
